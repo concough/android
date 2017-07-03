@@ -3,11 +3,11 @@ package com.concough.android.concough;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-public class StartupActivity extends AppCompatActivity {
+public class SignupMoreInfo3Activity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_startup);
+        setContentView(R.layout.activity_signup_more_info3);
     }
 }

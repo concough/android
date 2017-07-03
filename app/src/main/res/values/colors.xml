@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#666666</color>
+    <color name="colorPrimaryDark">#ffffff</color>
+    <color name="colorAccent">#007AFF</color>
+    <color name="colorForeground">#000000</color>
+
+    <!-- Concough Colors -->
+    <color name="colorConcoughBlue">#007AFF</color>
+    <color name="colorConcoughRed">#960000</color>
+    <color name="colorConcoughRedLight">#DD0000</color>
+    <color name="colorConcoughGreen">#008000</color>
+    <color name="colorConcoughGray">#b7b7b7</color>
 </resources>

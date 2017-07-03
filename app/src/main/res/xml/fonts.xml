@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<familyset>
+    <family>
+        <nameset>
+            <name>ZhikanYekan</name>
+        </nameset>
+        <fileset>
+            <file>IRANYekanMobileRegular.ttf</file>
+            <file>IRANYekanMobileLight.ttf</file>
+            <file>IRANYekanMobileBold.ttf</file>
+        </fileset>
+    </family>
+</familyset>
