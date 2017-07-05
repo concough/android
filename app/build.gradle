@@ -47,7 +47,8 @@ dependencies {
     compile 'com.squareup.retrofit2:adapter-rxjava:2.3.0'
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.16'
     compile "org.jetbrains.anko:anko-common:$anko_version"
-
+    compile 'com.scottyab:secure-preferences-lib:0.1.4'
+    compile 'com.auth0:java-jwt:3.2.0'
 }
 repositories {
     mavenCentral()
