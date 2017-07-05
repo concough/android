@@ -37,4 +37,78 @@ class UrlMakerSingleton private constructor(){
         }
         return fullPath
     }
+
+    fun preSignupUrl(): String? {
+        var fullPath: String? = null
+        val functionName = "pre_signup"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._auth_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun signupUrl(): String? {
+        var fullPath: String? = null
+        val functionName = "signup"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._auth_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun forgotPassword(): String? {
+        var fullPath: String? = null
+        val functionName = "forgot_password"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._auth_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun resetPassword(): String? {
+        var fullPath: String? = null
+        val functionName = "reset_password"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._auth_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun changePassword(): String? {
+        var fullPath: String? = null
+        val functionName = "change_password"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._auth_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun jwtTokenUrl(): String? {
+        var fullPath: String? = null
+        val functionName = "token"
+
+        fullPath = "${this._base_url}${this._api_version}/${this._jauth_class_name}/$functionName/"
+        return fullPath
+    }
+
+    fun jwtRefreshTokenUrl(): String? {
+        var fullPath: String? = null
+        val functionName = "refresh_token"
+
+        fullPath = "${this._base_url}${this._api_version}/${this._jauth_class_name}/$functionName/"
+        return fullPath
+    }
+
+    fun jwtVerifyTokenUrl(): String? {
+        var fullPath: String? = null
+        val functionName = "verify"
+
+        fullPath = "${this._base_url}${this._api_version}/${this._jauth_class_name}/$functionName/"
+        return fullPath
+    }
 }

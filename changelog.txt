@@ -11,3 +11,21 @@ Procedures:
     7 - Creating "FontCacheSingleton" to caching different typefaces -> singleton package
     8 - Create extension on "String" to validate phone number -> "ValidatorExtension" in extensions package
     9 - Two shape in drawable resources for bordered button and outline button
+
+------------------------------------------------------------------------------------------------
+Version 0.3 - abolfazl.beh
+Complete Authentication API's
+
+Procedures:
+    1 - Authentication API for Unauthenticated Users finished: Ready to Test -> rest.AuthRestAPIClass
+    2 - UrlMakerSingleton updated with necessary urls
+    3 - ProfileStruct class Created to store profile data -> structures package
+    4 - Create "TokenHandlerSingleton" class to handle jwt token store and load
+        - 'com.auth0:java-jwt:3.2.0' installed
+        - It need "JwtHandler" file for conversion
+        - It need "JwtAdapter" to request server for token -> tokenservice package
+    5 - "KeyChainAccessProxy" class to encrypt sensitive data and store it
+        - 'com.scottyab:secure-preferences-lib:0.1.4' installed
+    6 - "UserDefaultsSingleton" class created to handling profile and user settings data
+    7 - "FormatterSingleton" class created to handle formatting date and numbers
+    8 - "TestActivity" created for testing purpose

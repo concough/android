@@ -23,12 +23,13 @@ import kotlin.collections.HashMap
 class AuthRestAPIClass {
     private interface AuthRestAPIService {
         @POST()
-        fun checkUsername(@Url url: String, @Body body: HashMap<String, Any>, @HeaderMap headers: HashMap<String, String>): Call<ResponseBody>
+        fun request(@Url url: String, @Body body: HashMap<String, Any>, @HeaderMap headers: HashMap<String, String>): Call<ResponseBody>
     }
 
     companion object Factory {
         val TAG = "AuthRestAPIService"
 
+        // Check Username API Call
         @JvmStatic
         fun checkUsername(username: String, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
             val fullPath = UrlMakerSingleton.getInstance().checkUsernameUrl() ?: return
@@ -39,7 +40,7 @@ class AuthRestAPIClass {
 
             val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
             val auth = Obj.create(AuthRestAPIService::class.java)
-            val request = auth.checkUsername(fullPath, parameters, headers)
+            val request = auth.request(fullPath, parameters, headers)
 
             request.enqueue(object: Callback<ResponseBody> {
                 override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
@@ -68,5 +69,171 @@ class AuthRestAPIClass {
             })
 
         }
+
+        // Pre Signup Phase API
+        @JvmStatic
+        fun preSignup(username: String, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+            val fullPath = UrlMakerSingleton.getInstance().preSignupUrl() ?: return
+
+            val parameters: HashMap<String, Any> = hashMapOf("username" to username)
+            val headers = hashMapOf("Content-Type" to "application/json",
+                    "Accept" to "application/json")
+
+            val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+            val auth = Obj.create(AuthRestAPIService::class.java)
+            val request = auth.request(fullPath, parameters, headers)
+
+            request.enqueue(object: Callback<ResponseBody> {
+                override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
+                    failure(NetworkErrorType.toType(t))
+                }
+
+                override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
+                    val resCode = HTTPErrorType.toType(response?.code()!!)
+                    Log.d(TAG, resCode.toString())
+                    when (resCode) {
+                        HTTPErrorType.Success -> {
+                            val res = response.body()!!.string()
+                            try {
+                                val jobj = Gson().fromJson(res, JsonObject::class.java)
+
+                                completion(jobj, resCode)
+
+
+                            } catch (exc: JsonParseException) {
+                                completion(null, HTTPErrorType.UnKnown)
+                            }
+                        }
+                        else -> completion(null, resCode)
+                    }
+                }
+            })
+
+        }
+
+        // Signup Phase API -> Send Code to Server
+        @JvmStatic
+        fun signup(username: String, id: Int, code: Int, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+            val fullPath = UrlMakerSingleton.getInstance().signupUrl() ?: return
+
+            val parameters: HashMap<String, Any> = hashMapOf("username" to username, "id" to id, "code" to code)
+            val headers = hashMapOf("Content-Type" to "application/json",
+                    "Accept" to "application/json")
+
+            val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+            val auth = Obj.create(AuthRestAPIService::class.java)
+            val request = auth.request(fullPath, parameters, headers)
+
+            request.enqueue(object: Callback<ResponseBody> {
+                override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
+                    failure(NetworkErrorType.toType(t))
+                }
+
+                override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
+                    val resCode = HTTPErrorType.toType(response?.code()!!)
+                    Log.d(TAG, resCode.toString())
+                    when (resCode) {
+                        HTTPErrorType.Success -> {
+                            val res = response.body()!!.string()
+                            try {
+                                val jobj = Gson().fromJson(res, JsonObject::class.java)
+
+                                completion(jobj, resCode)
+
+
+                            } catch (exc: JsonParseException) {
+                                completion(null, HTTPErrorType.UnKnown)
+                            }
+                        }
+                        else -> completion(null, resCode)
+                    }
+                }
+            })
+        }
+
+        // Forgot Password Phase for UnAuthenticated User
+        @JvmStatic
+        fun forgotPassword(username: String, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+            val fullPath = UrlMakerSingleton.getInstance().forgotPassword() ?: return
+
+            val parameters: HashMap<String, Any> = hashMapOf("username" to username)
+            val headers = hashMapOf("Content-Type" to "application/json",
+                    "Accept" to "application/json")
+
+            val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+            val auth = Obj.create(AuthRestAPIService::class.java)
+            val request = auth.request(fullPath, parameters, headers)
+
+            request.enqueue(object: Callback<ResponseBody> {
+                override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
+                    failure(NetworkErrorType.toType(t))
+                }
+
+                override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
+                    val resCode = HTTPErrorType.toType(response?.code()!!)
+                    Log.d(TAG, resCode.toString())
+                    when (resCode) {
+                        HTTPErrorType.Success -> {
+                            val res = response.body()!!.string()
+                            try {
+                                val jobj = Gson().fromJson(res, JsonObject::class.java)
+
+                                completion(jobj, resCode)
+
+
+                            } catch (exc: JsonParseException) {
+                                completion(null, HTTPErrorType.UnKnown)
+                            }
+                        }
+                        else -> completion(null, resCode)
+                    }
+                }
+            })
+        }
+
+        // Forgot Password Phase for UnAuthenticated User
+        @JvmStatic
+        fun resetPassword(username: String, id: Int, password: String, rpassword: String, code: Int, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+            val fullPath = UrlMakerSingleton.getInstance().resetPassword() ?: return
+
+            val parameters: HashMap<String, Any> = hashMapOf("username" to username,
+                                                            "password" to password,
+                                                            "rpassword" to rpassword,
+                                                            "id" to id,
+                                                            "code" to code)
+            val headers = hashMapOf("Content-Type" to "application/json",
+                    "Accept" to "application/json")
+
+            val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+            val auth = Obj.create(AuthRestAPIService::class.java)
+            val request = auth.request(fullPath, parameters, headers)
+
+            request.enqueue(object: Callback<ResponseBody> {
+                override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
+                    failure(NetworkErrorType.toType(t))
+                }
+
+                override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
+                    val resCode = HTTPErrorType.toType(response?.code()!!)
+                    Log.d(TAG, resCode.toString())
+                    when (resCode) {
+                        HTTPErrorType.Success -> {
+                            val res = response.body()!!.string()
+                            try {
+                                val jobj = Gson().fromJson(res, JsonObject::class.java)
+
+                                completion(jobj, resCode)
+
+
+                            } catch (exc: JsonParseException) {
+                                completion(null, HTTPErrorType.UnKnown)
+                            }
+                        }
+                        else -> completion(null, resCode)
+                    }
+                }
+            })
+        }
+
     }
 }
