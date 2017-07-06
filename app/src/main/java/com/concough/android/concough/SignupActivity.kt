@@ -1,12 +1,10 @@
 package com.concough.android.concough
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.support.annotation.RequiresApi
+import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -17,10 +15,7 @@ import com.concough.android.extensions.isValidPhoneNumber
 import com.concough.android.rest.AuthRestAPIClass
 import com.concough.android.singletons.FontCacheSingleton
 import com.concough.android.structures.HTTPErrorType
-import kotlinx.android.synthetic.main.activity_login.*
-
 import kotlinx.android.synthetic.main.activity_signup.*
-import kotlinx.coroutines.experimental.CoroutineStart
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 
@@ -31,6 +26,7 @@ class SignupActivity : AppCompatActivity() {
     companion object {
         val TAG = "SignupActivity"
 
+        @JvmStatic
         fun newIntent(packageContext: Context): Intent {
             val i = Intent(packageContext, SignupActivity::class.java)
             i.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
