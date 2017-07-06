@@ -29,3 +29,18 @@ Procedures:
     6 - "UserDefaultsSingleton" class created to handling profile and user settings data
     7 - "FormatterSingleton" class created to handle formatting date and numbers
     8 - "TestActivity" created for testing purpose
+
+
+================================================================================================
+
+Version 0.3 - FaridM (2017/5/7)
+Create Activity Signup Info 1
+
+Procedures:
+    1 - Aded 'de.hdodenhof:circleimageview:2.1.0' package for add border and crop user images
+    2 - Aded and comented custom action bar with "action_bar.xml" file
+    3 - Aded 3 files to drawable folder "female_icon_100.png" , "neutral_icon_100.png" , "male_icon_100.png"
+    4 - Aded 3 activity "info1" , "info2" , "info3"
+
+
+================================================================================================

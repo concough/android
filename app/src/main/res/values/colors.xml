@@ -11,4 +11,6 @@
     <color name="colorConcoughRedLight">#DD0000</color>
     <color name="colorConcoughGreen">#008000</color>
     <color name="colorConcoughGray">#b7b7b7</color>
+    <color name="colorConcoughGray2">#575757</color>
+    <color name="colorConcoughGray3">#f7f7f7</color>
 </resources>
