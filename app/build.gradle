@@ -29,6 +29,13 @@ android {
         targetCompatibility 1.7
         sourceCompatibility 1.7
     }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+    }
 }
 
 dependencies {
@@ -48,8 +55,8 @@ dependencies {
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.16'
     compile "org.jetbrains.anko:anko-common:$anko_version"
     compile 'com.scottyab:secure-preferences-lib:0.1.4'
-    compile 'com.auth0:java-jwt:3.2.0'
     compile 'de.hdodenhof:circleimageview:2.1.0'
+    compile 'com.auth0.android:jwtdecode:1.1.1'
 }
 repositories {
     mavenCentral()

@@ -20,11 +20,9 @@
             android:id="@+id/activity_login"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-
             android:fitsSystemWindows="true"
-            tools:context="com.concough.android.concough.StartupActivity"
             android:isScrollContainer="true"
-            android:background="@android:color/background_light"
+            android:background="@android:color/white"
             >
 
             <ImageView
@@ -102,7 +100,6 @@
                         android:textDirection="rtl"
                         android:textAlignment="textStart"
                         android:gravity="start"
-
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintLeft_toRightOf="@+id/coutryCodeTextView"
                         android:layout_marginStart="8dp"

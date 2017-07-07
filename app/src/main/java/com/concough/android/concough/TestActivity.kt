@@ -16,11 +16,11 @@ class TestActivity : AppCompatActivity() {
         setContentView(R.layout.activity_test)
 
         testA_set_keystore.setOnClickListener {
-            KeyChainAccessProxy.getInstance(applicationContext).setValue("ali", "123456")
+            KeyChainAccessProxy.getInstance(applicationContext).setValueAsString("ali", "123456")
         }
 
         testA_read_keystore.setOnClickListener {
-            val d = KeyChainAccessProxy.getInstance(applicationContext).getValue("ali2")
+            val d = KeyChainAccessProxy.getInstance(applicationContext).getValueAsString("ali2")
             Log.d("TEST", d)
             Toast.makeText(this@TestActivity, d, Toast.LENGTH_LONG).show()
         }

@@ -49,7 +49,7 @@ class AuthRestAPIClass {
 
                 override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
                     val resCode = HTTPErrorType.toType(response?.code()!!)
-                    Log.d(TAG, resCode.toString())
+//                    Log.d(TAG, resCode.toString())
                     when (resCode) {
                         HTTPErrorType.Success -> {
                             val res = response.body()!!.string()
@@ -57,8 +57,6 @@ class AuthRestAPIClass {
                                 val jobj = Gson().fromJson(res, JsonObject::class.java)
 
                                 completion(jobj, resCode)
-
-
                             } catch (exc: JsonParseException) {
                                 completion(null, HTTPErrorType.UnKnown)
                             }

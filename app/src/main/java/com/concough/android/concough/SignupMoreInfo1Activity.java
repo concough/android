@@ -17,7 +17,7 @@ import com.concough.android.singletons.FontCacheSingleton;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class SignupMoreInfo1Activity extends AppCompatActivity {
-    private final String TAG = "SignupMoreInfo1Activity";
+    private static final String TAG = "SignupMoreInfo1Activity";
 
     private LinearLayout linearLayoutNeutral;
     private LinearLayout linearLayoutFemale;
@@ -38,7 +38,7 @@ public class SignupMoreInfo1Activity extends AppCompatActivity {
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, SignupMoreInfo1Activity.class);
-//        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         return i;
     }
 

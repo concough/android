@@ -84,15 +84,16 @@ class TokenHandlerSingleton {
                                 this._lastTime = payload.issuedAt
                                 this._expiresIn = payload.expiresAt
 
-                                KeyChainAccessProxy.getInstance(this._context).setValueAsString(OAUTH_LAST_ACCESS_KEY, FormatterSingleton.getInstance().UTCDateFormatter.format(this._lastTime))
-                                KeyChainAccessProxy.getInstance(this._context).setValueAsString(OAUTH_EXPIRES_IN_KEY, FormatterSingleton.getInstance().UTCDateFormatter.format(this._expiresIn))
+                                KeyChainAccessProxy.getInstance(this._context).setValueAsString(OAUTH_TOKEN_KEY, token)
+                                KeyChainAccessProxy.getInstance(this._context).setValueAsString(OAUTH_TOKEN_TYPE_KEY, this._tokenType!!)
+
+                                if (this._lastTime != null) KeyChainAccessProxy.getInstance(this._context).setValueAsString(OAUTH_LAST_ACCESS_KEY, FormatterSingleton.getInstance().UTCDateFormatter.format(this._lastTime))
+                                if (this._expiresIn != null) KeyChainAccessProxy.getInstance(this._context).setValueAsString(OAUTH_EXPIRES_IN_KEY, FormatterSingleton.getInstance().UTCDateFormatter.format(this._expiresIn))
 
                                 completion(HTTPErrorType.Success)
                             } catch (exc: Exception) {
 
                             }
-                            KeyChainAccessProxy.getInstance(this._context).setValueAsString(OAUTH_TOKEN_KEY, token)
-                            KeyChainAccessProxy.getInstance(this._context).setValueAsString(OAUTH_TOKEN_TYPE_KEY, this._tokenType!!)
 
                         }
                     }

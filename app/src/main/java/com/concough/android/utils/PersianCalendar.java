@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.concough.android.concough;
+package com.concough.android.utils;
 
 import android.annotation.SuppressLint;
 import java.io.Serializable;
