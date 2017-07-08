@@ -204,7 +204,8 @@ class TokenHandlerSingleton {
                     failure(error)
                 })
             } else {
-                if (this._lastTime != null && this._expiresIn != null) {
+//                if (this._lastTime != null && this._expiresIn != null) {
+                if (this._expiresIn != null) {
                     if (Date() > this._expiresIn) {
                         this.refreshToken(completion = {error ->
                             if (error == HTTPErrorType.Success) {

@@ -44,7 +44,7 @@ public class SignupMoreInfo1Activity extends AppCompatActivity {
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, SignupMoreInfo1Activity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         return i;
     }
 

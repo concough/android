@@ -22,7 +22,7 @@
             android:background="@android:color/background_light"
             android:fitsSystemWindows="true"
             android:isScrollContainer="true"
-            tools:context="com.concough.android.concough.StartupActivity">
+            tools:context="com.concough.android.concough.LoginActivity">
 
             <ImageView
                 android:id="@+id/loginA_imageView4"

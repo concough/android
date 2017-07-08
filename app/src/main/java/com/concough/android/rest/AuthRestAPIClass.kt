@@ -13,21 +13,15 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.*
-import java.util.*
 import kotlin.collections.HashMap
 
 /**
  * Created by abolfazl on 7/2/17.
  */
 class AuthRestAPIClass {
-    private interface AuthRestAPIService {
-        @POST()
-        fun request(@Url url: String, @Body body: HashMap<String, Any>, @HeaderMap headers: HashMap<String, String>): Call<ResponseBody>
-    }
 
     companion object Factory {
-        val TAG = "AuthRestAPIService"
+        val TAG = "RestAPIService"
 
         // Check Username API Call
         @JvmStatic
@@ -39,8 +33,8 @@ class AuthRestAPIClass {
                                     "Accept" to "application/json")
 
             val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
-            val auth = Obj.create(AuthRestAPIService::class.java)
-            val request = auth.request(fullPath, parameters, headers)
+            val auth = Obj.create(RestAPIService::class.java)
+            val request = auth.post(fullPath, parameters, headers)
 
             request.enqueue(object: Callback<ResponseBody> {
                 override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
@@ -78,8 +72,8 @@ class AuthRestAPIClass {
                     "Accept" to "application/json")
 
             val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
-            val auth = Obj.create(AuthRestAPIService::class.java)
-            val request = auth.request(fullPath, parameters, headers)
+            val auth = Obj.create(RestAPIService::class.java)
+            val request = auth.post(fullPath, parameters, headers)
 
             request.enqueue(object: Callback<ResponseBody> {
                 override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
@@ -119,8 +113,8 @@ class AuthRestAPIClass {
                     "Accept" to "application/json")
 
             val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
-            val auth = Obj.create(AuthRestAPIService::class.java)
-            val request = auth.request(fullPath, parameters, headers)
+            val auth = Obj.create(RestAPIService::class.java)
+            val request = auth.post(fullPath, parameters, headers)
 
             request.enqueue(object: Callback<ResponseBody> {
                 override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
@@ -159,8 +153,8 @@ class AuthRestAPIClass {
                     "Accept" to "application/json")
 
             val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
-            val auth = Obj.create(AuthRestAPIService::class.java)
-            val request = auth.request(fullPath, parameters, headers)
+            val auth = Obj.create(RestAPIService::class.java)
+            val request = auth.post(fullPath, parameters, headers)
 
             request.enqueue(object: Callback<ResponseBody> {
                 override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
@@ -203,8 +197,8 @@ class AuthRestAPIClass {
                     "Accept" to "application/json")
 
             val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
-            val auth = Obj.create(AuthRestAPIService::class.java)
-            val request = auth.request(fullPath, parameters, headers)
+            val auth = Obj.create(RestAPIService::class.java)
+            val request = auth.post(fullPath, parameters, headers)
 
             request.enqueue(object: Callback<ResponseBody> {
                 override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {

@@ -260,6 +260,7 @@ class SignupCodeActivity : AppCompatActivity() {
                             startActivity(moreInfoIntent)
                             this@SignupCodeActivity.finish()
 
+
                         } else {
                             // Navigate to LoginActivity
                             val i = LoginActivity.newIntent(this@SignupCodeActivity)

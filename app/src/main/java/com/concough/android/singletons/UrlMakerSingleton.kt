@@ -111,4 +111,13 @@ class UrlMakerSingleton private constructor(){
         fullPath = "${this._base_url}${this._api_version}/${this._jauth_class_name}/$functionName/"
         return fullPath
     }
+
+    fun profileUrl(): String? {
+        var fullPath: String? = null
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._profile_class_name}/"
+        }
+        return fullPath
+    }
 }

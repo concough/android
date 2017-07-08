@@ -2,24 +2,31 @@ package com.concough.android.concough;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.concough.android.rest.ProfileRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
+import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.singletons.TokenHandlerSingleton;
+import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.utils.KeyChainAccessProxy;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
+import kotlin.jvm.functions.Function2;
 
-import com.concough.android.settings.ConstantsKt.*;
+import com.google.gson.JsonObject;
+import com.google.gson.internal.Streams;
+
+import java.util.Date;
 
 import static com.concough.android.settings.ConstantsKt.getPASSWORD_KEY;
 import static com.concough.android.settings.ConstantsKt.getUSERNAME_KEY;
@@ -38,7 +45,7 @@ public class LoginActivity extends AppCompatActivity {
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, LoginActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         return i;
     }
 
@@ -48,6 +55,8 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        getSupportActionBar().hide();
+
         View.OnClickListener registerButtonListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -56,7 +65,13 @@ public class LoginActivity extends AppCompatActivity {
                 finish();
             }
         };
+        signupTextView = (TextView) findViewById(R.id.loginA_signupTextView);
+        usernameEdit = (EditText) findViewById(R.id.loginA_usernameEdit);
+        passwordEdit = (EditText) findViewById(R.id.loginA_passwordEdit);
+        loginHintTextView = (TextView) findViewById(R.id.loginA_loginHintTextView);
         registerButton = (Button) findViewById(R.id.loginA_registerButton);
+        loginButton = (Button) findViewById(R.id.loginA_loginButton);
+
         registerButton.setOnClickListener(registerButtonListener);
 
 
@@ -68,14 +83,8 @@ public class LoginActivity extends AppCompatActivity {
                 LoginActivity.this.login();
             }
         };
-        loginButton = (Button) findViewById(R.id.loginA_loginButton);
         loginButton.setOnClickListener(loginButtonListener);
 
-        signupTextView = (TextView) findViewById(R.id.loginA_signupTextView);
-        usernameEdit = (EditText) findViewById(R.id.loginA_usernameEdit);
-        passwordEdit = (EditText) findViewById(R.id.loginA_passwordEdit);
-        loginHintTextView = (TextView) findViewById(R.id.loginA_loginHintTextView);
-        registerButton = (Button) findViewById(R.id.loginA_registerButton);
 
         usernameEdit.requestFocus();
 
@@ -84,7 +93,7 @@ public class LoginActivity extends AppCompatActivity {
         passwordEdit.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
         loginHintTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
         registerButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-
+        loginButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
     }
 
     private void login() {
@@ -100,56 +109,196 @@ public class LoginActivity extends AppCompatActivity {
             username = "98" + username;
 
             TokenHandlerSingleton.getInstance(getApplicationContext()).setUsernameAndPassword(username, password);
-            final String finalUsername = username;
+//            final String finalUsername = username;
 
-            TokenHandlerSingleton.getInstance(getApplicationContext()).authorize(new Function1<HTTPErrorType, Unit>() {
-
-                @Override
-                public Unit invoke(HTTPErrorType httpErrorType) {
-                    // TODO: hide loading
-                    if (httpErrorType == HTTPErrorType.Success) {
-                        if (TokenHandlerSingleton.getInstance(getApplicationContext()).isAuthorized()) {
-                            KeyChainAccessProxy.getInstance(getApplicationContext()).setValueAsString(getUSERNAME_KEY(), finalUsername);
-                            KeyChainAccessProxy.getInstance(getApplicationContext()).setValueAsString(getPASSWORD_KEY(), password);
-
-                            LoginActivity.this.getProfile();
-                        }
-
-
-                    } else {
-                        // TODO: show error with msgType = "HTTPError" and error
-                    }
-                    return null;
-                }
-            }, new Function1<NetworkErrorType, Unit>() {
-                @Override
-                public Unit invoke(NetworkErrorType networkErrorType) {
-                    // TODO: hide loading
-
-                    if (networkErrorType != null) {
-                        switch (networkErrorType) {
-                            case NoInternetAccess:
-                            case HostUnreachable:
-                            {
-                                // TODO: Show error message "NetworkError" with type = "error"
-                            }
-                            default:
-                                // TODO: Show error message "NetworkError" with type = ""
-
-                        }
-                    }
-                    return null;
-                }
-            });
-
+            new LoginTask().execute(username, password);
         } else {
             // TODO: show message with msgType = "Form" and msgSubType = "EmptyFields"
         }
     }
 
     private void getProfile() {
-        // TODO: Show loading
+        new GetProfileTask().execute();
+    }
+
+    private class GetProfileTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            ProfileRestAPIClass.getProfileData(LoginActivity.this, new Function2<JsonObject, HTTPErrorType, Unit>() {
+                @Override
+                public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            // TODO: hide loading
+                            if (httpErrorType == HTTPErrorType.Success) {
+                                if (jsonObject != null) {
+                                    String status = jsonObject.get("status").getAsString();
+                                    switch (status) {
+                                        case "OK": {
+
+                                            JsonObject profile = jsonObject.getAsJsonArray("record").get(0).getAsJsonObject();
+                                            if (profile != null) {
+                                                try {
+                                                    String gender = profile.get("gender").getAsString();
+                                                    String grade = profile.get("grade").getAsString();
+                                                    String birthday = profile.get("birthday").getAsString();
+                                                    String modified = profile.get("modified").getAsString();
+                                                    String firstname = profile.get("user").getAsJsonObject().get("first_name").getAsString();
+                                                    String lastname = profile.get("user").getAsJsonObject().get("last_name").getAsString();
 
 
+                                                    Date birthdayDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(birthday);
+                                                    Date modifiedDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(modified);
+
+                                                    if (!"".equals(firstname) && !"".equals(lastname) && !"".equals(gender) && !"".equals(grade)) {
+                                                        UserDefaultsSingleton.getInstance(getApplicationContext()).createProfile(firstname, lastname, grade, gender, birthdayDate, modifiedDate);
+                                                    }
+
+                                                    if (UserDefaultsSingleton.getInstance(getApplicationContext()).hasProfile()) {
+
+                                                        Intent homeIntent = HomeActivity.newIntent(LoginActivity.this);
+                                                        startActivity(homeIntent);
+
+                                                    } else {
+                                                        // Profile not created
+                                                        Intent moreInfoIntent = SignupMoreInfo1Activity.newIntent(LoginActivity.this);
+                                                        startActivity(moreInfoIntent);
+                                                    }
+
+                                                } catch (Exception ignored) {}
+
+                                            }
+
+                                        }
+                                        case "Error": {
+                                            String errorType = jsonObject.get("error_type").getAsString();
+                                            switch (errorType) {
+                                                case "ProfileNotExist": {
+                                                    // Profile not created
+                                                    Intent moreInfoIntent = SignupMoreInfo1Activity.newIntent(LoginActivity.this);
+                                                    startActivity(moreInfoIntent);
+                                                    finish();
+
+                                                }
+                                                default:
+                                                    break;
+                                            }
+                                        }
+                                    }
+
+                                }
+
+                            } else {
+                                // TODO: show error with msgType = "HTTPError" and error
+                            }
+                        }
+                    });
+
+                    return null;
+                }
+            }, new Function1<NetworkErrorType, Unit>() {
+                @Override
+                public Unit invoke(final NetworkErrorType networkErrorType) {
+                    runOnUiThread(new Runnable() {
+                                      @Override
+                                      public void run() {
+                                          // TODO: hide loading
+                                          if (networkErrorType != null) {
+                                              switch (networkErrorType) {
+                                                  case NoInternetAccess:
+                                                  case HostUnreachable:
+                                                  {
+                                                      // TODO: Show error message "NetworkError" with type = "error"
+                                                  }
+                                                  default:
+                                                      // TODO: Show error message "NetworkError" with type = ""
+
+                                              }
+                                          }
+
+                                      }
+                                  });
+                    return null;
+                }
+            });
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // TODO: show loading
+        }
+    }
+
+    private class LoginTask extends AsyncTask<Object, Void, Void> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // TODO: show loading
+        }
+
+        @Override
+        protected Void doInBackground(final Object... params) {
+            TokenHandlerSingleton.getInstance(getApplicationContext()).authorize(new Function1<HTTPErrorType, Unit>() {
+
+                String username = (String) params[0];
+                String password = (String) params[1];
+
+                @Override
+                public Unit invoke(final HTTPErrorType httpErrorType) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            // TODO: hide loading
+                            if (httpErrorType == HTTPErrorType.Success) {
+                                if (TokenHandlerSingleton.getInstance(getApplicationContext()).isAuthorized()) {
+                                    KeyChainAccessProxy.getInstance(getApplicationContext()).setValueAsString(getUSERNAME_KEY(), username);
+                                    KeyChainAccessProxy.getInstance(getApplicationContext()).setValueAsString(getPASSWORD_KEY(), password);
+
+                                    LoginActivity.this.getProfile();
+                                }
+
+
+                            } else {
+                                // TODO: show error with msgType = "HTTPError" and error
+                            }
+
+                        }
+                    });
+
+                    return null;
+                }
+            }, new Function1<NetworkErrorType, Unit>() {
+                @Override
+                public Unit invoke(final NetworkErrorType networkErrorType) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            // TODO: hide loading
+
+                            if (networkErrorType != null) {
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        // TODO: Show error message "NetworkError" with type = "error"
+                                    }
+                                    default:
+                                        // TODO: Show error message "NetworkError" with type = ""
+
+                                }
+                            }
+
+                        }
+                    });
+
+                    return null;
+                }
+            });
+            return null;
+
+        }
     }
 }
