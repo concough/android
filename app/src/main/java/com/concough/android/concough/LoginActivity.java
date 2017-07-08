@@ -11,10 +11,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.concough.android.singletons.FontCacheSingleton;
+import com.concough.android.singletons.TokenHandlerSingleton;
+import com.concough.android.structures.HTTPErrorType;
+import com.concough.android.structures.NetworkErrorType;
+import com.concough.android.utils.KeyChainAccessProxy;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+
+import com.concough.android.settings.ConstantsKt.*;
+
+import static com.concough.android.settings.ConstantsKt.getPASSWORD_KEY;
+import static com.concough.android.settings.ConstantsKt.getUSERNAME_KEY;
+
 
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
-    private static final String USERNAME_KEY = "Username";
 
     private TextView signupTextView;
     private Button loginButton;
@@ -51,9 +63,9 @@ public class LoginActivity extends AppCompatActivity {
         View.OnClickListener loginButtonListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "Login Clicked",
-                        Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Login Clicked", Toast.LENGTH_LONG).show();
 
+                LoginActivity.this.login();
             }
         };
         loginButton = (Button) findViewById(R.id.loginA_loginButton);
@@ -72,6 +84,71 @@ public class LoginActivity extends AppCompatActivity {
         passwordEdit.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
         loginHintTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
         registerButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+
+    }
+
+    private void login() {
+        // get username and password
+        String username = LoginActivity.this.usernameEdit.getText().toString().trim();
+        final String password = LoginActivity.this.passwordEdit.getText().toString().trim();
+
+        if (!"".equals(username) && !"".equals(password)) {
+            // TODO: Show loading
+
+            if (username.startsWith("0"))
+                username = username.substring(1);
+            username = "98" + username;
+
+            TokenHandlerSingleton.getInstance(getApplicationContext()).setUsernameAndPassword(username, password);
+            final String finalUsername = username;
+
+            TokenHandlerSingleton.getInstance(getApplicationContext()).authorize(new Function1<HTTPErrorType, Unit>() {
+
+                @Override
+                public Unit invoke(HTTPErrorType httpErrorType) {
+                    // TODO: hide loading
+                    if (httpErrorType == HTTPErrorType.Success) {
+                        if (TokenHandlerSingleton.getInstance(getApplicationContext()).isAuthorized()) {
+                            KeyChainAccessProxy.getInstance(getApplicationContext()).setValueAsString(getUSERNAME_KEY(), finalUsername);
+                            KeyChainAccessProxy.getInstance(getApplicationContext()).setValueAsString(getPASSWORD_KEY(), password);
+
+                            LoginActivity.this.getProfile();
+                        }
+
+
+                    } else {
+                        // TODO: show error with msgType = "HTTPError" and error
+                    }
+                    return null;
+                }
+            }, new Function1<NetworkErrorType, Unit>() {
+                @Override
+                public Unit invoke(NetworkErrorType networkErrorType) {
+                    // TODO: hide loading
+
+                    if (networkErrorType != null) {
+                        switch (networkErrorType) {
+                            case NoInternetAccess:
+                            case HostUnreachable:
+                            {
+                                // TODO: Show error message "NetworkError" with type = "error"
+                            }
+                            default:
+                                // TODO: Show error message "NetworkError" with type = ""
+
+                        }
+                    }
+                    return null;
+                }
+            });
+
+        } else {
+            // TODO: show message with msgType = "Form" and msgSubType = "EmptyFields"
+        }
+    }
+
+    private void getProfile() {
+        // TODO: Show loading
 
 
     }

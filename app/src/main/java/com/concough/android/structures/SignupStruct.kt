@@ -11,7 +11,13 @@ class SignupStruct(): Serializable {
     var password: String? = null
     var preSignupId: Int? = null
 }
-data class SignupMoreInfoStruct(var firstname: String?, var lastname: String?, var grade: String?, var gender: String?, var birthday: Date?)
+class SignupMoreInfoStruct(): Serializable {
+    var firstname: String? = null
+    var lastname: String? = null
+    var grade: String? = null
+    var gender: String? = null
+    var birthday: Date? = null
+}
 
 enum class Gender(value: String) {
     Male("M"), Female("F"), Other("O")

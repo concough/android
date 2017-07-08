@@ -106,13 +106,21 @@ class SignupCodeActivity : AppCompatActivity() {
     private fun sendPreSignupCode() {
         val code: String = SignupCodeA_codeEditText.text.trim().toString()
         if (code != "") {
+            var intCode: Int? = null
             try {
-                val intCode = code.toInt()
+                intCode = code.toInt()
+            } catch (ext: Exception) {
+
+            }
+            if (intCode == null) {
+                // TODO: Shoe error message with msgType = "Form" and msgSubType = "CodeWrong"
+                return
+            }
 
                 // TODO: show loading in view
                 doAsync {
 
-                    AuthRestAPIClass.signup(this@SignupCodeActivity.signupStruct?.username!!, this@SignupCodeActivity.signupStruct?.preSignupId!!, intCode, { data, error ->
+                    AuthRestAPIClass.signup(this@SignupCodeActivity.signupStruct?.username!!, this@SignupCodeActivity.signupStruct?.preSignupId!!, intCode!!, { data, error ->
                         uiThread {
                             // TODO: hide loading that showed before
                             if (error == HTTPErrorType.Success) {
@@ -165,9 +173,9 @@ class SignupCodeActivity : AppCompatActivity() {
                     })
                 }
 
-            } catch (ext: Exception) {
 
-            }
+        } else {
+            // TODO: Show message with msgType = "Form" and msgSubType = "EmptyFields"
         }
     }
 

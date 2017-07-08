@@ -46,7 +46,8 @@
                     android:layout_marginRight="8dp"
                     android:layout_weight="1"
                     android:text="اطلاعات تحصیلی"
-                    android:textSize="18sp" />
+                    android:textSize="18sp"
+                    android:textColor="@android:color/black" />
 
                 <ImageView
                     android:id="@+id/signupInfo3A_imageView4"

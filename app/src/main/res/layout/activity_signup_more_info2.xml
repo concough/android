@@ -44,7 +44,8 @@
                     android:layout_marginRight="8dp"
                     android:layout_weight="1"
                     android:text="تاریخ تولد"
-                    android:textSize="18sp" />
+                    android:textSize="18sp"
+                    android:textColor="@android:color/black" />
 
                 <ImageView
                     android:id="@+id/signupInfo2A_imageView4"

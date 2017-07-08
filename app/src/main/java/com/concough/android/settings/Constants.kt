@@ -36,8 +36,8 @@ val OAUTH_REFRESH_TOKEN_KEY = "oauthRefreshToken"
 val OAUTH_TOKEN_TYPE_KEY = "oauthTokenType"
 val OAUTH_LAST_ACCESS_KEY = "oauthLastAccess"
 val OAUTH_EXPIRES_IN_KEY = "oauthExpiresIn"
-val USERNAME_KEY = "authUsername"
-val PASSWORD_KEY = "authPassword"
+public val USERNAME_KEY: String = "authUsername"
+public val PASSWORD_KEY:String = "authPassword"
 
 // Validator Regex
 val EMAIL_VALIDATOR_REGEX = "^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}$"

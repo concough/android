@@ -30,7 +30,6 @@ public class SignupMoreInfo2Activity extends AppCompatActivity {
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, SignupMoreInfo2Activity.class);
-//        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         return i;
     }
 
@@ -40,11 +39,12 @@ public class SignupMoreInfo2Activity extends AppCompatActivity {
         setContentView(R.layout.activity_signup_more_info2);
 
         infoTextView = (TextView)findViewById(R.id.signupInfo2A_infoTextView);
-        infoTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+        numberPicker = (NumberPicker) findViewById(R.id.signupInfo2A_numberPicker);
 
-        final NumberPicker numberPicker = (NumberPicker) findViewById(R.id.signupInfo2A_numberPicker);
-        numberPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         int jdate = PersianCalendar.getPersianYear(new Date());
+
+        infoTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+        numberPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         minValue = jdate - 100;
         maxValue = jdate - 10;
         numberPicker.setMinValue(minValue);
@@ -65,7 +65,12 @@ public class SignupMoreInfo2Activity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 selectedYear = Integer.valueOf(numberPicker.getValue());
-                Toast.makeText(getApplicationContext(), "Date Picked: " + String.valueOf(selectedYear), Toast.LENGTH_LONG).show();
+                SignupMoreInfo1Activity.signupInfo.setBirthday(new Date(selectedYear, 1, 1));
+
+                Intent i = SignupMoreInfo3Activity.newIntent(SignupMoreInfo2Activity.this);
+                startActivity(i);
+
+                //Toast.makeText(getApplicationContext(), "Date Picked: " + String.valueOf(selectedYear), Toast.LENGTH_LONG).show();
             }
 
         };
@@ -74,6 +79,5 @@ public class SignupMoreInfo2Activity extends AppCompatActivity {
         nextButton = (Button) findViewById(R.id.signupInfo2A_nextButton);
         nextButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
         nextButton.setOnClickListener(nextListener);
-
     }
 }

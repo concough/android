@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,11 +14,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.concough.android.singletons.FontCacheSingleton;
+import com.concough.android.structures.Gender;
+import com.concough.android.structures.SignupMoreInfoStruct;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class SignupMoreInfo1Activity extends AppCompatActivity {
     private static final String TAG = "SignupMoreInfo1Activity";
+
+    public static SignupMoreInfoStruct signupInfo = null;
+    private Gender selectedGender = null;
 
     private LinearLayout linearLayoutNeutral;
     private LinearLayout linearLayoutFemale;
@@ -46,6 +52,9 @@ public class SignupMoreInfo1Activity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup_more_info1);
+
+        this.signupInfo = new SignupMoreInfoStruct();
+        this.selectedGender = Gender.Male;
 
 //        setTitle(getResources().getString(R.string.signupMoreInfo1A_app_name).toString());
         //setTitle("");
@@ -91,24 +100,47 @@ public class SignupMoreInfo1Activity extends AppCompatActivity {
         lastNameEdit.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
 
 
+        // Configure Self
+        String firstname = this.signupInfo.getFirstname();
+        if (firstname != null)
+            if (firstname != "")
+                firstNameEdit.setText(firstname);
+
+        String lastname = this.signupInfo.getLastname();
+        if (lastname != null)
+            if (lastname != "")
+                lastNameEdit.setText(lastname);
+
+        String gender = this.signupInfo.getGender();
+        if (gender != null) {
+            this.selectedGender = Gender.valueOf(gender);
+            this.linearClick(this.selectedGender);
+        } else {
+            this.linearClick(Gender.Male);
+
+        }
+
         View.OnClickListener listenerNeutral = new View.OnClickListener() {
             @Override
             public void onClick(View li) {
-                linearClick(1);
+                SignupMoreInfo1Activity.this.selectedGender = Gender.Other;
+                linearClick(Gender.Other);
             }
         };
 
         View.OnClickListener listenerFemale = new View.OnClickListener() {
             @Override
             public void onClick(View li) {
-                linearClick(2);
+                SignupMoreInfo1Activity.this.selectedGender = Gender.Female;
+                linearClick(Gender.Female);
             }
         };
 
         View.OnClickListener listenerMale = new View.OnClickListener() {
             @Override
             public void onClick(View li) {
-                linearClick(3);
+                SignupMoreInfo1Activity.this.selectedGender = Gender.Male;
+                linearClick(Gender.Male);
             }
         };
 
@@ -120,9 +152,23 @@ public class SignupMoreInfo1Activity extends AppCompatActivity {
         View.OnClickListener listenerNext = new View.OnClickListener() {
             @Override
             public void onClick(View li) {
-                 Toast.makeText(getApplicationContext(),"Next Clicked",Toast.LENGTH_LONG).show();
-                Intent i = SignupMoreInfo2Activity.newIntent(SignupMoreInfo1Activity.this);
-                startActivity(i);
+//                 Toast.makeText(getApplicationContext(),"Next Clicked",Toast.LENGTH_LONG).show();
+                String firstname = SignupMoreInfo1Activity.this.firstNameEdit.getText().toString().trim();
+                String lastname = SignupMoreInfo1Activity.this.lastNameEdit.getText().toString().trim();
+                Log.d(TAG, "onClick: " + firstname);
+                Log.d(TAG, "onClick: " + lastname);
+
+                if (!"".equals(firstname) && !"".equals(lastname)) {
+                    SignupMoreInfo1Activity.this.signupInfo.setFirstname(firstname);
+                    SignupMoreInfo1Activity.this.signupInfo.setLastname(lastname);
+                    SignupMoreInfo1Activity.this.signupInfo.setGender(SignupMoreInfo1Activity.this.selectedGender.toString());
+
+                    Intent i = SignupMoreInfo2Activity.newIntent(SignupMoreInfo1Activity.this);
+                    startActivity(i);
+                } else {
+                    // TODO: Show message with msgType = "Form" and msgSubType = "EmptyFields"
+                }
+
             }
         };
         nextButton = (Button) findViewById(R.id.signupInfo1A_nextButton);
@@ -131,7 +177,9 @@ public class SignupMoreInfo1Activity extends AppCompatActivity {
 
     }
 
-    private void linearClick(int index) {
+
+
+    private void linearClick(Gender index) {
         neutralImage.setBorderColor(ContextCompat.getColor(this,R.color.colorConcoughGray));
         femaleImage.setBorderColor(ContextCompat.getColor(this,R.color.colorConcoughGray));
         maleImage.setBorderColor(ContextCompat.getColor(this,R.color.colorConcoughGray));
@@ -147,25 +195,21 @@ public class SignupMoreInfo1Activity extends AppCompatActivity {
 
 
         switch (index) {
-            case 1:
+            case Other:
                 neutralImage.setBorderWidth(6);
                 neutralText.setTextColor(ContextCompat.getColor(this,R.color.colorConcoughBlue));
                 neutralImage.setBorderColor(ContextCompat.getColor(this,R.color.colorConcoughBlue));
                 break;
-            case 2:
+            case Female:
                 femaleImage.setBorderWidth(6);
                 femaleText.setTextColor(ContextCompat.getColor(this,R.color.colorConcoughBlue));
                 femaleImage.setBorderColor(ContextCompat.getColor(this,R.color.colorConcoughBlue));
                 break;
-            case 3:
+            case Male:
                 maleImage.setBorderWidth(6);
                 maleText.setTextColor(ContextCompat.getColor(this,R.color.colorConcoughBlue));
                 maleImage.setBorderColor(ContextCompat.getColor(this,R.color.colorConcoughBlue));
                 break;
-
-
         }
-
-
     }
 }

@@ -1,6 +1,8 @@
 package com.concough.android.concough;
 
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -12,11 +14,16 @@ import android.widget.Toast;
 import com.concough.android.singletons.FontCacheSingleton;
 
 public class SignupMoreInfo3Activity extends AppCompatActivity {
+    private static final String TAG = "SignupMoreInfo3Activity";
 
     final private CharSequence myList[] = { "کارشناسی", "کارشناسی ارشد"};
     private TextView infoTextView;
     private Button nextButton;
 
+    public static Intent newIntent(Context packageContext) {
+        Intent i = new Intent(packageContext, SignupMoreInfo3Activity.class);
+        return i;
+    }
 
 
     @Override
