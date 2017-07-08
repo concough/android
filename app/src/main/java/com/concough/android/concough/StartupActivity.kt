@@ -96,9 +96,13 @@ class StartupActivity : AppCompatActivity() {
             ProfileRestAPIClass.getProfileData(this@StartupActivity, {data, error ->
                 uiThread {
                     if (error != HTTPErrorType.Success) {
-                        val loginIntent = LoginActivity.newIntent(this@StartupActivity)
-                        startActivity(loginIntent)
-                        finish()
+                        if (error == HTTPErrorType.Refresh) {
+                            this@StartupActivity.getProfile()
+                        } else {
+                            val loginIntent = LoginActivity.newIntent(this@StartupActivity)
+                            startActivity(loginIntent)
+                            finish()
+                        }
                     } else {
                         if (data != null) {
                             try {

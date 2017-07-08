@@ -124,7 +124,7 @@ public class LoginActivity extends AppCompatActivity {
     private class GetProfileTask extends AsyncTask<Void, Void, Void> {
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground(final Void... params) {
             ProfileRestAPIClass.getProfileData(LoginActivity.this, new Function2<JsonObject, HTTPErrorType, Unit>() {
                 @Override
                 public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
@@ -167,10 +167,10 @@ public class LoginActivity extends AppCompatActivity {
                                                         startActivity(moreInfoIntent);
                                                     }
 
-                                                } catch (Exception ignored) {}
+                                                } catch (Exception exc) {}
 
                                             }
-
+                                            break;
                                         }
                                         case "Error": {
                                             String errorType = jsonObject.get("error_type").getAsString();
@@ -180,16 +180,19 @@ public class LoginActivity extends AppCompatActivity {
                                                     Intent moreInfoIntent = SignupMoreInfo1Activity.newIntent(LoginActivity.this);
                                                     startActivity(moreInfoIntent);
                                                     finish();
-
+                                                    break;
                                                 }
                                                 default:
                                                     break;
                                             }
+                                            break;
                                         }
                                     }
 
                                 }
 
+                            } else if (httpErrorType == HTTPErrorType.Refresh) {
+                                new GetProfileTask().execute(params);
                             } else {
                                 // TODO: show error with msgType = "HTTPError" and error
                             }
@@ -211,9 +214,11 @@ public class LoginActivity extends AppCompatActivity {
                                                   case HostUnreachable:
                                                   {
                                                       // TODO: Show error message "NetworkError" with type = "error"
+                                                      break;
                                                   }
                                                   default:
                                                       // TODO: Show error message "NetworkError" with type = ""
+                                                      break;
 
                                               }
                                           }
@@ -284,9 +289,11 @@ public class LoginActivity extends AppCompatActivity {
                                     case NoInternetAccess:
                                     case HostUnreachable: {
                                         // TODO: Show error message "NetworkError" with type = "error"
+                                        break;
                                     }
                                     default:
                                         // TODO: Show error message "NetworkError" with type = ""
+                                        break;
 
                                 }
                             }

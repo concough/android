@@ -3,6 +3,7 @@ package com.concough.android.concough;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
@@ -19,8 +20,21 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.concough.android.rest.ProfileRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
+import com.concough.android.singletons.FormatterSingleton;
+import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.GradeType;
+import com.concough.android.structures.HTTPErrorType;
+import com.concough.android.structures.NetworkErrorType;
+import com.concough.android.structures.SignupMoreInfoStruct;
+import com.google.gson.JsonObject;
+
+import java.util.Date;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+import kotlin.jvm.functions.Function2;
 
 public class SignupMoreInfo3Activity extends AppCompatActivity {
     private static final String TAG = "SignupMoreInfo3Activity";
@@ -115,6 +129,7 @@ public class SignupMoreInfo3Activity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
+                new PostProfileTask().execute(SignupMoreInfo1Activity.signupInfo);
 
             }
         });
@@ -153,12 +168,12 @@ public class SignupMoreInfo3Activity extends AppCompatActivity {
 
     }
 
-/*
-    private class PostProfileTask extends AsyncTask<SignupMoreInfoStruct, Void, Void> {
 
+    private class PostProfileTask extends AsyncTask<SignupMoreInfoStruct, Void, Void> {
         @Override
-        protected Void doInBackground(SignupMoreInfoStruct... params) {
-            ProfileRestAPIClass.getProfileData(LoginActivity.this, new Function2<JsonObject, HTTPErrorType, Unit>)
+        protected Void doInBackground(final SignupMoreInfoStruct... params) {
+
+            ProfileRestAPIClass.postProfileData(params[0], SignupMoreInfo3Activity.this, new Function2<JsonObject, HTTPErrorType, Unit>()
             {
                 @Override
                 public Unit invoke ( final JsonObject jsonObject, final HTTPErrorType httpErrorType)
@@ -172,61 +187,43 @@ public class SignupMoreInfo3Activity extends AppCompatActivity {
                                     String status = jsonObject.get("status").getAsString();
                                     switch (status) {
                                         case "OK": {
-
-                                            JsonObject profile = jsonObject.getAsJsonArray("record").get(0).getAsJsonObject();
-                                            if (profile != null) {
-                                                try {
-                                                    String gender = profile.get("gender").getAsString();
-                                                    String grade = profile.get("grade").getAsString();
-                                                    String birthday = profile.get("birthday").getAsString();
-                                                    String modified = profile.get("modified").getAsString();
-                                                    String firstname = profile.get("user").getAsJsonObject().get("first_name").getAsString();
-                                                    String lastname = profile.get("user").getAsJsonObject().get("last_name").getAsString();
-
-
-                                                    Date birthdayDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(birthday);
-                                                    Date modifiedDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(modified);
-
-                                                    if (!"".equals(firstname) && !"".equals(lastname) && !"".equals(gender) && !"".equals(grade)) {
-                                                        UserDefaultsSingleton.getInstance(getApplicationContext()).createProfile(firstname, lastname, grade, gender, birthdayDate, modifiedDate);
-                                                    }
-
-                                                    if (UserDefaultsSingleton.getInstance(getApplicationContext()).hasProfile()) {
-
-                                                        Intent homeIntent = HomeActivity.newIntent(LoginActivity.this);
-                                                        startActivity(homeIntent);
-
-                                                    } else {
-                                                        // Profile not created
-                                                        Intent moreInfoIntent = SignupMoreInfo1Activity.newIntent(LoginActivity.this);
-                                                        startActivity(moreInfoIntent);
-                                                    }
-
-                                                } catch (Exception ignored) {
+                                            Date modified = new Date();
+                                            String modifiedStr = jsonObject.get("modified").getAsString();
+                                            if (!"".equals(modifiedStr)) {
+                                                try{
+                                                    modified = FormatterSingleton.getInstance().getUTCDateFormatter().parse(modifiedStr);
+                                                } catch (Exception exc) {
                                                 }
-
                                             }
 
+                                            UserDefaultsSingleton.getInstance(getApplicationContext()).createProfile(params[0].getFirstname(), params[0].getLastname(), params[0].getGrade(),
+                                                    params[0].getGender(), params[0].getBirthday(), modified);
+
+                                            Intent i = HomeActivity.newIntent(SignupMoreInfo3Activity.this);
+                                            startActivity(i);
+                                            SignupMoreInfo3Activity.this.finish();
+                                            break;
                                         }
                                         case "Error": {
                                             String errorType = jsonObject.get("error_type").getAsString();
                                             switch (errorType) {
-                                                case "ProfileNotExist": {
-                                                    // Profile not created
-                                                    Intent moreInfoIntent = SignupMoreInfo1Activity.newIntent(LoginActivity.this);
-                                                    startActivity(moreInfoIntent);
-                                                    finish();
-
+                                                case "UserNotExist": {
+                                                    // TODO: Show message with msgTYpe = "AuthProfile"
+                                                    break;
                                                 }
                                                 default:
                                                     break;
                                             }
+                                            break;
                                         }
                                     }
 
                                 }
 
+                            } else if (httpErrorType == HTTPErrorType.Refresh) {
+                                new PostProfileTask().execute(params);
                             } else {
+
                                 // TODO: show error with msgType = "HTTPError" and error
                             }
                         }
@@ -234,9 +231,9 @@ public class SignupMoreInfo3Activity extends AppCompatActivity {
 
                     return null;
                 }
-            },new Function1<NetworkErrorType, Unit>){
+            },new Function1<NetworkErrorType, Unit>(){
                 @Override
-                public Unit invoke ( final NetworkErrorType networkErrorType){
+                public Unit invoke(final NetworkErrorType networkErrorType){
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -246,9 +243,11 @@ public class SignupMoreInfo3Activity extends AppCompatActivity {
                                     case NoInternetAccess:
                                     case HostUnreachable: {
                                         // TODO: Show error message "NetworkError" with type = "error"
+                                        break;
                                     }
                                     default:
                                         // TODO: Show error message "NetworkError" with type = ""
+                                        break;
 
                                 }
                             }
@@ -267,6 +266,6 @@ public class SignupMoreInfo3Activity extends AppCompatActivity {
             // TODO: show loading
         }
     }
-    */
+
 
 }

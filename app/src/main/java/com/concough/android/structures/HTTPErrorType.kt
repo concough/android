@@ -12,18 +12,20 @@ enum class HTTPErrorType(val code: Int) {
     ForbiddenAccess(403),
     NotFound(404),
     ServerInternalError(500),
-    UnKnown(0);
+    UnKnown(0),
+    Refresh(1000);
 
     companion object Factory {
         fun toType(item: Int): HTTPErrorType {
             when (item) {
-                in 200..209 -> return HTTPErrorType.Success
-                400 -> return HTTPErrorType.BadRequest
-                401 -> return HTTPErrorType.UnAuthorized
-                403 -> return HTTPErrorType.ForbiddenAccess
-                404 -> return HTTPErrorType.NotFound
-                500 -> return HTTPErrorType.ServerInternalError
-                else -> return HTTPErrorType.UnKnown
+                in 200..209 -> return Success
+                400 -> return BadRequest
+                401 -> return UnAuthorized
+                403 -> return ForbiddenAccess
+                404 -> return NotFound
+                500 -> return ServerInternalError
+                1000 -> return Refresh
+                else -> return UnKnown
             }
         }
 
@@ -43,6 +45,7 @@ enum class HTTPErrorType(val code: Int) {
             HTTPErrorType.NotFound -> "NotFound"
             HTTPErrorType.ServerInternalError -> "ServerInternalError"
             HTTPErrorType.UnKnown -> "UnKnown"
+            HTTPErrorType.Refresh -> "Refresh"
         }
 
 }

@@ -11,8 +11,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.concough.android.singletons.FontCacheSingleton;
+import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.utils.PersianCalendar;
 
+import java.util.Calendar;
 import java.util.Date;
 
 public class SignupMoreInfo2Activity extends AppCompatActivity {
@@ -65,7 +67,9 @@ public class SignupMoreInfo2Activity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 selectedYear = Integer.valueOf(numberPicker.getValue());
-                SignupMoreInfo1Activity.signupInfo.setBirthday(new Date(selectedYear, 1, 1));
+
+                Calendar gDate = PersianCalendar.getGregorainCalendar(selectedYear, 1, 1, 1, 1, 1);
+                SignupMoreInfo1Activity.signupInfo.setBirthday(gDate.getTime());
 
                 Intent i = SignupMoreInfo3Activity.newIntent(SignupMoreInfo2Activity.this);
                 startActivity(i);

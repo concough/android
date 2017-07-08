@@ -182,23 +182,24 @@ class TokenHandlerSingleton {
 
     public fun assureAuthorized(refresh: Boolean = false, completion: (authenticated: Boolean, error: HTTPErrorType?) -> Unit,  failure: (error: NetworkErrorType?) -> Unit) {
         if (this.isAuthorized()) {
-            if (refresh == true) {
+            if (refresh) {
                 this.refreshToken(completion = { error ->
                     if (error == HTTPErrorType.Success) {
                         completion(true, error)
                     } else {
-                        this.authorize(completion = {error ->
-                            if (error == HTTPErrorType.Success) completion(true, error)
-                            else {
-                                if (error == HTTPErrorType.BadRequest) {
-                                    UserDefaultsSingleton.getInstance(_context).clearAll()
-                                    KeyChainAccessProxy.getInstance(this._context).clearAllValue()
+                        if (error == HTTPErrorType.BadRequest || error == HTTPErrorType.ServerInternalError) {
+                            this.authorize(completion = {error ->
+                                if (error == HTTPErrorType.Success) completion(true, error)
+                                else {
+                                        UserDefaultsSingleton.getInstance(_context).clearAll()
+                                        KeyChainAccessProxy.getInstance(this._context).clearAllValue()
+                                        completion(false, error)
                                 }
-                                completion(false, error)
-                            }
-                        }, failure = {error ->
-                            failure(error)
-                        })
+                            }, failure = {error ->
+                                failure(error)
+                            })
+                            completion(false, error)
+                        }
                     }
                 }, failure = {error ->
                     failure(error)
@@ -211,20 +212,19 @@ class TokenHandlerSingleton {
                             if (error == HTTPErrorType.Success) {
                                 completion(true, error)
                             } else {
-                                this.authorize(completion = {error ->
-                                    if (error == HTTPErrorType.Success) completion(true, error)
-                                    else {
-                                        if (error == HTTPErrorType.BadRequest) {
+                                if (error == HTTPErrorType.BadRequest || error == HTTPErrorType.ServerInternalError) {
+                                    this.authorize(completion = {error ->
+                                        if (error == HTTPErrorType.Success) completion(true, error)
+                                        else {
                                             UserDefaultsSingleton.getInstance(_context).clearAll()
                                             KeyChainAccessProxy.getInstance(this._context).clearAllValue()
+                                            completion(false, error)
                                         }
-                                        completion(false, error)
-
-                                    }
-                                }, failure = {error ->
-                                    failure(error)
-
-                                })
+                                    }, failure = {error ->
+                                        failure(error)
+                                    })
+                                    completion(false, error)
+                                }
                             }
                         }, failure = {error ->
                             failure(error)

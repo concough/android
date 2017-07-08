@@ -59,7 +59,7 @@ class ProfileRestAPIClass {
                                 HTTPErrorType.UnAuthorized, HTTPErrorType.ForbiddenAccess -> {
                                     TokenHandlerSingleton.getInstance(context).assureAuthorized(true, completion = {authenticated, error ->
                                         if (authenticated && error == HTTPErrorType.Success) {
-                                            completion(null, error)
+                                            completion(null, HTTPErrorType.Refresh)
                                         }
                                     }, failure = { error ->
                                         failure(error)
@@ -120,7 +120,7 @@ class ProfileRestAPIClass {
                                 HTTPErrorType.UnAuthorized, HTTPErrorType.ForbiddenAccess -> {
                                     TokenHandlerSingleton.getInstance(context).assureAuthorized(true, completion = {authenticated, error ->
                                         if (authenticated && error == HTTPErrorType.Success) {
-                                            completion(null, error)
+                                            completion(null, HTTPErrorType.Refresh)
                                         }
                                     }, failure = { error ->
                                         failure(error)
