@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.Toast
@@ -32,7 +31,7 @@ class SignupActivity : AppCompatActivity() {
         @JvmStatic
         fun newIntent(packageContext: Context): Intent {
             val i = Intent(packageContext, SignupActivity::class.java)
-            i.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             return i
         }
 
