@@ -15,6 +15,8 @@ class UrlMakerSingleton private constructor(){
     private val _jauth_class_name: String = JAUTH_CLASS_NAME
     private val _auth_class_name: String = AUTH_CLASS_NAME
     private val _profile_class_name = PROFILE_CLASS_NAME
+    private val _activity_class_name = ACTIVITY_CLASS_NAME
+    private val _basket_class_name = BASKET_CLASS_NAME
 
     companion object Factory {
         private var sharedInstance : UrlMakerSingleton? = null
@@ -26,7 +28,6 @@ class UrlMakerSingleton private constructor(){
 
             return sharedInstance!!
         }
-
     }
     fun checkUsernameUrl(): String? {
         var fullPath: String? = null
@@ -119,5 +120,57 @@ class UrlMakerSingleton private constructor(){
             fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._profile_class_name}/"
         }
         return fullPath
+    }
+
+    fun activityUrl(): String? {
+        var fullPath: String? = null
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._activity_class_name}/"
+        }
+        return fullPath
+    }
+
+    fun activityUrlWithNext(next: String): String? {
+        var fullPath: String? = UrlMakerSingleton.getInstance().activityUrl()
+        if (fullPath != null) {
+            fullPath += "next/$next"
+        }
+
+        return fullPath
+    }
+
+    private fun getBasketUrl(functionName: String): String? {
+        var fullPath: String? = null
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._basket_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun getLoadBasketItemsUrl(): String? {
+        val functionName = "list"
+        return this.getBasketUrl(functionName)
+    }
+
+    fun getCreateBasketUrl(): String? {
+        val functionName = "create"
+        return this.getBasketUrl(functionName)
+    }
+
+    fun getAddToBasketUrl(basketId: String): String? {
+        val functionName = "$basketId/add"
+        return this.getBasketUrl(functionName)
+    }
+
+    fun getRemoveSaleFromBasketUrl(basketId: String, saleId: Int): String? {
+        val functionName = "$basketId/sale/$saleId"
+        return this.getBasketUrl(functionName)
+    }
+
+    fun getCheckoutBasketUrl(basketId: String): String? {
+        val functionName = "$basketId/checkout"
+        return this.getBasketUrl(functionName)
     }
 }
