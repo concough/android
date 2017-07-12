@@ -14,7 +14,13 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".StartupActivity"
-            android:windowSoftInputMode="adjustPan"></activity>
+            android:windowSoftInputMode="adjustPan">
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+        </activity>
         <activity android:name=".LoginActivity" />
 
         <meta-data
@@ -25,8 +31,17 @@
         <activity android:name=".SignupCodeActivity" />
         <activity android:name=".SignupMoreInfo1Activity" />
         <activity android:name=".SignupMoreInfo2Activity" />
-        <activity android:name=".SignupMoreInfo3Activity" />
-        <activity android:name=".HomeActivity" />
+        <activity android:name=".SignupMoreInfo3Activity">
+
+        </activity>
+        <activity android:name=".HomeActivity">
+            <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+
+            <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
         <activity android:name=".TestActivity">
 
             <!-- <intent-filter> -->
