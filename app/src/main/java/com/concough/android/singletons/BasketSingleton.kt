@@ -8,6 +8,8 @@ import com.concough.android.concough.HomeActivity
 import com.concough.android.concough.LoginActivity
 import com.concough.android.concough.R
 import com.concough.android.concough.SignupCodeActivity
+import com.concough.android.models.EntranceModelHandler
+import com.concough.android.models.PurchasedModelHandler
 import com.concough.android.rest.BasketRestAPIClass
 import com.concough.android.structures.EntranceStruct
 import com.concough.android.structures.HTTPErrorType
@@ -243,6 +245,41 @@ class BasketSingleton : Handler.Callback {
 
             this.handler?.sendMessage(msg)
         }
+    }
+
+    private fun getSaleTypeById(saleId: Int): String? {
+        var local: String? = null
+        synchronized(this.sales) {
+            for (item in this.sales) {
+                if (item.id == saleId)
+                        local = item.type
+            }
+        }
+
+        return local
+    }
+
+    private fun getSaleById(saleId: Int): Any? {
+        var local: Any? = null
+        synchronized(this.sales) {
+            for (item in this.sales) {
+                if (item.id == saleId)
+                    local = item.target
+            }
+        }
+
+        return local
+    }
+
+    private fun getSaleByIndex(index: Int): SaleItem? {
+        var local: SaleItem? = null
+        synchronized(this.sales) {
+            if (index < this.sales.count()) {
+                local = this.sales.get(index)
+            }
+        }
+
+        return local
     }
 
     override fun handleMessage(msg: Message?): Boolean {
@@ -598,6 +635,20 @@ class BasketSingleton : Handler.Callback {
                                             val purchasedTime = FormatterSingleton.getInstance().UTCDateFormatter.parse(purchasedTimeStr)
 
                                             // Update Realm db
+                                            val saleType = this@BasketSingleton.getSaleTypeById(saleId)
+                                            if (saleType == "Entrance") {
+                                                val entrance = this.getSaleById(saleId) as? EntranceStruct
+                                                if (entrance != null) {
+                                                    if (EntranceModelHandler.add(context.applicationContext, username!!, entrance)) {
+                                                        if (!PurchasedModelHandler.add(context.applicationContext, purchaseId, username, false,
+                                                                downloaded, false, saleType, entrance.entranceUniqueId!!, purchasedTime)) {
+
+                                                            // rollback entrance insert
+                                                            EntranceModelHandler.removeById(context.applicationContext,username, entrance.entranceUniqueId!!)
+                                                        }
+                                                    }
+                                                }
+                                            }
 
 
                                             localPurchased.put(saleId, PurchasedItem(purchaseId, downloaded, purchasedTime))

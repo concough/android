@@ -17,6 +17,8 @@ class UrlMakerSingleton private constructor(){
     private val _profile_class_name = PROFILE_CLASS_NAME
     private val _activity_class_name = ACTIVITY_CLASS_NAME
     private val _basket_class_name = BASKET_CLASS_NAME
+    private val _archive_class_name = ARCHIVE_CLASS_NAME
+    private val _media_class_name = MEDIA_CLASS_NAME
 
     companion object Factory {
         private var sharedInstance : UrlMakerSingleton? = null
@@ -173,4 +175,55 @@ class UrlMakerSingleton private constructor(){
         val functionName = "$basketId/checkout"
         return this.getBasketUrl(functionName)
     }
+
+    fun archiveEntranceTypesUrl(): String? {
+        var fullPath: String? = null
+        val functionName = "entrance/types"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._archive_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun archiveEntranceGroupsUrl(etypeId: Int): String? {
+        var fullPath: String? = null
+        val functionName = "entrance/groups/$etypeId"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._archive_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun archiveEntranceSetsUrl(egroupId: Int): String? {
+        var fullPath: String? = null
+        val functionName = "entrance/sets/$egroupId"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._archive_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun archiveEntranceUrl(esetId: Int): String? {
+        var fullPath: String? = null
+        val functionName = "entrance/$esetId"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._archive_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun mediaForUrl(type: String, mediaId: Any): String? {
+        var fullPath: String? = null
+        val functionName = "$type/$mediaId"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._media_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
 }

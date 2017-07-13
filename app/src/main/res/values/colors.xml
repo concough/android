@@ -6,7 +6,7 @@
     <color name="colorForeground">#000000</color>
 
     <!-- Concough Colors -->
-    <color name="colorConcoughBlue">#007AFF</color>
+    <color name="colorConcoughBlue">#007aff</color>
     <color name="colorConcoughRed">#960000</color>
     <color name="colorConcoughRedLight">#DD0000</color>
     <color name="colorConcoughGreen">#008000</color>
