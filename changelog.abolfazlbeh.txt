@@ -1,0 +1,124 @@
+Version 0.2
+Basic Authentication Activity
+
+Procedures:
+    1 - Create HomeActivity, LoginActivity, SignupActivity, SignupCodeActivity, SignupMoreInfo1Activity, SignupMoreInfo2Activity, SignupMoreInfo3Activity and StartupActivity classes and files
+    2 - "rest" package and "AuthRestAPIClass" as singleton class created to handle rest call.
+    3 - "HTTPErrorType" enum created for various HTTP status checking -> (Success, ForbidenAccess, UnAuthorized, ...) -> structures package
+    4 - "NetworkErrorType" enum created for various network status errors -> (NoInternetAccess, HostUnreachable, ...) -> structures package
+    5 - "UrlMakerSingleton" class created to generate API urls -> singleton package
+    6 - All settings stored to Constants.kt -> settings package
+    7 - Creating "FontCacheSingleton" to caching different typefaces -> singleton package
+    8 - Create extension on "String" to validate phone number -> "ValidatorExtension" in extensions package
+    9 - Two shape in drawable resources for bordered button and outline button
+
+------------------------------------------------------------------------------------------------
+Version 0.3 - abolfazl.beh
+Complete Authentication API's
+
+Procedures:
+    1 - Authentication API for Unauthenticated Users finished: Ready to Test -> rest.AuthRestAPIClass
+    2 - UrlMakerSingleton updated with necessary urls
+    3 - ProfileStruct class Created to store profile data -> structures package
+    4 - Create "TokenHandlerSingleton" class to handle jwt token store and load
+        - 'com.auth0:java-jwt:3.2.0' installed
+        - It need "JwtHandler" file for conversion
+        - It need "JwtAdapter" to request server for token -> tokenservice package
+    5 - "KeyChainAccessProxy" class to encrypt sensitive data and store it
+        - 'com.scottyab:secure-preferences-lib:0.1.4' installed
+    6 - "UserDefaultsSingleton" class created to handling profile and user settings data
+    7 - "FormatterSingleton" class created to handle formatting date and numbers
+    8 - "TestActivity" created for testing purpose
+
+
+================================================================================================
+
+Version 0.3 - FaridM (2017/5/7)
+Create Activity Signup Info 1
+
+Procedures:
+    1 - Aded 'de.hdodenhof:circleimageview:2.1.0' package for add border and crop user images
+    2 - Aded and comented custom action bar with "action_bar.xml" file
+    3 - Aded 3 files to drawable folder "female_icon_100.png" , "neutral_icon_100.png" , "male_icon_100.png"
+    4 - Aded 3 activity "info1" , "info2" , "info3"
+
+
+================================================================================================
+Version 0.4 - abolfazl.beh
+Complete Signup Activity
+
+Procedures:
+    1 - Move Persian Calendar to utils and fix references
+    2 - Create "SignupStruct", "SignupMoreInfoStruct" data class to store necessary data in registration process
+    3 - Create "Gender", "GradeType" enums.
+    4 - Add "Timeout" exception to NetworkErrorType
+    5 - Connecting "SignupActivity" to "SignupCodeActivity" and send necessary data after success pre signup process
+    6 - Design activity_signup_code layout
+    7 - "SignupCodeActivity" now worked on resend or submit buttons press. Also connected to "SignupMoreInfo1Activity"
+    8 - Remove "java-jwt" package -> not Worked and has error. Add "com.auth0.android:jwtdecode:1.1.1"
+
+Fixed:
+    1 - Some bugs fixed
+
+================================================================================================
+Signup More Activities Activity (abolfazl.beh)
+
+Procedures:
+    1 - Complete Signup More Info Activites 1 to 3 and connect them. However "SignupMoreInfo3Activity" have some work yet.
+    2 - Some layout modification on signup more info 1 o 3.
+
+------------------------------------------------------------------------------------------------
+Profile Rest API and Login Activity (abolfazl.beh)
+
+Procedures:
+    1 - Refactore retrofit service to separate file.
+    2 - Separate each changelog pre user --> my change log renamed to "changelog.abolfazlbeh.txt"
+    3 - Extend "RestAPIService" --> get function
+    4 - Create "ProfileRestAPIClass" to handle profile rest call
+    5 - Complete "LoginActivity"
+    6 - Complete "StartupActivity"
+    7 - Make "HomeActivity" and its layout to test for now
+
+------------------------------------------------------------------------------------------------
+Bugs Fix and Add Refresh Capability to API Calls (abolfazl.beh)
+
+Procedures:
+    1 - Change "TokenHandlerSingleton" assureAuthorized function
+    2 - Connect "SignupMoreInfo3Activity" to "HomeActivity" on successful create profile
+    3 - Modify "HTTPErrorType" and add Refresh case
+    4 - Change rest calls to be sensitive to HTTPErrorType.Refresh
+
+Fixed:
+    1 - Some Bugs fixed
+    2 - My foolish on java switch without break statement fixed.
+    3 - "SignupMoreInfo2Activity" persian date not converted to georgian date -> fixed
+
+------------------------------------------------------------------------------------------------
+Activity Rest API Class (abolfazl.beh)
+
+Procedures:
+    1 - Create "ActivityRestAPIClass" for access latest activity data
+    2 - Create "BasketRestAPIClass" to handle basket and checkout api call
+    3 - Create "BasketSingleton" to store sales item in basket and checkout
+    4 - Add "delete" api capabilities to "RestService" interface
+    5 - Some structures created:
+        - "ConcoughAcivityStruct" to hold activity feeds
+        - "EntranceStateEnum" to handle entrance activity state
+        - "EntranceStruct" to store entrance structure
+
+------------------------------------------------------------------------------------------------
+Archive Section And Models (abolfazl.beh)
+
+Procedures:
+    1 - "ArchiveRestAPIClass" created to handle archive categories fetches
+    2 - install "Picasso" library
+    3 - "MediaRestAPIClass" created to handle media access
+    4 - install "Realm" plugin for database usage
+        - classpath "io.realm:realm-gradle-plugin:3.5.0"
+        - "RealmSingleton" created tp to hold realm objects
+        - Create "models" package
+        - Create models classes: EntranceModel, EntranceBookletModel, EntranceLessonModel, EntranceOpenedCountModel,
+            EntranceQuestionModel, EntranceStarredQuestionModel, PurchasedModel, UserLogModel
+        - Create models handlers: EntranceModelHandler, EntranceBookletModelHandler, EntranceLessonModelHander, EntranceOpenedCountModelHandler,
+                         EntranceQuestionModelHandler, EntranceStarredQuestionModelHandler, PurchasedModelHandler, UserLogModelHandler,
+                         EntrancePackageHandler
