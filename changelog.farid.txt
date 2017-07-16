@@ -1,6 +1,3 @@
-
-
-
 Procedures:
     1 - Aded 'de.hdodenhof:circleimageview:2.1.0' package for add border and crop user images
     2 - Aded and comented custom action bar with "action_bar.xml" file
@@ -28,5 +25,14 @@ Created Layout for update (faridM)
 
 Procedures:
     1 - Created 'item_entrance_update'
+
+=================================================================================
+
+
+Bug fixes of Models (faridM)
+
+Procedures:
+    1 - just commit for pull
+
 
 =================================================================================

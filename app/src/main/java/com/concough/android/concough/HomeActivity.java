@@ -37,6 +37,7 @@ import java.util.StringJoiner;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
+import kotlin.jvm.functions.Function2;
 import kotlin.jvm.functions.Function3;
 
 import static android.R.attr.key;
@@ -165,8 +166,23 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
+    private enum ConcoughActivityType {
+        ENTRANCE_CREATE(1), ENTRANCE_UPDATE(2);
+
+        private final int value;
+
+        private ConcoughActivityType(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
 
     private class HomeActivityAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+
         private Context context;
         private ArrayList<ConcoughActivityStruct> concoughActivityStructList = new ArrayList<>();
 
@@ -184,16 +200,16 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         private class ItemHolder extends RecyclerView.ViewHolder {
-            ImageView entranceLogo;
-            TextView dateTopLeft;
-            TextView concourText;
-            TextView entranceType;
-            TextView entranceSetGroup;
-            TextView additionalData;
-            TextView sellCount;
-            TextView dateJalali;
+            private ImageView entranceLogo;
+            private TextView dateTopLeft;
+            private TextView concourText;
+            private TextView entranceType;
+            private TextView entranceSetGroup;
+            private TextView additionalData;
+            private TextView sellCount;
+            private TextView dateJalali;
 
-            JsonObject extraData;
+            private JsonObject extraData;
 
 
             public ItemHolder(View itemView) {
@@ -206,6 +222,7 @@ public class HomeActivity extends AppCompatActivity {
                 additionalData = (TextView) itemView.findViewById(R.id.itemEntranceCreateI_additionalData);
                 sellCount = (TextView) itemView.findViewById(R.id.itemEntranceCreateI_sellCount);
                 dateJalali = (TextView) itemView.findViewById(R.id.itemEntranceCreateI_dateJalali);
+                entranceLogo = (ImageView) itemView.findViewById(R.id.itemEntranceCreateI_entranceLogo);
 
                 concourText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 entranceType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
@@ -255,6 +272,20 @@ public class HomeActivity extends AppCompatActivity {
                 entranceType.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString() + " " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString());
                 entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString() + ")");
 
+//                int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
+//                MediaRestAPIClass.downloadEsetImage(getApplicationContext(), imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
+//                    @Override
+//                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
+//                        Log.d(TAG, "invoke: " + jsonObject);
+//                        return null;
+//                    }
+//                }, new Function1<NetworkErrorType, Unit>() {
+//                    @Override
+//                    public Unit invoke(NetworkErrorType networkErrorType) {
+//                        return null;
+//                    }
+//                });
+
                 String s;
                 s = concoughActivityStruct.getTarget().getAsJsonObject().get("extra_data").getAsString();
                 extraData = new JsonParser().parse(s).getAsJsonObject();
@@ -271,30 +302,32 @@ public class HomeActivity extends AppCompatActivity {
             }
         }
 
-
-
         private class EntranceUpdateHolder extends RecyclerView.ViewHolder {
-            ImageView entranceLogo;
-            TextView dateTopLeft;
-            TextView entranceType;
-            TextView entranceSetGroup;
-            TextView additionalData;
-            TextView sellCount;
-            TextView dateJalali;
+            private ImageView entranceLogo;
+            private TextView dateTopLeft;
+            //            TextView concourText;
+            private TextView entranceType;
+            private TextView entranceSetGroup;
+            private TextView additionalData;
+            private TextView sellCount;
+            private TextView dateJalali;
 
-            JsonObject extraData;
+            private JsonObject extraData;
 
 
             public EntranceUpdateHolder(View itemView) {
                 super(itemView);
 
+                //concourText = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_concourText);
                 dateTopLeft = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_dateTopLeft);
                 entranceType = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceType);
                 entranceSetGroup = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceSetGroup);
                 additionalData = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_additionalData);
                 sellCount = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_sellCount);
                 dateJalali = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_dateJalali);
+                entranceLogo = (ImageView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceLogo) ;
 
+                //concourText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 entranceType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 entranceSetGroup.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 additionalData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
@@ -303,12 +336,8 @@ public class HomeActivity extends AppCompatActivity {
             }
 
             public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
-                int dateNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("year").getAsInt();
-
-
                 String datePublishString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_published").getAsString();
                 String lastUpdateString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_update").getAsString();
-
 
                 Date georgianDate = null;
                 String persianDateString = "";
@@ -330,6 +359,7 @@ public class HomeActivity extends AppCompatActivity {
                 dateJalali.setText(persianDateString);
 
 
+                int dateNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("year").getAsInt();
                 dateTopLeft.setText(FormatterSingleton.getInstance().getNumberFormatter().format(dateNumber));
                 dateTopLeft.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
@@ -339,8 +369,24 @@ public class HomeActivity extends AppCompatActivity {
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
 
-                entranceType.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString() + " " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString());
+                entranceType.setText("کنکور " + concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString() + " " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString());
                 entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString() + ")");
+
+
+
+                int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
+                MediaRestAPIClass.downloadEsetImage(getApplicationContext(), imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
+                        Log.d(TAG, "invoke: " + jsonObject);
+                        return null;
+                    }
+                }, new Function1<NetworkErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(NetworkErrorType networkErrorType) {
+                        return null;
+                    }
+                });
 
                 String s;
                 s = concoughActivityStruct.getTarget().getAsJsonObject().get("extra_data").getAsString();
@@ -358,24 +404,47 @@ public class HomeActivity extends AppCompatActivity {
             }
         }
 
-
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(context).inflate(R.layout.item_entrance_update, parent, false);
-            return new ItemHolder(view);
+            if (viewType == ConcoughActivityType.ENTRANCE_UPDATE.getValue()) {
+                View view = LayoutInflater.from(context).inflate(R.layout.item_entrance_update, parent, false);
+                return new EntranceUpdateHolder(view);
+
+            } else {
+                View view = LayoutInflater.from(context).inflate(R.layout.item_entrance_create, parent, false);
+                return new ItemHolder(view);
+            }
         }
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-            ItemHolder itemHolder = (ItemHolder) holder;
             ConcoughActivityStruct oneItem = this.concoughActivityStructList.get(position);
             Log.d(TAG, oneItem.toString());
-            itemHolder.setupHolder(oneItem);
+
+            switch (oneItem.getActivityType()) {
+                case "ENTRANCE_UPDATE":
+                    EntranceUpdateHolder itemHolder = (EntranceUpdateHolder) holder;
+                    itemHolder.setupHolder(oneItem);
+                    break;
+                default:
+                    ItemHolder itemHolder2 = (ItemHolder) holder;
+                    itemHolder2.setupHolder(oneItem);
+            }
         }
 
         @Override
         public int getItemCount() {
             return concoughActivityStructList.size();
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            switch (concoughActivityStructList.get(position).getActivityType()) {
+                case "ENTRANCE_UPDATE":
+                    return ConcoughActivityType.ENTRANCE_UPDATE.getValue();
+                default:
+                    return ConcoughActivityType.ENTRANCE_CREATE.getValue();
+            }
         }
     }
 
