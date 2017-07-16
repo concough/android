@@ -22,7 +22,7 @@ class EntranceLessonModel: RealmObject() {
     var duration: Int = 0
 
     @LinkingObjects("lessons")
-    lateinit var booklet: RealmResults<EntranceBookletModel>
+    val booklet: RealmResults<EntranceBookletModel>? = null
 
     var questions: RealmList<EntranceQuestionModel> = RealmList()
 

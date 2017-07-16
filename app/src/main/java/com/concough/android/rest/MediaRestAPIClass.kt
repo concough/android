@@ -38,8 +38,8 @@ class MediaRestAPIClass {
         }
 
         @JvmStatic
-        fun downloadEsetImage(context: Context, imageHolder: ImageView,  completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
-            val fullPath = UrlMakerSingleton.getInstance().archiveEntranceTypesUrl() ?: return
+        fun downloadEsetImage(context: Context, imageId: Int, imageHolder: ImageView,  completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+            val fullPath = makeEsetImageUrl(imageId) ?: return
 
             TokenHandlerSingleton.getInstance(context).assureAuthorized(completion = { authenticated, error ->
                 if (authenticated && error == HTTPErrorType.Success) {

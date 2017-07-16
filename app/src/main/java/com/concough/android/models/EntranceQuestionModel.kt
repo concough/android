@@ -18,6 +18,6 @@ class EntranceQuestionModel: RealmObject() {
     var entrance: EntranceModel? = null
 
     @LinkingObjects("questions")
-    lateinit var lesson: RealmResults<EntranceLessonModel>
+    val lesson: RealmResults<EntranceLessonModel>? = null
 
 }
