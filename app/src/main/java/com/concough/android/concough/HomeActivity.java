@@ -271,9 +271,97 @@ public class HomeActivity extends AppCompatActivity {
             }
         }
 
+
+
+        private class EntranceUpdateHolder extends RecyclerView.ViewHolder {
+            ImageView entranceLogo;
+            TextView dateTopLeft;
+            TextView entranceType;
+            TextView entranceSetGroup;
+            TextView additionalData;
+            TextView sellCount;
+            TextView dateJalali;
+
+            JsonObject extraData;
+
+
+            public EntranceUpdateHolder(View itemView) {
+                super(itemView);
+
+                dateTopLeft = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_dateTopLeft);
+                entranceType = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceType);
+                entranceSetGroup = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceSetGroup);
+                additionalData = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_additionalData);
+                sellCount = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_sellCount);
+                dateJalali = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_dateJalali);
+
+                entranceType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                entranceSetGroup.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                additionalData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+            }
+
+            public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
+                int dateNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("year").getAsInt();
+
+
+                String datePublishString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_published").getAsString();
+                String lastUpdateString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_update").getAsString();
+
+
+                Date georgianDate = null;
+                String persianDateString = "";
+                String currentDateString = "";
+
+                if (null != datePublishString) {
+                    currentDateString = datePublishString;
+                } else {
+                    currentDateString = lastUpdateString;
+                }
+
+                try {
+                    georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
+                    persianDateString = FormatterSingleton.getInstance().getPersianDateString(georgianDate);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                dateJalali.setText(persianDateString);
+
+
+                dateTopLeft.setText(FormatterSingleton.getInstance().getNumberFormatter().format(dateNumber));
+                dateTopLeft.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+
+
+                String sellCountText = FormatterSingleton.getInstance().getNumberFormatter().format(concoughActivityStruct.getTarget().getAsJsonObject().get("stats").getAsJsonArray().get(0).getAsJsonObject().get("purchased").getAsInt());
+                sellCount.setText(sellCountText);
+                sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+
+
+                entranceType.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString() + " " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString());
+                entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString() + ")");
+
+                String s;
+                s = concoughActivityStruct.getTarget().getAsJsonObject().get("extra_data").getAsString();
+                extraData = new JsonParser().parse(s).getAsJsonObject();
+
+                String extra = "";
+                ArrayList<String> extraArray = new ArrayList<>();
+
+                for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
+                    extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
+                }
+
+                extra = TextUtils.join(" - ", extraArray);
+                additionalData.setText(extra);
+            }
+        }
+
+
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(context).inflate(R.layout.item_entrance_create, parent, false);
+            View view = LayoutInflater.from(context).inflate(R.layout.item_entrance_update, parent, false);
             return new ItemHolder(view);
         }
 
