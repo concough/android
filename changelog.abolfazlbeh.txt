@@ -122,3 +122,16 @@ Procedures:
         - Create models handlers: EntranceModelHandler, EntranceBookletModelHandler, EntranceLessonModelHander, EntranceOpenedCountModelHandler,
                          EntranceQuestionModelHandler, EntranceStarredQuestionModelHandler, PurchasedModelHandler, UserLogModelHandler,
                          EntrancePackageHandler
+
+------------------------------------------------------------------------------------------------
+Models and Media (abolfazl.beh)
+
+Fixes:
+    1 - Realm models bugs fixed -> dalete lateinit and change to be final
+    2 - Fix MediaRestAPIClass --> downloadEsetImage function.
+
+------------------------------------------------------------------------------------------------
+Models Converted From Kotlin to Java (abolfazl.beh)
+
+Fixes:
+    1 Some bugs fixed
