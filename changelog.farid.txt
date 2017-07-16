@@ -1,0 +1,32 @@
+
+
+
+Procedures:
+    1 - Aded 'de.hdodenhof:circleimageview:2.1.0' package for add border and crop user images
+    2 - Aded and comented custom action bar with "action_bar.xml" file
+    3 - Aded 3 files to drawable folder "female_icon_100.png" , "neutral_icon_100.png" , "male_icon_100.png"
+    4 - Aded 3 activity "info1" , "info2" , "info3"
+
+=================================================================================
+
+Procedures:
+    1 - Created a class with "AlertDialogCustomize" name for customize items of Alert-Dialog
+    2 - Aded 2 Layout Files for Alert-Dialog customization with "cc_alert_dialog_listview" and "cc_alert_dialog_textview" names
+
+=================================================================================
+
+
+Procedures:
+    1 - Created Activity "ForgotPasswordActivity" and "ResetPasswordActivity"
+    2 - Change InputType of some password EditTexts to "Text"
+    3 - Aded 2 Classes into the "ResetPasswordActivity"
+    4 - Completed "ForgotPasswordActivity"
+
+=================================================================================
+
+Created Layout for update (faridM)
+
+Procedures:
+    1 - Created 'item_entrance_update'
+
+=================================================================================

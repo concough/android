@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.concough.android.rest.ActivityRestAPIClass;
+import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.structures.ConcoughActivityStruct;
@@ -156,16 +157,12 @@ public class HomeActivity extends AppCompatActivity {
     }
 
 
-
     private class MediaTask extends AsyncTask<String, Void, Void> {
         @Override
         protected Void doInBackground(String... params) {
-            ;
-
-
-
-                    return null;
-        };
+//            MediaRestAPIClass.downloadEsetImage(params[0], );
+            return null;
+        }
     }
 
 
@@ -220,15 +217,29 @@ public class HomeActivity extends AppCompatActivity {
 
             public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
                 int dateNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("year").getAsInt();
+
+
                 String datePublishString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_published").getAsString();
+                String lastUpdateString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_update").getAsString();
+
+
                 Date georgianDate = null;
                 String persianDateString = "";
+                String currentDateString = "";
+
+                if (null != datePublishString) {
+                    currentDateString = datePublishString;
+                } else {
+                    currentDateString = lastUpdateString;
+                }
+
                 try {
-                    georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(datePublishString);
+                    georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
                     persianDateString = FormatterSingleton.getInstance().getPersianDateString(georgianDate);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
+
                 dateJalali.setText(persianDateString);
 
 
