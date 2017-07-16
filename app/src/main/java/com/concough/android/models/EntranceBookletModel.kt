@@ -19,7 +19,7 @@ class EntranceBookletModel: RealmObject() {
     var order: Int = 0
 
     @LinkingObjects("booklets")
-    lateinit var entrance: RealmResults<EntranceModel>
+    val entrance: RealmResults<EntranceModel>? = null
 
     var lessons: RealmList<EntranceLessonModel> = RealmList()
 }
