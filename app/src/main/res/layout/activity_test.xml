@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_test"
     android:layout_width="match_parent"
@@ -27,4 +28,16 @@
         android:layout_marginTop="24dp"
         android:layout_below="@+id/testA_set_keystore"
         android:layout_centerHorizontal="true" />
+
+    <ImageView
+        android:id="@+id/testA_imageView"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_alignEnd="@+id/testA_set_keystore"
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/testA_set_keystore"
+        android:layout_marginTop="14dp"
+        android:scaleType="fitCenter"
+        android:visibility="visible"
+        app:srcCompat="@drawable/app_dropbox_icon" />
 </RelativeLayout>
