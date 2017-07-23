@@ -11,7 +11,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.structures.Gender;
@@ -59,14 +58,14 @@ public class SignupMoreInfo1Activity extends AppCompatActivity {
 //        setTitle(getResources().getString(R.string.signupMoreInfo1A_app_name).toString());
         //setTitle("");
 
-        //View view = (View) LayoutInflater.from(getApplicationContext()).inflate(R.layout.action_bar, null);
+        //View view = (View) LayoutInflater.from(getApplicationContext()).inflate(R.layout.cc_archiveActivity_action_bar, null);
         //TextView concoughTextView = (TextView) findViewById(R.id.actionbarA_concough);
         //concoughTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
         //setContentView(view);
 
 
         //actionbar codes
-//        ViewGroup actionBarLayout = (ViewGroup) this.getLayoutInflater().inflate( R.layout.action_bar,null);
+//        ViewGroup actionBarLayout = (ViewGroup) this.getLayoutInflater().inflate( R.layout.cc_archiveActivity_action_bar,null);
 //        TextView concoughTextView = (TextView) actionBarLayout.findViewById(R.id.actionbarA_concough);
 //        concoughTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 //        ActionBar actionBar = this.getSupportActionBar();

@@ -1,112 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_signup"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/activity_signup">
+    android:layout_height="match_parent">
 
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:fillViewport="true"
 
         >
+
         <android.support.constraint.ConstraintLayout
 
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fitsSystemWindows="true"
-            android:isScrollContainer="true"
             android:background="@android:color/white"
-            >
+            android:fitsSystemWindows="true"
+            android:isScrollContainer="true">
 
             <ImageView
-                app:srcCompat="@drawable/app_dropbox_icon"
-                android:id="@+id/imageView4"
-                android:scaleType="fitCenter"
+                android:id="@+id/signupA_imageLogo"
                 android:layout_width="120dp"
                 android:layout_height="120dp"
-                tools:layout_constraintTop_creator="1"
-                tools:layout_constraintRight_creator="1"
-                app:layout_constraintRight_toRightOf="parent"
                 android:layout_marginTop="40dp"
-                tools:layout_constraintLeft_creator="1"
+                android:scaleType="fitCenter"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/app_dropbox_icon"
+                tools:layout_constraintLeft_creator="1"
+                tools:layout_constraintRight_creator="1"
+                tools:layout_constraintTop_creator="1" />
 
             <TextView
-                android:text="ثبت نام در کنکوق"
+                android:id="@+id/signupA_TextView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/signupTextView"
-                android:layout_marginTop="8dp"
-                app:layout_constraintTop_toBottomOf="@+id/imageView4"
                 android:layout_marginEnd="16dp"
-                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"
                 android:layout_marginStart="16dp"
-                app:layout_constraintLeft_toLeftOf="parent"
-                android:layout_marginLeft="16dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/signupA_TextView"
                 android:textAlignment="center"
+                android:textColor="@android:color/black"
                 android:textDirection="rtl"
                 android:textSize="18sp"
-                android:textColor="@android:color/black"/>
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/signupA_imageLogo" />
 
             <LinearLayout
+                android:id="@+id/linearLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/signupTextView"
                 android:layout_marginEnd="16dp"
+                android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"
                 android:layout_marginStart="16dp"
-                android:layout_marginLeft="16dp"
                 android:layout_marginTop="32dp"
-                android:id="@+id/linearLayout">
+                android:orientation="vertical"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/signupA_TextView">
 
                 <android.support.constraint.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    >
+                    android:layout_height="wrap_content">
+
                     <TextView
-                        android:text="+98"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/coutryCodeTextView"
-                        android:layout_gravity="center"
-                        android:textAlignment="center"
+                        android:id="@+id/signupA_coutryCode"
                         android:layout_width="wrap_content"
-                        app:layout_constraintLeft_toLeftOf="parent"
-                        app:layout_constraintBaseline_toBaselineOf="@+id/usernameEdit"
-                        android:layout_marginStart="8dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
                         android:layout_marginLeft="8dp"
+                        android:layout_marginStart="8dp"
+                        android:text="+98"
+                        android:textAlignment="center"
                         android:textColor="@android:color/black"
-                        android:textSize="18sp" />
+                        android:textSize="18sp"
+                        app:layout_constraintBaseline_toBaselineOf="@+id/signupA_usernameEdit"
+                        app:layout_constraintLeft_toLeftOf="parent" />
 
                     <EditText
+                        android:id="@+id/signupA_usernameEdit"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:inputType="phone"
-                        android:ems="10"
-                        android:id="@+id/usernameEdit"
-                        app:layout_constraintRight_toRightOf="parent"
-                        android:hint="شماره همراه"
-                        android:textDirection="rtl"
-                        android:textAlignment="textStart"
-                        android:gravity="start"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintLeft_toRightOf="@+id/coutryCodeTextView"
-                        android:layout_marginStart="8dp"
                         android:layout_marginLeft="8dp"
+                        android:layout_marginStart="8dp"
+                        android:ems="10"
+                        android:gravity="start"
+                        android:hint="@string/signupA_usernameEdit"
+                        android:inputType="phone"
+                        android:textAlignment="textStart"
+                        android:textDirection="rtl"
                         android:textSize="18sp"
-                        app:layout_constraintHorizontal_bias="0.0" />
+                        app:layout_constraintHorizontal_bias="0.0"
+                        app:layout_constraintLeft_toRightOf="@+id/signupA_coutryCode"
+                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
                 </android.support.constraint.ConstraintLayout>
 
@@ -115,102 +114,102 @@
                     android:layout_height="wrap_content">
 
                     <TextView
+                        android:id="@+id/signupA_usernameCheckTextView"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:id="@+id/usernameCheckTextView"
-                        android:text="مثال: 09121234567"
-                        android:textDirection="rtl"
-                        android:textAlignment="textStart"
-                        android:textSize="12sp"
-                        android:textColor="@color/colorConcoughGray"
-
-                        app:layout_constraintRight_toLeftOf="@+id/SignupAloading"
                         android:layout_marginEnd="8dp"
                         android:layout_marginRight="8dp"
+                        android:text="@string/signupA_usernameCheckTextView"
+                        android:textAlignment="textStart"
+                        android:textColor="@color/colorConcoughGray"
+
+                        android:textDirection="rtl"
+                        android:textSize="12sp"
+                        app:layout_constraintBaseline_toBaselineOf="@+id/signupA_SignupAloading"
                         app:layout_constraintLeft_toLeftOf="parent"
-                        app:layout_constraintBaseline_toBaselineOf="@+id/SignupAloading" />
+                        app:layout_constraintRight_toLeftOf="@+id/signupA_SignupAloading" />
 
                     <ProgressBar
-                        android:id="@+id/SignupAloading"
+                        android:id="@+id/signupA_SignupAloading"
                         style="@android:style/Widget.Material.Light.ProgressBar.Small"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:indeterminate="false"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintRight_toRightOf="parent" />
+                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
                 </android.support.constraint.ConstraintLayout>
 
                 <Button
-                    android:text="دریافت کد فعال سازی"
+                    android:id="@+id/signupA_sendCode"
+                    style="@style/Widget.AppCompat.Button.Colored"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/sendCode"
-                    app:layout_constraintTop_toBottomOf="@+id/usernameEdit"
-                    style="@style/Widget.AppCompat.Button.Colored"
+                    android:layout_marginTop="24dp"
                     android:background="@drawable/concough_border_outline_style"
+                    android:text="@string/signupA_sendCode"
                     android:textSize="16sp"
-                    app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    android:layout_marginTop="24dp" />
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/signupA_usernameEdit" />
 
             </LinearLayout>
 
 
             <TextView
-                android:text="پیامکی حاوی کد فعال سازی برای شما ارسال خواهد شد"
+                android:id="@+id/signupA_hintTextView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/hintTextView"
                 android:layout_marginEnd="16dp"
-                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"
                 android:layout_marginStart="16dp"
-                app:layout_constraintLeft_toLeftOf="parent"
-                android:layout_marginLeft="16dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/signupA_hintTextView"
                 android:textAlignment="center"
                 android:textDirection="rtl"
                 android:textSize="12sp"
                 app:layout_constraintHorizontal_bias="1.0"
-                android:layout_marginTop="8dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
             <LinearLayout
-                android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
                 android:layout_marginTop="32dp"
-                app:layout_constraintTop_toBottomOf="@+id/hintTextView"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/signupA_hintTextView"
                 app:layout_constraintVertical_bias="0.95">
 
                 <Button
-                    android:text="ورود"
-                    android:layout_height="32dp"
-                    android:id="@+id/loginButton"
+                    android:id="@+id/signupA_loginButton"
                     style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
-                    tools:layout_editor_absoluteY="414dp"
-                    app:layout_constraintRight_toLeftOf="@+id/textView3"
-                    android:layout_weight="1"
-                    android:layout_gravity="center"
                     android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
                     android:layout_marginRight="8dp"
+                    android:layout_weight="1"
                     android:background="@drawable/concough_border_radius_style"
+                    android:text="@string/signupA_loginButton"
+                    android:textColor="@color/colorConcoughBlue"
                     android:textColorLink="@color/colorConcoughBlue"
-                    android:textColor="@color/colorConcoughBlue" />
+                    app:layout_constraintRight_toLeftOf="@+id/textView3"
+                    tools:layout_editor_absoluteY="414dp" />
 
                 <TextView
-                    android:text="قبلا ثبت نام کرده ام؟"
+                    android:id="@+id/signupA_loginHintTextView"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/loginHintTextView"
-                    app:layout_constraintBaseline_toBaselineOf="@+id/button2"
-                    tools:layout_editor_absoluteX="88dp"
-                    android:layout_weight="2"
                     android:layout_gravity="center"
+                    android:layout_weight="2"
+                    android:text="@string/signupA_loginHintTextView"
                     android:textAlignment="textEnd"
-                    android:layout_width="wrap_content" />
+                    app:layout_constraintBaseline_toBaselineOf="@+id/button2"
+                    tools:layout_editor_absoluteX="88dp" />
 
             </LinearLayout>
 

@@ -1,4 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Concough</string>
     <string name="signupMoreInfo1A_app_name">کنکوق</string>
+
+
+    <string name="planet_prompt">Test-Drop</string>
+    <string-array name="planets_array">
+        <item>Mercury</item>
+        <item>Venus</item>
+        <item>Earth</item>
+        <item>Mars</item>
+        <item>Jupiter</item>
+        <item>Saturn</item>
+        <item>Uranus</item>
+        <item>Neptune</item>
+    </string-array>
+    <string name="forgotPasswordA_S_forgotTextView">بازیابی گذرواژه</string>
+    <string name="forgotPasswordA_S_usernameEdit">شماره همراه</string>
+    <string name="forgotPasswordA_S_sendCodeButton">ارسال کد رمز عبور</string>
+    <string name="forgotPasswordA_S_loginHintTextView">قبلا ثبت نام کرده اید؟</string>
+    <string name="forgotPasswordA_S_loginButton">ورود</string>
+    <string name="loginA_S_signupTextView">به کنکوق خوش آمدید</string>
+    <string name="loginA_S_usernameEdit">شماره همراه</string>
+    <string name="loginA_S_passwordEdit">گذرواژه</string>
+    <string name="loginA_S_loginButton">ورود</string>
+    <string name="loginA_S_registerButton">عضویت</string>
+    <string name="loginA_S_loginHintTextView">هنوز ثبت نام نکرده اید؟</string>
+    <string name="resetPasswordA_S_changePasswordTextView">تغییر گذرواژه</string>
+    <string name="resetPasswordA_S_passwordEdit">گذرواژه</string>
+    <string name="resetPasswordA_S_passwordEditConfirm">تکرار گذرواژه</string>
+    <string name="resetPasswordA_S_saveButton">ذخیره</string>
+    <string name="signupA_TextView">ثبت نام در کنکوق</string>
+    <string name="signupA_usernameEdit">شماره همراه</string>
+    <string name="signupA_usernameCheckTextView">مثال: 09121234567</string>
+    <string name="signupA_sendCode">دریافت کد فعال سازی</string>
+    <string name="signupA_hintTextView">پیامکی حاوی کد فعال سازی برای شما ارسال خواهد شد</string>
+    <string name="signupA_loginButton">ورود</string>
+    <string name="signupA_loginHintTextView">قبلا ثبت نام کرده ام؟</string>
+    <string name="SignupCodeA_S_titleTextView">ارسال کد فعالسازی</string>
+    <string name="SignupCodeA_S_SubmitButton">تایید</string>
+    <string name="SignupCodeA_S_codeEditText">کد فعالسازی</string>
+    <string name="SignupCodeA_S_infoTextView">اگر کد فعالسازی برای شما ارسال نشده است. گزینه پایین را لمس نمایید</string>
+    <string name="SignupCodeA_S_ResendButton">ارسال مجدد کد فعال سازی</string>
+    <string name="signupInfo1A_S_infoTextView">اطلاعات تکمیلی</string>
+    <string name="signupInfo1A_S_firstNameEdit">نام</string>
+    <string name="signupInfo1A_S_lastNameEdit">نام خانوادگی</string>
+    <string name="signupInfo1A_S_nextButton">بعدی</string>
+    <string name="signupInfo2A_S_infoTextView">تاریخ تولد</string>
+    <string name="signupInfo2A_S_nextButton">بعدی</string>
+    <string name="signupInfo3A_S_infoTextViewLine1">اطلاعات تحصیلی</string>
+    <string name="signupInfo3A_S_stateTextView">متقاضی آزمون:</string>
+    <string name="signupInfo3A_S_selectStateButton">انتخاب کنید</string>
+    <string name="signupInfo3A_S_nextButton">ذخیره و تمام</string>
+    <string name="StartupA_S_info">برای تلاش مجدد لمس نمایید</string>
+    <string name="itemEntranceCreateI_S_concourText">کنکور</string>
+
 </resources>

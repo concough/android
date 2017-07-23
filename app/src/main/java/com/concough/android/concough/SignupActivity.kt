@@ -41,28 +41,28 @@ class SignupActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_signup)
 
-        this.mainUsernameText = usernameCheckTextView.text.toString()
+        this.mainUsernameText = signupA_usernameCheckTextView.text.toString()
         this.signupStruct = SignupStruct()
 
         // Hiding Action Bar
         supportActionBar?.hide()
 
         // Setting Font of Controls
-        signupTextView.typeface = FontCacheSingleton.getInstance(applicationContext).Bold
-        sendCode.typeface = FontCacheSingleton.getInstance(applicationContext).Regular
-        usernameEdit.typeface = FontCacheSingleton.getInstance(applicationContext).Light
-        loginHintTextView.typeface = FontCacheSingleton.getInstance(applicationContext).Light
-        loginButton.typeface = FontCacheSingleton.getInstance(applicationContext).Regular
-        hintTextView.typeface = FontCacheSingleton.getInstance(applicationContext).Light
-        coutryCodeTextView.typeface = FontCacheSingleton.getInstance(applicationContext).Bold
-        usernameCheckTextView.typeface = FontCacheSingleton.getInstance(applicationContext).Light
+        signupA_TextView.typeface = FontCacheSingleton.getInstance(applicationContext).Bold
+        signupA_sendCode.typeface = FontCacheSingleton.getInstance(applicationContext).Regular
+        signupA_usernameEdit.typeface = FontCacheSingleton.getInstance(applicationContext).Light
+        signupA_loginHintTextView.typeface = FontCacheSingleton.getInstance(applicationContext).Light
+        signupA_loginButton.typeface = FontCacheSingleton.getInstance(applicationContext).Regular
+        signupA_hintTextView.typeface = FontCacheSingleton.getInstance(applicationContext).Light
+        signupA_coutryCode.typeface = FontCacheSingleton.getInstance(applicationContext).Bold
+        signupA_usernameCheckTextView.typeface = FontCacheSingleton.getInstance(applicationContext).Light
 
-        SignupAloading.visibility = View.GONE
+        signupA_SignupAloading.visibility = View.GONE
 
         // -- Listeners
-        sendCode.setOnClickListener {
+        signupA_sendCode.setOnClickListener {
             // request server to send code
-            var username = usernameEdit.text.toString()
+            var username = signupA_usernameEdit.text.toString()
             if (username.isValidPhoneNumber) {
 
                 if (username.startsWith("0")) {
@@ -74,27 +74,27 @@ class SignupActivity : AppCompatActivity() {
             }
         }
 
-        loginButton.setOnClickListener {
+        signupA_loginButton.setOnClickListener {
             val i = LoginActivity.newIntent(this@SignupActivity)
 
             startActivity(i)
             finish()
         }
 
-        usernameEdit.addTextChangedListener(object : TextWatcher{
+        signupA_usernameEdit.addTextChangedListener(object : TextWatcher{
             override fun afterTextChanged(s: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                usernameCheckTextView.visibility = View.VISIBLE
+                signupA_usernameCheckTextView.visibility = View.VISIBLE
 
                 if (s.toString().length > 0) {
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        usernameEdit.textDirection = View.TEXT_DIRECTION_LTR
-                        usernameEdit.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
+                        signupA_usernameEdit.textDirection = View.TEXT_DIRECTION_LTR
+                        signupA_usernameEdit.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
                     } else {
-                        usernameEdit.gravity = Gravity.END
+                        signupA_usernameEdit.gravity = Gravity.END
                     }
 
                     var username = s.toString()
@@ -104,18 +104,18 @@ class SignupActivity : AppCompatActivity() {
                             username = username.substring(1)
                         }
                         username = "98$username"
-                        usernameCheckTextView.text = ""
+                        signupA_usernameCheckTextView.text = ""
 
-                        SignupAloading.visibility = View.VISIBLE
+                        signupA_SignupAloading.visibility = View.VISIBLE
                         doAsync {
 
                             AuthRestAPIClass.checkUsername(username, completion = {
                                 data, error ->
 
                                 uiThread {
-                                    SignupAloading.visibility = View.GONE
+                                    signupA_SignupAloading.visibility = View.GONE
 
-                                    usernameCheckTextView.visibility = View.VISIBLE
+                                    signupA_usernameCheckTextView.visibility = View.VISIBLE
 //                                    Log.d(TAG, data.toString())
 //                                    Log.d(TAG, error.toString())
 
@@ -125,8 +125,8 @@ class SignupActivity : AppCompatActivity() {
                                             when (status) {
                                                 "OK" -> {
                                                     isUsernameValid = true
-                                                    usernameCheckTextView.text = "شماره همراه وارد شده صحیح است"
-                                                    usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughGreen))
+                                                    signupA_usernameCheckTextView.text = "شماره همراه وارد شده صحیح است"
+                                                    signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughGreen))
 
                                                 }
                                                 "Error" -> {
@@ -135,13 +135,13 @@ class SignupActivity : AppCompatActivity() {
                                                     error_type.let {
                                                         when(error_type) {
                                                             "ExistUsername" -> {
-                                                                usernameCheckTextView.text = "این شماره همراه قبلا رزرو شده است"
-                                                                usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughRedLight))
+                                                                signupA_usernameCheckTextView.text = "این شماره همراه قبلا رزرو شده است"
+                                                                signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughRedLight))
 
                                                             }
                                                             else -> {
-                                                                usernameCheckTextView.text = mainUsernameText
-                                                                usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughGray))
+                                                                signupA_usernameCheckTextView.text = mainUsernameText
+                                                                signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughGray))
 
                                                                 // Show Alert to user
                                                             }
@@ -159,7 +159,7 @@ class SignupActivity : AppCompatActivity() {
                             }, failure = { error ->
 //                                Log.d(TAG, error.toString())
                                 uiThread {
-                                    SignupAloading.visibility = View.GONE
+                                    signupA_SignupAloading.visibility = View.GONE
 
                                     if (error != null) {
                                         when (error) {
@@ -178,20 +178,20 @@ class SignupActivity : AppCompatActivity() {
                             })
                         }
                     } else {
-                        usernameCheckTextView.text = "شماره همراه وارد شده صحیح نمی باشد"
-                        usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughRedLight))
+                        signupA_usernameCheckTextView.text = "شماره همراه وارد شده صحیح نمی باشد"
+                        signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughRedLight))
 
                     }
 
                 } else {
-                    usernameCheckTextView.text = mainUsernameText
-                    usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughGray))
+                    signupA_usernameCheckTextView.text = mainUsernameText
+                    signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughGray))
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        usernameEdit.textDirection = View.TEXT_DIRECTION_RTL
-                        usernameEdit.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
+                        signupA_usernameEdit.textDirection = View.TEXT_DIRECTION_RTL
+                        signupA_usernameEdit.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
                     } else {
-                        usernameEdit.gravity = Gravity.START
+                        signupA_usernameEdit.gravity = Gravity.START
                     }
                 }
             }
@@ -223,8 +223,8 @@ class SignupActivity : AppCompatActivity() {
                                         val errorType = data.get("error_type").asString
                                         when (errorType) {
                                             "ExistUsername" -> {
-                                                this@SignupActivity.usernameCheckTextView.text = "این شماره همراه قبلا رزرو شده است"
-                                                this@SignupActivity.usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughRedLight))
+                                                this@SignupActivity.signupA_usernameCheckTextView.text = "این شماره همراه قبلا رزرو شده است"
+                                                this@SignupActivity.signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughRedLight))
 
                                                 // TODO: show simple error message with messageType = "AuthProfile"
                                             }
