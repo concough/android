@@ -1,4 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -15,4 +16,24 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="100dp" />
 
+    <Button
+        android:text="Read Key Store Value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/testA_read_keystore"
+        android:layout_marginTop="24dp"
+        android:layout_below="@+id/testA_set_keystore"
+        android:layout_centerHorizontal="true" />
+
+    <ImageView
+        android:id="@+id/testA_imageView"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_alignEnd="@+id/testA_set_keystore"
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/testA_set_keystore"
+        android:layout_marginTop="14dp"
+        android:scaleType="fitCenter"
+        android:visibility="visible"
+        app:srcCompat="@drawable/app_dropbox_icon" />
 </RelativeLayout>

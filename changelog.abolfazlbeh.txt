@@ -135,3 +135,12 @@ Models Converted From Kotlin to Java (abolfazl.beh)
 
 Fixes:
     1 Some bugs fixed
+
+------------------------------------------------------------------------------------------------
+Debug MediaRestAPIClass (abolfazl.beh)
+
+Procedures:
+    1 - Make TestActivity fetch data from media
+
+Fixes:
+    1 - "SignupMoreInfo1Activity" fix on post selectedGender toString()

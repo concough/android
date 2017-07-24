@@ -160,7 +160,7 @@ public class SignupMoreInfo1Activity extends AppCompatActivity {
                 if (!"".equals(firstname) && !"".equals(lastname)) {
                     SignupMoreInfo1Activity.this.signupInfo.setFirstname(firstname);
                     SignupMoreInfo1Activity.this.signupInfo.setLastname(lastname);
-                    SignupMoreInfo1Activity.this.signupInfo.setGender(SignupMoreInfo1Activity.this.selectedGender.toString());
+                    SignupMoreInfo1Activity.this.signupInfo.setGender(SignupMoreInfo1Activity.this.selectedGender.name());
 
                     Intent i = SignupMoreInfo2Activity.newIntent(SignupMoreInfo1Activity.this);
                     startActivity(i);

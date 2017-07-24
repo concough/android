@@ -46,18 +46,22 @@ class MediaRestAPIClass {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
                     val headers2 = Headers.of(headers)
 
-                    val okHttpClient = OkHttpClient()
-                    okHttpClient.interceptors().add(object : Interceptor {
+                    val okHttpClient = OkHttpClient.Builder().addInterceptor (object : Interceptor {
+
                         @Throws(IOException::class)
                         override fun intercept(chain: Interceptor.Chain): okhttp3.Response? {
-                            val newRequest = chain.request().newBuilder()
+                            var original = chain.request()
+
+                            val newRequest = original.newBuilder()
                                     .headers(headers2)
+                                    .method(original.method(), original.body())
                                     .build()
                             return chain.proceed(newRequest)
                         }
-                    })
+                    }).build()
 
                     Picasso.Builder(context).downloader(OkHttp3Downloader(okHttpClient)).build().load(fullPath).into(imageHolder)
+                    completion(null, HTTPErrorType.Success)
                } else {
                     completion(null, error)
                 }
