@@ -18,9 +18,9 @@
         android:background="@drawable/concough_bottom_line_gray4"
         android:orientation="horizontal"
         android:paddingBottom="5dp"
-        app:layout_constraintBottom_toBottomOf="@+id/imageView2"
+        app:layout_constraintBottom_toBottomOf="@+id/archiveDetailA_logoImage"
         app:layout_constraintLeft_toRightOf="@+id/textView4"
-        app:layout_constraintRight_toLeftOf="@+id/imageView2"
+        app:layout_constraintRight_toLeftOf="@+id/archiveDetailA_logoImage"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0">
 
@@ -73,7 +73,7 @@
 
 
     <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/imageView2"
+        android:id="@+id/archiveDetailA_logoImage"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_gravity="center_horizontal"

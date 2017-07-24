@@ -48,3 +48,10 @@ Procedures:
     5 - Refactor all layout files and exclude all String from layouts to String.xml
 
 
+=================================================================================
+
+ArchiveDetail (faridM)
+
+Procedures:
+    1 - Aded new layout 'cc_archivedetail_listitem_detail' for recycle view of new activity 'ArchiveDetailActivity'
+
