@@ -16,6 +16,12 @@
             android:name=".StartupActivity"
             android:windowSoftInputMode="adjustPan">
 
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
             <!-- <intent-filter> -->
             <!-- <action android:name="android.intent.action.MAIN" /> -->
 
@@ -35,7 +41,7 @@
         <activity android:name=".SignupMoreInfo2Activity" />
         <activity android:name=".SignupMoreInfo3Activity" />
         <activity android:name=".HomeActivity" />
-        <activity android:name=".TestActivity">
+        <!--<activity android:name=".TestActivity">-->
 
             <!-- <intent-filter> -->
             <!-- <action android:name="android.intent.action.MAIN" /> -->
@@ -43,7 +49,7 @@
 
             <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
             <!-- </intent-filter> -->
-        </activity>
+        <!--</activity>-->
         <activity android:name=".ForgotPasswordActivity" />
         <activity android:name=".ResetPasswordActivity">
 
@@ -55,22 +61,15 @@
             android:name=".ArchiveActivity"
             android:theme="@style/AppThemeArchiveActionBar">
 
+
+
         </activity>
         <activity
             android:name=".ArchiveDetailActivity"
             android:theme="@style/AppThemeArchiveDetailActionBar">
 
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-        <activity android:name=".ResetPasswordActivity">
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
 
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
         </activity>
     </application>
 

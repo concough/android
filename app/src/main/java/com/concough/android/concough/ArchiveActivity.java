@@ -1,12 +1,14 @@
 package com.concough.android.concough;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,13 +18,21 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.concough.android.rest.ArchiveRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
+import com.concough.android.structures.HTTPErrorType;
+import com.concough.android.structures.NetworkErrorType;
+import com.google.gson.JsonObject;
 import com.orhanobut.dialogplus.DialogPlus;
 import com.orhanobut.dialogplus.OnCancelListener;
 import com.orhanobut.dialogplus.OnItemClickListener;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+import kotlin.jvm.functions.Function2;
 
 
 public class ArchiveActivity extends AppCompatActivity {
@@ -119,6 +129,8 @@ public class ArchiveActivity extends AppCompatActivity {
 
 
 
+        getTypes();
+
 
 
         recycleView = (RecyclerView) findViewById(R.id.archiveA_recycle);
@@ -208,6 +220,45 @@ public class ArchiveActivity extends AppCompatActivity {
             return new String(Character.toChars(up)) + "   " + txt;
         } else {
             return new String(Character.toChars(down)) + "   " + txt;
+        }
+    }
+
+
+    private void getTypes() {
+        new GetTypesTask().execute();
+    }
+
+    private class GetTypesTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(final Void... params) {
+            ArchiveRestAPIClass.getEntranceTypes(getApplicationContext(), new Function2<JsonObject, HTTPErrorType, Unit>() {
+                @Override
+                public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(httpErrorType == HTTPErrorType.Success) {
+                                if(jsonObject != null) {
+                                    Log.d(TAG, "run: " + jsonObject);
+                                }
+                            } else if (httpErrorType == HTTPErrorType.Refresh) {
+                                new GetTypesTask().execute(params);
+                            } else {
+                                // TODO: show error with msgType = "HTTPError" and error
+                            }
+
+
+                        }
+                    });
+                    return null;
+                }
+            }, new Function1<NetworkErrorType, Unit>() {
+                @Override
+                public Unit invoke(NetworkErrorType networkErrorType) {
+                    return null;
+                }
+            });
+            return null;
         }
     }
 

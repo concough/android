@@ -145,7 +145,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                                                 ForgotPasswordActivity.this.signupStruct.setUsername(params[0]);
                                                 ForgotPasswordActivity.this.signupStruct.setPreSignupId(jsonObject.get("id").getAsInt());
 
-                                                Intent submitCodeIntent = SignupCodeActivity.newIntent(ForgotPasswordActivity.this, "ForgotPass", ForgotPasswordActivity.this.signupStruct);
+                                                Intent submitCodeIntent = SignupCodeActivity.newIntent(ForgotPasswordActivity.this, "ForgotPassA", ForgotPasswordActivity.this.signupStruct);
                                                 startActivity(submitCodeIntent);
 
                                             } catch (Exception exc) {

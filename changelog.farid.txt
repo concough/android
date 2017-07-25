@@ -55,3 +55,9 @@ ArchiveDetail (faridM)
 Procedures:
     1 - Aded new layout 'cc_archivedetail_listitem_detail' for recycle view of new activity 'ArchiveDetailActivity'
 
+=================================================================================
+
+Edited Home activity and add pull refresh (faridM)
+
+    1 - Aded 'com.baoyz.pullrefreshlayout:library:1.2.0'
+    2 - Some changes on HomeActivity Layout

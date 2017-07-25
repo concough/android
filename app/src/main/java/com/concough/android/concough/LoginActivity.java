@@ -40,6 +40,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText passwordEdit;
     private TextView loginHintTextView;
     private Button registerButton;
+    private Button rememberButton;
 
 
     public static Intent newIntent(Context packageContext) {
@@ -70,6 +71,16 @@ public class LoginActivity extends AppCompatActivity {
         loginHintTextView = (TextView) findViewById(R.id.loginA_loginHintTextView);
         registerButton = (Button) findViewById(R.id.loginA_registerButton);
         loginButton = (Button) findViewById(R.id.loginA_loginButton);
+        rememberButton = (Button) findViewById(R.id.loginA_rememberButton);
+
+        rememberButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+        rememberButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = ForgotPasswordActivity.newIntent(LoginActivity.this);
+                startActivity(i);
+            }
+        });
 
         registerButton.setOnClickListener(registerButtonListener);
 

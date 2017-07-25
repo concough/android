@@ -7,13 +7,27 @@
     tools:context="com.concough.android.concough.HomeActivity"
     android:background="@color/colorConcoughGrayBackground">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/homeA_recycle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/colorConcoughGrayBackground">
+
+        <com.baoyz.widget.PullRefreshLayout
+            android:id="@+id/homeA_swipeRefreshLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/homeA_recycle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/colorConcoughGrayBackground">
 
 
-    </android.support.v7.widget.RecyclerView>
+                </android.support.v7.widget.RecyclerView>
+
+        </com.baoyz.widget.PullRefreshLayout>
+
+
+
+
+
+
 
 </RelativeLayout>
