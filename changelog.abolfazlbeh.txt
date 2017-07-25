@@ -144,3 +144,8 @@ Procedures:
 
 Fixes:
     1 - "SignupMoreInfo1Activity" fix on post selectedGender toString()
+
+------------------------------------------------------------------------------------------------
+Debug ForgotPassword (abolfazl.beh)
+
+1 - Complete ForgotPassword Process and Complete SignupCodeActivity

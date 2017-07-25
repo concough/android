@@ -91,6 +91,7 @@ class SignupCodeActivity : AppCompatActivity() {
         SignupCodeA_ResendButton.setOnClickListener {
             when(this@SignupCodeActivity.fromWhichActivity) {
                 "SignupA" -> makePreSignup()
+                "ForgotPassA" -> makeForgotPass()
                 else -> return@setOnClickListener
             }
         }
@@ -98,6 +99,7 @@ class SignupCodeActivity : AppCompatActivity() {
         SignupCodeA_SubmitButton.setOnClickListener {
             when(this@SignupCodeActivity.fromWhichActivity) {
                 "SignupA" -> sendPreSignupCode()
+                "ForgotPassA" -> sendForgotPassCode()
                 else -> return@setOnClickListener
             }
         }
@@ -241,6 +243,68 @@ class SignupCodeActivity : AppCompatActivity() {
         }
     }
 
+    private fun makeForgotPass() {
+        val username = this@SignupCodeActivity.signupStruct?.username ?: return
+
+        // TODO: show loading in view
+        doAsync {
+
+            AuthRestAPIClass.preSignup(username, { data, error ->
+                uiThread {
+                    // TODO: hide loading that showed before
+                    if (error == HTTPErrorType.Success) {
+                        if (data != null) {
+                            try {
+                                val status = data.get("status").asString
+                                when (status) {
+                                    "OK" -> {
+                                        val id = data.get("id").asInt
+                                        this@SignupCodeActivity.signupStruct?.preSignupId = id
+
+                                        // TODO: Show message to user about resending successful msgType = "ActionResult" and msgSubType = "ResendCodeSuccessful"
+
+                                    }
+                                    "Error" -> {
+                                        val errorType = data.get("error_type").asString
+                                        when (errorType) {
+                                            "UserNotExist" -> {
+
+                                                // TODO: show simple error message with messageType = "AuthProfile"
+                                            }
+                                            else -> {
+                                                // TODO: show simple error message with messageType = "ErrorResult"
+                                            }
+                                        }
+                                    }
+                                }
+
+                            } catch (exc: Exception) {
+
+                            }
+                        }
+                    } else {
+                        // TODO: show top message with type = error
+                    }
+                }
+            }, { error ->
+                uiThread {
+                    // TODO: hide loading that showed before
+                    if (error != null) {
+                        when (error) {
+                            NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
+                                // TODO: show top message about error with type error
+                            }
+                            else -> {
+                                // TODO: Show top message about error without type
+                            }
+                        }
+                    }
+
+                }
+            })
+        }
+    }
+
     private fun login() {
         // Set Username and password
         TokenHandlerSingleton.getInstance(applicationContext).setUsernameAndPassword(this@SignupCodeActivity.signupStruct?.username!!, this@SignupCodeActivity.signupStruct?.password!!)
@@ -279,4 +343,25 @@ class SignupCodeActivity : AppCompatActivity() {
         }
     }
 
+    private fun sendForgotPassCode() {
+        val code: String = SignupCodeA_codeEditText.text.trim().toString()
+        if (code != "") {
+            var intCode: Int? = null
+            try {
+                intCode = code.toInt()
+            } catch (ext: Exception) {
+
+            }
+            if (intCode == null) {
+                // TODO: Shoe error message with msgType = "Form" and msgSubType = "CodeWrong"
+                return
+            }
+
+            this@SignupCodeActivity.signupStruct?.password = code
+            // TODO: make login request
+
+            val i = ResetPasswordActivity.newIntent(this@SignupCodeActivity, this@SignupCodeActivity.signupStruct, false)
+            startActivity(i)
+        }
+    }
 }

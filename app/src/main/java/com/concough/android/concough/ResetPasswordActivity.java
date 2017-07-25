@@ -40,12 +40,19 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private final static String SIGNUP_STRUCTURE_KEY = "SignupS";
     private SignupStruct infoStruct;
 
-    public static Intent newIntent(Context packageContext, SignupStruct ss) {
+    public static Intent newIntent(Context packageContext, SignupStruct ss, Boolean clearStack) {
         Intent i = new Intent(packageContext, ResetPasswordActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        if (clearStack == true)
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
         i.putExtra(SIGNUP_STRUCTURE_KEY, ss);
         return i;
     }
+
+    public static Intent newIntent(Context packageContext, SignupStruct ss) {
+        return newIntent(packageContext, ss, Boolean.TRUE);
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -208,7 +215,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                             switch (status) {
                                                 case "OK":
                                                     try {
-                                                        TokenHandlerSingleton.getInstance(getApplicationContext()).setUsernameAndPassword(params[0].getUsername(), params[0].getPassword());
+                                                        TokenHandlerSingleton.getInstance(getApplicationContext()).setUsernameAndPassword(params[0].getUsername(), passwordEdit.toString());
                                                         startUp();
 
                                                     } catch (Exception exc) {
@@ -217,7 +224,18 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                                     break;
                                                 case "Error":
                                                     try {
-
+                                                        String error_type = jsonObject.get("error_type").toString();
+                                                        switch (error_type) {
+                                                            case "ExpiredCode": {
+                                                                // TODO: show error with ErrorResult and on OK send to ForgotPass
+                                                                break;
+                                                            }
+                                                            case "UserNotExist":
+                                                            case "PreAuthNotExist":
+                                                                // TODO: Show AuthProfile error message and make ForgotPassword Activity
+                                                                break;
+                                                            default: break;
+                                                        }
                                                     } catch (Exception exc) {
 
                                                     }
