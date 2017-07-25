@@ -4,19 +4,56 @@
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar" >
         <!-- Customize your theme here. -->
         <item name="actionBarStyle">@style/MyActionBar</item>
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <!--<item name="colorPrimaryDark">@color/colorPrimaryDark</item>-->
-        <item name="colorAccent">@color/colorConcoughBlue</item>
-        <item name="android:windowBackground">@android:color/white</item>
-        <item name="android:textColorPrimary">@android:color/black</item>
+        <!--<item name="colorPrimary">@color/colorConcoughGrayBackground</item>-->
+        <!--<item name="colorPrimaryDark">@color/dialogplus_black_overlay</item>-->
+        <!--<item name="colorAccent">@color/colorConcoughBlue</item>-->
+        <!--<item name="android:windowBackground">@android:color/white</item>-->
+        <!--<item name="android:textColorPrimary">@android:color/black</item>-->
+
     </style>
 
-    <style name="MyActionBar" parent="@style/Widget.AppCompat.ActionBar.Solid">
+    <style name="MyActionBar1"
+        parent="@android:style/Widget.Holo.Light.ActionBar.Solid">
+
+    <item name="android:layout_marginBottom">2dp</item>
+    </style>
+
+    <style name="AppThemeArchiveActionBar" parent="@style/AppTheme" >
+        <!--<item name="actionBarStyle">@style/MyActionBar1</item>-->
+        <item name="colorPrimary">@color/colorConcoughGrayBackground</item>
+        <!--<item name="colorPrimaryDark">@color/colorConcoughRed</item>-->
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+
+    <style name="AppThemeArchiveDetailActionBar" parent="@style/AppTheme" >
+        <!--<item name="actionBarStyle">@style/MyActionBar1</item>-->
+        <item name="colorPrimary">@color/colorConcoughGrayBackground</item>
+        <!--<item name="colorPrimaryDark">@color/colorConcoughRed</item>-->
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+
+
+
+    <style name="MyActionBar" parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
         <item name="android:titleTextStyle">@style/TitleBarTextColor</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <!--<item name="colorPrimaryDark">@color/colorPrimaryDark</item>-->
     </style>
 
     <style name="TitleBarTextColor" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
         <item name="android:textColor">@color/colorForeground</item>
     </style>
+
+
+    <style name="TitleBarTextColorApp" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:direction">right_to_left</item>
+    </style>
+
+
+
+
+
+
+
 </resources>

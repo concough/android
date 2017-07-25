@@ -1,0 +1,63 @@
+Procedures:
+    1 - Aded 'de.hdodenhof:circleimageview:2.1.0' package for add border and crop user images
+    2 - Aded and comented custom action bar with "action_bar.xml" file
+    3 - Aded 3 files to drawable folder "female_icon_100.png" , "neutral_icon_100.png" , "male_icon_100.png"
+    4 - Aded 3 activity "info1" , "info2" , "info3"
+
+=================================================================================
+
+Procedures:
+    1 - Created a class with "AlertDialogCustomize" name for customize items of Alert-Dialog
+    2 - Aded 2 Layout Files for Alert-Dialog customization with "cc_alert_dialog_listview" and "cc_alert_dialog_textview" names
+
+=================================================================================
+
+
+Procedures:
+    1 - Created Activity "ForgotPasswordActivity" and "ResetPasswordActivity"
+    2 - Change InputType of some password EditTexts to "Text"
+    3 - Aded 2 Classes into the "ResetPasswordActivity"
+    4 - Completed "ForgotPasswordActivity"
+
+=================================================================================
+
+Created Layout for update (faridM)
+
+Procedures:
+    1 - Created 'item_entrance_update'
+
+=================================================================================
+
+
+Bug fixes of Models (faridM)
+
+Procedures:
+    1 - just commit for pull
+
+
+=================================================================================
+
+
+ArchiveActivity complete Refacor on Layouts (faridM)
+
+Procedures:
+    1 - just commit for pull
+    2 - Aded  'com.orhanobut:dialogplus:1.11@aar' package for use nice dropdown :)
+    3 - Aded 'cc_archive_*' in the layout folder and ArchiveActivity
+    4 - Some change on names of 'activity_signup.xml'
+    5 - Refactor all layout files and exclude all String from layouts to String.xml
+
+
+=================================================================================
+
+ArchiveDetail (faridM)
+
+Procedures:
+    1 - Aded new layout 'cc_archivedetail_listitem_detail' for recycle view of new activity 'ArchiveDetailActivity'
+
+=================================================================================
+
+Edited Home activity and add pull refresh (faridM)
+
+    1 - Aded 'com.baoyz.pullrefreshlayout:library:1.2.0'
+    2 - Some changes on HomeActivity Layout

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,15 +19,13 @@ import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.utils.KeyChainAccessProxy;
+import com.google.gson.JsonObject;
+
+import java.util.Date;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
-
-import com.google.gson.JsonObject;
-import com.google.gson.internal.Streams;
-
-import java.util.Date;
 
 import static com.concough.android.settings.ConstantsKt.getPASSWORD_KEY;
 import static com.concough.android.settings.ConstantsKt.getUSERNAME_KEY;
@@ -41,6 +40,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText passwordEdit;
     private TextView loginHintTextView;
     private Button registerButton;
+    private Button rememberButton;
 
 
     public static Intent newIntent(Context packageContext) {
@@ -71,6 +71,16 @@ public class LoginActivity extends AppCompatActivity {
         loginHintTextView = (TextView) findViewById(R.id.loginA_loginHintTextView);
         registerButton = (Button) findViewById(R.id.loginA_registerButton);
         loginButton = (Button) findViewById(R.id.loginA_loginButton);
+        rememberButton = (Button) findViewById(R.id.loginA_rememberButton);
+
+        rememberButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+        rememberButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = ForgotPasswordActivity.newIntent(LoginActivity.this);
+                startActivity(i);
+            }
+        });
 
         registerButton.setOnClickListener(registerButtonListener);
 
@@ -149,7 +159,7 @@ public class LoginActivity extends AppCompatActivity {
                                                     String lastname = profile.get("user").getAsJsonObject().get("last_name").getAsString();
 
 
-                                                    Date birthdayDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(birthday);
+                                                    Date birthdayDate = FormatterSingleton.getInstance().getUTCShortDateFormatter().parse(birthday);
                                                     Date modifiedDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(modified);
 
                                                     if (!"".equals(firstname) && !"".equals(lastname) && !"".equals(gender) && !"".equals(grade)) {
@@ -160,14 +170,19 @@ public class LoginActivity extends AppCompatActivity {
 
                                                         Intent homeIntent = HomeActivity.newIntent(LoginActivity.this);
                                                         startActivity(homeIntent);
+                                                        finish();
 
                                                     } else {
                                                         // Profile not created
                                                         Intent moreInfoIntent = SignupMoreInfo1Activity.newIntent(LoginActivity.this);
                                                         startActivity(moreInfoIntent);
+                                                        finish();
                                                     }
 
-                                                } catch (Exception exc) {}
+                                                } catch (Exception exc) {
+                                                    Log.d(TAG, exc.toString());
+                                                    //
+                                                }
 
                                             }
                                             break;

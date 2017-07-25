@@ -6,7 +6,7 @@ import com.concough.android.singletons.UrlMakerSingleton
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
 import com.google.gson.Gson
-import com.google.gson.JsonObject
+import com.google.gson.JsonElement
 import com.google.gson.JsonParseException
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -24,7 +24,7 @@ class ActivityRestAPIClass {
 
         // get latest activity
         @JvmStatic
-        fun updateActivity(next: String?, context: Context, completion: (refresh: Boolean, data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+        fun updateActivity(next: String?, context: Context, completion: (refresh: Boolean, data: JsonElement?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
             var fullPath = UrlMakerSingleton.getInstance().activityUrl() ?: return
 
             var hasNext = false
@@ -53,7 +53,7 @@ class ActivityRestAPIClass {
                                 HTTPErrorType.Success -> {
                                     val res = response.body()!!.string()
                                     try {
-                                        val jobj = Gson().fromJson(res, JsonObject::class.java)
+                                        val jobj = Gson().fromJson(res, JsonElement::class.java)
 
                                         completion(!hasNext, jobj, resCode)
                                     } catch (exc: JsonParseException) {

@@ -8,12 +8,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.NumberPicker;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.utils.PersianCalendar;
 
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -69,7 +69,12 @@ public class SignupMoreInfo2Activity extends AppCompatActivity {
                 selectedYear = Integer.valueOf(numberPicker.getValue());
 
                 Calendar gDate = PersianCalendar.getGregorainCalendar(selectedYear, 1, 1, 1, 1, 1);
-                SignupMoreInfo1Activity.signupInfo.setBirthday(gDate.getTime());
+                try {
+                    String s = FormatterSingleton.getInstance().getUTCDateFormatter().format(gDate.getTime());
+                    SignupMoreInfo1Activity.signupInfo.setBirthday(FormatterSingleton.getInstance().getUTCShortDateFormatter().parse(s));
+                } catch (ParseException e) {
+
+                }
 
                 Intent i = SignupMoreInfo3Activity.newIntent(SignupMoreInfo2Activity.this);
                 startActivity(i);
