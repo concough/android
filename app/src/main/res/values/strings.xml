@@ -55,4 +55,8 @@
     <string name="StartupA_S_info">برای تلاش مجدد لمس نمایید</string>
     <string name="itemEntranceCreateI_S_concourText">کنکور</string>
 
+    <string name="navigation_bottom_home">خانه</string>
+    <string name="navigation_bottom_archive">محصولات</string>
+    <string name="navigation_bottom_favorites">آرشیو</string>
+    <string name="navigation_bottom_settings">تنظیمات</string>
 </resources>

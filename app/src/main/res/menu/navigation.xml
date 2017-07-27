@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_settings"
+        android:icon="@drawable/ic_zhycan_settings"
+        android:title="@string/navigation_bottom_settings" />
+
+    <item
+        android:id="@+id/navigation_favorites"
+        android:icon="@drawable/ic_zhycan_favorites"
+        android:title="@string/navigation_bottom_favorites" />
+
+    <item
+        android:id="@+id/navigation_archive"
+        android:icon="@drawable/ic_zhycan_archive"
+        android:title="@string/navigation_bottom_archive" />
+
+    <item
+        android:id="@+id/navigation_home"
+        android:icon="@drawable/ic_zhycan_home"
+        android:title="@string/navigation_bottom_home" />
+</menu>
