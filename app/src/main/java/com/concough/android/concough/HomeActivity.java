@@ -2,6 +2,7 @@ package com.concough.android.concough;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.baoyz.widget.PullRefreshLayout;
 import com.concough.android.rest.ActivityRestAPIClass;
 import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
@@ -22,7 +24,6 @@ import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.structures.ConcoughActivityStruct;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
-import com.concough.android.utils.PersianCalendar;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -31,23 +32,17 @@ import com.google.gson.JsonParser;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.StringJoiner;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 import kotlin.jvm.functions.Function3;
 
-import static android.R.attr.key;
-import static android.R.attr.value;
-import static java.util.stream.Collectors.joining;
-import static okhttp3.Protocol.get;
-
 public class HomeActivity extends AppCompatActivity {
 
     public static final String TAG = "HomeActivity";
+
 
     private ArrayList<ConcoughActivityStruct> concoughActivityStructs;
     private boolean moreFeedExist = true;
@@ -67,14 +62,26 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         recycleView = (RecyclerView) findViewById(R.id.homeA_recycle);
-
         homeActivityAdapter = new HomeActivityAdapter(this, new ArrayList<ConcoughActivityStruct>());
         recycleView.setAdapter(homeActivityAdapter);
-
         recycleView.setLayoutManager(new LinearLayoutManager(this));
 
 
         homeActivity(null);
+
+
+        final PullRefreshLayout layout = (PullRefreshLayout) findViewById(R.id.homeA_swipeRefreshLayout);
+       // layout.setColorSchemeColors(Color.CYAN);
+        layout.setColorSchemeColors(Color.TRANSPARENT, Color.GRAY, Color.GRAY, Color.GRAY);
+        layout.setRefreshStyle(PullRefreshLayout.STYLE_MATERIAL);
+        layout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                homeActivity(null);
+                 layout.setRefreshing(false);
+
+            }
+        });
 
 
     }
@@ -230,6 +237,7 @@ public class HomeActivity extends AppCompatActivity {
                 additionalData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+
             }
 
             public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
@@ -312,6 +320,9 @@ public class HomeActivity extends AppCompatActivity {
             private TextView sellCount;
             private TextView dateJalali;
 
+            private RecyclerView rvCreate;
+            private RecyclerView rvUpdate;
+
             private JsonObject extraData;
 
 
@@ -326,6 +337,8 @@ public class HomeActivity extends AppCompatActivity {
                 sellCount = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_sellCount);
                 dateJalali = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_dateJalali);
                 entranceLogo = (ImageView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceLogo) ;
+                rvCreate = (RecyclerView) itemView.findViewById(R.id.item_entrance_create);
+                rvUpdate = (RecyclerView) itemView.findViewById(R.id.item_entrance_update);
 
                 //concourText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 entranceType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
@@ -333,6 +346,9 @@ public class HomeActivity extends AppCompatActivity {
                 additionalData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+
+
+
             }
 
             public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
@@ -371,8 +387,6 @@ public class HomeActivity extends AppCompatActivity {
 
                 entranceType.setText("کنکور " + concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString() + " " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString());
                 entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString() + ")");
-
-
 
                 int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
                 MediaRestAPIClass.downloadEsetImage(getApplicationContext(), imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
@@ -417,9 +431,18 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
             ConcoughActivityStruct oneItem = this.concoughActivityStructList.get(position);
-            Log.d(TAG, oneItem.toString());
+//            Log.d(TAG, oneItem.toString());
+
+
+            holder.itemView.findViewById(R.id.item_entrance_create).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //Intent i = new .... this.concoughActivityStructList.get(position) get uniq
+                }
+            });
+
 
             switch (oneItem.getActivityType()) {
                 case "ENTRANCE_UPDATE":
@@ -430,7 +453,9 @@ public class HomeActivity extends AppCompatActivity {
                     ItemHolder itemHolder2 = (ItemHolder) holder;
                     itemHolder2.setupHolder(oneItem);
             }
+
         }
+
 
         @Override
         public int getItemCount() {

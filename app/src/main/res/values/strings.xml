@@ -55,4 +55,7 @@
     <string name="StartupA_S_info">برای تلاش مجدد لمس نمایید</string>
     <string name="itemEntranceCreateI_S_concourText">کنکور</string>
 
+
+    <string name="test_section_format">Hello World from section: %1$d</string>
+
 </resources>
