@@ -145,7 +145,7 @@ class BasketRestAPIClass {
 
                     val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
-                    val request = profile.post(url = fullPath, body = parameters, headers = headers!!)
+                    val request = profile.put(url = fullPath, body = parameters, headers = headers!!)
 
                     request.enqueue(object: Callback<ResponseBody> {
                         override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {

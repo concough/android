@@ -10,7 +10,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
 import com.jakewharton.picasso.OkHttp3Downloader
-import okhttp3.ResponseBody
+import com.squareup.picasso.NetworkPolicy
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -18,10 +18,11 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.squareup.picasso.OkHttpDownloader
 import com.squareup.picasso.Picasso
-import okhttp3.Headers
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
+import okhttp3.*
 import java.io.IOException
+import com.concough.android.concough.R.id.imageView
+
+
 
 
 /**
@@ -60,8 +61,32 @@ class MediaRestAPIClass {
                         }
                     }).build()
 
-                    Picasso.Builder(context).downloader(OkHttp3Downloader(okHttpClient)).build().load(fullPath).into(imageHolder)
-                    completion(null, HTTPErrorType.Success)
+                    try {
+                        val builder = Picasso.Builder(context)
+                        builder.downloader(OkHttp3Downloader(okHttpClient))
+                        val built = builder.build()
+//                        built.setIndicatorsEnabled(true)
+//                        built.isLoggingEnabled = true
+                        Picasso.setSingletonInstance(built)
+
+                    } catch (exc: Exception) {}
+
+
+                    Picasso.with(context)
+                            .load(fullPath)
+                            .networkPolicy(NetworkPolicy.OFFLINE)
+                            .into(imageHolder, object : com.squareup.picasso.Callback {
+                                override fun onSuccess() {
+                                    completion(null, HTTPErrorType.Success)
+                                }
+
+                                override fun onError() {
+                                    //Try again online if cache failed
+                                    completion(null, HTTPErrorType.NotFound)
+                                }
+                            })
+
+//                    Picasso.with(context).load(fullPath).networkPolicy(NetworkPolicy.OFFLINE)
                } else {
                     completion(null, error)
                 }

@@ -21,11 +21,14 @@ class RealmSingleton {
             if (sharedInstance == null)
                 sharedInstance = RealmSingleton(context)
 
+
+
             return sharedInstance!!
         }
     }
 
     private constructor(context: Context) {
+        Realm.init(context)
         val config = RealmConfiguration.Builder().build()
         try {
             this.realm = Realm.getInstance(config)

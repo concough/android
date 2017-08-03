@@ -12,16 +12,10 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <service android:name="com.concough.android.downloader.EntrancePackageDownloader"/>
         <activity
             android:name=".StartupActivity"
             android:windowSoftInputMode="adjustPan">
-
-            <!-- <intent-filter> -->
-            <!-- <action android:name="android.intent.action.MAIN" /> -->
-
-
-            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
-            <!-- </intent-filter> -->
         </activity>
         <activity android:name=".LoginActivity" />
 
@@ -53,12 +47,15 @@
         </activity>
         <activity
             android:name=".ArchiveActivity"
-            android:theme="@style/AppThemeArchiveActionBar"></activity>
+            android:theme="@style/AppThemeArchiveActionBar" />
         <activity
             android:name=".ArchiveDetailActivity"
-            android:theme="@style/AppThemeArchiveDetailActionBar"></activity>
+            android:theme="@style/AppThemeArchiveDetailActionBar" />
         <activity
             android:name=".BottomNavigationActivity"
+            android:theme="@style/AppThemeArchiveActionBar">
+        </activity>
+        <activity android:name=".EntranceDetailActivity"
             android:theme="@style/AppThemeArchiveActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
