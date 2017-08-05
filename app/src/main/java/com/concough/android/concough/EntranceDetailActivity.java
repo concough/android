@@ -1,6 +1,7 @@
 package com.concough.android.concough;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -11,6 +12,7 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,6 +64,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
     private static final String TAG = "EntranceDetailActivity";
     private static final String CONTEXT_WHO_KEY = "CONTEXT_WHO";
+    private static final String ENTRANCE_UNIQUE_ID_KEY = "ENTRANCE_UNIQUE_ID";
     private static final String HANDLE_THREAD_NAME = "Concough-EntranceDetailActivity";
 
     private static final int DOWNLOAD_ENTRANCE = 0;
@@ -70,6 +73,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     private static final int DOWNLOAD_ENTRANCE_SALE = 3;
 
     private String entranceUniqueId = "fc4419fc2ceb4aaca787a25ff6c00117";
+    private String contextFromWho = "";
     private Boolean selfBasketAdd = false;
     private EntranceVCStateEnum state = null;
 
@@ -82,16 +86,33 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     private RecyclerView recycleView;
     private EntranceDetailAdapter entranceDetailAdapter;
 
+    public static Intent newIntent(Context packageContext, String entranceUniqueId, String who) {
+        Intent i = new Intent(packageContext, EntranceDetailActivity.class);
+        i.putExtra(ENTRANCE_UNIQUE_ID_KEY, entranceUniqueId);
+        i.putExtra(CONTEXT_WHO_KEY, who);
+        return i;
+    }
+
     protected int getLayoutResourceId() {
         return R.layout.activity_entrance_detail;
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+//        if (savedInstanceState != null) {
+//            this.entranceUniqueId = savedInstanceState.getString(ENTRANCE_UNIQUE_ID_KEY);
+//            this.contextFromWho = savedInstanceState.getString(CONTEXT_WHO_KEY);
+//        } else {
+//            finish();
+//        }
+//
+//        if (this.contextFromWho == "Home") {
+//            this.setMenuSelectedIndex(0);
+//        } else if (this.contextFromWho == "Archive") {
+//            this.setMenuSelectedIndex(1);
+//        }
         this.setMenuSelectedIndex(1);
         super.onCreate(savedInstanceState);
-
-        BasketSingleton.getInstance().loadBasketItems(this);
 
         this.handlerThread = new HandlerThread(HANDLE_THREAD_NAME);
         if (this.handlerThread != null) {
@@ -110,6 +131,17 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
         recycleView.setLayoutManager(new LinearLayoutManager(this));
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setupView();
+        BasketSingleton.getInstance().loadBasketItems(this);
+
+    }
+
+    private void setupView() {
         pullRefreshLayout = (PullRefreshLayout) findViewById(R.id.entranceDetailA_swipeRefreshLayout);
         pullRefreshLayout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
             @Override
@@ -120,7 +152,6 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
             }
         });
-
 
         BasketSingleton.getInstance().setListener(new BasketSingleton.BasketSingletonListener() {
             @Override
@@ -134,7 +165,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             public void onCreateCompleted() {
                 Integer id = BasketSingleton.getInstance().findSaleByTargetId(EntranceDetailActivity.this.entranceUniqueId, "Entrance");
                 if (id != null && id > 0) {
-                    BasketSingleton.getInstance().removeSaleById(EntranceDetailActivity.this, id);
+                    BasketSingleton.getInstance().removeSaleById(EntranceDetailActivity.this, id, 0);
                 } else {
                     BasketSingleton.getInstance().addSale(EntranceDetailActivity.this, EntranceDetailActivity.this.entrance, "Entrance");
                 }
@@ -150,7 +181,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             }
 
             @Override
-            public void onRemoveCompleted(int count) {
+            public void onRemoveCompleted(int count, int position) {
                 EntranceDetailActivity.this.selfBasketAdd = !EntranceDetailActivity.this.selfBasketAdd;
                 EntranceDetailActivity.this.updateBasketBadge(count);
 
@@ -163,6 +194,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
             }
         });
+
     }
 
     public void stopHandler() {
@@ -300,7 +332,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                 EntranceDetailActivity.this.stateMachine();
                                 return;
                             } else {
-                                // TODO: Downloader Singleton chcek
+                                // TODO: Downloader Singleton check
+                                Log.d(TAG, "stateMachine: Purchased");
                             }
                         }
                     }
@@ -810,7 +843,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         INITIAL_SECTION(1),
         HEADER_SECTION(2),
         INFORMATION_SECTION(3),
-        SALE_SECTION(4);
+        SALE_SECTION(4),
+        PURCHASED_SECTION(5);
 
         private final int value;
 
@@ -846,6 +880,9 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             } else if (EDViewHolderType.SALE_SECTION.getValue() == viewType) {
                 View view = LayoutInflater.from(this.context).inflate(R.layout.item_ed_sale_section, parent, false);
                 return new EDSaleSectionViewHolder(view);
+            } else if (EDViewHolderType.PURCHASED_SECTION.getValue() == viewType) {
+                View view = LayoutInflater.from(this.context).inflate(R.layout.item_ed_sale_section, parent, false);
+                return new EDSaleSectionViewHolder(view);
             }
             return null;
         }
@@ -869,6 +906,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 case EntranceComplete:
                     return 3;
                 case ShowSaleInfo:
+                case Purchased:
                     return 4;
                 default:
                     return 0;
@@ -884,6 +922,9 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 case 3:
                     if (EntranceDetailActivity.this.state == EntranceVCStateEnum.ShowSaleInfo) {
                         return EDViewHolderType.SALE_SECTION.getValue();
+                    }
+                    else if (EntranceDetailActivity.this.state == EntranceVCStateEnum.Purchased) {
+                        return EDViewHolderType.PURCHASED_SECTION.getValue();
                     }
             }
             return 0;
@@ -912,20 +953,32 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 entranceTypeTextView.setText(es.getEntranceTypeTitle() + " " + es.getEntranceOrgTitle());
 
                 if (es.getEntranceSetId() != null) {
-                    MediaRestAPIClass.downloadEsetImage(getApplicationContext(), es.getEntranceSetId(), esetImageView, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                        @Override
-                        public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
-                            return null;
-                        }
-                    }, new Function1<NetworkErrorType, Unit>() {
-                        @Override
-                        public Unit invoke(NetworkErrorType networkErrorType) {
-                            return null;
-                        }
-                    });
+                    downloadImage(es.getEntranceSetId());
 
                 }
             }
+
+            private void downloadImage(final int imageId) {
+                MediaRestAPIClass.downloadEsetImage(EntranceDetailActivity.this, imageId, esetImageView, new Function2<JsonObject, HTTPErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
+                        if (httpErrorType != HTTPErrorType.Success) {
+                            if (httpErrorType == HTTPErrorType.Refresh) {
+                                downloadImage(imageId);
+                            } else {
+                                // TODO: Set to default
+                            }
+                        }
+                        return null;
+                    }
+                }, new Function1<NetworkErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(NetworkErrorType networkErrorType) {
+                        return null;
+                    }
+                });
+            }
+
         }
 
         private class EDHeaderSectionViewHolder extends RecyclerView.ViewHolder {
@@ -1040,7 +1093,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                         } else {
                             Integer id = BasketSingleton.getInstance().findSaleByTargetId(EntranceDetailActivity.this.entranceUniqueId, "Entrance");
                             if (id != null && id > 0) {
-                                BasketSingleton.getInstance().removeSaleById(EntranceDetailActivity.this, id);
+                                BasketSingleton.getInstance().removeSaleById(EntranceDetailActivity.this, id, 0);
                             } else {
                                 BasketSingleton.getInstance().addSale(EntranceDetailActivity.this, EntranceDetailActivity.this.entrance, "Entrance");
                             }
@@ -1061,7 +1114,9 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     @Override
                     public void onClick(View v) {
                         // TODO: create new intent from Checkout Activity and start it
-                        DownloaderSingleton.getInstance().getMeDownloader(EntranceDetailActivity.this, "Entrance", EntranceDetailActivity.this.entranceUniqueId);
+                        Intent i = BasketCheckoutActivity.newIntent(EntranceDetailActivity.this, "EntranceDetail");
+                        EntranceDetailActivity.this.startActivity(i);
+//                        DownloaderSingleton.getInstance().getMeDownloader(EntranceDetailActivity.this, "Entrance", EntranceDetailActivity.this.entranceUniqueId);
                     }
                 });
 

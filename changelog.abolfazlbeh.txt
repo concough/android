@@ -172,3 +172,10 @@ Entrance Detail Activity (abolfazl.beh)
     - EntranceDetailActivity state machine is created
     - 4 item sections created to use in ViewHolder in DetailEntrance
 10 - "activity_login" and "activity_reset_password" layout password TextView type changed
+
+------------------------------------------------------------------------------------------------
+Basket Checkout Activity (abolfazl.beh)
+
+1 - Add static newInstance function to "EntranceDetailActivity" and save needed data to bundle
+2 - Create BasketCheckoutActivity to checkout
+3 - Edit BasketSigleton to add new functionality

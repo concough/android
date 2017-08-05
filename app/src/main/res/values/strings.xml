@@ -59,4 +59,8 @@
     <string name="navigation_bottom_archive">محصولات</string>
     <string name="navigation_bottom_favorites">آرشیو</string>
     <string name="navigation_bottom_settings">تنظیمات</string>
+
+    <string name="checkout_button_label">پرداخت و تسویه حساب</string>
+    <string name="total_cost_label">قیمت کل خرید</string>
+    <string name="checkout_delete_item_label">حذف</string>
 </resources>

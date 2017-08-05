@@ -12,7 +12,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <service android:name="com.concough.android.downloader.EntrancePackageDownloader"/>
+        <service android:name="com.concough.android.downloader.EntrancePackageDownloader" />
+
         <activity
             android:name=".StartupActivity"
             android:windowSoftInputMode="adjustPan">
@@ -53,17 +54,17 @@
             android:theme="@style/AppThemeArchiveDetailActionBar" />
         <activity
             android:name=".BottomNavigationActivity"
-            android:theme="@style/AppThemeArchiveActionBar">
-        </activity>
-        <activity android:name=".EntranceDetailActivity"
+            android:theme="@style/AppThemeArchiveActionBar"></activity>
+        <activity
+            android:name=".EntranceDetailActivity"
             android:theme="@style/AppThemeArchiveActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
+        <activity android:name=".BasketCheckoutActivity"></activity>
     </application>
 
 </manifest>
