@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.baoyz.widget.PullRefreshLayout;
 import com.concough.android.rest.ActivityRestAPIClass;
@@ -48,7 +49,12 @@ public class HomeActivity extends AppCompatActivity {
     private boolean moreFeedExist = true;
     RecyclerView recycleView;
     HomeActivityAdapter homeActivityAdapter;
+    LinearLayoutManager mLayoutManager;
+    private boolean loading = true;
+    private boolean isRefresh;
     int homaActivityCheck = 0;
+    String lastCreatedStr = "";
+
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, HomeActivity.class);
@@ -64,31 +70,54 @@ public class HomeActivity extends AppCompatActivity {
         recycleView = (RecyclerView) findViewById(R.id.homeA_recycle);
         homeActivityAdapter = new HomeActivityAdapter(this, new ArrayList<ConcoughActivityStruct>());
         recycleView.setAdapter(homeActivityAdapter);
-        recycleView.setLayoutManager(new LinearLayoutManager(this));
+        mLayoutManager = new LinearLayoutManager(this);
+        recycleView.setLayoutManager(mLayoutManager);
 
+        HomeActivity.this.isRefresh = false;
 
         homeActivity(null);
 
 
         final PullRefreshLayout layout = (PullRefreshLayout) findViewById(R.id.homeA_swipeRefreshLayout);
-       // layout.setColorSchemeColors(Color.CYAN);
+        // layout.setColorSchemeColors(Color.CYAN);
         layout.setColorSchemeColors(Color.TRANSPARENT, Color.GRAY, Color.GRAY, Color.GRAY);
         layout.setRefreshStyle(PullRefreshLayout.STYLE_MATERIAL);
         layout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                layout.setRefreshing(false);
+                HomeActivity.this.isRefresh = true;
                 homeActivity(null);
-                 layout.setRefreshing(false);
 
             }
         });
 
 
+            recycleView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    if (HomeActivity.this.moreFeedExist) {
+
+                        HomeActivity.this.loading = false;
+                        HomeActivity.this.isRefresh = false;
+                        HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
+                        Toast.makeText(HomeActivity.this, "Loading new Data ....", Toast.LENGTH_SHORT).show();
+
+
+                    }
+                }
+            });
+
+
+
     }
+
 
     private void homeActivity(String date) {
         new HomeActivityTask().execute(date);
+
     }
+
 
     private class HomeActivityTask extends AsyncTask<String, Void, Void> {
         @Override
@@ -122,21 +151,22 @@ public class HomeActivity extends AppCompatActivity {
                                             }
 
                                         }
-                                        if (aBoolean) {
-                                            //homeActivityAdapter.setItems(localList);
-                                            //HomeActivity.this.concoughActivityStructs = localList;
-                                            moreFeedExist = true;
+
+
+                                        HomeActivity.this.moreFeedExist = true;
+
+                                        if(aBoolean) {
+                                            homeActivityAdapter.setItems(localList);
                                         } else {
+                                            homeActivityAdapter.addItem(localList);
                                         }
-                                        homeActivityAdapter.addItem(localList);
+
+
+                                        String lastIndexCreatedStr = localList.get(localList.size() - 1).getCreatedStr();
+                                        HomeActivity.this.lastCreatedStr = lastIndexCreatedStr;
+
+
                                         homeActivityAdapter.notifyDataSetChanged();
-
-                                        if (homaActivityCheck < 5) {
-                                            homaActivityCheck++;
-                                            String s = null;
-                                            new HomeActivityTask().execute(s);
-
-                                        }
 
 
                                     } else {
@@ -280,19 +310,19 @@ public class HomeActivity extends AppCompatActivity {
                 entranceType.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString() + " " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString());
                 entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString() + ")");
 
-//                int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
-//                MediaRestAPIClass.downloadEsetImage(getApplicationContext(), imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
-//                    @Override
-//                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
-//                        Log.d(TAG, "invoke: " + jsonObject);
-//                        return null;
-//                    }
-//                }, new Function1<NetworkErrorType, Unit>() {
-//                    @Override
-//                    public Unit invoke(NetworkErrorType networkErrorType) {
-//                        return null;
-//                    }
-//                });
+                int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
+                MediaRestAPIClass.downloadEsetImage(getApplicationContext(), imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
+                        Log.d(TAG, "invoke: " + jsonObject);
+                        return null;
+                    }
+                }, new Function1<NetworkErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(NetworkErrorType networkErrorType) {
+                        return null;
+                    }
+                });
 
                 String s;
                 s = concoughActivityStruct.getTarget().getAsJsonObject().get("extra_data").getAsString();
@@ -313,15 +343,11 @@ public class HomeActivity extends AppCompatActivity {
         private class EntranceUpdateHolder extends RecyclerView.ViewHolder {
             private ImageView entranceLogo;
             private TextView dateTopLeft;
-            //            TextView concourText;
             private TextView entranceType;
             private TextView entranceSetGroup;
             private TextView additionalData;
             private TextView sellCount;
             private TextView dateJalali;
-
-            private RecyclerView rvCreate;
-            private RecyclerView rvUpdate;
 
             private JsonObject extraData;
 
@@ -329,24 +355,19 @@ public class HomeActivity extends AppCompatActivity {
             public EntranceUpdateHolder(View itemView) {
                 super(itemView);
 
-                //concourText = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_concourText);
                 dateTopLeft = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_dateTopLeft);
                 entranceType = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceType);
                 entranceSetGroup = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceSetGroup);
                 additionalData = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_additionalData);
                 sellCount = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_sellCount);
                 dateJalali = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_dateJalali);
-                entranceLogo = (ImageView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceLogo) ;
-                rvCreate = (RecyclerView) itemView.findViewById(R.id.item_entrance_create);
-                rvUpdate = (RecyclerView) itemView.findViewById(R.id.item_entrance_update);
+                entranceLogo = (ImageView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceLogo);
 
-                //concourText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 entranceType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 entranceSetGroup.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 additionalData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
-
 
 
             }
@@ -433,16 +454,6 @@ public class HomeActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
             ConcoughActivityStruct oneItem = this.concoughActivityStructList.get(position);
-//            Log.d(TAG, oneItem.toString());
-
-
-            holder.itemView.findViewById(R.id.item_entrance_create).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    //Intent i = new .... this.concoughActivityStructList.get(position) get uniq
-                }
-            });
-
 
             switch (oneItem.getActivityType()) {
                 case "ENTRANCE_UPDATE":

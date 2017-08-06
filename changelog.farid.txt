@@ -75,3 +75,20 @@ Archive Activity (faridM)
 =================================================================================
 
 
+Finished Archive Detail Activity (faridM)
+
+
+    1 - Aded Layouts "concough_border_radius_archivedetail_style.xml" , "concough_gray_color_filter.xml" , "concough_recycle_box_style_holder2_gray.xml" , "concough_recycle_box_style_holder2_white.xml"
+    2 - Some Changes on "ArchiveActivity" , "ArchiveDetailActivty" , "HomaActivity"
+    3 - Some Layouts aded "cc_archivedetail_holder1.xml"  , "cc_archivedetail_holder2"
+    4 - Aded "/" at the end of "next" URL > UrlMakerSingleton
+
+
+
+=================================================================================
+
+
+
+
+
+

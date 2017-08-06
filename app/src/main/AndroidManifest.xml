@@ -80,6 +80,13 @@
             android:name=".ArchiveDetailActivity"
             android:theme="@style/AppThemeArchiveDetailActionBar">
 
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+
+
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+
 
 
         </activity>

@@ -1,6 +1,7 @@
 package com.concough.android.concough;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,12 +25,15 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.concough.android.extensions.RotateViewExtensions;
 import com.concough.android.rest.ArchiveRestAPIClass;
 import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
+import com.concough.android.structures.ArchiveEsetDetailStruct;
+import com.concough.android.structures.ArchiveEsetStructs;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.google.gson.JsonArray;
@@ -48,12 +52,10 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
-import static android.R.attr.id;
-
 public class ArchiveActivity extends AppCompatActivity {
     private final String TAG = "ArchiveActivity";
 
-//    private ArrayAdapter<String> adapter;
+    //    private ArrayAdapter<String> adapter;
     private DialogAdapter adapter;
     private ArrayAdapter<String> adapterTab;
     private ArrayList<String> typeList;
@@ -62,7 +64,7 @@ public class ArchiveActivity extends AppCompatActivity {
 
     private ArrayList<JsonElement> tabbarJsonElement;
 
-    private SetAdapter adapterSet;
+    private GetSetsAdapter adapterSet;
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
     private DialogPlus dialog;
@@ -71,7 +73,7 @@ public class ArchiveActivity extends AppCompatActivity {
     private RecyclerView recycleView;
     private Button refreshButton;
 
-    private int currentPositionDropDown;
+    private Integer currentPositionDropDown;
 
     private CustomTabLayout tabLayout;
 
@@ -79,37 +81,18 @@ public class ArchiveActivity extends AppCompatActivity {
     private ArrayList<JsonElement> cacheGroups;
     private ArrayList<JsonElement> cacheSets;
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                int index = tab.getPosition();
-                int id = ArchiveActivity.this.tabbarJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
-                ArchiveActivity.this.currentPositionDropDown = id;
-                getSets(id);
-            }
+    private ArchiveEsetDetailStruct mArchiveEsetDetailStruct;
+    private ArchiveEsetStructs mArchiveEsetStructs;
 
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-
-            }
-
-
-        });
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_archive);
+
+        mArchiveEsetDetailStruct = new ArchiveEsetDetailStruct();
+        mArchiveEsetStructs = new ArchiveEsetStructs();
+
 
         typeList = new ArrayList<String>();
         dropDownJsonElement = new ArrayList<JsonElement>();
@@ -117,7 +100,7 @@ public class ArchiveActivity extends AppCompatActivity {
         adapterTab = new ArrayAdapter<String>(this, R.layout.cc_archive_listitem_tabbar);
 
         recycleView = (RecyclerView) findViewById(R.id.archiveA_recycleDetail);
-        adapterSet = new SetAdapter(this, new ArrayList<JsonElement>());
+        adapterSet = new GetSetsAdapter(this, new ArrayList<JsonElement>());
         recycleView.setAdapter(adapterSet);
         recycleView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -136,12 +119,34 @@ public class ArchiveActivity extends AppCompatActivity {
         tabLayout.setTabGravity(Gravity.RIGHT);
 
 
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                int index = tab.getPosition();
+                int id = ArchiveActivity.this.tabbarJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
+                getSets(id);
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+
+            }
+
+
+        });
+
+
         int toolBarHeight = toolbar.getLayoutParams().height;
 
 
-
         typeList = new ArrayList<>();
-        adapter = new DialogAdapter(getApplicationContext(),typeList);
+        adapter = new DialogAdapter(getApplicationContext(), typeList);
         dialog = DialogPlus.newDialog(this)
                 .setAdapter(adapter)
                 .setOnItemClickListener(new OnItemClickListener() {
@@ -155,7 +160,7 @@ public class ArchiveActivity extends AppCompatActivity {
                 .setOnCancelListener(new OnCancelListener() {
                     @Override
                     public void onCancel(DialogPlus dialog) {
-                        texButton.setText(buttonTextMaker(typeList.get(currentPositionDropDown).toString(), false));
+                        texButton.setText(buttonTextMaker(typeList.get(ArchiveActivity.this.currentPositionDropDown).toString(), false));
                     }
                 })
                 .setCancelable(true)
@@ -182,13 +187,13 @@ public class ArchiveActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (dialog.isShowing()) {
-                    texButton.setText(buttonTextMaker(typeList.get(currentPositionDropDown).toString(), false));
+                    // texButton.setText(buttonTextMaker(typeList.get(currentPositionDropDown).toString(), false));
 
                     dialog.dismiss();
 
 
                 } else {
-                    texButton.setText(buttonTextMaker(typeList.get(currentPositionDropDown).toString(), true));
+                    //  texButton.setText(buttonTextMaker(typeList.get(currentPositionDropDown).toString(), true));
 
                     dialog.show();
 
@@ -205,7 +210,7 @@ public class ArchiveActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 getTypes();
-                RotateViewExtensions.buttonRotateStart(refreshButton,getApplicationContext());
+                RotateViewExtensions.buttonRotateStart(refreshButton, getApplicationContext());
             }
         });
 
@@ -230,7 +235,7 @@ public class ArchiveActivity extends AppCompatActivity {
     // Custom Functions
     private void changeTypeIndex(int index) {
         ArchiveActivity.this.texButton.setText(buttonTextMaker((String) ArchiveActivity.this.adapter.getItem(index), false));
-        new GetTabsTask().execute(ArchiveActivity.this.dropDownJsonElement.get(index).getAsJsonObject().get("id").getAsInt());
+        new GetGroupsTask().execute(ArchiveActivity.this.dropDownJsonElement.get(index).getAsJsonObject().get("id").getAsInt());
     }
 
     private void changeGroupIndex(final int index) {
@@ -242,8 +247,8 @@ public class ArchiveActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         ArchiveActivity.this.tabLayout.getTabAt(index).select();
-                        int i = ArchiveActivity.this.tabbarJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
-                        ArchiveActivity.this.currentPositionDropDown = id;
+                        Integer i = ArchiveActivity.this.tabbarJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
+                       //ArchiveActivity.this.currentPositionDropDown = i;
                         getSets(i);
 
                     }
@@ -261,7 +266,7 @@ public class ArchiveActivity extends AppCompatActivity {
     }
 
     private void getTab(int typeId) {
-        new GetTabsTask().execute(typeId);
+        new GetGroupsTask().execute(typeId);
     }
 
     private void getSets(int groupId) {
@@ -270,7 +275,7 @@ public class ArchiveActivity extends AppCompatActivity {
                 new Runnable() {
                     @Override
                     public void run() {
-                        RotateViewExtensions.buttonRotateStop(refreshButton,getApplicationContext());
+                        RotateViewExtensions.buttonRotateStop(refreshButton, getApplicationContext());
 
                     }
                 }, 1500);
@@ -309,11 +314,12 @@ public class ArchiveActivity extends AppCompatActivity {
                                             }
                                         }
 
+                                        ArchiveActivity.this.currentPositionDropDown = 0;
+
                                         ArchiveActivity.this.adapter.addAll(localList);
                                         ArchiveActivity.this.dropDownJsonElement.addAll(localListJson);
                                         ArchiveActivity.this.adapter.notifyDataSetChanged();
                                         ArchiveActivity.this.changeTypeIndex(0);
-
 
 
                                     } catch (Exception e) {
@@ -342,7 +348,7 @@ public class ArchiveActivity extends AppCompatActivity {
         }
     }
 
-    private class GetTabsTask extends AsyncTask<Integer, Void, Void> {
+    private class GetGroupsTask extends AsyncTask<Integer, Void, Void> {
 
         private int firstIndexOfTypes;
 
@@ -401,7 +407,7 @@ public class ArchiveActivity extends AppCompatActivity {
                                         }
 
                                     } else if (httpErrorType == HTTPErrorType.Refresh) {
-                                        new GetTabsTask().execute(firstIndexOfTypes);
+                                        new GetGroupsTask().execute(firstIndexOfTypes);
                                     } else {
                                         // TODO: show error with msgType = "HTTPError" and error
                                     }
@@ -479,13 +485,13 @@ public class ArchiveActivity extends AppCompatActivity {
     }
 
 
-    private class SetAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private class GetSetsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
 
         private Context context;
         private ArrayList<JsonElement> mArrayList = new ArrayList<>();
 
-        public SetAdapter(Context context, ArrayList<JsonElement> arrayList) {
+        public GetSetsAdapter(Context context, ArrayList<JsonElement> arrayList) {
             this.context = context;
             this.mArrayList = arrayList;
         }
@@ -504,6 +510,7 @@ public class ArchiveActivity extends AppCompatActivity {
             private TextView concourName;
             private TextView concourCode;
             private TextView concourCount;
+            private View constraint;
 
 
             private JsonObject extraData;
@@ -515,7 +522,8 @@ public class ArchiveActivity extends AppCompatActivity {
                 concourName = (TextView) itemView.findViewById(R.id.ccListitemArchiveL_concourName);
                 concourCode = (TextView) itemView.findViewById(R.id.ccListitemArchiveL_concourCode);
                 concourCount = (TextView) itemView.findViewById(R.id.ccListitemArchiveL_concourCount);
-                entranceLogo = (ImageView) itemView.findViewById(R.id.archiveDetailA_logoImage);
+                entranceLogo = (ImageView) itemView.findViewById(R.id.archiveDetailHolder1L_logoImage);
+                constraint = itemView.findViewById(R.id.archiveDetailA_constraitItem);
 
 
                 concourName.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
@@ -524,7 +532,7 @@ public class ArchiveActivity extends AppCompatActivity {
             }
 
 
-            public void setupHolder(JsonElement jsonElement) {
+            public void setupHolder(final JsonElement jsonElement) {
 
                 String t1 = jsonElement.getAsJsonObject().get("title").getAsString();
                 concourName.setText(t1);
@@ -557,7 +565,7 @@ public class ArchiveActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if(httpErrorType != HTTPErrorType.Success) {
+                                if (httpErrorType != HTTPErrorType.Success) {
 //                                    entranceLogo.setImageDrawable(getResources().getDrawable(R.drawable.male_icon_100));
                                     entranceLogo.setBackgroundResource(R.drawable.male_icon_100);
                                 }
@@ -573,8 +581,43 @@ public class ArchiveActivity extends AppCompatActivity {
                     }
                 });
 
+
+                ArchiveActivity.this.mArchiveEsetStructs.updated = jsonElement.getAsJsonObject().get("updated").getAsString();
+                ArchiveActivity.this.mArchiveEsetStructs.code = jsonElement.getAsJsonObject().get("code").getAsString();
+                ArchiveActivity.this.mArchiveEsetStructs.entrance_count = jsonElement.getAsJsonObject().get("entrance_count").getAsInt();
+                ArchiveActivity.this.mArchiveEsetStructs.title = jsonElement.getAsJsonObject().get("title").getAsString();
+                ArchiveActivity.this.mArchiveEsetStructs.id = jsonElement.getAsJsonObject().get("id").getAsInt();
+
+
                 entranceLogo.setLayoutParams(entranceLogoLP);
                 entranceLogo.setImageResource(R.drawable.male_icon_100);
+
+
+                constraint.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+//                        Toast.makeText(getApplicationContext(), jsonElement.getAsJsonObject().get("title").getAsString(), Toast.LENGTH_SHORT).show();
+
+
+                        ArchiveActivity.this.mArchiveEsetDetailStruct.esetStruct = ArchiveActivity.this.mArchiveEsetStructs;
+                        ArchiveActivity.this.mArchiveEsetDetailStruct.groupTitle = ArchiveActivity.this.tabbarJsonElement.get(ArchiveActivity.this.tabLayout.getSelectedTabPosition()).getAsJsonObject().get("title").getAsString();
+
+                        Integer dropdownPosition = ArchiveActivity.this.currentPositionDropDown;
+                        ArchiveActivity.this.mArchiveEsetDetailStruct.typeTitle = ArchiveActivity.this.dropDownJsonElement.get(  dropdownPosition).getAsJsonObject().get("title").getAsString();
+
+                        if(jsonElement.getAsJsonObject().get("entrance_count").getAsInt() != 0) {
+                            Intent i = ArchiveDetailActivity.newIntent(ArchiveActivity.this, ArchiveActivity.this.mArchiveEsetDetailStruct);
+                            startActivity(i);
+                        } else {
+                            Toast.makeText(context, "تعداد کنکور موجود 0 عدد است", Toast.LENGTH_SHORT).show();
+                        }
+
+
+
+
+
+                    }
+                });
 
 
             }
@@ -608,9 +651,6 @@ public class ArchiveActivity extends AppCompatActivity {
     }
 
 
-//////////////////////////////////////////////////////////////////////////////////////////
-
-
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         public SectionsPagerAdapter(FragmentManager fm) {
@@ -635,7 +675,6 @@ public class ArchiveActivity extends AppCompatActivity {
 
         }
     }
-
 
 
     public class DialogAdapter extends BaseAdapter {
@@ -667,7 +706,7 @@ public class ArchiveActivity extends AppCompatActivity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
 
-            View v = LayoutInflater.from(ArchiveActivity.this.getApplicationContext()).inflate(R.layout.cc_archive_listitem_archive,null);
+            View v = LayoutInflater.from(ArchiveActivity.this.getApplicationContext()).inflate(R.layout.cc_archive_listitem_archive, null);
             TextView tv = (TextView) v.findViewById(R.id.text1);
             tv.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
             tv.setText(mArrayList.get(position));

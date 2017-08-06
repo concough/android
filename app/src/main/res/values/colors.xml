@@ -19,6 +19,11 @@
     <color name="colorConcoughBorderWhite">#cccccc</color>
     <color name="colorConcoughShadow">#d8d8d8</color>
 
+
+    <color name="colorConcoughHolder2Box">#80FCFCFC</color>
+
+
+
     <color name="colorWhite">#fff</color>
 
 </resources>
