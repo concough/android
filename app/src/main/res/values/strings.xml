@@ -63,4 +63,10 @@
     <string name="checkout_button_label">پرداخت و تسویه حساب</string>
     <string name="total_cost_label">قیمت کل خرید</string>
     <string name="checkout_delete_item_label">حذف</string>
+
+    <string name="entrance_detail_downloading_label">در حال دانلود</string>
+    <string name="entrance_detail_download_button">دانلود</string>
+    <string name="entrance_detail_download_sale_label">خریداری شده در:</string>
+    <string name="entrance_detail_download_complete_label">این کنکور دانلود شده است</string>
+    <string name="entrance_detail_download_complete_show_button">مشاهده کنکور</string>
 </resources>

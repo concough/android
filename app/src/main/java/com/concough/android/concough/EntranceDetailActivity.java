@@ -18,6 +18,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,6 +29,8 @@ import com.concough.android.models.EntranceModel;
 import com.concough.android.models.EntranceModelHandler;
 import com.concough.android.models.PurchasedModel;
 import com.concough.android.models.PurchasedModelHandler;
+import com.concough.android.models.UserLogModel;
+import com.concough.android.models.UserLogModelHandler;
 import com.concough.android.rest.EntranceRestAPIClass;
 import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.rest.ProductRestAPIClass;
@@ -42,15 +46,19 @@ import com.concough.android.structures.EntranceStatStruct;
 import com.concough.android.structures.EntranceStruct;
 import com.concough.android.structures.EntranceVCStateEnum;
 import com.concough.android.structures.HTTPErrorType;
+import com.concough.android.structures.LogTypeEnum;
 import com.concough.android.structures.NetworkErrorType;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -71,6 +79,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     private static final int DOWNLOAD_USER_PURCHASE_DATA = 1;
     private static final int DOWNLOAD_ENTRANCE_STAT = 2;
     private static final int DOWNLOAD_ENTRANCE_SALE = 3;
+    private static final int UPDATE_USER_PURCHASE_DATE = 4;
 
     private String entranceUniqueId = "fc4419fc2ceb4aaca787a25ff6c00117";
     private String contextFromWho = "";
@@ -202,6 +211,12 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             this.handlerThread.quit();
     }
 
+    @Override
+    protected void onDestroy() {
+        stopHandler();
+        super.onDestroy();
+    }
+
     private void resetView() {
         this.setupBarButton();
 
@@ -241,7 +256,9 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 case DOWNLOAD_ENTRANCE_SALE:
                     EntranceDetailActivity.this.handleDownloadEntranceSale(msg);
                     break;
-
+                case UPDATE_USER_PURCHASE_DATE:
+                    EntranceDetailActivity.this.handleUpdateUserPurchaseData(msg);
+                    break;
             }
         }
         return true;
@@ -331,9 +348,30 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                 EntranceDetailActivity.this.state = EntranceVCStateEnum.Downloaded;
                                 EntranceDetailActivity.this.stateMachine();
                                 return;
-                            } else {
-                                // TODO: Downloader Singleton check
-                                Log.d(TAG, "stateMachine: Purchased");
+                            } else  {
+                                DownloaderSingleton.DownloaderState st = DownloaderSingleton.getInstance().getDownloaderState(entranceUniqueId);
+                                if (st != null) {
+                                    if (st == DownloaderSingleton.DownloaderState.Started) {
+                                        DownloaderSingleton.getInstance().setListener(new DownloaderSingleton.DownloaderSingletonListener() {
+                                            @Override
+                                            public void onDownloadergetReady(Object downloader) {
+                                                ((EntrancePackageDownloader) downloader).registerActivity(EntranceDetailActivity.this, "ED", 0);
+                                                uiHandler.post(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        EntranceDetailActivity.this.state = EntranceVCStateEnum.DownloadStarted;
+                                                        EntranceDetailActivity.this.stateMachine();
+                                                        return;
+                                                    }
+                                                });
+                                            }
+                                        });
+
+                                        try {
+                                            DownloaderSingleton.getInstance().getMeDownloader(EntranceDetailActivity.this, "Entrance", entranceUniqueId);
+                                        } catch (Exception exc) {}
+                                    }
+                                }
                             }
                         }
                     }
@@ -344,12 +382,32 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     break;
 
                 case DownloadStarted:
+                    try {
+                        EntranceDetailAdapter.EDPurchasedSectionViewHolder holder = (EntranceDetailAdapter.EDPurchasedSectionViewHolder) EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
+                        if (holder != null) {
+                            holder.changeToDownloadStartedState();
+                        }
+                    } catch (Exception exc) {
+
+                    }
                     break;
 
                 case Downloaded:
                     EntranceDetailActivity.this.entranceDetailAdapter.notifyDataSetChanged();
                     break;
             }
+        }
+    }
+
+    private void createLog(String logType, JsonObject extraData) {
+        String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
+        if (username != null) {
+            String uniqueId = UUID.randomUUID().toString();
+            Date created = new Date();
+
+            try {
+                UserLogModelHandler.add(getApplicationContext(), username, uniqueId, created, logType, extraData);
+            } catch (Exception exc) {}
         }
     }
 
@@ -383,6 +441,118 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 EntranceDetailActivity.this.stateMachine();
             }
         }
+    }
+
+    private void refreshUserPurchaseData() {
+        uiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                // TODO: Show loading dialog
+            }
+        });
+
+        PurchasedRestAPIClass.getEntrancePurchasedData(EntranceDetailActivity.this, EntranceDetailActivity.this.entranceUniqueId, new Function2<JsonElement, HTTPErrorType, Unit>() {
+            @Override
+            public Unit invoke(final JsonElement jsonElement, final HTTPErrorType httpErrorType) {
+                uiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        // TODO: hide loading dialog
+                        EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
+
+                        if (httpErrorType != HTTPErrorType.Success) {
+                            if (httpErrorType == HTTPErrorType.Refresh) {
+                                if (EntranceDetailActivity.this.handler != null) {
+                                    Message msg = EntranceDetailActivity.this.handler.obtainMessage(DOWNLOAD_USER_PURCHASE_DATA);
+                                    msg.setTarget(new Handler(EntranceDetailActivity.this.getMainLooper()));
+
+                                    EntranceDetailActivity.this.handler.sendMessage(msg);
+                                }
+                            } else {
+                                // Show top message with "HTTPError" and type = error
+                            }
+                        } else {
+                            if (jsonElement != null) {
+                                String status = jsonElement.getAsJsonObject().get("status").getAsString();
+                                switch (status) {
+                                    case "OK":
+                                        try {
+                                            JsonObject purchaseData = jsonElement.getAsJsonObject().get("purchase").getAsJsonObject();
+                                            Boolean purchaseStatus = purchaseData.get("status").getAsBoolean();
+                                            if(!purchaseStatus) {
+                                                EntranceDetailActivity.this.state = EntranceVCStateEnum.NotPurchased;
+                                            } else {
+                                                JsonObject purchaseRecord = purchaseData.get("purchase_record").getAsJsonObject();
+                                                if (purchaseRecord != null) {
+                                                    int id = purchaseRecord.get("id").getAsInt();
+                                                    int amount = purchaseRecord.get("payed_amount").getAsInt();
+                                                    int downloaded = purchaseRecord.get("downloaded").getAsInt();
+
+                                                    String username = UserDefaultsSingleton.getInstance(getApplicationContext())
+                                                            .getUsername(getApplicationContext());
+
+                                                    EntranceDetailActivity.this.entrancePurchase.downloaded = downloaded;
+
+                                                    if (username != null)
+                                                        PurchasedModelHandler.updateDownloadTimes(getApplicationContext(), username, id, downloaded);
+
+                                                    EntranceDetailAdapter.EDPurchasedSectionViewHolder holder = (EntranceDetailAdapter.EDPurchasedSectionViewHolder)
+                                                            EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
+                                                    if (holder != null) {
+                                                        holder.updateDownloadedLabel(downloaded);
+                                                        holder.showLoading(false);
+                                                    }
+
+                                                }
+                                            }
+                                        } catch (Exception exc) {
+                                        }
+                                        break;
+                                    case "Error":
+                                        String errorType = jsonElement.getAsJsonObject().get("error_type").getAsString();
+                                        switch (errorType) {
+                                            case "EntranceNotExist":
+                                            case "EmptyArray":
+                                                // TODO: Show alert message EntranceResult with subType = "EntranceNotExist"
+                                                break;
+                                            default:
+                                                // TODO: Show alert message ErrorResult
+                                                break;
+                                        }
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                });
+                return null;
+            }
+        }, new Function1<NetworkErrorType, Unit>() {
+            @Override
+            public Unit invoke(final NetworkErrorType networkErrorType) {
+                uiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        // TODO: hide loading dialog
+                        EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
+                        if (networkErrorType != null) {
+                            switch (networkErrorType) {
+                                case HostUnreachable:
+                                case NoInternetAccess:
+                                    // TODO: show top error message with NetworkError
+                                    break;
+                                default:
+                                    // TODO: show top error message with NetworkError
+                                    break;
+                            }
+                        }
+
+                    }
+                });
+                return null;
+            }
+        });
+
     }
 
     private void handleDownloadEntranceStat(@Nullable Message msg) {
@@ -786,7 +956,6 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                                 EntranceDetailActivity.this.entrance = myLocalEntrance;
                                                 EntranceDetailActivity.this.state = EntranceVCStateEnum.EntranceComplete;
 
-                                                // TODO: reload recycle view
                                                 EntranceDetailActivity.this.entranceDetailAdapter.notifyDataSetChanged();
                                                 EntranceDetailActivity.this.stateMachine();
                                                 return;
@@ -839,12 +1008,117 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         });
     }
 
+    private void handleUpdateUserPurchaseData(@Nullable Message msg) {
+        uiHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                // TODO: Show loading dialog
+
+            }
+        });
+
+        PurchasedRestAPIClass.putEntrancePurchasedDownload(EntranceDetailActivity.this, EntranceDetailActivity.this.entranceUniqueId, new Function2<JsonElement, HTTPErrorType, Unit>() {
+            @Override
+            public Unit invoke(final JsonElement jsonElement, final HTTPErrorType httpErrorType) {
+                uiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        // TODO: hide loading dialog
+                        EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
+
+                        if (httpErrorType != HTTPErrorType.Success) {
+                            if (httpErrorType == HTTPErrorType.Refresh) {
+                                if (EntranceDetailActivity.this.handler != null) {
+                                    Message msg = EntranceDetailActivity.this.handler.obtainMessage(UPDATE_USER_PURCHASE_DATE);
+                                    msg.setTarget(new Handler(EntranceDetailActivity.this.getMainLooper()));
+
+                                    EntranceDetailActivity.this.handler.sendMessage(msg);
+                                }
+                            } else {
+                                // Show top message with "HTTPError" and type = error
+                            }
+                        } else {
+                            if (jsonElement != null) {
+                                String status = jsonElement.getAsJsonObject().get("status").getAsString();
+                                switch (status) {
+                                    case "OK":
+                                        try {
+                                            JsonElement purchase = jsonElement.getAsJsonObject().get("purchase");
+                                            if (purchase != null) {
+                                                if (purchase.getAsJsonObject().has("purchase_record")) {
+                                                    JsonObject purchase_record = purchase.getAsJsonObject().get("purchase_record").getAsJsonObject();
+                                                    int id = purchase_record.get("id").getAsInt();
+                                                    int downloaded = purchase_record.get("downloaded").getAsInt();
+
+                                                    EntranceDetailActivity.this.entrancePurchase.downloaded = downloaded;
+
+                                                    String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
+                                                    if (username != null) {
+                                                        PurchasedModelHandler.updateDownloadTimes(getApplicationContext(), username, id, downloaded);
+
+                                                        EntranceDetailAdapter.EDPurchasedSectionViewHolder holder = (EntranceDetailAdapter.EDPurchasedSectionViewHolder) EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
+                                                        holder.updateDownloadedLabel(downloaded);
+                                                        holder.showLoading(false);
+                                                    }
+                                                }
+                                            }
+
+                                        } catch (Exception exc) {
+                                        }
+                                        break;
+                                    case "Error":
+                                        String errorType = jsonElement.getAsJsonObject().get("error_type").getAsString();
+                                        switch (errorType) {
+                                            case "EntranceNotExist":
+                                            case "EmptyArray":
+                                                // TODO: Show alert message EntranceResult with subType = "EntranceNotExist"
+                                                break;
+                                            default:
+                                                // TODO: Show alert message ErrorResult
+                                                break;
+                                        }
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                });
+
+                return null;
+            }
+        }, new Function1<NetworkErrorType, Unit>() {
+            @Override
+            public Unit invoke(final NetworkErrorType networkErrorType) {
+                uiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        // TODO: hide loading dialog
+                        if (networkErrorType != null) {
+                            switch (networkErrorType) {
+                                case HostUnreachable:
+                                case NoInternetAccess:
+                                    // TODO: show top error message with NetworkError
+                                    break;
+                                default:
+                                    // TODO: show top error message with NetworkError
+                                    break;
+                            }
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+    }
+
+
     private enum EDViewHolderType {
         INITIAL_SECTION(1),
         HEADER_SECTION(2),
         INFORMATION_SECTION(3),
         SALE_SECTION(4),
-        PURCHASED_SECTION(5);
+        PURCHASED_SECTION(5),
+        DOWNLOADED_SECTION(6);
 
         private final int value;
 
@@ -881,8 +1155,11 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 View view = LayoutInflater.from(this.context).inflate(R.layout.item_ed_sale_section, parent, false);
                 return new EDSaleSectionViewHolder(view);
             } else if (EDViewHolderType.PURCHASED_SECTION.getValue() == viewType) {
-                View view = LayoutInflater.from(this.context).inflate(R.layout.item_ed_sale_section, parent, false);
-                return new EDSaleSectionViewHolder(view);
+                View view = LayoutInflater.from(this.context).inflate(R.layout.item_ed_purchased_section, parent, false);
+                return new EDPurchasedSectionViewHolder(view);
+            } else if (EDViewHolderType.DOWNLOADED_SECTION.getValue() == viewType) {
+                View view = LayoutInflater.from(this.context).inflate(R.layout.item_ed_downloaded_section, parent, false);
+                return new EDDownloadedSectionViewHolder(view);
             }
             return null;
         }
@@ -897,6 +1174,10 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 ((EDInformationSectionViewHolder)holder).setupHolder(EntranceDetailActivity.this.entrance);
             } else if (holder.getClass() == EDSaleSectionViewHolder.class) {
                 ((EDSaleSectionViewHolder)holder).setupHolder(EntranceDetailActivity.this.entranceStat, EntranceDetailActivity.this.entranceSale, EntranceDetailActivity.this.selfBasketAdd, BasketSingleton.getInstance().getSalesCount());
+            } else if (holder.getClass() == EDPurchasedSectionViewHolder.class) {
+                ((EDPurchasedSectionViewHolder)holder).setupHolder(EntranceDetailActivity.this.entrancePurchase);
+            } else if (holder.getClass() == EDDownloadedSectionViewHolder.class) {
+                ((EDDownloadedSectionViewHolder)holder).setupHolder();
             }
         }
 
@@ -907,6 +1188,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     return 3;
                 case ShowSaleInfo:
                 case Purchased:
+                case Downloaded:
+                case DownloadStarted:
                     return 4;
                 default:
                     return 0;
@@ -922,9 +1205,12 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 case 3:
                     if (EntranceDetailActivity.this.state == EntranceVCStateEnum.ShowSaleInfo) {
                         return EDViewHolderType.SALE_SECTION.getValue();
-                    }
-                    else if (EntranceDetailActivity.this.state == EntranceVCStateEnum.Purchased) {
+                    } else if (EntranceDetailActivity.this.state == EntranceVCStateEnum.Purchased) {
                         return EDViewHolderType.PURCHASED_SECTION.getValue();
+                    } else if (EntranceDetailActivity.this.state == EntranceVCStateEnum.DownloadStarted) {
+                        return EDViewHolderType.PURCHASED_SECTION.getValue();
+                    } else if (EntranceDetailActivity.this.state == EntranceVCStateEnum.Downloaded) {
+                        return EDViewHolderType.DOWNLOADED_SECTION.getValue();
                     }
             }
             return 0;
@@ -1101,22 +1387,12 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     }
                 });
 
-                DownloaderSingleton.getInstance().setListener(new DownloaderSingleton.DownloaderSingletonListener() {
-                    @Override
-                    public void onDownloadergetReady(Object downloader) {
-                        Date d = ((EntrancePackageDownloader) downloader).getCurrentDate();
-                        Toast.makeText(EntranceDetailActivity.this, d.toString(), Toast.LENGTH_LONG).show();
-
-                    }
-                });
-
                 entranceCheckoutButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // TODO: create new intent from Checkout Activity and start it
                         Intent i = BasketCheckoutActivity.newIntent(EntranceDetailActivity.this, "EntranceDetail");
                         EntranceDetailActivity.this.startActivity(i);
-//                        DownloaderSingleton.getInstance().getMeDownloader(EntranceDetailActivity.this, "Entrance", EntranceDetailActivity.this.entranceUniqueId);
+//
                     }
                 });
 
@@ -1142,6 +1418,284 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
                     entranceCheckoutSummeryTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(basketCount) + " قلم در سبد کالا موجود است.");
                 } catch (Exception exc) {}
+            }
+        }
+
+        private class EDPurchasedSectionViewHolder extends RecyclerView.ViewHolder {
+
+            private float totalCount = 0.0f;
+            private EntrancePackageDownloader downloader = null;
+
+            private LinearLayout downloadingLayout;
+            private ImageView refreshImageView;
+            private ProgressBar refreshProgressBar;
+            private TextView downloadedTextView;
+            private TextView downloadingTextView;
+            private ProgressBar downloadingProgressBar;
+            private ProgressBar downloadProgressBar;
+            private Button downloadButton;
+            private TextView saleLabelTextView;
+            private TextView saleDateTextView;
+
+            public EDPurchasedSectionViewHolder(View itemView) {
+                super(itemView);
+
+                downloadingLayout = (LinearLayout) itemView.findViewById(R.id.EDItem_purchased_section_downloading);
+
+                refreshImageView = (ImageView) itemView.findViewById(R.id.EDItem_purchased_section_refresh_img);
+                refreshProgressBar = (ProgressBar) itemView.findViewById(R.id.EDItem_purchased_section_download_progress_refresh);
+                downloadedTextView = (TextView) itemView.findViewById(R.id.EDItem_purchased_section_downloaded_TextView);
+                downloadingTextView = (TextView) itemView.findViewById(R.id.EDItem_purchased_section_downloading_text);
+                downloadingProgressBar = (ProgressBar) itemView.findViewById(R.id.EDItem_purchased_section_downloading_progress);
+                downloadProgressBar = (ProgressBar) itemView.findViewById(R.id.EDItem_purchased_section_download_progress);
+                downloadButton = (Button) itemView.findViewById(R.id.EDItem_purchased_section_download_button);
+                saleLabelTextView = (TextView) itemView.findViewById(R.id.EDItem_purchased_section_sale_label);
+                saleDateTextView = (TextView) itemView.findViewById(R.id.EDItem_purchased_section_sale_date);
+
+                downloadingTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                downloadedTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                saleLabelTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                saleDateTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+
+                downloadButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+
+                refreshImageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (EntranceDetailActivity.this.state == EntranceVCStateEnum.Purchased) {
+                            showLoading(true);
+                        }
+                        EntranceDetailActivity.this.refreshUserPurchaseData();
+                    }
+                });
+                DownloaderSingleton.getInstance().setListener(new DownloaderSingleton.DownloaderSingletonListener() {
+                    @Override
+                    public void onDownloadergetReady(Object downloader) {
+                        EDPurchasedSectionViewHolder.this.downloader = (EntrancePackageDownloader) downloader;
+
+                        EDPurchasedSectionViewHolder.this.downloader.setListener(new EntrancePackageDownloader.EntrancePackageDownloaderListener() {
+                            @Override
+                            public void onDownloadImagesFinishedForViewHolder(boolean result, int index) {
+
+                            }
+
+                            @Override
+                            public void onDownloadImagesFinished(boolean result) {
+                                if (result) {
+                                    uiHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            DownloaderSingleton.getInstance().removeDownloader(entranceUniqueId);
+
+                                            if (EntranceDetailActivity.this.handler != null) {
+                                                Message msg = EntranceDetailActivity.this.handler.obtainMessage(UPDATE_USER_PURCHASE_DATE);
+                                                msg.setTarget(new Handler(EntranceDetailActivity.this.getMainLooper()));
+
+                                                EntranceDetailActivity.this.handler.sendMessage(msg);
+                                            }
+
+
+                                            JsonObject eData = new JsonObject();
+                                            eData.addProperty("uniqueId", entranceUniqueId);
+                                            EntranceDetailActivity.this.createLog(LogTypeEnum.EntranceDownload.getTitle(), eData);
+
+                                            // TODO: show top message "ActionResult", and message subType = "DownloadSuccess" and type = "success"
+
+                                            EntranceDetailActivity.this.state = EntranceVCStateEnum.Downloaded;
+                                            EntranceDetailActivity.this.stateMachine();
+                                            return;
+                                        }
+                                    });
+                                } else {
+                                    uiHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            DownloaderSingleton.getInstance().removeDownloader(entranceUniqueId);
+
+                                            // TODO: show top message "ActionResult", and message subType = "DownloadFailed" and type = "error"
+
+                                            EntranceDetailActivity.this.state = EntranceVCStateEnum.Purchased;
+                                            EntranceDetailActivity.this.stateMachine();
+                                            return;
+
+                                        }
+                                    });
+                                }
+                            }
+
+                            @Override
+                            public void onDownloadProgress(final int count) {
+                                uiHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        changeProgressValue(count);
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onDownloadprogressForViewHolder(int count, int totalCount, int index) {
+
+                            }
+
+                            @Override
+                            public void onDownloadPaused() {
+                                DownloaderSingleton.getInstance().removeDownloader(entranceUniqueId);
+                                uiHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        EntranceDetailActivity.this.state = EntranceVCStateEnum.Purchased;
+                                        EntranceDetailActivity.this.stateMachine();
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onDownloadPausedForViewHolder(int index) {
+
+                            }
+
+                            @Override
+                            public void onDismissActivity(boolean b) {
+                                EntranceDetailActivity.this.finish();
+                            }
+                        });
+                    }
+                });
+            }
+
+            public void setupHolder(EntrancePurchasedStruct entrancePurchased) {
+                downloadedTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entrancePurchased.downloaded) + " دانلود");
+                saleDateTextView.setText(FormatterSingleton.getInstance().getPersianDateString(entrancePurchased.created));
+
+                downloadProgressBar.setVisibility(View.GONE);
+                refreshProgressBar.setVisibility(View.GONE);
+
+                DownloaderSingleton.getInstance().getMeDownloader(EntranceDetailActivity.this, "Entrance", EntranceDetailActivity.this.entranceUniqueId);
+
+                downloadButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // TODO: show top message msgType="ActionResult" with subMsg = DownloadStarted and type="warning"
+
+                        final String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
+                        if (username != null) {
+                            Boolean isDownloaded = PurchasedModelHandler.isInitialDataDownloaded(getApplicationContext(), username, entranceUniqueId, "Entrance");
+                            if (isDownloaded) {
+                                if (downloader != null) {
+                                    downloader.initialize(EntranceDetailActivity.this, entranceUniqueId, "ED", username, 0);
+                                    if (downloader.fillImageArray()) {
+                                        String newDir = context.getFilesDir().getPath().concat(entranceUniqueId);
+                                        Integer count = (Integer) downloader.getDownloadCount();
+
+                                        changeToDownloadState(count);
+                                        DownloaderSingleton.getInstance().setDownloaderStarted(entranceUniqueId);
+                                        downloader.downloadPackageImages(newDir);
+                                    }
+                                }
+                            } else {
+                                if (downloader != null) {
+                                    downloader.initialize(EntranceDetailActivity.this, entranceUniqueId, "ED", username, 0);
+                                    downloader.downloadInitialData(new Function2<Boolean, Integer, Unit>() {
+                                        @Override
+                                        public Unit invoke(Boolean aBoolean, Integer integer) {
+                                            if (aBoolean) {
+                                                boolean valid2 = PurchasedModelHandler.setIsLocalDBCreatedTrue(getApplicationContext(), username, entranceUniqueId, "Entrance");
+                                                if (valid2) {
+                                                    String newDir = context.getFilesDir().getPath().concat(entranceUniqueId);
+                                                    File f = new File(newDir);
+                                                    try {
+                                                        f.delete();
+                                                    } catch (Exception ec) {}
+
+                                                    Integer count = (Integer) downloader.getDownloadCount();
+
+                                                    changeToDownloadState(count);
+                                                    DownloaderSingleton.getInstance().setDownloaderStarted(entranceUniqueId);
+                                                    downloader.downloadPackageImages(newDir);
+
+                                                }
+                                            }
+                                            return null;
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    }
+                });
+
+            }
+
+            public void changeToDownloadState(int total) {
+                this.downloadButton.setVisibility(View.GONE);
+                this.downloadProgressBar.setVisibility(View.VISIBLE);
+
+                this.downloadProgressBar.setProgress(0);
+                this.downloadProgressBar.setMax(100);
+
+                this.refreshImageView.setVisibility(View.GONE);
+                this.refreshProgressBar.setVisibility(View.GONE);
+
+                this.totalCount = new Float(total);
+            }
+
+            public void changeProgressValue(int value) {
+                float delta = (this.totalCount - (float) value) / this.totalCount;
+                this.downloadProgressBar.setProgress((int) delta);
+            }
+
+            public void changeToDownloadStartedState() {
+                this.downloadButton.setVisibility(View.GONE);
+                this.downloadProgressBar.setVisibility(View.GONE);
+
+                this.downloadingLayout.setVisibility(View.VISIBLE);
+                this.refreshProgressBar.setVisibility(View.GONE);
+                this.refreshImageView.setVisibility(View.GONE);
+
+                this.downloadingProgressBar.setIndeterminate(true);
+            }
+
+            public void showLoading(Boolean flag) {
+                if (flag) {
+                    this.refreshProgressBar.setVisibility(View.VISIBLE);
+                    this.refreshProgressBar.setIndeterminate(true);
+                    this.refreshImageView.setVisibility(View.GONE);
+                } else {
+                    this.refreshProgressBar.setVisibility(View.GONE);
+                    this.refreshImageView.setVisibility(View.VISIBLE);
+                }
+            }
+
+            public void updateDownloadedLabel(int count) {
+                this.downloadedTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(count) + " دستگاه");
+            }
+
+
+        }
+
+        private class EDDownloadedSectionViewHolder extends RecyclerView.ViewHolder {
+
+            private TextView label;
+            private Button showButton;
+
+            public EDDownloadedSectionViewHolder(View itemView) {
+                super(itemView);
+
+                label = (TextView) itemView.findViewById(R.id.EDItem_downloaded_section_label);
+                showButton = (Button) itemView.findViewById(R.id.EDItem_downloaded_section_show_button);
+
+                label.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                showButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+            }
+
+            public void setupHolder() {
+                showButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // TODO: show entrance show activity
+                    }
+                });
             }
         }
     }

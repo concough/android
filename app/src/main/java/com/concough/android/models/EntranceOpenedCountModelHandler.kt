@@ -15,12 +15,16 @@ class EntranceOpenedCountModelHandler {
             val record = EntranceOpenedCountModelHandler.getByType(context, entranceUniqueId, type)
             if (record != null) {
                 try {
-                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                    record.count += 1
-                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        record.count += 1
+                    }
+//                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
 
                     return true
-                } catch (exc: Exception) {}
+                } catch (exc: Exception) {
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+                }
             } else {
                 val record = EntranceOpenedCountModel()
                 record.entranceUniqueId = entranceUniqueId
@@ -28,11 +32,15 @@ class EntranceOpenedCountModelHandler {
                 record.count = 1
 
                 try {
-                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                    RealmSingleton.getInstance(context).DefaultRealm.copyToRealm(record)
-                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        RealmSingleton.getInstance(context).DefaultRealm.copyToRealm(record)
+                    }
+//                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                     return true
-                } catch (exc: Exception) {}
+                } catch (exc: Exception) {
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+                }
             }
 
             return false
@@ -58,10 +66,13 @@ class EntranceOpenedCountModelHandler {
                     .equalTo("entranceUniqueId", entranceUniqueId).findAll()
 
             try {
-                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                opened.deleteAllFromRealm()
-                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                    opened.deleteAllFromRealm()
+                }
+//                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
             } catch (exc: Exception) {
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
                 return false
             }
 

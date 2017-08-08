@@ -229,9 +229,29 @@ class UrlMakerSingleton private constructor(){
         return fullPath
     }
 
+    fun mediaForQuestionUrl(uniqueId: String, mediaId: String): String? {
+        var fullPath: String? = null
+        val functionName = "entrance/$uniqueId/q/$mediaId"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._media_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
     fun getEntranceUrl(uniqueId: String): String? {
         var fullPath: String? = null
         val functionName = "$uniqueId"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._entrance_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun getEntrancePackageDataInitUrl(uniqueId: String): String? {
+        var fullPath: String? = null
+        val functionName = "$uniqueId/data/init"
 
         if (OAUTH_METHOD == "jwt") {
             fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._entrance_class_name}/$functionName/"
@@ -246,6 +266,11 @@ class UrlMakerSingleton private constructor(){
             fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._purchased_class_name}/$functionName/"
         }
         return fullPath
+    }
+
+    fun getPurchasedUpdateDownloadTimesUrl(uniqueId: String): String? {
+        val functionName = "entrance/$uniqueId/update"
+        return this.getPurchasedUrl(functionName)
     }
 
     fun getProductUrl(functionName: String): String? {

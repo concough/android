@@ -179,3 +179,17 @@ Basket Checkout Activity (abolfazl.beh)
 1 - Add static newInstance function to "EntranceDetailActivity" and save needed data to bundle
 2 - Create BasketCheckoutActivity to checkout
 3 - Edit BasketSigleton to add new functionality
+
+------------------------------------------------------------------------------------------------
+Entrance Package Downloader (abolfazl.beh)
+
+1 - Create "EntrancePackageDownloader" service in downloader package to handling download images in background.
+2 - Create DownloaderSingleton class to holds downloaders object and returned that when needed
+3 - "EntranceDetailActivity" now completed and tested.
+4 - Models and model handlers have bugs --> fixed and tested.
+5 - MD5Digester class created to handle hashing password
+6 - JNCryptor library installed to handle encryption, decryption mechanism
+7 - Some bugs fixed
+
+
+
