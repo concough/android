@@ -16,7 +16,6 @@ android {
 //        jackOptions {
 //            enabled true
 //        }
-        vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
         release {
@@ -46,6 +45,7 @@ dependencies {
     })
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     compile "org.jetbrains.anko:anko-common:$anko_version"
+    testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha7'
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
@@ -61,9 +61,10 @@ dependencies {
     compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
     compile 'com.orhanobut:dialogplus:1.11@aar'
     compile 'com.android.support:recyclerview-v7:25.3.1'
-    compile 'com.android.support:design:25.1.1'
-    compile 'com.android.support:support-v4:25.1.1'
+    compile 'com.android.support:design:25.3.1'
+    compile 'com.android.support:support-v4:25.3.1'
     compile 'com.baoyz.pullrefreshlayout:library:1.2.0'
+    compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.android.support:support-vector-drawable:25.3.1'
     testCompile 'junit:junit:4.12'
     compile 'org.cryptonode.jncryptor:jncryptor:1.2.0'

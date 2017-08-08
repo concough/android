@@ -151,6 +151,22 @@ Debug ForgotPassword (abolfazl.beh)
 1 - Complete ForgotPassword Process and Complete SignupCodeActivity
 
 ------------------------------------------------------------------------------------------------
+Debug ForgotPassword (abolfazl.beh)
+
+1 - Complete ForgotPassword Process and Complete SignupCodeActivity
+
+------------------------------------------------------------------------------------------------
+Show Loading (abolfazl.beh)
+
+1 - "KProgressHUD" source downloaded and customized to use in this app
+2 - AlertClass loading functionality completed
+3 - Install 'com.nineoldandroids:library:2.4.0' for dialog effect
+4 - download "niftyalertdialog" and customized to used with app
+5 - "AlertClass" completed and ready to use
+6 - (Future) dialog box not rounded yet --> must be rounded
+
+
+------------------------------------------------------------------------------------------------
 Bottom Navigation Testing (abolfazl.beh)
 
 1 - Create BottomNavigationActivity and setup it to have bottom navigation

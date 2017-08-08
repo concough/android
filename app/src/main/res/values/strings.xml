@@ -54,6 +54,10 @@
     <string name="signupInfo3A_S_nextButton">ذخیره و تمام</string>
     <string name="StartupA_S_info">برای تلاش مجدد لمس نمایید</string>
     <string name="itemEntranceCreateI_S_concourText">کنکور</string>
+    <string name="title_activity_bottom_navigation">BottomNavigationActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
 
     <string name="navigation_bottom_home">خانه</string>
     <string name="navigation_bottom_archive">محصولات</string>
