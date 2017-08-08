@@ -4,8 +4,8 @@
     android:id="@+id/activity_home"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.concough.android.concough.HomeActivity"
-    android:background="@color/colorConcoughGrayBackground">
+    android:background="@color/colorConcoughGrayBackground"
+    tools:context="com.concough.android.concough.HomeActivity">
 
 
         <com.baoyz.widget.PullRefreshLayout
@@ -17,17 +17,13 @@
                     android:id="@+id/homeA_recycle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@color/colorConcoughGrayBackground">
+                    android:background="@color/colorConcoughGrayBackground"
+                    android:paddingTop="8dp">
 
 
                 </android.support.v7.widget.RecyclerView>
 
         </com.baoyz.widget.PullRefreshLayout>
-
-
-
-
-
 
 
 </RelativeLayout>

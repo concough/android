@@ -59,6 +59,9 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
 
+
+    <string name="test_section_format">Hello World from section: %1$d</string>
+
     <string name="navigation_bottom_home">خانه</string>
     <string name="navigation_bottom_archive">محصولات</string>
     <string name="navigation_bottom_favorites">آرشیو</string>

@@ -2,6 +2,7 @@ package com.concough.android.concough;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -14,7 +15,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.baoyz.widget.PullRefreshLayout;
 import com.concough.android.rest.ActivityRestAPIClass;
 import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
@@ -22,7 +25,6 @@ import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.structures.ConcoughActivityStruct;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
-import com.concough.android.utils.PersianCalendar;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -31,29 +33,28 @@ import com.google.gson.JsonParser;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.StringJoiner;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 import kotlin.jvm.functions.Function3;
 
-import static android.R.attr.key;
-import static android.R.attr.value;
-import static java.util.stream.Collectors.joining;
-import static okhttp3.Protocol.get;
-
 public class HomeActivity extends AppCompatActivity {
 
     public static final String TAG = "HomeActivity";
+
 
     private ArrayList<ConcoughActivityStruct> concoughActivityStructs;
     private boolean moreFeedExist = true;
     RecyclerView recycleView;
     HomeActivityAdapter homeActivityAdapter;
+    LinearLayoutManager mLayoutManager;
+    private boolean loading = true;
+    private boolean isRefresh;
     int homaActivityCheck = 0;
+    String lastCreatedStr = "";
+
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, HomeActivity.class);
@@ -67,21 +68,56 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         recycleView = (RecyclerView) findViewById(R.id.homeA_recycle);
-
         homeActivityAdapter = new HomeActivityAdapter(this, new ArrayList<ConcoughActivityStruct>());
         recycleView.setAdapter(homeActivityAdapter);
+        mLayoutManager = new LinearLayoutManager(this);
+        recycleView.setLayoutManager(mLayoutManager);
 
-        recycleView.setLayoutManager(new LinearLayoutManager(this));
-
+        HomeActivity.this.isRefresh = false;
 
         homeActivity(null);
 
 
+        final PullRefreshLayout layout = (PullRefreshLayout) findViewById(R.id.homeA_swipeRefreshLayout);
+        // layout.setColorSchemeColors(Color.CYAN);
+        layout.setColorSchemeColors(Color.TRANSPARENT, Color.GRAY, Color.GRAY, Color.GRAY);
+        layout.setRefreshStyle(PullRefreshLayout.STYLE_MATERIAL);
+        layout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                layout.setRefreshing(false);
+                HomeActivity.this.isRefresh = true;
+                homeActivity(null);
+
+            }
+        });
+
+
+            recycleView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    if (HomeActivity.this.moreFeedExist) {
+
+                        HomeActivity.this.loading = false;
+                        HomeActivity.this.isRefresh = false;
+                        HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
+                        Toast.makeText(HomeActivity.this, "Loading new Data ....", Toast.LENGTH_SHORT).show();
+
+
+                    }
+                }
+            });
+
+
+
     }
+
 
     private void homeActivity(String date) {
         new HomeActivityTask().execute(date);
+
     }
+
 
     private class HomeActivityTask extends AsyncTask<String, Void, Void> {
         @Override
@@ -115,21 +151,22 @@ public class HomeActivity extends AppCompatActivity {
                                             }
 
                                         }
-                                        if (aBoolean) {
-                                            //homeActivityAdapter.setItems(localList);
-                                            //HomeActivity.this.concoughActivityStructs = localList;
-                                            moreFeedExist = true;
+
+
+                                        HomeActivity.this.moreFeedExist = true;
+
+                                        if(aBoolean) {
+                                            homeActivityAdapter.setItems(localList);
                                         } else {
+                                            homeActivityAdapter.addItem(localList);
                                         }
-                                        homeActivityAdapter.addItem(localList);
+
+
+                                        String lastIndexCreatedStr = localList.get(localList.size() - 1).getCreatedStr();
+                                        HomeActivity.this.lastCreatedStr = lastIndexCreatedStr;
+
+
                                         homeActivityAdapter.notifyDataSetChanged();
-
-                                        if (homaActivityCheck < 5) {
-                                            homaActivityCheck++;
-                                            String s = null;
-                                            new HomeActivityTask().execute(s);
-
-                                        }
 
 
                                     } else {
@@ -230,6 +267,7 @@ public class HomeActivity extends AppCompatActivity {
                 additionalData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+
             }
 
             public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
@@ -272,19 +310,19 @@ public class HomeActivity extends AppCompatActivity {
                 entranceType.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString() + " " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString());
                 entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString() + ")");
 
-//                int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
-//                MediaRestAPIClass.downloadEsetImage(getApplicationContext(), imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
-//                    @Override
-//                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
-//                        Log.d(TAG, "invoke: " + jsonObject);
-//                        return null;
-//                    }
-//                }, new Function1<NetworkErrorType, Unit>() {
-//                    @Override
-//                    public Unit invoke(NetworkErrorType networkErrorType) {
-//                        return null;
-//                    }
-//                });
+                int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
+                MediaRestAPIClass.downloadEsetImage(getApplicationContext(), imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
+                        Log.d(TAG, "invoke: " + jsonObject);
+                        return null;
+                    }
+                }, new Function1<NetworkErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(NetworkErrorType networkErrorType) {
+                        return null;
+                    }
+                });
 
                 String s;
                 s = concoughActivityStruct.getTarget().getAsJsonObject().get("extra_data").getAsString();
@@ -305,7 +343,6 @@ public class HomeActivity extends AppCompatActivity {
         private class EntranceUpdateHolder extends RecyclerView.ViewHolder {
             private ImageView entranceLogo;
             private TextView dateTopLeft;
-            //            TextView concourText;
             private TextView entranceType;
             private TextView entranceSetGroup;
             private TextView additionalData;
@@ -318,21 +355,21 @@ public class HomeActivity extends AppCompatActivity {
             public EntranceUpdateHolder(View itemView) {
                 super(itemView);
 
-                //concourText = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_concourText);
                 dateTopLeft = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_dateTopLeft);
                 entranceType = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceType);
                 entranceSetGroup = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceSetGroup);
                 additionalData = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_additionalData);
                 sellCount = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_sellCount);
                 dateJalali = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_dateJalali);
-                entranceLogo = (ImageView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceLogo) ;
+                entranceLogo = (ImageView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceLogo);
 
-                //concourText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 entranceType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 entranceSetGroup.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 additionalData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+
+
             }
 
             public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
@@ -371,8 +408,6 @@ public class HomeActivity extends AppCompatActivity {
 
                 entranceType.setText("کنکور " + concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString() + " " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString());
                 entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString() + ")");
-
-
 
                 int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
                 MediaRestAPIClass.downloadEsetImage(getApplicationContext(), imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
@@ -417,9 +452,8 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
             ConcoughActivityStruct oneItem = this.concoughActivityStructList.get(position);
-            Log.d(TAG, oneItem.toString());
 
             switch (oneItem.getActivityType()) {
                 case "ENTRANCE_UPDATE":
@@ -430,7 +464,9 @@ public class HomeActivity extends AppCompatActivity {
                     ItemHolder itemHolder2 = (ItemHolder) holder;
                     itemHolder2.setupHolder(oneItem);
             }
+
         }
+
 
         @Override
         public int getItemCount() {

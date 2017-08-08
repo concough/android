@@ -1,42 +1,64 @@
 package com.concough.android.concough;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.concough.android.rest.ArchiveRestAPIClass;
+import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
+import com.concough.android.singletons.FormatterSingleton;
+import com.concough.android.structures.ArchiveEsetDetailStruct;
+import com.concough.android.structures.HTTPErrorType;
+import com.concough.android.structures.NetworkErrorType;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
-import java.io.Serializable;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Map;
 
-import de.hdodenhof.circleimageview.CircleImageView;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+import kotlin.jvm.functions.Function2;
 
 public class ArchiveDetailActivity extends AppCompatActivity {
+    private static String TAG = "ArchiveDetailActivity";
 
-    private ArrayList<MyStruct> listDetail;
+    //private ArrayList<MyStruct> listDetail;
     private RecyclerView recyclerView;
 
-    private TextView title1;
-    private TextView title2;
-    private TextView title3;
-    private ImageView logoImage;
+    private TextView setNameText;
 
-    private String groupName = "ریاضی و فنی (ریاضی و فنی)";
-    private String codeNumber = "1000";
-    private String publishedCount = "1";
+    private GetEntranceAdapter adapter;
+    private ArrayList<JsonElement> setsList;
 
-    private class MyStruct implements Serializable {
-        String name="دولتی";
-        String date = "1394";
-        String additional = "دین: اسلام - زبان: انگلیسی";
-        String sellCount = "23";
-        String fullDate = "9 دی 1395";
+    private final static String Detail_Struct = "Detail_Struct";
+
+
+    private ArchiveEsetDetailStruct mArchiveEsetDetailStruct;
+
+    public static Intent newIntent(Context packageContext, @Nullable ArchiveEsetDetailStruct detailStruct) {
+        Log.d(TAG, "newIntent: ");
+        Intent i = new Intent(packageContext, ArchiveDetailActivity.class);
+        i.putExtra(Detail_Struct, detailStruct);
+        return i;
     }
 
     @Override
@@ -45,35 +67,9 @@ public class ArchiveDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_archive_detail);
 
 
-        listDetail = new ArrayList<MyStruct>();
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
-        listDetail.add(new MyStruct());
+        mArchiveEsetDetailStruct = (ArchiveEsetDetailStruct) getIntent().getSerializableExtra(Detail_Struct);
 
-
-        title1 = (TextView) findViewById(R.id.archiveDetailA_title1);
-        title2 = (TextView) findViewById(R.id.archiveDetailA_title2);
-        title3 = (TextView) findViewById(R.id.archiveDetailA_title3);
-        logoImage = (CircleImageView) findViewById(R.id.signupInfo1A_imageViewNeutral);
-
-        title1.setText(groupName);
-
+        adapter = new GetEntranceAdapter(this, new ArrayList<JsonElement>());
 
         ActionBar mActionBar = getSupportActionBar();
         mActionBar.setDisplayShowTitleEnabled(false);
@@ -88,59 +84,309 @@ public class ArchiveDetailActivity extends AppCompatActivity {
         mActionBar.setDisplayShowCustomEnabled(true);
 
 
-        recyclerView = (RecyclerView) findViewById(R.id.archiveA_recycleDetail);
+        recyclerView = (RecyclerView) findViewById(R.id.archiveDetailA_recycle);
         RecyclerView.LayoutManager layoutManagerDetails = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManagerDetails);
+        recyclerView.setAdapter(adapter);
 
-//        DetailsAdapter adapterDeails = new DetailsAdapter(this, listDetail);
-//        recyclerView.setAdapter(adapterDeails);
 
+        Integer setId = mArchiveEsetDetailStruct.esetStruct.id;
+        getSets(setId);
 
     }
 
 
-//    private class DetailActivity extends RecyclerView.Adapter<DetailActivity.DetailViewHolder> {
-//
-//        private Context context;
-//        private ArrayList<View> listView;
-//        private ArrayList<ArchiveDetailActivity.MyStruct> stringList;
-//
-//        public DetailActivity(Context context, ArrayList allList, ArrayList<MyStruct> stringList) {
-//            this.context = context;
-//            this.listView = new ArrayList<View>();
-//            this.stringList = new ArrayList<ArchiveDetailActivity.MyStruct>();
-//        }
-//
-//        public class DetailViewHolder extends RecyclerView.ViewHolder {
-//
-//            private TextView text1;
-//            private TextView text2;
-//            private TextView text3;
-//            private TextView text4;
-//            private TextView text5;
-//            private TextView text6;
-//
-//            public DetailViewHolder(View itemView) {
-//                super(itemView);
-//
-//            }
-//        }
-//
+//    private class GetSetsTask extends AsyncTask<Integer, Void, Void> {
 //        @Override
-//        public DetailViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-//            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.cc_archivedetail_listitem_details, parent, false);
-//            this.listView.add(view);
-//            return new DetailViewHolder(view);
-//        }
-//
-//        @Override
-//        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-//
-//        }
-//
-//        @Override
-//        public int getItemCount() {
-//            return 0;
+//        protected Void doInBackground(Integer... params) {
+//             return null;
 //        }
 //    }
+
+    private void getSets(Integer setId) {
+        new GetEntranceSetsTask().execute(setId);
+    }
+
+    private class GetEntranceSetsTask extends AsyncTask<Integer, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Integer... params) {
+
+            ArchiveRestAPIClass.getEntrances(getApplicationContext(), params[0], new Function2<JsonObject, HTTPErrorType, Unit>() {
+                @Override
+                public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (jsonObject != null) {
+                                if (httpErrorType == HTTPErrorType.Success) {
+//                                    try {
+                                    //HashMap<Integer, String> jsonHashMap = new HashMap<Integer, String>();
+                                    JsonObject json = jsonObject.getAsJsonObject();
+                                    JsonArray leaders = json.getAsJsonArray("record");
+
+
+                                    // ArrayList<JsonElement> localListJson = new ArrayList<JsonElement>();
+                                    ArrayList<JsonElement> localList = new ArrayList<JsonElement>();
+                                    if (leaders != null) {
+                                        for (JsonElement je : leaders) {
+                                            //je = je.getAsJsonObject().get("organization");
+                                            if (je != null) {
+                                                //String j = je.getAsJsonObject().get("title").getAsString();
+                                                localList.add(je);
+                                            }
+                                        }
+                                    }
+
+
+                                    ArchiveDetailActivity.this.adapter.setItems(localList);
+                                    ArchiveDetailActivity.this.adapter.notifyDataSetChanged();
+
+//                                        ArchiveActivity.this.mSectionsPagerAdapter.notifyDataSetChanged();
+//                                        tabLayout.setupWithViewPager(ArchiveActivity.this.mViewPager);
+
+//                                        ArchiveActivity.this.changeGroupIndex(0);
+
+//                                    } catch (Exception e) {
+//                                        Log.d(TAG, "run: ");
+//                                    }
+                                }
+                            }
+                        }
+                    });
+                    return null;
+                }
+            }, new Function1<NetworkErrorType, Unit>()
+
+            {
+                @Override
+                public Unit invoke(NetworkErrorType networkErrorType) {
+                    return null;
+                }
+            });
+
+            return null;
+        }
+    }
+
+
+    private class GetEntranceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+
+        private Context context;
+        private ArrayList<JsonElement> mArrayList = new ArrayList<>();
+
+        public GetEntranceAdapter(Context context, ArrayList<JsonElement> m) {
+            this.context = context;
+            this.mArrayList = m;
+        }
+
+
+        public void setItems(ArrayList<JsonElement> arrayList) {
+            this.mArrayList = arrayList;
+        }
+
+        public void addItem(ArrayList<JsonElement> arrayList) {
+            this.mArrayList.addAll(arrayList);
+        }
+
+
+        private class TopItemHolder extends RecyclerView.ViewHolder {
+            private TextView setName;
+            private TextView code;
+            private TextView count;
+
+            private ImageView logoImage;
+
+            private JsonObject extraData;
+
+
+            public TopItemHolder(View itemView) {
+                super(itemView);
+
+                setName = (TextView) itemView.findViewById(R.id.archiveDetailHolder1L_EntranceName);
+                code = (TextView) itemView.findViewById(R.id.archiveDetailHolder1L_code);
+                count = (TextView) itemView.findViewById(R.id.archiveDetailHolder1L_count);
+                logoImage = (ImageView) itemView.findViewById(R.id.archiveDetailHolder1L_logoImage);
+
+                setName.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                code.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                count.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+
+            }
+
+            public void setupHolder() {
+                String t1 = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.typeTitle.toString() + " (" + ArchiveDetailActivity.this.mArchiveEsetDetailStruct.groupTitle.toString() + ")";
+                setName.setText(t1);
+
+                String t2 = "کد: " + ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.code.toString();
+                code.setText(t2);
+
+                String t3 = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.entrance_count.toString() + " کنکور منتشر شده";
+                count.setText(t3);
+
+
+                Integer imageId = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.id;
+                MediaRestAPIClass.downloadEsetImage(getApplicationContext(), imageId, logoImage, new Function2<JsonObject, HTTPErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
+                        Log.d(TAG, "invoke: " + jsonObject);
+                        return null;
+                    }
+                }, new Function1<NetworkErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(NetworkErrorType networkErrorType) {
+                        return null;
+                    }
+                });
+
+            }
+        }
+
+
+        private class ItemsHolder extends RecyclerView.ViewHolder {
+            private TextView extraDataText;
+            private TextView countText;
+            private TextView dateJalali;
+            private TextView typeText;
+            private TextView yearText;
+
+            private ImageView logoImage;
+
+            private JsonObject extraData;
+
+
+            public ItemsHolder(View itemView) {
+                super(itemView);
+
+                extraDataText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_extraDataText);
+                countText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_countText);
+                dateJalali = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_dateJalali);
+                typeText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_typeText);
+                yearText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_yearText);
+                logoImage = (ImageView) itemView.findViewById(R.id.archiveDetailHolder2L_imageRight);
+
+
+                extraDataText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                countText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                typeText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                yearText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+
+            }
+
+            public void setupHolder(JsonElement jsonElement) {
+                String t1 = jsonElement.getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString();
+                typeText.setText(t1);
+
+                Integer t2 = jsonElement.getAsJsonObject().get("year").getAsInt();
+                yearText.setText(FormatterSingleton.getInstance().getNumberFormatter().format(t2).toString());
+
+
+                String currentDateString = jsonElement.getAsJsonObject().get("last_published").getAsString();
+                Date georgianDate = null;
+                String persianDateString = "";
+
+                try {
+                    georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
+                    persianDateString = FormatterSingleton.getInstance().getPersianDateString(georgianDate);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                dateJalali.setText(persianDateString);
+
+
+                String t3 = jsonElement.getAsJsonObject().get("stats").getAsJsonArray().get(0).getAsJsonObject().get("purchased").getAsString() + " خرید";
+                countText.setText(t3);
+
+
+                String s;
+                s = jsonElement.getAsJsonObject().get("extra_data").getAsString();
+                extraData = new JsonParser().parse(s).getAsJsonObject();
+
+                String extra = "";
+                ArrayList<String> extraArray = new ArrayList<>();
+
+                for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
+                    extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
+                }
+
+                extra = TextUtils.join(" - ", extraArray);
+                extraDataText.setText(extra);
+
+
+                Integer imageId = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.id;
+//                logoImage.getDrawable().setColorFilter(0x76ffffff, PorterDuff.Mode.MULTIPLY );
+
+
+                MediaRestAPIClass.downloadEsetImage(getApplicationContext(), imageId, logoImage, new Function2<JsonObject, HTTPErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
+                        Log.d(TAG, "invoke: " + jsonObject);
+
+//                        ColorMatrix matrix = new ColorMatrix();
+//                        matrix.setSaturation(0);
+//                        ColorMatrixColorFilter filter = new ColorMatrixColorFilter(matrix);
+//                        logoImage.setColorFilter(filter);
+                        // logoImage.setAlpha(0.9f);
+
+                        return null;
+                    }
+                }, new Function1<NetworkErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(NetworkErrorType networkErrorType) {
+                        return null;
+                    }
+                });
+
+
+            }
+        }
+
+
+        @Override
+        public int getItemCount() {
+            int c = mArrayList.size() + 1;
+            return c;
+        }
+
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            if (viewType == 1) {
+                View view = LayoutInflater.from(context).inflate(R.layout.cc_archivedetail_holder1, parent, false);
+                return new TopItemHolder(view);
+            } else {
+                View view = LayoutInflater.from(context).inflate(R.layout.cc_archivedetail_holder2, parent, false);
+                return new ItemsHolder(view);
+            }
+        }
+
+        @Override
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+            if (position == 0) {
+                TopItemHolder itemHolder = (TopItemHolder) holder;
+                itemHolder.setupHolder();
+            } else {
+                JsonElement oneItem = mArrayList.get(position - 1);
+                ItemsHolder itemHolder = (ItemsHolder) holder;
+                itemHolder.setupHolder(oneItem);
+            }
+
+
+        }
+
+
+        @Override
+        public int getItemViewType(int position) {
+            if (position == 0) {
+                return 1;
+            } else {
+                return 2;
+            }
+        }
+
+    }
+
+
 }

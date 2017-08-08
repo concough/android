@@ -6,9 +6,7 @@ import com.concough.android.singletons.TokenHandlerSingleton
 import com.concough.android.singletons.UrlMakerSingleton
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
-import com.google.gson.Gson
 import com.google.gson.JsonObject
-import com.google.gson.JsonParseException
 import com.jakewharton.picasso.OkHttp3Downloader
 import com.squareup.picasso.NetworkPolicy
 import retrofit2.Call
@@ -38,7 +36,7 @@ class MediaRestAPIClass {
         }
 
         @JvmStatic
-        fun downloadEsetImage(context: Context, imageId: Int, imageHolder: ImageView,  completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+        fun downloadEsetImage(context: Context, imageId: Int, imageHolder: ImageView, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
             val fullPath = makeEsetImageUrl(imageId) ?: return
 
             TokenHandlerSingleton.getInstance(context).assureAuthorized(completion = { authenticated, error ->
@@ -46,7 +44,7 @@ class MediaRestAPIClass {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
                     val headers2 = Headers.of(headers)
 
-                    val okHttpClient = OkHttpClient.Builder().addInterceptor (object : Interceptor {
+                    val okHttpClient = OkHttpClient.Builder().addInterceptor(object : Interceptor {
 
                         @Throws(IOException::class)
                         override fun intercept(chain: Interceptor.Chain): okhttp3.Response? {
@@ -89,7 +87,7 @@ class MediaRestAPIClass {
                } else {
                     completion(null, error)
                 }
-            }, failure = {error ->
+            }, failure = { error ->
                 failure(error)
             })
         }

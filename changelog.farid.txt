@@ -61,3 +61,34 @@ Edited Home activity and add pull refresh (faridM)
 
     1 - Aded 'com.baoyz.pullrefreshlayout:library:1.2.0'
     2 - Some changes on HomeActivity Layout
+
+=================================================================================
+
+Archive Activity (faridM)
+
+    1 - refresh button aded + Animations
+    2 - aded RotateViewExtensions for make refresh button animation
+    3 - aded "anim" Folder for add "concough_rotate.xml" file for use animations
+    4 - aded "recurring_appointment_100.png" icon for use in Archive_Activity
+    5 - "cc_archivedetail_actionbar.xml" , "cc_archive_listitem_tabbar.xml" , "cc_archive_listitem_details.xml" , "cc_archive_listitem_archive.xml" , "cc_archive_actionbar.xml"
+
+=================================================================================
+
+
+Finished Archive Detail Activity (faridM)
+
+
+    1 - Aded Layouts "concough_border_radius_archivedetail_style.xml" , "concough_gray_color_filter.xml" , "concough_recycle_box_style_holder2_gray.xml" , "concough_recycle_box_style_holder2_white.xml"
+    2 - Some Changes on "ArchiveActivity" , "ArchiveDetailActivty" , "HomaActivity"
+    3 - Some Layouts aded "cc_archivedetail_holder1.xml"  , "cc_archivedetail_holder2"
+    4 - Aded "/" at the end of "next" URL > UrlMakerSingleton
+
+
+
+=================================================================================
+
+
+
+
+
+

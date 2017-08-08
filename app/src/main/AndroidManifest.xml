@@ -21,20 +21,25 @@
             android:name=".StartupActivity"
             android:windowSoftInputMode="adjustPan">
 
+             <!--<intent-filter>-->
+             <!--<action android:name="android.intent.action.MAIN" />-->
 
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
 
-            <!-- <intent-filter> -->
-            <!-- <action android:name="android.intent.action.MAIN" /> -->
+             <!--<category android:name="android.intent.category.LAUNCHER" />-->
+             <!--</intent-filter>-->
 
 
-            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
-            <!-- </intent-filter> -->
+
+
         </activity>
-        <activity android:name=".LoginActivity" />
+        <activity android:name=".LoginActivity" >
+
+
+        </activity>
 
         <meta-data
             android:name="com.google.android.gms.version"
@@ -63,7 +68,22 @@
         </activity>
         <activity
             android:name=".ArchiveActivity"
-            android:theme="@style/AppThemeArchiveActionBar" />
+            android:theme="@style/AppTheme.NoActionBar">
+
+
+
+
+             <intent-filter>
+             <action android:name="android.intent.action.MAIN" />
+
+
+             <category android:name="android.intent.category.LAUNCHER" />
+             </intent-filter>
+
+
+
+
+        </activity>
         <activity
             android:name=".ArchiveDetailActivity"
             android:theme="@style/AppThemeArchiveDetailActionBar" />

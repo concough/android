@@ -1,6 +1,5 @@
 package com.concough.android.singletons
 
-import android.content.Context
 import com.concough.android.settings.*
 
 /**
@@ -139,7 +138,7 @@ class UrlMakerSingleton private constructor(){
     fun activityUrlWithNext(next: String): String? {
         var fullPath: String? = UrlMakerSingleton.getInstance().activityUrl()
         if (fullPath != null) {
-            fullPath += "next/$next"
+            fullPath += "next/$next/"
         }
 
         return fullPath
