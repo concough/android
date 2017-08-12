@@ -11,8 +11,8 @@ class EntranceOpenedCountModelHandler {
         val TAG: String = "EntranceOpenedCountModelHandler"
 
         @JvmStatic
-        fun update(context: Context, entranceUniqueId: String, type: String) : Boolean {
-            val record = EntranceOpenedCountModelHandler.getByType(context, entranceUniqueId, type)
+        fun update(context: Context, username: String, entranceUniqueId: String, type: String) : Boolean {
+            val record = EntranceOpenedCountModelHandler.getByType(context, username, entranceUniqueId, type)
             if (record != null) {
                 try {
                     RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
@@ -30,6 +30,7 @@ class EntranceOpenedCountModelHandler {
                 record.entranceUniqueId = entranceUniqueId
                 record.type = type
                 record.count = 1
+                record.username = username
 
                 try {
                     RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
@@ -47,22 +48,28 @@ class EntranceOpenedCountModelHandler {
         }
 
         @JvmStatic
-        fun getByType(context: Context, entranceUniqueId: String, type: String) : EntranceOpenedCountModel? {
+        fun getByType(context: Context, username: String, entranceUniqueId: String, type: String) : EntranceOpenedCountModel? {
             return RealmSingleton.getInstance(context).DefaultRealm.where(EntranceOpenedCountModel::class.java)
-                    .equalTo("entranceUniqueId", entranceUniqueId).equalTo("type", type).findFirst()
+                    .equalTo("entranceUniqueId", entranceUniqueId).equalTo("type", type)
+                    .equalTo("username", username)
+                    .findFirst()
         }
 
         @JvmStatic
-        fun countByEntranceId(context: Context, entranceUniqueId: String) : Int {
+        fun countByEntranceId(context: Context, username: String, entranceUniqueId: String) : Int {
             val totalCount = RealmSingleton.getInstance(context).DefaultRealm.where(EntranceOpenedCountModel::class.java)
-                    .equalTo("entranceUniqueId", entranceUniqueId).findAll().sum("count")
+                    .equalTo("entranceUniqueId", entranceUniqueId)
+                    .equalTo("username", username)
+                    .findAll().sum("count")
 
             return totalCount?.toInt() ?: 0
 
         }
 
-        fun removeByEntranceId(context: Context, entranceUniqueId: String): Boolean {
+        @JvmStatic
+        fun removeByEntranceId(context: Context, username: String, entranceUniqueId: String): Boolean {
             val opened = RealmSingleton.getInstance(context).DefaultRealm.where(EntranceOpenedCountModel::class.java)
+                    .equalTo("username", username)
                     .equalTo("entranceUniqueId", entranceUniqueId).findAll()
 
             try {

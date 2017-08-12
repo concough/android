@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_home"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="@color/colorConcoughGrayBackground"
     tools:context="com.concough.android.concough.HomeActivity">
 
@@ -11,7 +13,8 @@
         <com.baoyz.widget.PullRefreshLayout
             android:id="@+id/homeA_swipeRefreshLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_weight="1"
+            android:layout_height="0dp">
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/homeA_recycle"
@@ -25,5 +28,16 @@
 
         </com.baoyz.widget.PullRefreshLayout>
 
+        <android.support.design.widget.BottomNavigationView
+            android:id="@+id/navigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@android:color/white"
+            app:itemTextColor="@drawable/concough_navigation_style"
+            app:itemIconTint="@drawable/concough_navigation_style"
+            app:menu="@menu/navigation"
+            />
 
-</RelativeLayout>
+
+</LinearLayout>

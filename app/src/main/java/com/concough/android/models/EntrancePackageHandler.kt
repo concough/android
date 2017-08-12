@@ -1,6 +1,7 @@
 package com.concough.android.models
 
 import android.content.Context
+import android.util.Log
 import com.concough.android.singletons.RealmSingleton
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -41,9 +42,7 @@ class EntrancePackageHandler {
 
                         val booklet = EntranceBookletModelHandler.add(context, uniqueId, title, count, duration, isOptional, order)
                         if (booklet != null) {
-                            RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
-                                entrance.booklets.add(booklet)
-                            }
+//                            RealmSingleton.getInstance(context).DefaultRealm.refresh()
 //                            RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
 //                            RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
 
@@ -60,9 +59,8 @@ class EntrancePackageHandler {
 
                                 val lesson = EntranceLessonModelHandler.add(context, lUniqueId, ltitle, fullTitle, qStart, qEnd, qCount, lorder, lduration)
                                 if (lesson != null) {
-                                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
-                                        booklet.lessons.add(lesson)
-                                    }
+//                                    RealmSingleton.getInstance(context).DefaultRealm.refresh()
+
 //                                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
 //                                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
 
@@ -76,9 +74,6 @@ class EntrancePackageHandler {
                                         val question = EntranceQuestionModelHandler.add(context, qUniqueId, number, answer, images, false, entrance)
 
                                         if (question != null) {
-                                            RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
-                                                lesson.questions.add(question)
-                                            }
 //                                            RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
 //                                            RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
 
@@ -86,7 +81,7 @@ class EntrancePackageHandler {
                                             if (imagesArray != null) {
                                                 for (item3 in imagesArray) {
                                                     val imageUniqueId = item3.asJsonObject.get("unique_key").asString
-                                                    localImage.put(qUniqueId, imageUniqueId)
+                                                    localImage.put(imageUniqueId, qUniqueId)
                                                     if (localList.get(qUniqueId) == null) {
                                                         localList.put(qUniqueId, ArrayList<Pair<String, Boolean>>())
                                                     }
@@ -96,13 +91,26 @@ class EntrancePackageHandler {
                                             } else {
                                                 return EntrancePackageResult(false, LinkedHashMap(), LinkedHashMap())
                                             }
+                                            RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                                                lesson.questions.add(question)
+                                            }
+
                                         } else {
                                             return EntrancePackageResult(false, LinkedHashMap(), LinkedHashMap())
                                         }
                                     }
+
+                                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                                        booklet.lessons.add(lesson)
+                                    }
+
                                 } else {
                                     return EntrancePackageResult(false, LinkedHashMap(), LinkedHashMap())
                                 }
+                            }
+
+                            RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                                entrance.booklets.add(booklet)
                             }
                         } else {
                             return EntrancePackageResult(false, LinkedHashMap(), LinkedHashMap())
@@ -111,10 +119,17 @@ class EntrancePackageHandler {
                 } else {
                     return EntrancePackageResult(false, LinkedHashMap(), LinkedHashMap())
                 }
+                Log.d(TAG, entrance.toString())
+                Log.d(TAG, entrance.booklets[0].toString())
+
+                Log.d(TAG, entrance.booklets[0].lessons[0].toString())
+                Log.d(TAG, entrance.booklets[0].lessons[0].questions.toString())
             } catch (exc: Exception) {
 //                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+                Log.d(TAG, exc.message)
                 return EntrancePackageResult(false, LinkedHashMap(), LinkedHashMap())
             }
+
 
             return EntrancePackageResult(true, localImage, localList)
         }
@@ -124,26 +139,34 @@ class EntrancePackageHandler {
             try {
                 val entrance = EntranceModelHandler.getByUsernameAndId(context, username, entranceUniqueId)
                 if (entrance != null) {
-                    val booklets = entrance.booklets
-                    for (booklet in booklets) {
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        val booklets = entrance.booklets
+                        for (booklet in booklets) {
 
-                        val lessons = booklet.lessons
-                        for (lesson in lessons) {
-                            RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                            lesson.questions.deleteAllFromRealm()
-                            RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                            val lessons = booklet.lessons
+                            for (lesson in lessons) {
+                                val questions = lesson.questions
+
+                                questions.deleteAllFromRealm()
+//                            RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                            RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                            }
+
+//                            RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                                lessons.deleteAllFromRealm()
+//                            }
+//                        RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                        RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                         }
 
-                        RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                        lessons.deleteAllFromRealm()
-                        RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+//                        RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                            booklets.deleteAllFromRealm()
+//                        }
                     }
-
-                    booklets.deleteAllFromRealm()
                 }
-
             } catch (exc: Exception) {
-                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+                Log.d(TAG, exc.message)
                 return false
             }
 

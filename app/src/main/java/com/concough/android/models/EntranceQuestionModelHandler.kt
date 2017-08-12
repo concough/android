@@ -40,7 +40,8 @@ class EntranceQuestionModelHandler {
             return null
         }
 
-        fun bulkDelete(context: Context, list: RealmResults<EntranceQuestionModel>): Boolean {
+        @JvmStatic
+        fun bulkDelete(context: Context, username: String, list: RealmResults<EntranceQuestionModel>): Boolean {
             try {
                 RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
                     list.deleteAllFromRealm()
@@ -54,9 +55,12 @@ class EntranceQuestionModelHandler {
             return true
         }
 
-        fun changeDownloadedToTrue(context: Context, uniqueId: String, entranceId: String) : Boolean {
+        @JvmStatic
+        fun changeDownloadedToTrue(context: Context, username: String, uniqueId: String, entranceId: String) : Boolean {
             val question = RealmSingleton.getInstance(context).DefaultRealm.where(EntranceQuestionModel::class.java)
-                    .equalTo("uniqueId", uniqueId).equalTo("entrance.uniqueId", entranceId).equalTo("isDownloaded", false).findFirst()
+                    .equalTo("uniqueId", uniqueId)
+                    .equalTo("entrance.username", username)
+                    .equalTo("entrance.uniqueId", entranceId).equalTo("isDownloaded", false).findFirst()
 
             if (question != null) {
                 try {
@@ -73,31 +77,43 @@ class EntranceQuestionModelHandler {
             return true
         }
 
-        fun getQuestions(context: Context, entranceId: String): RealmResults<EntranceQuestionModel>? {
+        @JvmStatic
+        fun getQuestions(context: Context, username: String, entranceId: String): RealmResults<EntranceQuestionModel>? {
             return RealmSingleton.getInstance(context).DefaultRealm.where(EntranceQuestionModel::class.java)
-                    .equalTo("entrance.uniqueId", entranceId).findAllSorted("number", Sort.ASCENDING)
+                    .equalTo("entrance.username", username)
+                    .equalTo("entrance.uniqueId", entranceId)
+                    .findAllSorted("number", Sort.ASCENDING)
         }
 
-        fun getStarredQuestions(context: Context, entranceId: String, questions: Array<String>): RealmResults<EntranceQuestionModel>? {
+        fun getStarredQuestions(context: Context, username: String, entranceId: String, questions: Array<String>): RealmResults<EntranceQuestionModel>? {
             return RealmSingleton.getInstance(context).DefaultRealm.where(EntranceQuestionModel::class.java)
                     .equalTo("entrance.uniqueId", entranceId)
+                    .equalTo("entrance.username", username)
                     .`in`("uniqueId", questions).findAllSorted("number", Sort.ASCENDING)
         }
 
-        fun getQuestionsNotDownloaded(context: Context, entranceId: String): RealmResults<EntranceQuestionModel>? {
+        @JvmStatic
+        fun getQuestionsNotDownloaded(context: Context, username: String, entranceId: String): RealmResults<EntranceQuestionModel>? {
             return RealmSingleton.getInstance(context).DefaultRealm.where(EntranceQuestionModel::class.java)
-                    .equalTo("entrance.uniqueId", entranceId).equalTo("isDownloaded", false).findAllSorted("number", Sort.ASCENDING)
+                    .equalTo("entrance.username", username)
+                    .equalTo("entrance.uniqueId", entranceId)
+                    .equalTo("isDownloaded", false).findAllSorted("number", Sort.ASCENDING)
         }
 
-        fun getQuestionById(context: Context, entranceId: String, questionId: String): EntranceQuestionModel? {
+        @JvmStatic
+        fun getQuestionById(context: Context, username: String, entranceId: String, questionId: String): EntranceQuestionModel? {
             return RealmSingleton.getInstance(context).DefaultRealm.where(EntranceQuestionModel::class.java)
                     .equalTo("entrance.uniqueId", entranceId)
+                    .equalTo("entrance.username", username)
                     .equalTo("uniqueId", questionId).findFirst()
         }
 
-        fun countQuestions(context: Context, entranceId: String): Long {
+        @JvmStatic
+        fun countQuestions(context: Context, username: String, entranceId: String): Long {
             return RealmSingleton.getInstance(context).DefaultRealm.where(EntranceQuestionModel::class.java)
-                    .equalTo("entrance.uniqueId", entranceId).count()
+                    .equalTo("entrance.username", username)
+                    .equalTo("entrance.uniqueId", entranceId)
+                    .count()
         }
 
     }

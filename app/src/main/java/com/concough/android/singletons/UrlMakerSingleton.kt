@@ -281,6 +281,11 @@ class UrlMakerSingleton private constructor(){
         return fullPath
     }
 
+    fun getPurchasedListUrl(): String? {
+        val functionName = "list"
+        return this.getPurchasedUrl(functionName)
+    }
+
     fun getPurchasedForEntranceUrl(uniqueId: String): String? {
         val functionName = "entrance/$uniqueId"
         return this.getPurchasedUrl(functionName)

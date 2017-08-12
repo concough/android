@@ -19,6 +19,7 @@ import com.squareup.picasso.Picasso
 import okhttp3.*
 import java.io.IOException
 import com.concough.android.concough.R.id.imageView
+import com.google.gson.JsonParseException
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.lang.StringBuilder

@@ -108,20 +108,19 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-//        if (savedInstanceState != null) {
-//            this.entranceUniqueId = savedInstanceState.getString(ENTRANCE_UNIQUE_ID_KEY);
-//            this.contextFromWho = savedInstanceState.getString(CONTEXT_WHO_KEY);
-//        } else {
-//            finish();
-//        }
-//
-//        if (this.contextFromWho == "Home") {
-//            this.setMenuSelectedIndex(0);
-//        } else if (this.contextFromWho == "Archive") {
-//            this.setMenuSelectedIndex(1);
-//        }
-        this.setMenuSelectedIndex(1);
+        this.contextFromWho = getIntent().getStringExtra(CONTEXT_WHO_KEY);
+        this.entranceUniqueId = getIntent().getStringExtra(ENTRANCE_UNIQUE_ID_KEY);
+
+
+        if ("Home".equals(this.contextFromWho)) {
+            this.setMenuSelectedIndex(0);
+        } else if ("Archive".equals(this.contextFromWho)) {
+            this.setMenuSelectedIndex(1);
+        }
+//        this.setMenuSelectedIndex(1);
         super.onCreate(savedInstanceState);
+
+
 
         this.handlerThread = new HandlerThread(HANDLE_THREAD_NAME);
         if (this.handlerThread != null) {
@@ -354,21 +353,35 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                     if (st == DownloaderSingleton.DownloaderState.Started) {
                                         DownloaderSingleton.getInstance().setListener(new DownloaderSingleton.DownloaderSingletonListener() {
                                             @Override
-                                            public void onDownloadergetReady(Object downloader) {
-                                                ((EntrancePackageDownloader) downloader).registerActivity(EntranceDetailActivity.this, "ED", 0);
-                                                uiHandler.post(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        EntranceDetailActivity.this.state = EntranceVCStateEnum.DownloadStarted;
-                                                        EntranceDetailActivity.this.stateMachine();
-                                                        return;
-                                                    }
-                                                });
+                                            public void onDownloadergetReady(Object downloader, int index) {
+//                                                ((EntrancePackageDownloader) downloader).registerActivity(EntranceDetailActivity.this, "ED", 0);
+//                                                uiHandler.post(new Runnable() {
+//                                                    @Override
+//                                                    public void run() {
+//                                                        EntranceDetailActivity.this.state = EntranceVCStateEnum.DownloadStarted;
+//                                                        EntranceDetailActivity.this.stateMachine();
+//                                                        return;
+//                                                    }
+//                                                });
                                             }
                                         });
 
                                         try {
-                                            DownloaderSingleton.getInstance().getMeDownloader(EntranceDetailActivity.this, "Entrance", entranceUniqueId);
+                                            DownloaderSingleton.getInstance().getMeDownloader(EntranceDetailActivity.this, "Entrance", entranceUniqueId, 0, new Function2<Object, Integer, Unit>() {
+                                                @Override
+                                                public Unit invoke(Object o, Integer integer) {
+                                                    ((EntrancePackageDownloader) o).registerActivity(EntranceDetailActivity.this, "ED", 0);
+                                                    uiHandler.post(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            EntranceDetailActivity.this.state = EntranceVCStateEnum.DownloadStarted;
+                                                            EntranceDetailActivity.this.stateMachine();
+                                                        }
+                                                    });
+
+                                                    return null;
+                                                }
+                                            });
                                         } catch (Exception exc) {}
                                     }
                                 }
@@ -1111,7 +1124,6 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         });
     }
 
-
     private enum EDViewHolderType {
         INITIAL_SECTION(1),
         HEADER_SECTION(2),
@@ -1470,9 +1482,111 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 });
                 DownloaderSingleton.getInstance().setListener(new DownloaderSingleton.DownloaderSingletonListener() {
                     @Override
-                    public void onDownloadergetReady(Object downloader) {
-                        EDPurchasedSectionViewHolder.this.downloader = (EntrancePackageDownloader) downloader;
+                    public void onDownloadergetReady(Object downloader, int index) {
+//                        EDPurchasedSectionViewHolder.this.downloader = (EntrancePackageDownloader) downloader;
+//                        EDPurchasedSectionViewHolder.this.downloader.setListener(new EntrancePackageDownloader.EntrancePackageDownloaderListener() {
+//                            @Override
+//                            public void onDownloadImagesFinishedForViewHolder(boolean result, int index) {
+//
+//                            }
+//
+//                            @Override
+//                            public void onDownloadImagesFinished(boolean result) {
+//                                if (result) {
+//                                    uiHandler.post(new Runnable() {
+//                                        @Override
+//                                        public void run() {
+//                                            DownloaderSingleton.getInstance().removeDownloader(entranceUniqueId);
+//
+//                                            if (EntranceDetailActivity.this.handler != null) {
+//                                                Message msg = EntranceDetailActivity.this.handler.obtainMessage(UPDATE_USER_PURCHASE_DATE);
+//                                                msg.setTarget(new Handler(EntranceDetailActivity.this.getMainLooper()));
+//
+//                                                EntranceDetailActivity.this.handler.sendMessage(msg);
+//                                            }
+//
+//
+//                                            JsonObject eData = new JsonObject();
+//                                            eData.addProperty("uniqueId", entranceUniqueId);
+//                                            EntranceDetailActivity.this.createLog(LogTypeEnum.EntranceDownload.getTitle(), eData);
+//
+//                                            // TODO: show top message "ActionResult", and message subType = "DownloadSuccess" and type = "success"
+//
+//                                            EntranceDetailActivity.this.state = EntranceVCStateEnum.Downloaded;
+//                                            EntranceDetailActivity.this.stateMachine();
+//                                            return;
+//                                        }
+//                                    });
+//                                } else {
+//                                    uiHandler.post(new Runnable() {
+//                                        @Override
+//                                        public void run() {
+//                                            DownloaderSingleton.getInstance().removeDownloader(entranceUniqueId);
+//
+//                                            // TODO: show top message "ActionResult", and message subType = "DownloadFailed" and type = "error"
+//
+//                                            EntranceDetailActivity.this.state = EntranceVCStateEnum.Purchased;
+//                                            EntranceDetailActivity.this.stateMachine();
+//                                            return;
+//
+//                                        }
+//                                    });
+//                                }
+//                            }
+//
+//                            @Override
+//                            public void onDownloadProgress(final int count) {
+//                                uiHandler.post(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        changeProgressValue(count);
+//                                    }
+//                                });
+//                            }
+//
+//                            @Override
+//                            public void onDownloadprogressForViewHolder(int count, int totalCount, int index) {
+//
+//                            }
+//
+//                            @Override
+//                            public void onDownloadPaused() {
+//                                DownloaderSingleton.getInstance().removeDownloader(entranceUniqueId);
+//                                uiHandler.post(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        EntranceDetailActivity.this.state = EntranceVCStateEnum.Purchased;
+//                                        EntranceDetailActivity.this.stateMachine();
+//                                    }
+//                                });
+//                            }
+//
+//                            @Override
+//                            public void onDownloadPausedForViewHolder(int index) {
+//
+//                            }
+//
+//                            @Override
+//                            public void onDismissActivity(boolean b) {
+//                                EntranceDetailActivity.this.finish();
+//                            }
+//                        });
+                    }
+                });
+            }
 
+            public void setupHolder(EntrancePurchasedStruct entrancePurchased) {
+                downloadedTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entrancePurchased.downloaded) + " دانلود");
+                saleDateTextView.setText(FormatterSingleton.getInstance().getPersianDateString(entrancePurchased.created));
+
+                downloadProgressBar.setVisibility(View.GONE);
+                refreshProgressBar.setVisibility(View.GONE);
+                downloadButton.setVisibility(View.VISIBLE);
+
+                DownloaderSingleton.getInstance().getMeDownloader(EntranceDetailActivity.this, "Entrance", EntranceDetailActivity.this.entranceUniqueId, 0, new Function2<Object, Integer, Unit>() {
+                    @Override
+                    public Unit invoke(Object o, Integer integer) {
+                        EDPurchasedSectionViewHolder.this.downloader = (EntrancePackageDownloader) o;
                         EDPurchasedSectionViewHolder.this.downloader.setListener(new EntrancePackageDownloader.EntrancePackageDownloaderListener() {
                             @Override
                             public void onDownloadImagesFinishedForViewHolder(boolean result, int index) {
@@ -1560,18 +1674,10 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                 EntranceDetailActivity.this.finish();
                             }
                         });
+
+                        return null;
                     }
                 });
-            }
-
-            public void setupHolder(EntrancePurchasedStruct entrancePurchased) {
-                downloadedTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entrancePurchased.downloaded) + " دانلود");
-                saleDateTextView.setText(FormatterSingleton.getInstance().getPersianDateString(entrancePurchased.created));
-
-                downloadProgressBar.setVisibility(View.GONE);
-                refreshProgressBar.setVisibility(View.GONE);
-
-                DownloaderSingleton.getInstance().getMeDownloader(EntranceDetailActivity.this, "Entrance", EntranceDetailActivity.this.entranceUniqueId);
 
                 downloadButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -1585,12 +1691,15 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                 if (downloader != null) {
                                     downloader.initialize(EntranceDetailActivity.this, entranceUniqueId, "ED", username, 0);
                                     if (downloader.fillImageArray()) {
-                                        String newDir = context.getFilesDir().getPath().concat(entranceUniqueId);
+                                        String newDir = entranceUniqueId;
+                                        File f = new File(context.getFilesDir(), newDir);
+                                        boolean d = f.mkdir();
+
                                         Integer count = (Integer) downloader.getDownloadCount();
 
                                         changeToDownloadState(count);
                                         DownloaderSingleton.getInstance().setDownloaderStarted(entranceUniqueId);
-                                        downloader.downloadPackageImages(newDir);
+                                        downloader.downloadPackageImages(f);
                                     }
                                 }
                             } else {
@@ -1602,17 +1711,15 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                             if (aBoolean) {
                                                 boolean valid2 = PurchasedModelHandler.setIsLocalDBCreatedTrue(getApplicationContext(), username, entranceUniqueId, "Entrance");
                                                 if (valid2) {
-                                                    String newDir = context.getFilesDir().getPath().concat(entranceUniqueId);
-                                                    File f = new File(newDir);
-                                                    try {
-                                                        f.delete();
-                                                    } catch (Exception ec) {}
-
+//                                                    String newDir = context.getFilesDir().getPath().concat(entranceUniqueId);
+                                                    String newDir = entranceUniqueId;
+                                                    File f = new File(context.getFilesDir(), newDir);
+                                                    boolean d = f.mkdir();
                                                     Integer count = (Integer) downloader.getDownloadCount();
 
                                                     changeToDownloadState(count);
                                                     DownloaderSingleton.getInstance().setDownloaderStarted(entranceUniqueId);
-                                                    downloader.downloadPackageImages(newDir);
+                                                    downloader.downloadPackageImages(f);
 
                                                 }
                                             }
@@ -1641,7 +1748,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             }
 
             public void changeProgressValue(int value) {
-                float delta = (this.totalCount - (float) value) / this.totalCount;
+                float delta = ((this.totalCount - (float) value) / this.totalCount) * 100;
                 this.downloadProgressBar.setProgress((int) delta);
             }
 

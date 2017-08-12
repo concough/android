@@ -1,6 +1,8 @@
 package com.concough.android.models
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import com.concough.android.singletons.RealmSingleton
 
 /**
@@ -10,6 +12,7 @@ class EntranceLessonModelHandler {
     companion object Factory {
         val TAG: String = "EntranceLessonModelHandler"
 
+        @SuppressLint("LongLogTag")
         @JvmStatic
         fun add(context: Context, uniqueId: String, title: String, fullTitle: String, qStart: Int, qEnd: Int, qCount: Int, order: Int, duration: Int): EntranceLessonModel? {
 
@@ -31,6 +34,7 @@ class EntranceLessonModelHandler {
 //                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return lesson
             } catch (exc: Exception) {
+                Log.d(TAG, exc.message)
 //                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
 

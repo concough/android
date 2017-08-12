@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.content.ServiceConnection
+import android.hardware.camera2.CaptureFailure
 import android.util.Log
 
 
@@ -19,11 +20,12 @@ class DownloaderSingleton private constructor() {
     private data class DownloaderObject (var type: String, var obj: Any, var state: DownloaderState)
 
     interface DownloaderSingletonListener {
-        fun onDownloadergetReady(downloader: Any)
+        fun onDownloadergetReady(downloader: Any, index: Int)
     }
 
     // variables
     private var downloaders: HashMap<String, DownloaderObject> = HashMap()
+    private var isStarted = false
     var listener: DownloaderSingletonListener? = null
 
     companion object Factory {
@@ -39,14 +41,19 @@ class DownloaderSingleton private constructor() {
         }
     }
 
-    public fun getMeDownloader(context: Context, type: String, uniqueId: String): Any? {
+    public var IsInDownloadProgress: Boolean = false
+        private set
+        get() = isStarted
+
+    public fun getMeDownloader(context: Context, type: String, uniqueId: String, index: Int = 0, completion: (downloader: Any, index: Int) -> Unit) {
+
         if (type == "Entrance") {
             if (this.downloaders.keys.contains(uniqueId)) {
                 val downloader = this.downloaders.get(uniqueId)?.obj
-                if (this.listener != null) {
-                    this.listener!!.onDownloadergetReady(downloader!!)
-                }
-                return downloader
+                completion(downloader!!, index)
+//                if (this.listener != null) {
+////                    this.listener!!.onDownloadergetReady(downloader!!, index)
+//                }
             } else {
                 val intent = Intent(context, EntrancePackageDownloader::class.java)
                 context.bindService(intent, object : ServiceConnection {
@@ -56,10 +63,11 @@ class DownloaderSingleton private constructor() {
                         val service = binder.service
 
                         this@DownloaderSingleton.downloaders.put(uniqueId, DownloaderObject(type, service, DownloaderState.Initialize))
+                        completion(service, index)
 
-                        if (this@DownloaderSingleton.listener != null) {
-                            this@DownloaderSingleton.listener?.onDownloadergetReady(service)
-                        }
+//                        if (this@DownloaderSingleton.listener != null) {
+//                            this@DownloaderSingleton.listener?.onDownloadergetReady(service, index)
+//                        }
                     }
 
                     override fun onServiceDisconnected(arg0: ComponentName) {
@@ -68,24 +76,26 @@ class DownloaderSingleton private constructor() {
 
             }
         }
-        return null
     }
 
     public fun removeDownloader(uniqueId: String) {
         if (this.downloaders.keys.contains(uniqueId)) {
             this.downloaders.remove(uniqueId)
+            isStarted = false
         }
     }
 
     public fun setDownloaderStarted(uniqueId: String) {
         if (this.downloaders.keys.contains(uniqueId)) {
             this.downloaders[uniqueId]?.state = DownloaderState.Started
+            isStarted = true
         }
     }
 
     public fun setDownloaderFinished(uniqueId: String) {
         if (this.downloaders.keys.contains(uniqueId)) {
             this.downloaders[uniqueId]?.state = DownloaderState.Finished
+            isStarted = false
         }
     }
 

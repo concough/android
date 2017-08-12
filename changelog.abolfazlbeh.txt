@@ -207,5 +207,16 @@ Entrance Package Downloader (abolfazl.beh)
 6 - JNCryptor library installed to handle encryption, decryption mechanism
 7 - Some bugs fixed
 
+------------------------------------------------------------------------------------------------
+Favorite Activity (abolfazl.beh)
 
-
+1 - Create FavoriteActivity and setup to show not downloaded items.
+2 - Connect HomeActivity and ArchiveActivity to other part of system.
+3 - EntrancePackageDownloader bugs fixed.
+4 - EntranceQuestionStarredModel and its handler modified to include "username" field.
+5 - EntrancePackageHandler -> removePackage function modified.
+6 - FavoriteActivity completed and ready for test.
+7 - EntrancePackageDownloader completed and basic test.
+8 - DownloaderSingleton bugs fixed and add flag to see singleton state.
+9 - PurchasedRestAPIClass --> getPurchasedList added to get purchased list.
+10 - All models and there's handler modified to include "username" field in query search.

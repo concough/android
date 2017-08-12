@@ -44,9 +44,11 @@ class EntranceBookletModelHandler {
         }
 
         @JvmStatic
-        fun getBookletByEntranceId(context: Context, uniqueId: String): RealmResults<EntranceBookletModel>? {
+        fun getBookletByEntranceId(context: Context, username: String, uniqueId: String): RealmResults<EntranceBookletModel>? {
             return RealmSingleton.getInstance(context).DefaultRealm.where(EntranceBookletModel::class.java)
-                    .equalTo("entrance.uniqueId", uniqueId).findAllSorted("order", Sort.ASCENDING)
+                    .equalTo("entrance.username", username)
+                    .equalTo("entrance.uniqueId", uniqueId)
+                    .findAllSorted("order", Sort.ASCENDING)
         }
     }
 }

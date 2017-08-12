@@ -40,7 +40,7 @@ import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 import kotlin.jvm.functions.Function3;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends BottomNavigationActivity {
 
     public static final String TAG = "HomeActivity";
 
@@ -55,7 +55,6 @@ public class HomeActivity extends AppCompatActivity {
     int homaActivityCheck = 0;
     String lastCreatedStr = "";
 
-
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, HomeActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -63,9 +62,15 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     @Override
+    protected int getLayoutResourceId() {
+        return R.layout.activity_home;
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
+        this.setMenuSelectedIndex(0);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+//        setContentView(R.layout.activity_home);
 
         recycleView = (RecyclerView) findViewById(R.id.homeA_recycle);
         homeActivityAdapter = new HomeActivityAdapter(this, new ArrayList<ConcoughActivityStruct>());
@@ -453,15 +458,30 @@ public class HomeActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
-            ConcoughActivityStruct oneItem = this.concoughActivityStructList.get(position);
+            final ConcoughActivityStruct oneItem = this.concoughActivityStructList.get(position);
+
 
             switch (oneItem.getActivityType()) {
                 case "ENTRANCE_UPDATE":
                     EntranceUpdateHolder itemHolder = (EntranceUpdateHolder) holder;
                     itemHolder.setupHolder(oneItem);
+                    itemHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent i = EntranceDetailActivity.newIntent(HomeActivity.this, oneItem.getTarget().getAsJsonObject().get("unique_key").getAsString() , "Home" );
+                            startActivity(i);
+                        }
+                    });
                     break;
                 default:
                     ItemHolder itemHolder2 = (ItemHolder) holder;
+                    itemHolder2.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent i = EntranceDetailActivity.newIntent(HomeActivity.this, oneItem.getTarget().getAsJsonObject().get("unique_key").getAsString() , "Home" );
+                            startActivity(i);
+                        }
+                    });
                     itemHolder2.setupHolder(oneItem);
             }
 
@@ -482,9 +502,9 @@ public class HomeActivity extends AppCompatActivity {
                     return ConcoughActivityType.ENTRANCE_CREATE.getValue();
             }
         }
+
+
     }
-
-
 }
 
 

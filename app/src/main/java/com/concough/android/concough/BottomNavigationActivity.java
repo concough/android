@@ -1,5 +1,6 @@
 package com.concough.android.concough;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
@@ -26,10 +27,16 @@ public class BottomNavigationActivity extends AppCompatActivity {
             selectedItemId = item.getItemId();
             switch (item.getItemId()) {
                 case R.id.navigation_home:
+                    Intent ih = HomeActivity.newIntent(BottomNavigationActivity.this);
+                    startActivity(ih);
                     return true;
                 case R.id.navigation_archive:
+                    Intent i = ArchiveActivity.newIntent(BottomNavigationActivity.this);
+                    startActivity(i);
                     return true;
                 case R.id.navigation_favorites:
+                    Intent f = FavoritesActivity.newIntent(BottomNavigationActivity.this);
+                    startActivity(f);
                     return true;
                 case R.id.navigation_settings:
                     return true;

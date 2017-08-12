@@ -30,6 +30,8 @@ import org.cryptonode.jncryptor.JNCryptor
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.runOnUiThread
 import java.io.File
+import java.io.FileOutputStream
+import java.io.ObjectOutputStream
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
@@ -99,7 +101,8 @@ class EntrancePackageDownloader : Service() {
     }
 
     public fun fillImageArray(): Boolean {
-        val questions = EntranceQuestionModelHandler.getQuestions(applicationContext, entranceUniqueId)
+        val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername(applicationContext)!!
+        val questions = EntranceQuestionModelHandler.getQuestions(applicationContext, username, entranceUniqueId)
         if (questions != null) {
             if (questions.count() > 0) {
                 questionsList.clear()
@@ -131,7 +134,7 @@ class EntrancePackageDownloader : Service() {
         return false
     }
 
-    public fun downloadPackageImages(saveDirectory: String) {
+    public fun downloadPackageImages(saveDirectory: File) {
         processNext(saveDirectory)
     }
 
@@ -139,7 +142,7 @@ class EntrancePackageDownloader : Service() {
         return Calendar.getInstance().time
     }
 
-    private fun processNext(saveDirectory: String) {
+    private fun processNext(saveDirectory: File) {
         if (imageList.count() > 0) {
             val itemKey = imageList.keys.toList().get(0)
             val itemValue = imageList.get(itemKey)
@@ -151,7 +154,7 @@ class EntrancePackageDownloader : Service() {
                 if (verifyDownload()) {
                     // ok --> downloaded successfully
                     try {
-                        PurchasedModelHandler.setIsDownloadedTrue(context!!.applicationContext, username, entranceUniqueId, username)
+                        PurchasedModelHandler.setIsDownloadedTrue(context!!.applicationContext, username, entranceUniqueId, "Entrance")
                         DownloaderSingleton.getInstance().setDownloaderFinished(entranceUniqueId)
 
                         val entrance = EntranceModelHandler.getByUsernameAndId(context!!.applicationContext, username, entranceUniqueId)
@@ -187,7 +190,7 @@ class EntrancePackageDownloader : Service() {
         }
     }
 
-    public fun downloadOneImage(saveDirectory: String, imageId: String, questionId: String) {
+    public fun downloadOneImage(saveDirectory: File, imageId: String, questionId: String) {
         doAsync {
             MediaRestAPIClass.downloadEntranceQuestionImage(applicationContext, entranceUniqueId, imageId, completion = { data, error ->
                 runOnUiThread {
@@ -200,9 +203,17 @@ class EntrancePackageDownloader : Service() {
                             val filePath = "$saveDirectory/$imageId"
 
                             try {
-                                val file = File(applicationContext.filesDir, filePath)
+                                val file = File(saveDirectory, imageId)
                                 if (!file.exists()) {
-                                    file.writeBytes(data)
+                                    var out = FileOutputStream(file)
+                                    out.write(data)
+                                    out.flush()
+                                    out.close()
+
+//                                    var stream: FileOutputStream = openFileOutput(filePath, Context.MODE_PRIVATE);
+//                                    stream.write(data);
+//                                    stream.close()
+//                                    file.writeBytes(data)
                                 }
 
                                 var index: Int? = null
@@ -229,7 +240,7 @@ class EntrancePackageDownloader : Service() {
                                 }
 
                                 if (downloadComplete) {
-                                    EntranceQuestionModelHandler.changeDownloadedToTrue(applicationContext, questionId, entranceUniqueId)
+                                    EntranceQuestionModelHandler.changeDownloadedToTrue(applicationContext, username, questionId, entranceUniqueId)
                                 }
 
                                 if (vcType == "ED") {
@@ -242,6 +253,7 @@ class EntrancePackageDownloader : Service() {
                                     }
                                 }
                             } catch (exc: Exception) {
+                                Log.d(TAG, exc.message);
                             }
                         }
                     }
@@ -279,7 +291,7 @@ class EntrancePackageDownloader : Service() {
 
     fun verifyDownload(): Boolean {
         try {
-            val questions = EntranceQuestionModelHandler.getQuestionsNotDownloaded(context?.applicationContext!!, entranceUniqueId)
+            val questions = EntranceQuestionModelHandler.getQuestionsNotDownloaded(context?.applicationContext!!, username, entranceUniqueId)
             if (questions?.count()!! > 0) {
                 return false
             }

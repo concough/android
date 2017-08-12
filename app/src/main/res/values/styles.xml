@@ -66,9 +66,9 @@
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 
+    <style name="MyActionBar.MenuTextStyle" parent="Theme.AppCompat">
+        <item name="actionMenuTextColor">@color/colorConcoughBlue</item>
+        <item name="android:actionMenuTextColor">@color/colorConcoughBlue</item>
 
-
-
-
-
+    </style>
 </resources>

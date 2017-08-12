@@ -38,7 +38,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
-public class ArchiveDetailActivity extends AppCompatActivity {
+public class ArchiveDetailActivity extends BottomNavigationActivity {
     private static String TAG = "ArchiveDetailActivity";
 
     //private ArrayList<MyStruct> listDetail;
@@ -62,10 +62,15 @@ public class ArchiveDetailActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_archive_detail);
+    protected int getLayoutResourceId() {
+        return R.layout.activity_archive_detail;
+    }
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        this.setMenuSelectedIndex(1);
+        super.onCreate(savedInstanceState);
+//        setContentView(R.layout.activity_archive_detail);
 
         mArchiveEsetDetailStruct = (ArchiveEsetDetailStruct) getIntent().getSerializableExtra(Detail_Struct);
 
@@ -368,8 +373,15 @@ public class ArchiveDetailActivity extends AppCompatActivity {
                 TopItemHolder itemHolder = (TopItemHolder) holder;
                 itemHolder.setupHolder();
             } else {
-                JsonElement oneItem = mArrayList.get(position - 1);
+                final JsonElement oneItem = mArrayList.get(position - 1);
                 ItemsHolder itemHolder = (ItemsHolder) holder;
+                itemHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent i = EntranceDetailActivity.newIntent(ArchiveDetailActivity.this, oneItem.getAsJsonObject().get("unique_key").getAsString(), "Archive");
+                        startActivity(i);
+                    }
+                });
                 itemHolder.setupHolder(oneItem);
             }
 

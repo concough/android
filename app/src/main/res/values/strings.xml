@@ -76,4 +76,8 @@
     <string name="entrance_detail_download_sale_label">خریداری شده در:</string>
     <string name="entrance_detail_download_complete_label">این کنکور دانلود شده است</string>
     <string name="entrance_detail_download_complete_show_button">مشاهده کنکور</string>
+
+    <string name="favorite_entrance_open_normal">مشاهده دفترچه</string>
+    <string name="favorite_entrance_open_starred">سوالات نشان شده</string>
+    <string name="favorite_entrance_delete_lable">پاک کردن داده ها</string>
 </resources>

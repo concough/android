@@ -22,5 +22,5 @@ public class EntranceBookletModel extends RealmObject {
     @LinkingObjects("booklets")
     public final RealmResults<EntranceModel> entrance = null;
 
-    public RealmList<EntranceLessonModel> lessons = new RealmList<>();
+    public RealmList<EntranceLessonModel> lessons = new RealmList<EntranceLessonModel>();
 }

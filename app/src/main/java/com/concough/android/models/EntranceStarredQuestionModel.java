@@ -12,4 +12,5 @@ public class EntranceStarredQuestionModel extends RealmObject {
     public EntranceQuestionModel question = null;
     public Date created = new Date();
     public String entranceUniqueId = null;
+    public String username = "";
 }

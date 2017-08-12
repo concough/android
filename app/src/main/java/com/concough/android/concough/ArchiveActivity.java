@@ -52,7 +52,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
-public class ArchiveActivity extends AppCompatActivity {
+public class ArchiveActivity extends BottomNavigationActivity {
     private final String TAG = "ArchiveActivity";
 
     //    private ArrayAdapter<String> adapter;
@@ -84,11 +84,22 @@ public class ArchiveActivity extends AppCompatActivity {
     private ArchiveEsetDetailStruct mArchiveEsetDetailStruct;
     private ArchiveEsetStructs mArchiveEsetStructs;
 
+    public static Intent newIntent(Context packageContext) {
+        Intent i = new Intent(packageContext, ArchiveActivity.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        return i;
+    }
+
+    @Override
+    protected int getLayoutResourceId() {
+        return R.layout.activity_archive;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        this.setMenuSelectedIndex(1);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_archive);
+//        setContentView(R.layout.activity_archive);
 
         mArchiveEsetDetailStruct = new ArchiveEsetDetailStruct();
         mArchiveEsetStructs = new ArchiveEsetStructs();
