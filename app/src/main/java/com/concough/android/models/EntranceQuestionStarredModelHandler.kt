@@ -22,11 +22,15 @@ class EntranceQuestionStarredModelHandler {
                 star.question = question
 
                 try {
-                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                    RealmSingleton.getInstance(context).DefaultRealm.copyToRealm(star)
-                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        RealmSingleton.getInstance(context).DefaultRealm.copyToRealm(star)
+                    }
+//                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                     return true
-                } catch (exc: Exception) {}
+                } catch (exc: Exception) {
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+                }
             }
             return false
         }
@@ -50,11 +54,15 @@ class EntranceQuestionStarredModelHandler {
             val star = EntranceQuestionStarredModelHandler.get(context, entranceUniqueId, questionId)
             if (star != null) {
                 try {
-                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                    star.deleteFromRealm()
-                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        star.deleteFromRealm()
+                    }
+//                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                     return true
-                } catch (exc: Exception) {}
+                } catch (exc: Exception) {
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+                }
             }
             return  false
         }
@@ -70,8 +78,13 @@ class EntranceQuestionStarredModelHandler {
                     .equalTo("entranceUniqueId", entranceUniqueId).findAll()
             if (items != null) {
                 try {
-                    items.deleteAllFromRealm()
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        items.deleteAllFromRealm()
+                    }
+//                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 } catch (exc: Exception) {
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
                     return false
                 }
             }

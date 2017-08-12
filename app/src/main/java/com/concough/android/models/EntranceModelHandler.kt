@@ -30,11 +30,14 @@ class EntranceModelHandler {
             entrance.username = username
 
             try {
-                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(entrance)
-                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                    RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(entrance)
+                }
+//                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return true
             } catch (exc: Exception) {
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
 
             return false
@@ -64,11 +67,15 @@ class EntranceModelHandler {
 
             if (entrance != null) {
                 try {
-                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                    entrance.deleteFromRealm()
-                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        entrance.deleteFromRealm()
+                    }
+//                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                     return true
-                } catch (exc: Exception) {}
+                } catch (exc: Exception) {
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+                }
 
                 return true
             }

@@ -144,3 +144,68 @@ Procedures:
 
 Fixes:
     1 - "SignupMoreInfo1Activity" fix on post selectedGender toString()
+
+------------------------------------------------------------------------------------------------
+Debug ForgotPassword (abolfazl.beh)
+
+1 - Complete ForgotPassword Process and Complete SignupCodeActivity
+
+------------------------------------------------------------------------------------------------
+Debug ForgotPassword (abolfazl.beh)
+
+1 - Complete ForgotPassword Process and Complete SignupCodeActivity
+
+------------------------------------------------------------------------------------------------
+Show Loading (abolfazl.beh)
+
+1 - "KProgressHUD" source downloaded and customized to use in this app
+2 - AlertClass loading functionality completed
+3 - Install 'com.nineoldandroids:library:2.4.0' for dialog effect
+4 - download "niftyalertdialog" and customized to used with app
+5 - "AlertClass" completed and ready to use
+6 - (Future) dialog box not rounded yet --> must be rounded
+
+
+------------------------------------------------------------------------------------------------
+Bottom Navigation Testing (abolfazl.beh)
+
+1 - Create BottomNavigationActivity and setup it to have bottom navigation
+2 - Every activity that needs to include bottom navigation must inherit from it.
+3 - Four icons created from image for bottom navigation
+
+------------------------------------------------------------------------------------------------
+Entrance Detail Activity (abolfazl.beh)
+
+1 - (Bug) "ResetPasswordActivity" getting password fixed.
+2 - "MediaRestAPIClass" --> downloadEsetImage function --> in-memory cached added.
+3 - "ProductRestAPIClass" and "PurchasedRestAPIClass" created to handle product and purchased getting from server
+4 - Fix "FormatterSingleton" utc formatter
+5 - (Bug) "RealmSingleton" needs Realm.init() before any operation --> fixed
+6 - Some BasketRestAPIClass function checked and fixed
+7 - Some structures added: EntrancePurchasedStruct, EntranceSaleStruct, EntranceStatStruct, EntranceVCStateEnum
+8 - Some styles added: green solid and red border
+9 - For now EntranceDetailActivity worked and ready for checkout process --> Must create CheckoutActivity first:
+    - EntranceDetailActivity state machine is created
+    - 4 item sections created to use in ViewHolder in DetailEntrance
+10 - "activity_login" and "activity_reset_password" layout password TextView type changed
+
+------------------------------------------------------------------------------------------------
+Basket Checkout Activity (abolfazl.beh)
+
+1 - Add static newInstance function to "EntranceDetailActivity" and save needed data to bundle
+2 - Create BasketCheckoutActivity to checkout
+3 - Edit BasketSigleton to add new functionality
+
+------------------------------------------------------------------------------------------------
+Entrance Package Downloader (abolfazl.beh)
+
+1 - Create "EntrancePackageDownloader" service in downloader package to handling download images in background.
+2 - Create DownloaderSingleton class to holds downloaders object and returned that when needed
+3 - "EntranceDetailActivity" now completed and tested.
+4 - Models and model handlers have bugs --> fixed and tested.
+5 - MD5Digester class created to handle hashing password
+6 - JNCryptor library installed to handle encryption, decryption mechanism
+7 - Some bugs fixed
+
+
+

@@ -28,7 +28,8 @@ class FormatterSingleton {
     }
 
     private constructor() {
-        this._UTCDateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'")
+        //this._UTCDateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'")
+        this._UTCDateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
         this._UTCDateFormatter.timeZone = TimeZone.getTimeZone("UTS")
 
         this._UTCShortDateFormatter = SimpleDateFormat("yyyy-MM-dd")
@@ -39,7 +40,7 @@ class FormatterSingleton {
 
     }
 
-    public val UTCDateFormatter: DateFormat
+    public val UTCDateFormatter: SimpleDateFormat
         get() = this._UTCDateFormatter
 
     public val UTCShortDateFormatter: DateFormat

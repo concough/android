@@ -26,6 +26,6 @@ public class EntranceModel extends RealmObject {
     public int duration = 0;
     public Date lastPublished = new Date();
 
-    public RealmList<EntranceBookletModel> booklets;
+    public RealmList<EntranceBookletModel> booklets = new RealmList<>();
 
 }

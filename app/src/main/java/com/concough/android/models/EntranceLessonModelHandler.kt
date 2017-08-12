@@ -24,11 +24,14 @@ class EntranceLessonModelHandler {
             lesson.uniqueId = uniqueId
 
             try {
-                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(lesson)
-                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                    RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(lesson)
+                }
+//                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return lesson
             } catch (exc: Exception) {
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
 
             return null

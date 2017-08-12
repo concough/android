@@ -11,6 +11,10 @@ interface RestAPIService {
     @POST()
     fun post(@Url url: String, @Body body: HashMap<String, Any>, @HeaderMap headers: HashMap<String, String>): Call<ResponseBody>
 
+    @PUT
+    fun put(@Url url: String, @Body body: HashMap<String, Any>, @HeaderMap headers: HashMap<String, String>): Call<ResponseBody>
+
+
     @GET()
     fun get(@Url url: String, @HeaderMap headers: HashMap<String, String>): Call<ResponseBody>
 

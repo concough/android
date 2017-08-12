@@ -32,11 +32,11 @@ class BasketSingleton : Handler.Callback {
         fun onLoadItemCompleted(count: Int)
         fun onCreateCompleted()
         fun onAddCompleted(count: Int)
-        fun onRemoveCompleted(count: Int)
+        fun onRemoveCompleted(count: Int, position: Int)
         fun onCheckout(count: Int, purchased: HashMap<Int, PurchasedItem>)
     }
 
-    private data class SaleItem(var id: Int, var created: Date, var cost: Int, var target: Any, var type: String)
+    public data class SaleItem(var id: Int, var created: Date, var cost: Int, var target: Any, var type: String)
     public data class PurchasedItem(var purchasedId: Int, var downlaoded: Int, var purchasedTime: Date)
 
     private var handlerThread: HandlerThread? = null
@@ -102,8 +102,10 @@ class BasketSingleton : Handler.Callback {
                 if (entrance != null) {
                     productId = entrance.entranceUniqueId
 
-                    if (this.findSaleByTargetId(productId!!, type)!! >= 0) {
-                        return
+                    if(this.findSaleByTargetId(productId!!, type) != null) {
+                        if (this.findSaleByTargetId(productId!!, type)!! >= 0) {
+                            return
+                        }
                     }
                 }
             }
@@ -125,8 +127,7 @@ class BasketSingleton : Handler.Callback {
             return@find false
         }
 
-        val index = this.sales.indexOf(sale)
-        return index
+        return sale?.id;
     }
 
     fun findSaleById(saleId: Int): Int? {
@@ -199,8 +200,10 @@ class BasketSingleton : Handler.Callback {
                 if (entrance != null) {
                     productId = entrance.entranceUniqueId
 
-                    if (this.findSaleByTargetId(productId!!, type)!! >= 0) {
-                        return
+                    if (this.findSaleByTargetId(productId!!, type) != null) {
+                        if (this.findSaleByTargetId(productId!!, type)!! >= 0) {
+                            return
+                        }
                     }
                 }
             }
@@ -221,7 +224,7 @@ class BasketSingleton : Handler.Callback {
         }
     }
 
-    fun removeSaleById(context: Context?, saleId: Int) {
+    fun removeSaleById(context: Context?, saleId: Int, position: Int) {
         if (this.findSaleById(saleId) != null) {
             if (this.handler != null) {
                 val msg = this.handler?.obtainMessage(DELETE_FROM_BASKET)
@@ -230,6 +233,7 @@ class BasketSingleton : Handler.Callback {
 
                 val bundle = Bundle()
                 bundle.putInt("SALE_ID", saleId)
+                bundle.putInt("SALE_POSITION", position)
                 msg?.data = bundle
 
                 this.handler?.sendMessage(msg)
@@ -259,7 +263,7 @@ class BasketSingleton : Handler.Callback {
         return local
     }
 
-    private fun getSaleById(saleId: Int): Any? {
+    fun getSaleById(saleId: Int): Any? {
         var local: Any? = null
         synchronized(this.sales) {
             for (item in this.sales) {
@@ -271,7 +275,7 @@ class BasketSingleton : Handler.Callback {
         return local
     }
 
-    private fun getSaleByIndex(index: Int): SaleItem? {
+    fun getSaleByIndex(index: Int): SaleItem? {
         var local: SaleItem? = null
         synchronized(this.sales) {
             if (index < this.sales.count()) {
@@ -336,8 +340,8 @@ class BasketSingleton : Handler.Callback {
                                                 entrance.entranceSetId = target.getAsJsonObject("entrance_set").get("id").asInt
                                                 entrance.entranceSetTitle = target.getAsJsonObject("entrance_set").get("title").asString
                                                 entrance.entranceTypeTitle = target.getAsJsonObject("entrance_type").get("title").asString
-                                                entrance.entranceUniqueId = target.getAsJsonObject("unique_key").asString
-                                                entrance.entranceYear = target.getAsJsonObject("year").asInt
+                                                entrance.entranceUniqueId = target.get("unique_key").asString
+                                                entrance.entranceYear = target.get("year").asInt
 
                                                 tCostLocal += cost
                                                 salesLocal.add(SaleItem(sale_id, created, cost, entrance, "Entrance"))
@@ -402,7 +406,7 @@ class BasketSingleton : Handler.Callback {
 
         val context: Context? = msg?.obj as Context?
 
-        BasketRestAPIClass.loadBasketItems(context?.applicationContext!!, {data, error ->
+        BasketRestAPIClass.createBasket(context?.applicationContext!!, {data, error ->
             // TODO: hide loading that showed before
             if (error == HTTPErrorType.Success) {
                 if (data != null) {
@@ -549,6 +553,7 @@ class BasketSingleton : Handler.Callback {
         val bundle = msg?.data ?: return
 
         val saleId = bundle.getInt("SALE_ID")
+        val salePosition = bundle.getInt("SALE_POSITION")
 
         BasketRestAPIClass.removeSaleFromBasket(context?.applicationContext!!, this.basketId!!, saleId!!,  {data, error ->
             // TODO: hide loading that showed before
@@ -563,7 +568,7 @@ class BasketSingleton : Handler.Callback {
                                         this@BasketSingleton.removeSaleById(saleId)
                                     }
                                     if (this@BasketSingleton.listener != null) {
-                                        this@BasketSingleton.listener?.onRemoveCompleted(this@BasketSingleton.sales.count())
+                                        this@BasketSingleton.listener?.onRemoveCompleted(this@BasketSingleton.sales.count(), salePosition)
                                     }
 
                                 } catch (exc: Exception) {

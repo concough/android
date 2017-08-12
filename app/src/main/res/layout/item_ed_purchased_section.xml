@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/EDItem_purchased_section_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/EDItem_purchased_section_inner_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/colorConcoughGray3"
+        android:paddingBottom="8dp">
+
+
+        <LinearLayout
+            android:id="@+id/EDItem_purchased_section_devices"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+
+            <ImageView
+                android:id="@+id/EDItem_purchased_section_refresh_img"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginRight="4dp"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/recurring_appointment" />
+
+            <ProgressBar
+                android:id="@+id/EDItem_purchased_section_download_progress_refresh"
+                style="@style/Widget.AppCompat.ProgressBar"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginRight="4dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/EDItem_purchased_section_downloaded_TextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_marginRight="4dp"
+                android:layout_weight="1"
+                android:gravity="right|end"
+                android:text="TextView"
+                android:textSize="13sp"
+                android:textAlignment="textEnd"
+                android:textColor="@color/colorConcoughBlueDark" />
+
+            <ImageView
+                android:id="@+id/imageView2"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/android" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/EDItem_purchased_section_downloading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/EDItem_purchased_section_downloading_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_marginRight="4dp"
+                android:layout_weight="1"
+                android:textSize="13sp"
+                android:text="@string/entrance_detail_downloading_label"
+                android:textColor="@color/colorConcoughBlue" />
+
+            <ProgressBar
+                android:id="@+id/EDItem_purchased_section_downloading_progress"
+                style="@style/Widget.AppCompat.ProgressBar"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/EDItem_purchased_section_download_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/EDItem_purchased_section_devices" />
+
+        <Button
+            android:id="@+id/EDItem_purchased_section_download_button"
+            android:layout_width="100dp"
+            android:layout_height="28dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/concough_border_outline_style"
+            android:text="@string/entrance_detail_download_button"
+            android:textColor="@android:color/white"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/EDItem_purchased_section_devices">
+
+            <TextView
+                android:id="@+id/EDItem_purchased_section_sale_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
+                android:text=""
+                android:textSize="13sp"
+                android:textColor="@color/colorConcoughGray" />
+
+            <TextView
+                android:id="@+id/EDItem_purchased_section_sale_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:text="@string/entrance_detail_download_sale_label"
+                android:textColor="@color/colorConcoughGray2" />
+        </LinearLayout>
+    </android.support.constraint.ConstraintLayout>
+</LinearLayout>

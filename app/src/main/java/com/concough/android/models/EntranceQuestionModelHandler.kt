@@ -1,6 +1,8 @@
 package com.concough.android.models
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import com.concough.android.singletons.RealmSingleton
 import io.realm.RealmResults
 import io.realm.Sort
@@ -12,6 +14,7 @@ class EntranceQuestionModelHandler {
     companion object Factory {
         val TAG: String = "EntranceQuestionModelHandler"
 
+        @SuppressLint("LongLogTag")
         @JvmStatic
         fun add(context: Context, uniqueId: String, number: Int, answer: Int, images: String, isDownloaded: Boolean, entrance: EntranceModel): EntranceQuestionModel? {
             val question = EntranceQuestionModel()
@@ -23,11 +26,15 @@ class EntranceQuestionModelHandler {
             question.uniqueId = uniqueId
 
             try {
-                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                RealmSingleton.getInstance(context).DefaultRealm.copyToRealm(question)
-                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                    RealmSingleton.getInstance(context).DefaultRealm.copyToRealm(question)
+                }
+//                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return question
             } catch (exc: Exception) {
+                Log.d(TAG, exc.message)
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
 
             return null
@@ -35,11 +42,14 @@ class EntranceQuestionModelHandler {
 
         fun bulkDelete(context: Context, list: RealmResults<EntranceQuestionModel>): Boolean {
             try {
-                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                list.deleteAllFromRealm()
-                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                    list.deleteAllFromRealm()
+                }
+//                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return false
             } catch (exc: Exception) {
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
             return true
         }
@@ -50,14 +60,16 @@ class EntranceQuestionModelHandler {
 
             if (question != null) {
                 try {
-                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                    question.isDownloaded = true
-                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        question.isDownloaded = true
+                    }
+//                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 } catch (exc: Exception) {
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
                     return false
                 }
             }
-
             return true
         }
 

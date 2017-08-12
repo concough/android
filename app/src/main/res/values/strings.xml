@@ -54,10 +54,10 @@
     <string name="signupInfo3A_S_nextButton">ذخیره و تمام</string>
     <string name="StartupA_S_info">برای تلاش مجدد لمس نمایید</string>
     <string name="itemEntranceCreateI_S_concourText">کنکور</string>
-    <string name="errorReport_S_infoTextView">گزارش خطا</string>
-    <string name="errorReport_S_nextButton">گزارش خطا</string>
-    <string name="errorReport_S_description">توضیحات ...</string>
-    <string name="settingMenu_S_title1">راهنما</string>
+    <string name="title_activity_bottom_navigation">BottomNavigationActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
 
     <string name="settingMenu_S_url">http://zhycan.com</string>
 
@@ -69,5 +69,16 @@
     <string name="settingA_S_aboutUs">درباره ما</string>
     <string name="settingA_S_signout">خروج از سیستم</string>
 
-
+    <string name="navigation_bottom_home">خانه</string>
+    <string name="navigation_bottom_archive">محصولات</string>
+    <string name="navigation_bottom_favorites">آرشیو</string>
+    <string name="navigation_bottom_settings">تنظیمات</string>
+    <string name="checkout_button_label">پرداخت و تسویه حساب</string>
+    <string name="total_cost_label">قیمت کل خرید</string>
+    <string name="checkout_delete_item_label">حذف</string>
+    <string name="entrance_detail_downloading_label">در حال دانلود</string>
+    <string name="entrance_detail_download_button">دانلود</string>
+    <string name="entrance_detail_download_sale_label">خریداری شده در:</string>
+    <string name="entrance_detail_download_complete_label">این کنکور دانلود شده است</string>
+    <string name="entrance_detail_download_complete_show_button">مشاهده کنکور</string>
 </resources>

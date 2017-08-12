@@ -18,6 +18,9 @@ class UrlMakerSingleton private constructor(){
     private val _basket_class_name = BASKET_CLASS_NAME
     private val _archive_class_name = ARCHIVE_CLASS_NAME
     private val _media_class_name = MEDIA_CLASS_NAME
+    private val _entrance_class_name = ENTRANCE_CLASS_NAME
+    private val _purchased_class_name = PURCHASED_CLASS_NAME
+    private val _product_class_name = PRODUCT_CLASS_NAME
 
     companion object Factory {
         private var sharedInstance : UrlMakerSingleton? = null
@@ -225,4 +228,71 @@ class UrlMakerSingleton private constructor(){
         return fullPath
     }
 
+    fun mediaForQuestionUrl(uniqueId: String, mediaId: String): String? {
+        var fullPath: String? = null
+        val functionName = "entrance/$uniqueId/q/$mediaId"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._media_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun getEntranceUrl(uniqueId: String): String? {
+        var fullPath: String? = null
+        val functionName = "$uniqueId"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._entrance_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun getEntrancePackageDataInitUrl(uniqueId: String): String? {
+        var fullPath: String? = null
+        val functionName = "$uniqueId/data/init"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._entrance_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun getPurchasedUrl(functionName: String): String? {
+        var fullPath: String? = null
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._purchased_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun getPurchasedUpdateDownloadTimesUrl(uniqueId: String): String? {
+        val functionName = "entrance/$uniqueId/update"
+        return this.getPurchasedUrl(functionName)
+    }
+
+    fun getProductUrl(functionName: String): String? {
+        var fullPath: String? = null
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._product_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun getPurchasedForEntranceUrl(uniqueId: String): String? {
+        val functionName = "entrance/$uniqueId"
+        return this.getPurchasedUrl(functionName)
+    }
+
+    fun getProductDataForEntranceUrl(uniqueId: String): String? {
+        val functionName = "entrance/$uniqueId/sale"
+        return this.getProductUrl(functionName)
+    }
+
+    fun getProductStatForEntranceUrl(uniqueId: String): String? {
+        val functionName = "entrance/$uniqueId/stat"
+        return this.getProductUrl(functionName)
+    }
 }

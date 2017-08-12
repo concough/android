@@ -23,11 +23,15 @@ class UserLogModelHandler {
             log.username = username
 
             try {
-                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                RealmSingleton.getInstance(context).DefaultRealm.copyToRealm(log)
-                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                    RealmSingleton.getInstance(context).DefaultRealm.copyToRealm(log)
+                }
+//                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return true
-            } catch (exc: Exception) {}
+            } catch (exc: Exception) {
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+            }
 
             return false
         }

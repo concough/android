@@ -40,12 +40,19 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private final static String SIGNUP_STRUCTURE_KEY = "SignupS";
     private SignupStruct infoStruct;
 
-    public static Intent newIntent(Context packageContext, SignupStruct ss) {
+    public static Intent newIntent(Context packageContext, SignupStruct ss, Boolean clearStack) {
         Intent i = new Intent(packageContext, ResetPasswordActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        if (clearStack == true)
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
         i.putExtra(SIGNUP_STRUCTURE_KEY, ss);
         return i;
     }
+
+    public static Intent newIntent(Context packageContext, SignupStruct ss) {
+        return newIntent(packageContext, ss, Boolean.TRUE);
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,15 +148,26 @@ public class ResetPasswordActivity extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ResetPasswordActivity.this.resetPassword(infoStruct);
+                String pass1 = passwordEdit.getText().toString();
+                String pass2 = passwordEditConfirm.getText().toString();
+
+                if (pass1 != "" && pass2 != "") {
+                    if (pass1.equals(pass2)) {
+                        ResetPasswordActivity.this.resetPassword(pass1, pass2);
+                    } else {
+                        // TODO: show error message "Form" and "NotSameFields"
+                    }
+                } else {
+                    // TODO: show error message "Form" and "EmptyFields"
+                }
             }
         });
 
 
     }
 
-    private void resetPassword(SignupStruct infoStruct) {
-        new ResetPasswordTask().execute(infoStruct);
+    private void resetPassword(String pass1, String pass2) {
+        new ResetPasswordTask().execute(pass1, pass2);
 
     }
 
@@ -164,7 +182,8 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                 if(httpErrorType == HTTPErrorType.Success && aBoolean ) {
                                     getProfile();
                                 } else {
-                                    LoginActivity.newIntent(ResetPasswordActivity.this);
+                                    Intent i = LoginActivity.newIntent(ResetPasswordActivity.this);
+                                    ResetPasswordActivity.this.startActivity(i);
                                     finish();
                                 }
 
@@ -181,7 +200,8 @@ public class ResetPasswordActivity extends AppCompatActivity {
                             public void run() {
                                 // TODO: hide loading
                                 if (networkErrorType != null) {
-                                    LoginActivity.newIntent(ResetPasswordActivity.this);
+                                    Intent i = LoginActivity.newIntent(ResetPasswordActivity.this);
+                                    ResetPasswordActivity.this.startActivity(i);
                                     finish();
                                 }
                             }
@@ -191,11 +211,11 @@ public class ResetPasswordActivity extends AppCompatActivity {
                 });
     }
 
-    private class ResetPasswordTask extends AsyncTask<SignupStruct, Void, Void> {
+    private class ResetPasswordTask extends AsyncTask<String, Void, Void> {
         @Override
-        protected Void doInBackground(final SignupStruct... params) {
-            AuthRestAPIClass.resetPassword(params[0].getUsername(), Integer.valueOf(params[0].getPreSignupId()), String.valueOf(passwordEdit),
-                    String.valueOf(passwordEditConfirm), Integer.valueOf(params[0].getPassword()),
+        protected Void doInBackground(final String... params) {
+            AuthRestAPIClass.resetPassword(infoStruct.getUsername(), Integer.valueOf(infoStruct.getPreSignupId()), params[0],
+                    params[1], Integer.valueOf(infoStruct.getPassword()),
                     new Function2<JsonObject, HTTPErrorType, Unit>() {
                         @Override
                         public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
@@ -208,7 +228,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                             switch (status) {
                                                 case "OK":
                                                     try {
-                                                        TokenHandlerSingleton.getInstance(getApplicationContext()).setUsernameAndPassword(params[0].getUsername(), params[0].getPassword());
+                                                        TokenHandlerSingleton.getInstance(getApplicationContext()).setUsernameAndPassword(infoStruct.getUsername(), infoStruct.getPassword());
                                                         startUp();
 
                                                     } catch (Exception exc) {
@@ -217,7 +237,18 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                                     break;
                                                 case "Error":
                                                     try {
-
+                                                        String error_type = jsonObject.get("error_type").toString();
+                                                        switch (error_type) {
+                                                            case "ExpiredCode": {
+                                                                // TODO: show error with ErrorResult and on OK send to ForgotPass
+                                                                break;
+                                                            }
+                                                            case "UserNotExist":
+                                                            case "PreAuthNotExist":
+                                                                // TODO: Show AuthProfile error message and make ForgotPassword Activity
+                                                                break;
+                                                            default: break;
+                                                        }
                                                     } catch (Exception exc) {
 
                                                     }

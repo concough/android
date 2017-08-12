@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:id="@+id/container"
+    tools:context="com.concough.android.concough.EntranceDetailActivity">
+
+    <com.baoyz.widget.PullRefreshLayout
+        android:id="@+id/entranceDetailA_swipeRefreshLayout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/entranceDetaiA_recycle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white">
+
+
+        </android.support.v7.widget.RecyclerView>
+
+    </com.baoyz.widget.PullRefreshLayout>
+
+    <android.support.design.widget.BottomNavigationView
+        android:id="@+id/navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@android:color/white"
+        app:itemTextColor="@drawable/concough_navigation_style"
+        app:itemIconTint="@drawable/concough_navigation_style"
+
+        app:menu="@menu/navigation"
+         />
+
+</LinearLayout>

@@ -1,6 +1,8 @@
 package com.concough.android.models
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import com.concough.android.singletons.RealmSingleton
 import com.concough.android.structures.EntranceStruct
 import io.realm.RealmResults
@@ -14,6 +16,7 @@ class EntranceBookletModelHandler {
     companion object Factory {
         val TAG: String = "EntranceBookletModelHandler"
 
+        @SuppressLint("LongLogTag")
         @JvmStatic
         fun add(context: Context, uniqueId: String, title: String, lessonCount: Int, duration: Int, isOptional: Boolean, order: Int): EntranceBookletModel? {
 
@@ -26,11 +29,15 @@ class EntranceBookletModelHandler {
             booklet.uniqueId = uniqueId
 
             try {
-                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(booklet)
-                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                    RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(booklet)
+                }
+//                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return booklet
             } catch (exc: Exception) {
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+                Log.d(TAG, exc.printStackTrace().toString())
             }
 
             return null
