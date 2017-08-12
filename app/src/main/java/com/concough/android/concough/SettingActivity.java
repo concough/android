@@ -45,7 +45,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
-public class SettingActivity extends AppCompatActivity {
+public class SettingActivity extends BottomNavigationActivity {
     private final String TAG = "SettingActivity";
 
     private RecyclerView recyclerView;
@@ -59,11 +59,22 @@ public class SettingActivity extends AppCompatActivity {
     //    public static SignupMoreInfoStruct signupInfo = null;
     private GradeType names[];
 
+    @Override
+    protected int getLayoutResourceId() {
+        return R.layout.activity_setting;
+    }
+
+    public static Intent newIntent(Context packageContext) {
+        Intent i = new Intent(packageContext, SettingActivity.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        return i;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setMenuSelectedIndex(3);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_setting);
+//        setContentView(R.layout.activity_setting);
 
 
         recyclerView = (RecyclerView) findViewById(R.id.settingA_recycleView);

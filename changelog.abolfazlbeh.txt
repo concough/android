@@ -220,3 +220,8 @@ Favorite Activity (abolfazl.beh)
 8 - DownloaderSingleton bugs fixed and add flag to see singleton state.
 9 - PurchasedRestAPIClass --> getPurchasedList added to get purchased list.
 10 - All models and there's handler modified to include "username" field in query search.
+
+------------------------------------------------------------------------------------------------
+Syncing And fix git bugs (abolfazl.beh)
+
+1 - Prepare SettingActivity to extend BottomNavigationActivity

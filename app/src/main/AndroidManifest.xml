@@ -91,7 +91,8 @@
         <activity android:name=".SettingActivity">
 
         </activity>
-        <activity android:name=".ErrorReportActivity">
+        <activity android:name=".ErrorReportActivity"></activity>
+        <activity android:name=".SettingsWebViewActivity"></activity>
         <activity
             android:name=".BottomNavigationActivity"
             android:theme="@style/AppThemeArchiveActionBar" />
@@ -107,7 +108,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".BasketCheckoutActivity"></activity>
     </application>
 
 </manifest>

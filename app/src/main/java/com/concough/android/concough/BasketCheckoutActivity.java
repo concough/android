@@ -38,6 +38,7 @@ import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
 public class BasketCheckoutActivity extends AppCompatActivity {
+    // testing with Basket
 
     private static final String TAG = "BasketCheckoutActivity";
     private static final String CONTEXT_WHO_KEY = "CONTEXT_WHO";

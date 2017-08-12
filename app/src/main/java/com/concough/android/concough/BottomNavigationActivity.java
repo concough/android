@@ -1,5 +1,6 @@
 package com.concough.android.concough;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
@@ -39,12 +40,16 @@ public class BottomNavigationActivity extends AppCompatActivity {
                     startActivity(f);
                     return true;
                 case R.id.navigation_settings:
+                    Intent s = SettingActivity.newIntent(BottomNavigationActivity.this);
+                    startActivity(s);
                     return true;
             }
             return false;
         }
 
     };
+
+
 
     @LayoutRes
     protected int getLayoutResourceId() {

@@ -69,6 +69,11 @@
     <string name="settingA_S_aboutUs">درباره ما</string>
     <string name="settingA_S_signout">خروج از سیستم</string>
 
+    <string name="errorReport_S_description">توضیحات</string>
+    <string name="errorReport_S_infoTextView">کزارش</string>
+    <string name="errorReport_S_nextButton">ارسال</string>
+    <string name="settingMenu_S_title1">راهنما</string>
+
     <string name="navigation_bottom_home">خانه</string>
     <string name="navigation_bottom_archive">محصولات</string>
     <string name="navigation_bottom_favorites">آرشیو</string>
