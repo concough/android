@@ -22,9 +22,9 @@
             android:layout_height="wrap_content"
             android:gravity="top|right"
             android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="@+id/archiveDetailHolder1L_logoImage"
-            app:layout_constraintRight_toLeftOf="@+id/archiveDetailHolder1L_logoImage"
-            app:layout_constraintTop_toTopOf="@+id/archiveDetailHolder1L_logoImage"
+            app:layout_constraintBottom_toBottomOf="@+id/settingUserInfoL_userImage"
+            app:layout_constraintRight_toLeftOf="@+id/settingUserInfoL_userImage"
+            app:layout_constraintTop_toTopOf="@+id/settingUserInfoL_userImage"
             app:layout_constraintVertical_bias="0.526"
             android:layout_marginRight="8dp">
 
@@ -61,7 +61,7 @@
         </LinearLayout>
 
         <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/archiveDetailHolder1L_logoImage"
+            android:id="@+id/settingUserInfoL_userImage"
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:layout_gravity="center_horizontal"
@@ -75,7 +75,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintVertical_bias="1.0"
             app:srcCompat="@drawable/app_dropbox_icon" />
 
     </android.support.constraint.ConstraintLayout>

@@ -1,7 +1,9 @@
 package com.concough.android.concough
 
-import android.support.v7.app.AppCompatActivity
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.Toast
 import com.concough.android.rest.ProfileRestAPIClass
@@ -11,8 +13,7 @@ import com.concough.android.singletons.TokenHandlerSingleton
 import com.concough.android.singletons.UserDefaultsSingleton
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
-
-import kotlinx.android.synthetic.main.activity_startup.*;
+import kotlinx.android.synthetic.main.activity_startup.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 
@@ -20,7 +21,17 @@ class StartupActivity : AppCompatActivity() {
     companion object {
         private val TAG = "StartupActivity"
 
+        @JvmStatic
+        fun newIntent(packageContext: Context): Intent {
+            val i = Intent(packageContext, StartupActivity::class.java)
+            i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            return i
+        }
+
     }
+
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,10 +66,10 @@ class StartupActivity : AppCompatActivity() {
             }
         } else if (TokenHandlerSingleton.getInstance(applicationContext).isAuthenticated()) {
             doAsync {
-                TokenHandlerSingleton.getInstance(applicationContext).assureAuthorized(true, {authenticated, error ->
+                TokenHandlerSingleton.getInstance(applicationContext).assureAuthorized(true, { authenticated, error ->
                     if (authenticated) {
                         uiThread {
-                            if(UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
+                            if (UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
                                 val homeIntent = HomeActivity.newIntent(this@StartupActivity)
                                 startActivity(homeIntent)
                                 finish()
@@ -73,7 +84,7 @@ class StartupActivity : AppCompatActivity() {
                             finish()
                         }
                     }
-                }, {error ->
+                }, { error ->
                     uiThread {
                         this@StartupActivity.StartupA_centerView.visibility = View.VISIBLE
                         val loginIntent = LoginActivity.newIntent(this@StartupActivity)
@@ -93,7 +104,7 @@ class StartupActivity : AppCompatActivity() {
 
     private fun getProfile() {
         doAsync {
-            ProfileRestAPIClass.getProfileData(this@StartupActivity, {data, error ->
+            ProfileRestAPIClass.getProfileData(this@StartupActivity, { data, error ->
                 uiThread {
                     if (error != HTTPErrorType.Success) {
                         if (error == HTTPErrorType.Refresh) {
@@ -107,7 +118,7 @@ class StartupActivity : AppCompatActivity() {
                         if (data != null) {
                             try {
                                 val status = data.get("status").asString
-                                when(status) {
+                                when (status) {
                                     "OK" -> {
                                         val profile = data.get("record").asJsonArray[0].asJsonObject
                                         if (profile != null) {
@@ -156,7 +167,7 @@ class StartupActivity : AppCompatActivity() {
                         }
                     }
                 }
-            }, {error ->
+            }, { error ->
                 uiThread {
                     if (error != null) {
                         when (error) {

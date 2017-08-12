@@ -59,18 +59,23 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
 
+    <string name="settingMenu_S_url">http://zhycan.com</string>
 
-    <string name="test_section_format">Hello World from section: %1$d</string>
+    <string name="settingA_S_aboutUs_url">http://zhycan.com</string>
+    <string name="settingA_S_changePassword">تغییر گذرواژه</string>
+    <string name="settingA_S_inviteFriends">دعوت از دوستان</string>
+    <string name="settingA_S_clearCache">پاک کردن حافظه نهانی</string>
+    <string name="settingA_S_bugReport">گزارش خطا</string>
+    <string name="settingA_S_aboutUs">درباره ما</string>
+    <string name="settingA_S_signout">خروج از سیستم</string>
 
     <string name="navigation_bottom_home">خانه</string>
     <string name="navigation_bottom_archive">محصولات</string>
     <string name="navigation_bottom_favorites">آرشیو</string>
     <string name="navigation_bottom_settings">تنظیمات</string>
-
     <string name="checkout_button_label">پرداخت و تسویه حساب</string>
     <string name="total_cost_label">قیمت کل خرید</string>
     <string name="checkout_delete_item_label">حذف</string>
-
     <string name="entrance_detail_downloading_label">در حال دانلود</string>
     <string name="entrance_detail_download_button">دانلود</string>
     <string name="entrance_detail_download_sale_label">خریداری شده در:</string>

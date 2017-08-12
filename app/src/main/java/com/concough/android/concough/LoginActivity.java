@@ -3,9 +3,13 @@ package com.concough.android.concough;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -94,6 +98,75 @@ public class LoginActivity extends AppCompatActivity {
             }
         };
         loginButton.setOnClickListener(loginButtonListener);
+
+
+        usernameEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().length() > 0) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                        usernameEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
+                        usernameEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+                    } else {
+                        usernameEdit.setGravity(Gravity.END);
+
+                    }
+                } else {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                        usernameEdit.setTextDirection(View.TEXT_DIRECTION_RTL);
+                        usernameEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+                    } else {
+                        usernameEdit.setGravity(Gravity.START);
+                    }
+                }
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+
+
+        passwordEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().length() > 0) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                        passwordEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
+                        passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+                    } else {
+                        usernameEdit.setGravity(Gravity.END);
+
+                    }
+                } else {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                        passwordEdit.setTextDirection(View.TEXT_DIRECTION_RTL);
+                        passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+                    } else {
+                        passwordEdit.setGravity(Gravity.START);
+                    }
+                }
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+
 
 
         usernameEdit.requestFocus();
@@ -220,26 +293,25 @@ public class LoginActivity extends AppCompatActivity {
                 @Override
                 public Unit invoke(final NetworkErrorType networkErrorType) {
                     runOnUiThread(new Runnable() {
-                                      @Override
-                                      public void run() {
-                                          // TODO: hide loading
-                                          if (networkErrorType != null) {
-                                              switch (networkErrorType) {
-                                                  case NoInternetAccess:
-                                                  case HostUnreachable:
-                                                  {
-                                                      // TODO: Show error message "NetworkError" with type = "error"
-                                                      break;
-                                                  }
-                                                  default:
-                                                      // TODO: Show error message "NetworkError" with type = ""
-                                                      break;
+                        @Override
+                        public void run() {
+                            // TODO: hide loading
+                            if (networkErrorType != null) {
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        // TODO: Show error message "NetworkError" with type = "error"
+                                        break;
+                                    }
+                                    default:
+                                        // TODO: Show error message "NetworkError" with type = ""
+                                        break;
 
-                                              }
-                                          }
+                                }
+                            }
 
-                                      }
-                                  });
+                        }
+                    });
                     return null;
                 }
             });

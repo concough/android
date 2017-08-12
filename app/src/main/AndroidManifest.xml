@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.concough.android.concough"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.concough.android.concough">
+    >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -20,13 +21,24 @@
             android:name=".StartupActivity"
             android:windowSoftInputMode="adjustPan">
 
-            <!-- <intent-filter> -->
-            <!-- <action android:name="android.intent.action.MAIN" /> -->
-            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
-            <!-- </intent-filter> -->
+             <!--<intent-filter>-->
+             <!--<action android:name="android.intent.action.MAIN" />-->
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+             <!--<category android:name="android.intent.category.LAUNCHER" />-->
+             <!--</intent-filter>-->
+
+
+
 
         </activity>
-        <activity android:name=".LoginActivity">
+        <activity android:name=".LoginActivity" >
+
+
         </activity>
 
         <meta-data
@@ -39,16 +51,15 @@
         <activity android:name=".SignupMoreInfo2Activity" />
         <activity android:name=".SignupMoreInfo3Activity" />
         <activity android:name=".HomeActivity" />
-        <!-- <activity android:name=".TestActivity"> -->
+        <!--<activity android:name=".TestActivity">-->
+
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
 
 
-        <!-- <intent-filter> -->
-        <!-- <action android:name="android.intent.action.MAIN" /> -->
-
-
-        <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
-        <!-- </intent-filter> -->
-        <!-- </activity> -->
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
+        <!--</activity>-->
         <activity android:name=".ForgotPasswordActivity" />
         <activity android:name=".ResetPasswordActivity">
 
@@ -58,10 +69,29 @@
         <activity
             android:name=".ArchiveActivity"
             android:theme="@style/AppTheme.NoActionBar">
+
+
+
+
+             <intent-filter>
+             <action android:name="android.intent.action.MAIN" />
+
+
+             <category android:name="android.intent.category.LAUNCHER" />
+             </intent-filter>
+
+
+
+
         </activity>
         <activity
             android:name=".ArchiveDetailActivity"
             android:theme="@style/AppThemeArchiveDetailActionBar" />
+
+        <activity android:name=".SettingActivity">
+
+        </activity>
+        <activity android:name=".ErrorReportActivity">
         <activity
             android:name=".BottomNavigationActivity"
             android:theme="@style/AppThemeArchiveActionBar" />
@@ -73,10 +103,11 @@
         <activity android:name=".FavoritesActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
+        <activity android:name=".BasketCheckoutActivity"></activity>
     </application>
 
 </manifest>

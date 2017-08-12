@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:settings="http://schemas.android.com/tools">
+
+    <com.concough.android.concough.SettingPreference android:key="userDetails"/>
+    <com.concough.android.concough.SettingPreference android:key="userEdit"/>
+
+    <Preference
+        android:key="about"
+        android:icon="@drawable/password_filled_100"
+        android:title="محصولات خریداری شده">
+    </Preference>
+
+</PreferenceScreen>

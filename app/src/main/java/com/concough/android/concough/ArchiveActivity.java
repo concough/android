@@ -533,7 +533,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                 concourName = (TextView) itemView.findViewById(R.id.ccListitemArchiveL_concourName);
                 concourCode = (TextView) itemView.findViewById(R.id.ccListitemArchiveL_concourCode);
                 concourCount = (TextView) itemView.findViewById(R.id.ccListitemArchiveL_concourCount);
-                entranceLogo = (ImageView) itemView.findViewById(R.id.archiveDetailHolder1L_logoImage);
+                entranceLogo = (ImageView) itemView.findViewById(R.id.settingUserInfoL_userImage);
                 constraint = itemView.findViewById(R.id.archiveDetailA_constraitItem);
 
 
