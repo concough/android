@@ -54,8 +54,20 @@
     <string name="signupInfo3A_S_nextButton">ذخیره و تمام</string>
     <string name="StartupA_S_info">برای تلاش مجدد لمس نمایید</string>
     <string name="itemEntranceCreateI_S_concourText">کنکور</string>
+    <string name="errorReport_S_infoTextView">گزارش خطا</string>
+    <string name="errorReport_S_nextButton">گزارش خطا</string>
+    <string name="errorReport_S_description">توضیحات ...</string>
+    <string name="settingMenu_S_title1">راهنما</string>
 
+    <string name="settingMenu_S_url">http://zhycan.com</string>
 
-    <string name="test_section_format">Hello World from section: %1$d</string>
+    <string name="settingA_S_aboutUs_url">http://zhycan.com</string>
+    <string name="settingA_S_changePassword">تغییر گذرواژه</string>
+    <string name="settingA_S_inviteFriends">دعوت از دوستان</string>
+    <string name="settingA_S_clearCache">پاک کردن حافظه نهانی</string>
+    <string name="settingA_S_bugReport">گزارش خطا</string>
+    <string name="settingA_S_aboutUs">درباره ما</string>
+    <string name="settingA_S_signout">خروج از سیستم</string>
+
 
 </resources>

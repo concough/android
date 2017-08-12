@@ -16,7 +16,7 @@
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@+id/textView4"
-        app:layout_constraintRight_toLeftOf="@+id/archiveDetailHolder1L_logoImage"
+        app:layout_constraintRight_toLeftOf="@+id/settingUserInfoL_userImage"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginLeft="8dp">
 
@@ -77,7 +77,7 @@
 
 
     <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/archiveDetailHolder1L_logoImage"
+        android:id="@+id/settingUserInfoL_userImage"
         android:layout_width="45dp"
         android:layout_height="45dp"
         android:layout_gravity="center_horizontal"

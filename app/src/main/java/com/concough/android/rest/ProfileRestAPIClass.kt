@@ -1,3 +1,5 @@
+
+
 package com.concough.android.rest
 
 import android.content.Context
@@ -6,7 +8,6 @@ import com.concough.android.singletons.UrlMakerSingleton
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
 import com.concough.android.structures.SignupMoreInfoStruct
-import com.concough.android.structures.SignupStruct
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
@@ -137,5 +138,14 @@ class ProfileRestAPIClass {
                 failure(error)
             })
         }
-    }
+
+
+        @JvmStatic
+        fun putProfileGrade(grade: String, context: Context, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+            
+        }
+
+
+
+        }
 }

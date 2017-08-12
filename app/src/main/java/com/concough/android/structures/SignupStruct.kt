@@ -29,6 +29,7 @@ enum class GradeType(value: String) {
     companion object Factory{
         val allValues = arrayOf(BE, ME)
 
+        @JvmStatic
         fun selectWithString(value: String): GradeType {
             when(value) {
                 "ME" -> return ME

@@ -207,7 +207,7 @@ public class ArchiveDetailActivity extends AppCompatActivity {
                 setName = (TextView) itemView.findViewById(R.id.archiveDetailHolder1L_EntranceName);
                 code = (TextView) itemView.findViewById(R.id.archiveDetailHolder1L_code);
                 count = (TextView) itemView.findViewById(R.id.archiveDetailHolder1L_count);
-                logoImage = (ImageView) itemView.findViewById(R.id.archiveDetailHolder1L_logoImage);
+                logoImage = (ImageView) itemView.findViewById(R.id.settingUserInfoL_userImage);
 
                 setName.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 code.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());

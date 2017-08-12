@@ -88,6 +88,24 @@ Finished Archive Detail Activity (faridM)
 =================================================================================
 
 
+Setting Activity (faridM)
+
+    1 - Aded 5 layouts "cc_setting_link_arrow.xml", "cc_setting_link_blue.xml", "cc_setting_useredit.xml", "cc_setting_userinfo.xml", "activity_setting.xml"
+    2 - Aded drawable icons and items:
+        "about_filled_100.png", "bug_filled_100.png", "concough_setting_border_top_bottom.xml", "housekeeping_100.png",
+        "ic_info_black_24dp.xml", "ic_notifications_black_24dp.xml", "ic_sync_black_24dp.xml", "invite_filled_100.png",
+        "logout_rounded_filled_100.png", "password_filled_100.png"
+
+    3 - Aded newIntent method on StartupActivity
+
+    Fixed
+        1 - Left to right on login activity fix
+
+
+
+=================================================================================
+
+
 
 
 

@@ -16,21 +16,14 @@
             android:name=".StartupActivity"
             android:windowSoftInputMode="adjustPan">
 
-             <!--<intent-filter>-->
-             <!--<action android:name="android.intent.action.MAIN" />-->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-
-             <!--<category android:name="android.intent.category.LAUNCHER" />-->
-             <!--</intent-filter>-->
-
-
-
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
 
         </activity>
-        <activity android:name=".LoginActivity" >
-
-
-        </activity>
+        <activity android:name=".LoginActivity" />
 
         <meta-data
             android:name="com.google.android.gms.version"
@@ -42,54 +35,29 @@
         <activity android:name=".SignupMoreInfo2Activity" />
         <activity android:name=".SignupMoreInfo3Activity" />
         <activity android:name=".HomeActivity" />
-        <!--<activity android:name=".TestActivity">-->
-
-            <!-- <intent-filter> -->
-            <!-- <action android:name="android.intent.action.MAIN" /> -->
+        <!-- <activity android:name=".TestActivity"> -->
 
 
-            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
-            <!-- </intent-filter> -->
-        <!--</activity>-->
+        <!-- </activity> -->
         <activity android:name=".ForgotPasswordActivity" />
         <activity android:name=".ResetPasswordActivity">
 
-
-             <!--<category android:name="android.intent.category.LAUNCHER" />-->
-             <!--</intent-filter>-->
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
         </activity>
         <activity
             android:name=".ArchiveActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-
-
-
-
-             <intent-filter>
-             <action android:name="android.intent.action.MAIN" />
-
-
-             <category android:name="android.intent.category.LAUNCHER" />
-             </intent-filter>
-
-
-
-
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ArchiveDetailActivity"
-            android:theme="@style/AppThemeArchiveDetailActionBar">
-
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
-
-
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
-
-
+            android:theme="@style/AppThemeArchiveDetailActionBar" />
+        <activity android:name=".SettingActivity">
 
         </activity>
+        <activity android:name=".ErrorReportActivity">
+
+        </activity>
+        <activity android:name=".SettingsWebViewActivity"></activity>
     </application>
 
 </manifest>
