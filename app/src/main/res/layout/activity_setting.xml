@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:background="@android:color/white"
     android:orientation="vertical"
+    android:id="@+id/settingA_root"
     tools:context="com.concough.android.concough.SettingActivity">
 
     <android.support.v7.widget.RecyclerView

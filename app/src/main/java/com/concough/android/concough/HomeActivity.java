@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -44,6 +43,8 @@ public class HomeActivity extends BottomNavigationActivity {
 
     public static final String TAG = "HomeActivity";
 
+    private static int counter = 0;
+
 
     private ArrayList<ConcoughActivityStruct> concoughActivityStructs;
     private boolean moreFeedExist = true;
@@ -72,6 +73,8 @@ public class HomeActivity extends BottomNavigationActivity {
         super.onCreate(savedInstanceState);
 //        setContentView(R.layout.activity_home);
 
+        counter = 0;
+
         recycleView = (RecyclerView) findViewById(R.id.homeA_recycle);
         homeActivityAdapter = new HomeActivityAdapter(this, new ArrayList<ConcoughActivityStruct>());
         recycleView.setAdapter(homeActivityAdapter);
@@ -98,27 +101,25 @@ public class HomeActivity extends BottomNavigationActivity {
         });
 
 
-            recycleView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                    if (HomeActivity.this.moreFeedExist) {
-
-                        HomeActivity.this.loading = false;
-                        HomeActivity.this.isRefresh = false;
+        recycleView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (HomeActivity.this.moreFeedExist) {
+                    if (!loading) {
                         HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
-                        Toast.makeText(HomeActivity.this, "Loading new Data ....", Toast.LENGTH_SHORT).show();
-
-
+                        counter++;
+                        Toast.makeText(HomeActivity.this, "Loading new Data ...." + counter, Toast.LENGTH_SHORT).show();
                     }
                 }
-            });
-
+            }
+        });
 
 
     }
 
 
     private void homeActivity(String date) {
+        HomeActivity.this.loading = true;
         new HomeActivityTask().execute(date);
 
     }
@@ -133,15 +134,17 @@ public class HomeActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (httpErrorType == HTTPErrorType.Success) {
-                                if (jsonObject != null) {
-                                    JsonArray jsonArray = jsonObject.getAsJsonArray();
+                            try {
+                                if (httpErrorType == HTTPErrorType.Success) {
+                                    if (jsonObject != null) {
 
-                                    if (jsonArray.size() > 0) {
-                                        ArrayList<ConcoughActivityStruct> localList = new ArrayList<ConcoughActivityStruct>();
-                                        ConcoughActivityStruct concoughActivityStruct;
-                                        for (JsonElement item : jsonArray) {
-                                            try {
+                                        JsonArray jsonArray = jsonObject.getAsJsonArray();
+
+                                        if (jsonArray.size() > 0) {
+                                            ArrayList<ConcoughActivityStruct> localList = new ArrayList<ConcoughActivityStruct>();
+                                            ConcoughActivityStruct concoughActivityStruct;
+                                            for (JsonElement item : jsonArray) {
+
                                                 String createdStr = item.getAsJsonObject().get("created").getAsString();
                                                 Date created = FormatterSingleton.getInstance().getUTCDateFormatter().parse(createdStr);
 
@@ -151,47 +154,52 @@ public class HomeActivity extends BottomNavigationActivity {
                                                 concoughActivityStruct = new ConcoughActivityStruct(created, createdStr, activityType, target);
                                                 localList.add(concoughActivityStruct);
 
-                                            } catch (Exception exc) {
-                                                // TODO: Hanlde error of date cast
                                             }
 
-                                        }
+
+                                            HomeActivity.this.moreFeedExist = true;
+
+                                            if (aBoolean) {
+                                                homeActivityAdapter.setItems(localList);
+                                            } else {
+                                                homeActivityAdapter.addItem(localList);
+                                            }
 
 
-                                        HomeActivity.this.moreFeedExist = true;
+                                            String lastIndexCreatedStr = localList.get(localList.size() - 1).getCreatedStr();
+                                            HomeActivity.this.lastCreatedStr = lastIndexCreatedStr;
 
-                                        if(aBoolean) {
-                                            homeActivityAdapter.setItems(localList);
+
+                                            homeActivityAdapter.notifyDataSetChanged();
+                                            HomeActivity.this.loading = false;
+
                                         } else {
-                                            homeActivityAdapter.addItem(localList);
+                                            HomeActivity.this.moreFeedExist = false;
                                         }
-
-
-                                        String lastIndexCreatedStr = localList.get(localList.size() - 1).getCreatedStr();
-                                        HomeActivity.this.lastCreatedStr = lastIndexCreatedStr;
-
-
-                                        homeActivityAdapter.notifyDataSetChanged();
-
-
-                                    } else {
-                                        HomeActivity.this.moreFeedExist = false;
                                     }
 
+                                } else if (httpErrorType == HTTPErrorType.Refresh) {
+                                    new HomeActivityTask().execute(params);
+                                } else {
+                                    // TODO: show error with msgType = "HTTPError" and error
                                 }
-                            } else if (httpErrorType == HTTPErrorType.Refresh) {
-                                new HomeActivityTask().execute(params);
-                            } else {
-                                // TODO: show error with msgType = "HTTPError" and error
+
+
+                            } catch (Exception exc) {
+                                HomeActivity.this.loading = false;
                             }
                         }
                     });
+
+
                     return null;
                 }
-            }, new Function1<NetworkErrorType, Unit>() {
+            }, new Function1<NetworkErrorType, Unit>()
+
+            {
                 @Override
                 public Unit invoke(NetworkErrorType networkErrorType) {
-
+                    HomeActivity.this.loading = false;
                     return null;
                 }
             });
@@ -468,7 +476,7 @@ public class HomeActivity extends BottomNavigationActivity {
                     itemHolder.itemView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Intent i = EntranceDetailActivity.newIntent(HomeActivity.this, oneItem.getTarget().getAsJsonObject().get("unique_key").getAsString() , "Home" );
+                            Intent i = EntranceDetailActivity.newIntent(HomeActivity.this, oneItem.getTarget().getAsJsonObject().get("unique_key").getAsString(), "Home");
                             startActivity(i);
                         }
                     });
@@ -478,7 +486,7 @@ public class HomeActivity extends BottomNavigationActivity {
                     itemHolder2.itemView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Intent i = EntranceDetailActivity.newIntent(HomeActivity.this, oneItem.getTarget().getAsJsonObject().get("unique_key").getAsString() , "Home" );
+                            Intent i = EntranceDetailActivity.newIntent(HomeActivity.this, oneItem.getTarget().getAsJsonObject().get("unique_key").getAsString(), "Home");
                             startActivity(i);
                         }
                     });

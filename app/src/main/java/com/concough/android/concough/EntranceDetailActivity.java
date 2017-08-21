@@ -12,7 +12,6 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +20,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.baoyz.widget.PullRefreshLayout;
 import com.concough.android.downloader.EntrancePackageDownloader;
@@ -29,7 +27,6 @@ import com.concough.android.models.EntranceModel;
 import com.concough.android.models.EntranceModelHandler;
 import com.concough.android.models.PurchasedModel;
 import com.concough.android.models.PurchasedModelHandler;
-import com.concough.android.models.UserLogModel;
 import com.concough.android.models.UserLogModelHandler;
 import com.concough.android.rest.EntranceRestAPIClass;
 import com.concough.android.rest.MediaRestAPIClass;
@@ -55,7 +52,6 @@ import com.google.gson.JsonParser;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -119,7 +115,6 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         }
 //        this.setMenuSelectedIndex(1);
         super.onCreate(savedInstanceState);
-
 
 
         this.handlerThread = new HandlerThread(HANDLE_THREAD_NAME);
@@ -300,7 +295,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                             .getUsername(getApplicationContext());
 
                     if (username != null) {
-                        PurchasedModel purchased = PurchasedModelHandler.getByProductId(getApplicationContext(),username,"Entrance", EntranceDetailActivity.this.entranceUniqueId);
+                        PurchasedModel purchased = PurchasedModelHandler.getByProductId(getApplicationContext(), username, "Entrance", EntranceDetailActivity.this.entranceUniqueId);
                         if (purchased != null) {
                             EntrancePurchasedStruct ep = new EntrancePurchasedStruct();
                             ep.id = purchased.id;
@@ -347,7 +342,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                 EntranceDetailActivity.this.state = EntranceVCStateEnum.Downloaded;
                                 EntranceDetailActivity.this.stateMachine();
                                 return;
-                            } else  {
+                            } else {
                                 DownloaderSingleton.DownloaderState st = DownloaderSingleton.getInstance().getDownloaderState(entranceUniqueId);
                                 if (st != null) {
                                     if (st == DownloaderSingleton.DownloaderState.Started) {
@@ -382,7 +377,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                                     return null;
                                                 }
                                             });
-                                        } catch (Exception exc) {}
+                                        } catch (Exception exc) {
+                                        }
                                     }
                                 }
                             }
@@ -420,7 +416,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
             try {
                 UserLogModelHandler.add(getApplicationContext(), username, uniqueId, created, logType, extraData);
-            } catch (Exception exc) {}
+            } catch (Exception exc) {
+            }
         }
     }
 
@@ -492,7 +489,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                         try {
                                             JsonObject purchaseData = jsonElement.getAsJsonObject().get("purchase").getAsJsonObject();
                                             Boolean purchaseStatus = purchaseData.get("status").getAsBoolean();
-                                            if(!purchaseStatus) {
+                                            if (!purchaseStatus) {
                                                 EntranceDetailActivity.this.state = EntranceVCStateEnum.NotPurchased;
                                             } else {
                                                 JsonObject purchaseRecord = purchaseData.get("purchase_record").getAsJsonObject();
@@ -615,7 +612,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
                                                 EntranceDetailActivity.this.entranceStat = stat;
                                             }
-                                        } catch (Exception exc) {}
+                                        } catch (Exception exc) {
+                                        }
                                         break;
                                     case "Error":
                                         String errorType = jsonElement.getAsJsonObject().get("error_type").getAsString();
@@ -721,7 +719,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                                 return;
 
                                             }
-                                        } catch (Exception exc) {}
+                                        } catch (Exception exc) {
+                                        }
                                         break;
                                     case "Error":
                                         String errorType = jsonElement.getAsJsonObject().get("error_type").getAsString();
@@ -813,7 +812,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                         try {
                                             JsonObject purchaseData = jsonElement.getAsJsonObject().get("purchase").getAsJsonObject();
                                             Boolean purchaseStatus = purchaseData.get("status").getAsBoolean();
-                                            if(!purchaseStatus) {
+                                            if (!purchaseStatus) {
                                                 EntranceDetailActivity.this.state = EntranceVCStateEnum.NotPurchased;
                                             } else {
                                                 JsonObject purchaseRecord = purchaseData.get("purchase_record").getAsJsonObject();
@@ -1179,17 +1178,17 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             if (holder.getClass() == EDInitialSectionViewHolder.class) {
-                ((EDInitialSectionViewHolder)holder).setupHolder(EntranceDetailActivity.this.entrance);
+                ((EDInitialSectionViewHolder) holder).setupHolder(EntranceDetailActivity.this.entrance);
             } else if (holder.getClass() == EDHeaderSectionViewHolder.class) {
-                ((EDHeaderSectionViewHolder)holder).setupHolder(EntranceDetailActivity.this.entrance);
+                ((EDHeaderSectionViewHolder) holder).setupHolder(EntranceDetailActivity.this.entrance);
             } else if (holder.getClass() == EDInformationSectionViewHolder.class) {
-                ((EDInformationSectionViewHolder)holder).setupHolder(EntranceDetailActivity.this.entrance);
+                ((EDInformationSectionViewHolder) holder).setupHolder(EntranceDetailActivity.this.entrance);
             } else if (holder.getClass() == EDSaleSectionViewHolder.class) {
-                ((EDSaleSectionViewHolder)holder).setupHolder(EntranceDetailActivity.this.entranceStat, EntranceDetailActivity.this.entranceSale, EntranceDetailActivity.this.selfBasketAdd, BasketSingleton.getInstance().getSalesCount());
+                ((EDSaleSectionViewHolder) holder).setupHolder(EntranceDetailActivity.this.entranceStat, EntranceDetailActivity.this.entranceSale, EntranceDetailActivity.this.selfBasketAdd, BasketSingleton.getInstance().getSalesCount());
             } else if (holder.getClass() == EDPurchasedSectionViewHolder.class) {
-                ((EDPurchasedSectionViewHolder)holder).setupHolder(EntranceDetailActivity.this.entrancePurchase);
+                ((EDPurchasedSectionViewHolder) holder).setupHolder(EntranceDetailActivity.this.entrancePurchase);
             } else if (holder.getClass() == EDDownloadedSectionViewHolder.class) {
-                ((EDDownloadedSectionViewHolder)holder).setupHolder();
+                ((EDDownloadedSectionViewHolder) holder).setupHolder();
             }
         }
 
@@ -1211,9 +1210,12 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         @Override
         public int getItemViewType(int position) {
             switch (position) {
-                case 0: return EDViewHolderType.INITIAL_SECTION.getValue();
-                case 1: return EDViewHolderType.HEADER_SECTION.getValue();
-                case 2: return EDViewHolderType.INFORMATION_SECTION.getValue();
+                case 0:
+                    return EDViewHolderType.INITIAL_SECTION.getValue();
+                case 1:
+                    return EDViewHolderType.HEADER_SECTION.getValue();
+                case 2:
+                    return EDViewHolderType.INFORMATION_SECTION.getValue();
                 case 3:
                     if (EntranceDetailActivity.this.state == EntranceVCStateEnum.ShowSaleInfo) {
                         return EDViewHolderType.SALE_SECTION.getValue();
@@ -1238,7 +1240,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             public EDInitialSectionViewHolder(View itemView) {
                 super(itemView);
 
-                esetImageView = (ImageView)itemView.findViewById(R.id.EDItem_initial_section_eset_image);
+                esetImageView = (ImageView) itemView.findViewById(R.id.EDItem_initial_section_eset_image);
                 entranceTypeTextView = (TextView) itemView.findViewById(R.id.EDItem_initial_section_type);
                 entranceSetTextView = (TextView) itemView.findViewById(R.id.EDItem_initial_section_set);
 
@@ -1313,7 +1315,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                         entranceExtraDataTextView.setText(extra);
 
                     }
-                } catch (Exception exc) {}
+                } catch (Exception exc) {
+                }
             }
         }
 
@@ -1342,7 +1345,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     entranceBookletCountsTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(es.getEntranceBookletCounts()) + " دفترچه");
                     entranceDurationTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(es.getEntranceDuration()) + " دقیقه");
 
-                } catch (Exception exc) {}
+                } catch (Exception exc) {
+                }
             }
         }
 
@@ -1361,13 +1365,13 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             public EDSaleSectionViewHolder(View itemView) {
                 super(itemView);
 
-                entranceCostLabelTextView = (TextView)itemView.findViewById(R.id.EDItem_sale_section_cost_label);
-                entranceCostTextView = (TextView)itemView.findViewById(R.id.EDItem_sale_section_cost);
-                entranceBuyCountTextView = (TextView)itemView.findViewById(R.id.EDItem_sale_section_buy_count);
-                entranceCheckoutSummeryTextView = (TextView)itemView.findViewById(R.id.EDItem_sale_section_checkout_summery);
+                entranceCostLabelTextView = (TextView) itemView.findViewById(R.id.EDItem_sale_section_cost_label);
+                entranceCostTextView = (TextView) itemView.findViewById(R.id.EDItem_sale_section_cost);
+                entranceBuyCountTextView = (TextView) itemView.findViewById(R.id.EDItem_sale_section_buy_count);
+                entranceCheckoutSummeryTextView = (TextView) itemView.findViewById(R.id.EDItem_sale_section_checkout_summery);
 
-                entranceBuyButton = (Button)itemView.findViewById(R.id.EDItem_sale_section_buy_button);
-                entranceCheckoutButton = (Button)itemView.findViewById(R.id.EDItem_sale_section_checkout_button);
+                entranceBuyButton = (Button) itemView.findViewById(R.id.EDItem_sale_section_buy_button);
+                entranceCheckoutButton = (Button) itemView.findViewById(R.id.EDItem_sale_section_checkout_button);
 
                 entranceCostTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 entranceCostLabelTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
@@ -1376,7 +1380,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 entranceCheckoutSummeryTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 entranceBuyCountTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
 
-                checkoutSection = (ConstraintLayout)itemView.findViewById(R.id.EDItem_sale_section_checkout);
+                checkoutSection = (ConstraintLayout) itemView.findViewById(R.id.EDItem_sale_section_checkout);
                 checkoutSection.setVisibility(View.GONE);
 
                 entranceCostLabelTextView.setText("قیمت:");
@@ -1429,7 +1433,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     }
 
                     entranceCheckoutSummeryTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(basketCount) + " قلم در سبد کالا موجود است.");
-                } catch (Exception exc) {}
+                } catch (Exception exc) {
+                }
             }
         }
 
@@ -1800,7 +1805,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 showButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // TODO: show entrance show activity
+                        Intent i = EntranceShowActivity.newIntent(EntranceDetailActivity.this, EntranceDetailActivity.this.entranceUniqueId, "Show");
+                        startActivity(i);
                     }
                 });
             }

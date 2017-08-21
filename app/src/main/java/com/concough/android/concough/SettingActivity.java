@@ -11,7 +11,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
@@ -27,9 +26,15 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.concough.android.general.AlertClass;
+import com.concough.android.models.EntrancePackageHandler;
+import com.concough.android.models.EntranceQuestionStarredModelHandler;
+import com.concough.android.models.PurchasedModel;
+import com.concough.android.models.PurchasedModelHandler;
 import com.concough.android.rest.ProfileRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
+import com.concough.android.singletons.TokenHandlerSingleton;
 import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.GradeType;
 import com.concough.android.structures.HTTPErrorType;
@@ -38,10 +43,13 @@ import com.concough.android.structures.ProfileStruct;
 import com.concough.android.utils.KeyChainAccessProxy;
 import com.google.gson.JsonObject;
 
+import java.io.File;
 import java.text.ParseException;
 import java.util.Date;
 
+import io.realm.RealmResults;
 import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
@@ -279,27 +287,71 @@ public class SettingActivity extends BottomNavigationActivity {
                     break;
 
                 case 2:
+                    holder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent i = SettingChangePasswordActivity.newIntent(SettingActivity.this);
+                            startActivity(i);
+                        }
+                    });
                     text = getResources().getString(R.string.settingA_S_changePassword);
                     image = R.drawable.password_filled_100;
-                    ((LinksViewHolder) holder).setupHolder(text, image, null);
+                    ((LinksViewHolder) holder).setupHolder(text, image, null, 5);
                     break;
 
                 case 3:
                     text = getResources().getString(R.string.settingA_S_inviteFriends);
                     image = R.drawable.invite_filled_100;
-                    ((LinksViewHolder) holder).setupHolder(text, image, null);
+                    ((LinksViewHolder) holder).setupHolder(text, image, null, 5);
                     break;
 
                 case 4:
+                    holder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            AlertClass.showAlertMessageCustom(SettingActivity.this, "آیا مطمین هستید؟", "تنها اطلاعات محصولات حذف خواهند شد و مجددا قابل بارگزاری است", "بله", "خیر", new Function0<Unit>() {
+                                @Override
+                                public Unit invoke() {
+                                    String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
+                                    RealmResults<PurchasedModel> items = PurchasedModelHandler.getAllPurchased(getApplicationContext(),username);
+
+                                    for (PurchasedModel item: items) {
+                                        SettingActivity.this.deletePurchaseData(item.productUniqueId);
+
+                                        if(PurchasedModelHandler.resetDownloadFlags(getApplicationContext(),username, item.id)) {
+                                            EntrancePackageHandler.removePackage(getApplicationContext(),username,item.productUniqueId);
+                                            EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(),username,item.productUniqueId);
+                                        }
+                                    }
+
+                                    SettingActivity.this.recycleAdapter.notifyDataSetChanged();
+
+                                    AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.settingA_root), "ActionResult", "FreeMemorySuccess", "success", null);
+
+                                    return null;
+                                }
+                            });
+
+
+                        }
+
+                    });
                     text = getResources().getString(R.string.settingA_S_clearCache);
                     image = R.drawable.housekeeping_100;
-                    ((LinksViewHolder) holder).setupHolder(text, image, null);
+                    ((LinksViewHolder) holder).setupHolder(text, image, null, 50);
                     break;
 
                 case 5:
+                    holder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent i = ErrorReportActivity.newIntent(SettingActivity.this);
+                            startActivity(i);
+                        }
+                    });
                     text = getResources().getString(R.string.settingA_S_bugReport);
                     image = R.drawable.bug_filled_100;
-                    ((WithArrowViewHolder) holder).setupHolder(text, image, null);
+                    ((WithArrowViewHolder) holder).setupHolder(text, image, null, null);
                     break;
 
                 case 6:
@@ -313,27 +365,35 @@ public class SettingActivity extends BottomNavigationActivity {
                     });
                     text = getResources().getString(R.string.settingA_S_aboutUs);
                     image = R.drawable.about_filled_100;
-                    ((WithArrowViewHolder) holder).setupHolder(text, image, null);
+                    ((WithArrowViewHolder) holder).setupHolder(text, image, null, null);
                     break;
 
                 case 7:
                     holder.itemView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            // TODO: 8/12/2017  SHOW ALERT FOR CONFIRM SIGNOUT ///
+                                AlertClass.showAlertMessageCustom(SettingActivity.this, "آیا مطمین هستید؟", "خروج موقت از سیستم!", "بله", "خیر", new Function0<Unit>() {
+                                    @Override
+                                    public Unit invoke() {
+                                        if (KeyChainAccessProxy.getInstance(getApplicationContext()).clearAllValue() && UserDefaultsSingleton.getInstance(getApplicationContext()).clearAll()) {
+                                            TokenHandlerSingleton.getInstance(getApplicationContext()).invalidateTokens();
+                                            Intent i = StartupActivity.newIntent(getApplicationContext());
+                                            startActivity(i);
+                                            finish();
+                                        }
 
-                            if (KeyChainAccessProxy.getInstance(getApplicationContext()).clearAllValue() && UserDefaultsSingleton.getInstance(getApplicationContext()).clearAll()) {
-                                Intent i = StartupActivity.newIntent(getApplicationContext());
-                                startActivity(i);
-                                finish();
+                                        return null;
+                                    }
+                                });
+
 
                             }
-                        }
+
                     });
                     text = getResources().getString(R.string.settingA_S_signout);
                     image = R.drawable.logout_rounded_filled_100;
                     int linkColor = R.color.colorConcoughRedLight;
-                    ((LinksViewHolder) holder).setupHolder(text, image, linkColor);
+                    ((LinksViewHolder) holder).setupHolder(text, image, linkColor, 20);
                     break;
             }
         }
@@ -450,7 +510,7 @@ public class SettingActivity extends BottomNavigationActivity {
                         customAlertDialogTitle.setPadding(0, 50, 0, 10);
                         customAlertDialogTitle.setText("لطفا یکی از گزینه های زیر را انتخاب نمایید");
                         customAlertDialogTitle.setTextSize(14);
-                        customAlertDialogTitle.setTextColor(getResources().getColor(R.color.colorConcoughGray));
+                        customAlertDialogTitle.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray));
                         customAlertDialogTitle.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
 
@@ -524,15 +584,19 @@ public class SettingActivity extends BottomNavigationActivity {
                 textLink = (TextView) itemView.findViewById(R.id.settingLinkL_link);
                 iconImage = (ImageView) itemView.findViewById(R.id.settingLinkL_image);
 
-                textLink.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                textLink.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
             }
 
-            public void setupHolder(String mText, int mIcon, @Nullable Integer textColor) {
+            public void setupHolder(String mText, int mIcon, @Nullable Integer textColor, @Nullable Integer padding) {
                 textLink.setText(mText);
                 iconImage.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), mIcon));
 
                 if (textColor != null) {
                     textLink.setTextColor(ContextCompat.getColor(getApplicationContext(), textColor));
+                }
+
+                if (padding != null) {
+                    itemView.setPadding(itemView.getPaddingLeft(), itemView.getPaddingTop(), itemView.getPaddingRight(), padding);
                 }
             }
 
@@ -550,21 +614,36 @@ public class SettingActivity extends BottomNavigationActivity {
                 textLink = (TextView) itemView.findViewById(R.id.settingLinkL_link);
                 iconImage = (ImageView) itemView.findViewById(R.id.settingLinkL_image);
 
-                textLink.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                textLink.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
             }
 
-            public void setupHolder(String mText, int mIcon, @Nullable Integer textColor) {
+            public void setupHolder(String mText, int mIcon, @Nullable Integer textColor, @Nullable Integer padding) {
                 textLink.setText(mText);
                 iconImage.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), mIcon));
 
                 if (textColor != null) {
                     textLink.setTextColor(textColor);
                 }
+
+                if (padding != null) {
+                    itemView.setPadding(itemView.getPaddingLeft(), itemView.getPaddingTop(), itemView.getPaddingRight(), padding);
+                }
             }
 
         }
 
 
+    }
+
+    private void deletePurchaseData(String uniqueId){
+        File f = new File(SettingActivity.this.getFilesDir(), uniqueId);
+        if (f.exists() && f.isDirectory()) {
+//                                String[] children = f.list();
+            for (File fc: f.listFiles()) {
+                fc.delete();
+            }
+            boolean rd = f.delete();
+        }
     }
 
 }

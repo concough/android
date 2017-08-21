@@ -300,4 +300,14 @@ class UrlMakerSingleton private constructor(){
         val functionName = "entrance/$uniqueId/stat"
         return this.getProductUrl(functionName)
     }
+
+    fun getReportBugUrl(): String? {
+        var fullPath: String? = null
+        val functionName = "report_bug"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/$functionName/"
+        }
+        return fullPath
+    }
 }
