@@ -6,7 +6,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -52,6 +51,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
     private final static String Detail_Struct = "Detail_Struct";
 
 
+
     private ArchiveEsetDetailStruct mArchiveEsetDetailStruct;
 
     public static Intent newIntent(Context packageContext, @Nullable ArchiveEsetDetailStruct detailStruct) {
@@ -71,6 +71,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
         this.setMenuSelectedIndex(1);
         super.onCreate(savedInstanceState);
 //        setContentView(R.layout.activity_archive_detail);
+
 
         mArchiveEsetDetailStruct = (ArchiveEsetDetailStruct) getIntent().getSerializableExtra(Detail_Struct);
 
@@ -301,10 +302,8 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
                 dateJalali.setText(persianDateString);
 
-
-                String t3 = jsonElement.getAsJsonObject().get("stats").getAsJsonArray().get(0).getAsJsonObject().get("purchased").getAsString() + " خرید";
+                String t3 =  FormatterSingleton.getInstance().getNumberFormatter().format(jsonElement.getAsJsonObject().get("stats").getAsJsonArray().get(0).getAsJsonObject().get("purchased").getAsInt())  + " خرید";
                 countText.setText(t3);
-
 
                 String s;
                 s = jsonElement.getAsJsonObject().get("extra_data").getAsString();

@@ -4,14 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -72,6 +70,8 @@ public class ArchiveActivity extends BottomNavigationActivity {
     private ViewPager mViewPager;
     private RecyclerView recycleView;
     private Button refreshButton;
+
+    private Boolean gettingSets = false;
 
     private Integer currentPositionDropDown;
 
@@ -134,22 +134,20 @@ public class ArchiveActivity extends BottomNavigationActivity {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 int index = tab.getPosition();
-                int id = ArchiveActivity.this.tabbarJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
-                getSets(id);
+//                int id = ArchiveActivity.this.tabbarJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
+                changeGroupIndex(index);
+
+                Log.d(TAG, "onTabSelected: ");
+//                getSets(id);
             }
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-
             }
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-
-
             }
-
-
         });
 
 
@@ -157,14 +155,36 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
 
         typeList = new ArrayList<>();
-        adapter = new DialogAdapter(getApplicationContext(), typeList);
+        adapter = new DialogAdapter(ArchiveActivity.this, typeList);
         dialog = DialogPlus.newDialog(this)
                 .setAdapter(adapter)
                 .setOnItemClickListener(new OnItemClickListener() {
                     @Override
                     public void onItemClick(DialogPlus dialog, Object item, View view, int position) {
-                        currentPositionDropDown = position;
+
+                        ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
+                        ArchiveActivity.this.adapterSet.notifyDataSetChanged();
+
+
                         ArchiveActivity.this.changeTypeIndex(position);
+
+//                        ArchiveActivity.this.tabLayout.getTabAt(0).select();
+
+//                        if (ArchiveActivity.this.tabLayout.getTabCount() > 0) {
+//                            ArchiveActivity.this.tabLayout.getTabAt(0).select();
+//                        }
+                        // changeTypeIndex(position);
+
+//                        runOnUiThread(
+//                                new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//
+//                                        ArchiveActivity.this.tabLayout.getTabAt(0).select();
+//                                    }
+//                                });
+
+
                         dialog.dismiss();
                     }
                 })
@@ -172,6 +192,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                     @Override
                     public void onCancel(DialogPlus dialog) {
                         texButton.setText(buttonTextMaker(typeList.get(ArchiveActivity.this.currentPositionDropDown).toString(), false));
+                        dialog.dismiss();
                     }
                 })
                 .setCancelable(true)
@@ -181,8 +202,11 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
 
         final ActionBar mActionBar = getSupportActionBar();
-        mActionBar.setDisplayShowTitleEnabled(false);
-        mActionBar.setElevation(2);
+        if (mActionBar != null) {
+            mActionBar.setDisplayShowTitleEnabled(false);
+            mActionBar.setElevation(2);
+        }
+
         LayoutInflater mInflater = LayoutInflater.from(this);
         View mCustomView = mInflater.inflate(R.layout.cc_archive_actionbar, null);
 
@@ -190,8 +214,11 @@ public class ArchiveActivity extends BottomNavigationActivity {
                 .findViewById(R.id.actionBarL_dropDown);
         texButton.setText("");
 
-        mActionBar.setCustomView(mCustomView);
-        mActionBar.setDisplayShowCustomEnabled(true);
+        if (mActionBar != null) {
+            mActionBar.setCustomView(mCustomView);
+            mActionBar.setDisplayShowCustomEnabled(true);
+        }
+
 
         texButton.setOnClickListener(new View.OnClickListener() {
 
@@ -220,8 +247,16 @@ public class ArchiveActivity extends BottomNavigationActivity {
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getTypes();
+//                if(adapter.mArrayList.size()==0) {
+//                }
                 RotateViewExtensions.buttonRotateStart(refreshButton, getApplicationContext());
+//                if (ArchiveActivity.this.adapter.mArrayList.size() == 0) { //avoid duplicate dropdown
+                getTypes();
+//                }
+
+                //   changeTypeIndex(0);
+
+
             }
         });
 
@@ -245,26 +280,46 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
     // Custom Functions
     private void changeTypeIndex(int index) {
+        ArchiveActivity.this.currentPositionDropDown = index;
         ArchiveActivity.this.texButton.setText(buttonTextMaker((String) ArchiveActivity.this.adapter.getItem(index), false));
-        new GetGroupsTask().execute(ArchiveActivity.this.dropDownJsonElement.get(index).getAsJsonObject().get("id").getAsInt());
+        int id = ArchiveActivity.this.dropDownJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
+        getTab(id);
     }
 
     private void changeGroupIndex(final int index) {
 //        ArchiveActivity.this.mViewPager.setCurrentItem(0);
-        ArchiveActivity.this.mViewPager.setCurrentItem(index);
+        //ArchiveActivity.this.mViewPager.setCurrentItem(index);
 
-        new Handler().postDelayed(
+//        ArchiveActivity.this.tabLayout.getTabAt(index).select();
+        Integer i = ArchiveActivity.this.tabbarJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
+//        ArchiveActivity.this.currentPositionDropDown = index;
+        getSets(i);
+
+
+        runOnUiThread(
                 new Runnable() {
                     @Override
                     public void run() {
+
+//                        ArchiveActivity.this.currentPositionDropDown = index;
                         ArchiveActivity.this.tabLayout.getTabAt(index).select();
-                        Integer i = ArchiveActivity.this.tabbarJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
-                       //ArchiveActivity.this.currentPositionDropDown = i;
-                        getSets(i);
+
 
                     }
-                }, 100);
+                });
 
+//
+//        new Handler().postDelayed(
+//                new Runnable() {
+//                    @Override
+//                    public void run() {
+//
+//                        //Integer i = ArchiveActivity.this.tabbarJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
+//                        ArchiveActivity.this.currentPositionDropDown = index;
+////                        getSets(i);
+//
+//                    }
+//                }, 1000);
 
     }
 
@@ -274,22 +329,18 @@ public class ArchiveActivity extends BottomNavigationActivity {
     private void getTypes() {
 
         new GetTypesTask().execute();
+
     }
 
     private void getTab(int typeId) {
         new GetGroupsTask().execute(typeId);
+//        if(ArchiveActivity.this.tabLayout.getTabCount() > 0) {
+//            ArchiveActivity.this.tabLayout.getTabAt(0).select();
+//        }
     }
 
     private void getSets(int groupId) {
         new GetSetsTask().execute(groupId);
-        new Handler().postDelayed(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        RotateViewExtensions.buttonRotateStop(refreshButton, getApplicationContext());
-
-                    }
-                }, 1500);
 
     }
 
@@ -304,47 +355,57 @@ public class ArchiveActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (httpErrorType == HTTPErrorType.Success) {
-                                if (jsonObject != null) {
+                            try {
+                                if (httpErrorType == HTTPErrorType.Success) {
+                                    if (jsonObject != null) {
 
-                                    try {
-                                        HashMap<Integer, String> jsonHashMap = new HashMap<Integer, String>();
-                                        JsonObject json = jsonObject.getAsJsonObject();
-                                        JsonArray leaders = json.getAsJsonArray("record");
+                                        String status = jsonObject.get("status").getAsString();
+                                        switch (status) {
+                                            case "OK": {
 
 
-                                        ArrayList<JsonElement> localListJson = new ArrayList<JsonElement>();
-                                        ArrayList<String> localList = new ArrayList<String>();
-                                        for (JsonElement je : leaders) {
-                                            String j = je.getAsJsonObject().get("title").getAsString();
-                                            if (j.toString() != null) {
-                                                int i = je.getAsJsonObject().get("id").getAsInt();
-                                                jsonHashMap.put(i, j);
-                                                localListJson.add(je);
-                                                localList.add(j);
+                                                HashMap<Integer, String> jsonHashMap = new HashMap<>();
+                                                JsonObject json = jsonObject.getAsJsonObject();
+                                                JsonArray leaders = json.getAsJsonArray("record");
+
+
+                                                ArrayList<JsonElement> localListJson = new ArrayList<JsonElement>();
+                                                ArrayList<String> localList = new ArrayList<String>();
+                                                for (JsonElement je : leaders) {
+                                                    String j = je.getAsJsonObject().get("title").getAsString();
+                                                    if (!j.equals("")) {
+                                                        int i = je.getAsJsonObject().get("id").getAsInt();
+                                                        jsonHashMap.put(i, j);
+                                                        localListJson.add(je);
+                                                        localList.add(j);
+                                                    }
+                                                }
+
+
+                                                ArchiveActivity.this.adapter.setItems(localList);
+                                                ArchiveActivity.this.dropDownJsonElement.clear();
+                                                ArchiveActivity.this.dropDownJsonElement.addAll(localListJson);
+                                                ArchiveActivity.this.adapter.notifyDataSetChanged();
+                                                ArchiveActivity.this.changeTypeIndex(0);
+                                                break;
+                                            }
+                                            case "Error": {
+                                                String errorType = jsonObject.get("error_type").getAsString();
+                                                break;
                                             }
                                         }
 
-                                        ArchiveActivity.this.currentPositionDropDown = 0;
-
-                                        ArchiveActivity.this.adapter.addAll(localList);
-                                        ArchiveActivity.this.dropDownJsonElement.addAll(localListJson);
-                                        ArchiveActivity.this.adapter.notifyDataSetChanged();
-                                        ArchiveActivity.this.changeTypeIndex(0);
-
-
-                                    } catch (Exception e) {
-
-                                    }
-
+                                    } // object is not null if
+                                } else if (httpErrorType == HTTPErrorType.Refresh) {
+                                    new GetTypesTask().execute(params);
+                                } else {
+                                    // TODO: show error with msgType = "HTTPError" and error
                                 }
-                            } else if (httpErrorType == HTTPErrorType.Refresh) {
-                                new GetTypesTask().execute(params);
-                            } else {
-                                // TODO: show error with msgType = "HTTPError" and error
+
+                            } catch (Exception e) {
+                                Log.d(TAG, "run: ");
+                                ArchiveActivity.this.gettingSets = false;
                             }
-
-
                         }
                     });
                     return null;
@@ -378,51 +439,77 @@ public class ArchiveActivity extends BottomNavigationActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if (httpErrorType == HTTPErrorType.Success) {
-                                        if (jsonObject != null) {
+                                    try {
+                                        if (httpErrorType == HTTPErrorType.Success) {
+                                            if (jsonObject != null) {
 
-                                            try {
-                                                HashMap<Integer, String> jsonHashMap = new HashMap<Integer, String>();
-                                                JsonObject json = jsonObject.getAsJsonObject();
-                                                JsonArray leaders = json.getAsJsonArray("record");
+                                                String status = jsonObject.get("status").getAsString();
+                                                switch (status) {
+                                                    case "OK": {
 
 
-                                                ArrayList<JsonElement> localListJson = new ArrayList<JsonElement>();
-                                                ArrayList<String> localList = new ArrayList<String>();
-                                                for (JsonElement je : leaders) {
-                                                    String j = je.getAsJsonObject().get("title").getAsString();
-                                                    if (j.toString() != null) {
-                                                        int i = je.getAsJsonObject().get("id").getAsInt();
-                                                        jsonHashMap.put(i, j);
-                                                        localListJson.add(je);
-                                                        localList.add(j);
+                                                        HashMap<Integer, String> jsonHashMap = new HashMap<>();
+                                                        JsonObject json = jsonObject.getAsJsonObject();
+                                                        JsonArray leaders = json.getAsJsonArray("record");
+
+
+                                                        ArrayList<JsonElement> localListJson = new ArrayList<JsonElement>();
+                                                        ArrayList<String> localList = new ArrayList<String>();
+                                                        for (JsonElement je : leaders) {
+                                                            String j = je.getAsJsonObject().get("title").getAsString();
+                                                            if (!j.equals("")) {
+                                                                int i = je.getAsJsonObject().get("id").getAsInt();
+                                                                jsonHashMap.put(i, j);
+                                                                localListJson.add(je);
+                                                                localList.add(j);
+                                                            }
+                                                        }
+
+                                                        ArchiveActivity.this.adapterTab.clear();
+                                                        ArchiveActivity.this.adapterTab.addAll(localList);
+                                                        ArchiveActivity.this.adapterTab.notifyDataSetChanged();
+
+                                                        ArchiveActivity.this.tabbarJsonElement.clear();
+                                                        ArchiveActivity.this.tabbarJsonElement.addAll(localListJson);
+
+                                                        ArchiveActivity.this.mSectionsPagerAdapter.notifyDataSetChanged();
+                                                        tabLayout.setupWithViewPager(ArchiveActivity.this.mViewPager);
+
+//                                                        ArchiveActivity.this.changeGroupIndex(0);
+                                                        break;
+                                                    }
+                                                    case "Error": {
+                                                        String errorType = jsonObject.get("error_type").getAsString();
+
+                                                        ArchiveActivity.this.adapterTab.clear();
+                                                        ArchiveActivity.this.adapterTab.notifyDataSetChanged();
+
+                                                        ArchiveActivity.this.tabbarJsonElement.clear();
+
+//                                                        ArchiveActivity.this.mViewPager.setAdapter(mSectionsPagrAdapter);
+                                                        ArchiveActivity.this.mSectionsPagerAdapter.notifyDataSetChanged();
+                                                        tabLayout.setupWithViewPager(ArchiveActivity.this.mViewPager);
+
+//                                                        ArchiveActivity.this.tabLayout.getTabAt(0).select();
+
+
+                                                        break;
                                                     }
                                                 }
+                                            } //end null object
 
-                                                ArchiveActivity.this.adapterTab.clear();
-                                                ArchiveActivity.this.adapterTab.addAll(localList);
-                                                ArchiveActivity.this.adapterTab.notifyDataSetChanged();
-
-                                                ArchiveActivity.this.tabbarJsonElement.clear();
-                                                ArchiveActivity.this.tabbarJsonElement.addAll(localListJson);
-
-                                                ArchiveActivity.this.mSectionsPagerAdapter.notifyDataSetChanged();
-                                                tabLayout.setupWithViewPager(ArchiveActivity.this.mViewPager);
-
-                                                ArchiveActivity.this.changeGroupIndex(0);
-
-                                            } catch (Exception e) {
-                                                Log.d(TAG, "run: ");
-                                            }
-
+                                        } else if (httpErrorType == HTTPErrorType.Refresh) {
+                                            new GetGroupsTask().execute(firstIndexOfTypes);
+                                        } else {
+                                            // TODO: show error with msgType = "HTTPError" and error
                                         }
 
-                                    } else if (httpErrorType == HTTPErrorType.Refresh) {
-                                        new GetGroupsTask().execute(firstIndexOfTypes);
-                                    } else {
-                                        // TODO: show error with msgType = "HTTPError" and error
+                                    } catch (Exception e) {
+                                        //    ArchiveActivity.this.tabLayout.getTabAt(0).select();
+                                        Log.d(TAG, "run: " + e.getMessage());
+
                                     }
-                                }
+                                } //end run
                             });
                             return null;
                         }
@@ -442,7 +529,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
         private Integer firstIndexOfGroups;
 
         @Override
-        protected Void doInBackground(Integer... params) {
+        protected Void doInBackground(final Integer... params) {
             if (params == null) {
                 firstIndexOfGroups = ArchiveActivity.this.dropDownJsonElement.get(0).getAsJsonObject().get("id").getAsInt();
             } else {
@@ -451,40 +538,84 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
             ArchiveRestAPIClass.getEntranceSets(getApplicationContext(), firstIndexOfGroups, new Function2<JsonObject, HTTPErrorType, Unit>() {
                 @Override
-                public Unit invoke(final JsonObject jsonObject, HTTPErrorType httpErrorType) {
+                public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             try {
-                                HashMap<Integer, String> jsonHashMap = new HashMap<Integer, String>();
-                                JsonObject json = jsonObject.getAsJsonObject();
-                                JsonArray leaders = json.getAsJsonArray("record");
+                                if (httpErrorType == HTTPErrorType.Success) {
+                                    if (jsonObject != null) {
+                                        String status = jsonObject.get("status").getAsString();
+
+                                        switch (status) {
+                                            case "OK": {
+                                                HashMap<Integer, String> jsonHashMap = new HashMap<>();
+                                                JsonObject json = jsonObject.getAsJsonObject();
+                                                JsonArray leaders = json.getAsJsonArray("record");
 
 
-                                ArrayList<JsonElement> localListJson = new ArrayList<JsonElement>();
-                                ArrayList<String> localList = new ArrayList<String>();
-                                for (JsonElement je : leaders) {
-                                    String j = je.getAsJsonObject().get("title").getAsString();
-                                    if (j.toString() != null) {
-                                        int i = je.getAsJsonObject().get("id").getAsInt();
-                                        jsonHashMap.put(i, j);
-                                        localListJson.add(je);
-                                        localList.add(j);
+                                                ArrayList<JsonElement> localListJson = new ArrayList<JsonElement>();
+                                                ArrayList<String> localList = new ArrayList<>();
+                                                for (JsonElement je : leaders) {
+                                                    String j = je.getAsJsonObject().get("title").getAsString();
+                                                    if (!j.equals("")) {
+                                                        int i = je.getAsJsonObject().get("id").getAsInt();
+                                                        jsonHashMap.put(i, j);
+                                                        localListJson.add(je);
+                                                        localList.add(j);
+                                                    }
+                                                }
+
+                                                ArchiveActivity.this.adapterSet.setItems(localListJson);
+                                                ArchiveActivity.this.adapterSet.notifyDataSetChanged();
+
+                                                RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
+
+//                                                ArchiveActivity.this.tabLayout.getTabAt(0).select();
+
+                                                break;
+                                            }
+
+                                            case "Error": {
+                                                String errorType = jsonObject.get("error_type").getAsString();
+
+                                                ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
+                                                ArchiveActivity.this.adapterSet.notifyDataSetChanged();
+
+
+                                                RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
+
+
+                                                break;
+                                            }
+
+                                        }
                                     }
+
+
+                                } else if (httpErrorType == HTTPErrorType.Refresh) {
+                                    new GetSetsTask().execute(params[0]);
+                                } else {
+                                    ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
+                                    ArchiveActivity.this.adapterSet.notifyDataSetChanged();
+
+                                    // TODO: show error with msgType = "HTTPError" and error
                                 }
 
-                                ArchiveActivity.this.adapterSet.setItems(localListJson);
+                            } catch (Exception exc) {
+                                ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
                                 ArchiveActivity.this.adapterSet.notifyDataSetChanged();
 
 
-                            } catch (Exception e) {
                                 Log.d(TAG, "run: ");
                             }
                         }
                     });
                     return null;
                 }
-            }, new Function1<NetworkErrorType, Unit>() {
+            }, new Function1<NetworkErrorType, Unit>()
+
+            {
                 @Override
                 public Unit invoke(NetworkErrorType networkErrorType) {
                     return null;
@@ -510,10 +641,10 @@ public class ArchiveActivity extends BottomNavigationActivity {
         public void setItems(ArrayList<JsonElement> arrayList) {
             this.mArrayList = arrayList;
         }
-
-        public void addItem(ArrayList<JsonElement> arrayList) {
-            this.mArrayList.addAll(arrayList);
-        }
+//
+//        public void addItem(ArrayList<JsonElement> arrayList) {
+//            this.mArrayList.addAll(arrayList);
+//        }
 
         private class ItemHolder extends RecyclerView.ViewHolder {
             private ImageView entranceLogo;
@@ -570,15 +701,17 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
                 ViewGroup.LayoutParams entranceLogoLP = entranceLogo.getLayoutParams();
                 int imageId = jsonElement.getAsJsonObject().get("id").getAsInt();
-                MediaRestAPIClass.downloadEsetImage(getApplicationContext(), imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
+                MediaRestAPIClass.downloadEsetImage(ArchiveActivity.this, imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
                     @Override
                     public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 if (httpErrorType != HTTPErrorType.Success) {
+                                    Log.d(TAG, "run: ");
 //                                    entranceLogo.setImageDrawable(getResources().getDrawable(R.drawable.male_icon_100));
-                                    entranceLogo.setBackgroundResource(R.drawable.male_icon_100);
+                                    //entranceLogo.setBackgroundResource(R.drawable.male_icon_100);
+                                    entranceLogo.setImageResource(R.drawable.male_icon_100);
                                 }
                             }
                         });
@@ -601,8 +734,6 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
 
                 entranceLogo.setLayoutParams(entranceLogoLP);
-                entranceLogo.setImageResource(R.drawable.male_icon_100);
-
 
                 constraint.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -614,17 +745,14 @@ public class ArchiveActivity extends BottomNavigationActivity {
                         ArchiveActivity.this.mArchiveEsetDetailStruct.groupTitle = ArchiveActivity.this.tabbarJsonElement.get(ArchiveActivity.this.tabLayout.getSelectedTabPosition()).getAsJsonObject().get("title").getAsString();
 
                         Integer dropdownPosition = ArchiveActivity.this.currentPositionDropDown;
-                        ArchiveActivity.this.mArchiveEsetDetailStruct.typeTitle = ArchiveActivity.this.dropDownJsonElement.get(  dropdownPosition).getAsJsonObject().get("title").getAsString();
+                        ArchiveActivity.this.mArchiveEsetDetailStruct.typeTitle = ArchiveActivity.this.dropDownJsonElement.get(dropdownPosition).getAsJsonObject().get("title").getAsString();
 
-                        if(jsonElement.getAsJsonObject().get("entrance_count").getAsInt() != 0) {
+                        if (jsonElement.getAsJsonObject().get("entrance_count").getAsInt() != 0) {
                             Intent i = ArchiveDetailActivity.newIntent(ArchiveActivity.this, ArchiveActivity.this.mArchiveEsetDetailStruct);
                             startActivity(i);
                         } else {
                             Toast.makeText(context, "تعداد کنکور موجود 0 عدد است", Toast.LENGTH_SHORT).show();
                         }
-
-
-
 
 
                     }
@@ -727,6 +855,10 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
         public void addAll(ArrayList<String> arrayList) {
             this.mArrayList.addAll(arrayList);
+        }
+
+        public void setItems(ArrayList<String> arrayList) {
+            this.mArrayList = arrayList;
         }
     }
 

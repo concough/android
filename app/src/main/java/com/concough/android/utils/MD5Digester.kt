@@ -1,8 +1,5 @@
 package com.concough.android.utils
 
-import android.provider.SyncStateContract.Helpers.update
-import java.security.NoSuchAlgorithmException
-
 
 /**
  * Created by abolfazl on 8/6/17.
@@ -10,6 +7,8 @@ import java.security.NoSuchAlgorithmException
 
 class MD5Digester {
     companion object {
+
+        @JvmStatic
         fun digest(s: String): String {
             try {
                 // Create MD5 Hash
@@ -18,9 +17,9 @@ class MD5Digester {
                 val messageDigest = digest.digest()
 
                 // Create Hex String
-                val hexString = StringBuffer()
+                var hexString = ""
                 for (i in messageDigest.indices)
-                    hexString.append(Integer.toHexString(0xFF and messageDigest[i].toInt()))
+                    hexString+=String.format("%02x",0xFF and messageDigest[i].toInt())
                 return hexString.toString()
 
             } catch (e: Exception) {

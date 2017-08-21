@@ -8,13 +8,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
-import com.concough.android.singletons.FontCacheSingleton
 import com.concough.android.concough.R
+import com.concough.android.singletons.FontCacheSingleton
 import com.concough.android.vendor.progressHUD.AnnularView
 import com.concough.android.vendor.progressHUD.KProgressHUD
 import com.concough.android.vendor.progressHUD.SpinView
-import com.concough.android.vendor.zhikanalertdialog.ZhycanNiftyDialogBuilder
 import com.concough.android.vendor.zhikanalertdialog.Effectstype
+import com.concough.android.vendor.zhikanalertdialog.ZhycanNiftyDialogBuilder
 
 
 /**
@@ -120,7 +120,7 @@ class AlertClass {
 
             return Message(title, message, showMessage)
         }
-
+        @JvmStatic
         fun showLoadingMessage(context: Context): KProgressHUD {
             val v = SpinView(context, context.resources.getColor(R.color.colorConcoughBlue))
 
@@ -134,6 +134,7 @@ class AlertClass {
             return hud
         }
 
+        @JvmStatic
         fun showUpdatingMessage(context: Context, maxProgress: Int): KProgressHUD {
             val v = AnnularView(context, context.resources.getColor(R.color.colorConcoughBlue))
 
@@ -148,16 +149,19 @@ class AlertClass {
             return hud
         }
 
+        @JvmStatic
         fun progressUpdatingMessage(progressHUD: KProgressHUD?, progress: Int) {
             progressHUD?.setProgress(progress)
         }
 
+        @JvmStatic
         fun hideLoadingMessage(progressHUD: KProgressHUD?) {
             if (progressHUD != null) {
                 progressHUD.dismiss()
             }
         }
 
+        @JvmStatic
         fun showAlertMessage(context: Context, messageType: String, messageSubType: String, type: String, completion: (() -> Unit)?) {
             val dialogBuilder = ZhycanNiftyDialogBuilder(context, R.style.zhycan_dialog_untran)
 
@@ -182,6 +186,7 @@ class AlertClass {
             }
         }
 
+        @JvmStatic
         fun showAlertMessageCustom(context: Context, title: String, message: String, yesButtonTitle: String, noButtonTitle: String, completion: (() -> Unit)?) {
             val dialogBuilder = ZhycanNiftyDialogBuilder(context, R.style.zhycan_dialog_untran)
 
@@ -196,7 +201,8 @@ class AlertClass {
                         .withTypeface(FontCacheSingleton.getInstance(context.applicationContext!!).Regular)
                         .setMessageTypeface(FontCacheSingleton.getInstance(context.applicationContext!!).Light)
                         .setButton1Click(View.OnClickListener {
-                            if (completion != null) {
+                            if (completion != null){
+                                dialogBuilder.dismiss()
                                 completion()
                             }
                         })
@@ -206,6 +212,7 @@ class AlertClass {
                         .show()
         }
 
+        @JvmStatic
         fun showTopMessage(context: Context, view: View, messageType: String, messageSubType: String, type: String, completion: (() -> Unit)?) {
             val (_, message, showMessasge) = AlertClass.convertMessage(messageType, messageSubType)
 

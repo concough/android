@@ -2,38 +2,33 @@ package com.concough.android.concough;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.baoyz.widget.PullRefreshLayout;
 import com.concough.android.downloader.EntrancePackageDownloader;
 import com.concough.android.models.EntranceModel;
 import com.concough.android.models.EntranceModelHandler;
-import com.concough.android.models.EntranceOpenedCountModel;
 import com.concough.android.models.EntranceOpenedCountModelHandler;
 import com.concough.android.models.EntrancePackageHandler;
 import com.concough.android.models.EntranceQuestionModelHandler;
@@ -49,7 +44,6 @@ import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.EntrancePurchasedStruct;
 import com.concough.android.structures.EntranceStruct;
-import com.concough.android.structures.EntranceVCStateEnum;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.LogTypeEnum;
 import com.concough.android.structures.NetworkErrorType;
@@ -59,10 +53,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import org.w3c.dom.Text;
-
 import java.io.File;
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
@@ -313,7 +304,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                             JsonArray records = jsonElement.getAsJsonObject().get("records").getAsJsonArray();
                                             String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
                                             if (username != null) {
-                                                for (JsonElement record: records) {
+                                                for (JsonElement record : records) {
                                                     int id = record.getAsJsonObject().get("id").getAsInt();
                                                     int downloaded = record.getAsJsonObject().get("downloaded").getAsInt();
                                                     String createdStr = record.getAsJsonObject().get("created").getAsString();
@@ -372,12 +363,12 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
                                                 RealmResults<PurchasedModel> deletedItems = PurchasedModelHandler.getAllPurchasedNotIn(getApplicationContext(), username, dat);
                                                 if (deletedItems.size() > 0) {
-                                                    for (PurchasedModel pm: deletedItems) {
+                                                    for (PurchasedModel pm : deletedItems) {
                                                         FavoritesActivity.this.deletePurchaseData(pm.productUniqueId);
 
                                                         if ("Entrance".equals(pm.productType)) {
                                                             if (EntranceModelHandler.removeById(getApplicationContext(), username, pm.productUniqueId)) {
-                                                                EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
+                                                                //EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
                                                                 EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
                                                                 PurchasedModelHandler.removeById(getApplicationContext(), username, pm.id);
                                                             }
@@ -400,7 +391,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                 if (username != null) {
                                                     RealmResults<PurchasedModel> items = PurchasedModelHandler.getAllPurchased(getApplicationContext(), username);
 
-                                                    for (PurchasedModel pm: items) {
+                                                    for (PurchasedModel pm : items) {
                                                         FavoritesActivity.this.deletePurchaseData(pm.productUniqueId);
 
                                                         if ("Entrance".equals(pm.productType)) {
@@ -461,7 +452,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
         File f = new File(FavoritesActivity.this.getFilesDir(), uniqueId);
         if (f.exists() && f.isDirectory()) {
 //                                String[] children = f.list();
-            for (File fc: f.listFiles()) {
+            for (File fc : f.listFiles()) {
                 fc.delete();
             }
             boolean rd = f.delete();
@@ -508,7 +499,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
             try {
                 UserLogModelHandler.add(getApplicationContext(), username, uniqueId, created, logType, extraData);
-            } catch (Exception exc) {}
+            } catch (Exception exc) {
+            }
         }
     }
 
@@ -642,7 +634,6 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
         }
 
 
-
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             if (viewType == FavViewHolderType.ENTRANCE_NOT_DOWNLOADED.getValue()) {
@@ -726,7 +717,6 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             }
             return 0;
         }
-
 
 
         // MARK: ViewHolders
@@ -825,7 +815,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                         entranceExtraDataTextView.setText(extra);
 
                     }
-                } catch (Exception exc) {}
+                } catch (Exception exc) {
+                }
 
                 entranceBookletCountTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceBookletCounts()) + " دفترچه");
                 entranceDurationTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceDuration()) + " دقیقه");
@@ -833,7 +824,6 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
                 downloadImage(entrance.getEntranceSetId());
                 checkForState(index);
-
 
 
             }
@@ -963,15 +953,15 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             private void checkForState(int index) {
                 if (DownloaderSingleton.getInstance().getDownloaderState(entranceS.getEntranceUniqueId()) == DownloaderSingleton.DownloaderState.Started) {
                     DownloaderSingleton.getInstance().getMeDownloader(FavoritesActivity.this, "Entrance", entranceS.getEntranceUniqueId(), index, new Function2<Object, Integer, Unit>() {
-                                @Override
-                                public Unit invoke(final Object o, final Integer integer) {
-                                    FEntranceNotDownloadViewHolder.this.downloader = (EntrancePackageDownloader) o;
+                        @Override
+                        public Unit invoke(final Object o, final Integer integer) {
+                            FEntranceNotDownloadViewHolder.this.downloader = (EntrancePackageDownloader) o;
 
-                                    setListener(integer);
-                                    changeToDownlaodState(0);
-                                    return null;
-                                }
-                            });
+                            setListener(integer);
+                            changeToDownlaodState(0);
+                            return null;
+                        }
+                    });
                 } else {
                     setOnClickListener(index);
                 }
@@ -1225,10 +1215,10 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 FEntranceNotDownloadViewHolder.this.downloadProgress2.setVisibility(View.VISIBLE);
                 int chunck = (int) (widthI / 100);
 
-                float delta = (((float)totalC - (float)value) / totalC) * 100;
+                float delta = (((float) totalC - (float) value) / totalC) * 100;
 
                 ViewGroup.LayoutParams params = FEntranceNotDownloadViewHolder.this.downloadProgress2Level.getLayoutParams();
-                params.width = (int)(chunck * delta);
+                params.width = (int) (chunck * delta);
                 FEntranceNotDownloadViewHolder.this.downloadProgress2Level.setLayoutParams(params);
 //
 //                downloadProgress2Level.setLayoutParams(new LinearLayout.LayoutParams( (int)(chunck * delta) , downloadProgress2Level.getLayoutParams().height));
@@ -1317,7 +1307,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                         entranceExtraDataTextView.setText(extra);
 
                     }
-                } catch (Exception exc) {}
+                } catch (Exception exc) {
+                }
 
                 entranceBookletCountTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceBookletCounts()) + " دفترچه");
                 entranceDurationTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceDuration()) + " دقیقه");
@@ -1331,14 +1322,16 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 entranceOpenLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        Intent i = EntranceShowActivity.newIntent(FavoritesActivity.this, entrance.getEntranceUniqueId(), "Show");
+                        startActivity(i);
                     }
                 });
 
                 entranceOpenStarredLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        Intent i = EntranceShowActivity.newIntent(FavoritesActivity.this, entrance.getEntranceUniqueId(), "Starred");
+                        startActivity(i);
                     }
                 });
             }
@@ -1412,7 +1405,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                         entranceExtraDataTextView.setText(extra);
 
                     }
-                } catch (Exception exc) {}
+                } catch (Exception exc) {
+                }
 
 
                 downloadImage(entrance.getEntranceSetId());
@@ -1436,7 +1430,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                     favAdapter.notifyItemRemoved(index);
                                 }
                             }
-                        } catch (Exception exc) {}
+                        } catch (Exception exc) {
+                        }
                     }
                 });
             }

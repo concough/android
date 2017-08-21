@@ -32,7 +32,7 @@ public class CustomTabLayout extends TabLayout {
     @Override
     public void setupWithViewPager(ViewPager viewPager)
     {
-        super.setupWithViewPager(viewPager);
+//        super.setupWithViewPager(viewPager);
 
         Typeface typeface = FontCacheSingleton.getInstance(getContext().getApplicationContext()).getRegular();
         if (typeface != null)

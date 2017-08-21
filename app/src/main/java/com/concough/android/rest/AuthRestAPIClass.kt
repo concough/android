@@ -1,6 +1,8 @@
 package com.concough.android.rest
 
+import android.content.Context
 import android.util.Log
+import com.concough.android.singletons.TokenHandlerSingleton
 import com.concough.android.singletons.UrlMakerSingleton
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
@@ -13,7 +15,6 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import kotlin.collections.HashMap
 
 /**
  * Created by abolfazl on 7/2/17.
@@ -226,6 +227,45 @@ class AuthRestAPIClass {
                 }
             })
         }
+
+        @JvmStatic
+        fun changePassword(pass1: String, pass2: String, context: Context, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+            val fullPath = UrlMakerSingleton.getInstance().changePassword() ?: return
+
+            val parameters: HashMap<String, Any> = hashMapOf("oldPass" to pass1, "newPass" to pass2)
+            val headers = TokenHandlerSingleton.getInstance(context).getHeader()
+
+            val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+            val auth = Obj.create(RestAPIService::class.java)
+            val request = auth.post(fullPath, parameters, headers!!)
+
+            request.enqueue(object: Callback<ResponseBody> {
+                override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
+                    failure(NetworkErrorType.toType(t))
+                }
+
+                override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
+                    val resCode = HTTPErrorType.toType(response?.code()!!)
+                    Log.d(TAG, resCode.toString())
+                    when (resCode) {
+                        HTTPErrorType.Success -> {
+                            val res = response.body()!!.string()
+                            try {
+                                val jobj = Gson().fromJson(res, JsonObject::class.java)
+
+                                completion(jobj, resCode)
+
+
+                            } catch (exc: JsonParseException) {
+                                completion(null, HTTPErrorType.UnKnown)
+                            }
+                        }
+                        else -> completion(null, resCode)
+                    }
+                }
+            })
+        }
+
 
     }
 }
