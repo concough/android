@@ -56,7 +56,7 @@ class EntranceQuestionModelHandler {
         }
 
         @JvmStatic
-        fun changeDownloadedToTrue(context: Context, username: String, uniqueId: String, entranceId: String) : Boolean {
+        fun changeDownloadedToTrue(context: Context, username: String, uniqueId: String, entranceId: String): Boolean {
             val question = RealmSingleton.getInstance(context).DefaultRealm.where(EntranceQuestionModel::class.java)
                     .equalTo("uniqueId", uniqueId)
                     .equalTo("entrance.username", username)
@@ -85,6 +85,7 @@ class EntranceQuestionModelHandler {
                     .findAllSorted("number", Sort.ASCENDING)
         }
 
+        @JvmStatic
         fun getStarredQuestions(context: Context, username: String, entranceId: String, questions: Array<String>): RealmResults<EntranceQuestionModel>? {
             return RealmSingleton.getInstance(context).DefaultRealm.where(EntranceQuestionModel::class.java)
                     .equalTo("entrance.uniqueId", entranceId)

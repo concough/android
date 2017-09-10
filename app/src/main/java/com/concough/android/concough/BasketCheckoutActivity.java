@@ -1,14 +1,13 @@
 package com.concough.android.concough;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.baoyz.widget.PullRefreshLayout;
+import com.concough.android.general.AlertClass;
 import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.singletons.BasketSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
@@ -27,7 +27,6 @@ import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +36,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
-public class BasketCheckoutActivity extends AppCompatActivity {
+public class BasketCheckoutActivity extends BottomNavigationActivity {
     // testing with Basket
 
     private static final String TAG = "BasketCheckoutActivity";
@@ -48,6 +47,7 @@ public class BasketCheckoutActivity extends AppCompatActivity {
     private TextView costLabelTextView;
     private TextView costValueTextView;
     private RecyclerView recycleView;
+    //    private BottomNavigationView bottomNavigationView;
     private BasketCheckoutActivity.BasketCheckoutAdapter basketCheckoutAdapter;
 
     private String contextFromWho = "";
@@ -59,17 +59,25 @@ public class BasketCheckoutActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected int getLayoutResourceId() {
+        return R.layout.activity_basket_checkout;
+    }
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        this.setMenuSelectedIndex(1);
         super.onCreate(savedInstanceState);
         this.contextFromWho = getIntent().getStringExtra(CONTEXT_WHO_KEY);
 
-        setContentView(R.layout.activity_basket_checkout);
+//        setContentView(R.layout.activity_basket_checkout);
+
+//        bottomNavigationView = (BottomNavigationView) findViewById(R.id.navigation);
+//        bottomNavigationView.setVisibility(View.GONE);
 
         // Initialize controls
         checkoutButton = (Button) findViewById(R.id.basketCheckoutA_checkout);
-        costLabelTextView = (TextView)findViewById(R.id.basketCheckoutA_cost_label);
-        costValueTextView = (TextView)findViewById(R.id.basketCheckoutA_cost_value);
+        costLabelTextView = (TextView) findViewById(R.id.basketCheckoutA_cost_label);
+        costValueTextView = (TextView) findViewById(R.id.basketCheckoutA_cost_value);
 
         checkoutButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
         costLabelTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
@@ -169,7 +177,28 @@ public class BasketCheckoutActivity extends AppCompatActivity {
         });
 
         updateTotalCost();
+        actionBarSet();
     }
+
+    private void actionBarSet() {
+
+        super.clickEventInterface = new OnClickEventInterface() {
+            @Override
+            public void OnButtonClicked(int id) {
+                switch (id) {
+
+                }
+            }
+
+            @Override
+            public void OnBackClicked() {
+                onBackPressed();
+            }
+        };
+
+        super.createActionBar("سبد محصولات", true, null);
+    }
+
 
     private void refreshBasket() {
         BasketSingleton.getInstance().loadBasketItems(BasketCheckoutActivity.this);
@@ -304,23 +333,51 @@ public class BasketCheckoutActivity extends AppCompatActivity {
             private void downloadImage(final int imageId) {
                 MediaRestAPIClass.downloadEsetImage(BasketCheckoutActivity.this, imageId, esetImageView, new Function2<JsonObject, HTTPErrorType, Unit>() {
                     @Override
-                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
-                        if (httpErrorType != HTTPErrorType.Success) {
-                            if (httpErrorType == HTTPErrorType.Refresh) {
-                                downloadImage(imageId);
-                            } else {
-                                // TODO: Set to default
+                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (httpErrorType != HTTPErrorType.Success) {
+                                    Log.d(TAG, "run: ");
+                                    if (httpErrorType == HTTPErrorType.Refresh) {
+                                        downloadImage(imageId);
+                                    } else {
+                                        esetImageView.setImageResource(R.drawable.no_image);
+                                    }
+                                }
                             }
-                        }
+                        });
+                        Log.d(TAG, "invoke: " + jsonObject);
                         return null;
                     }
                 }, new Function1<NetworkErrorType, Unit>() {
                     @Override
-                    public Unit invoke(NetworkErrorType networkErrorType) {
+                    public Unit invoke(final NetworkErrorType networkErrorType) {
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(BasketCheckoutActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(BasketCheckoutActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
+
+                                }
+                            }
+                        });
+
                         return null;
                     }
                 });
+
             }
+
         }
 
     }

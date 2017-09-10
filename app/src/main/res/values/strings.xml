@@ -59,7 +59,7 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
 
-    <string name="settingMenu_S_url">http://zhycan.com</string>
+    <string name="settingMenu_S_url">https://zhycan.com</string>
 
     <string name="settingA_S_aboutUs_url">http://zhycan.com</string>
     <string name="settingA_S_changePassword">تغییر گذرواژه</string>

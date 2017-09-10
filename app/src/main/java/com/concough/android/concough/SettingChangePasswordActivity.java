@@ -2,17 +2,19 @@ package com.concough.android.concough;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.concough.android.general.AlertClass;
 import com.concough.android.rest.AuthRestAPIClass;
@@ -35,7 +37,9 @@ import kotlin.jvm.functions.Function2;
 
 import static com.concough.android.settings.ConstantsKt.getPASSWORD_KEY;
 
-public class SettingChangePasswordActivity extends AppCompatActivity {
+public class SettingChangePasswordActivity extends BottomNavigationActivity {
+    private static final String TAG="SettingChangePasswordActivity";
+
 
     private Button saveButton;
     private EditText passwordEdit;
@@ -47,11 +51,17 @@ public class SettingChangePasswordActivity extends AppCompatActivity {
         return i;
     }
 
+    @Override
+    protected int getLayoutResourceId() {
+        return R.layout.activity_setting_change_password;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setMenuSelectedIndex(3);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_setting_change_password);
+
+        actionBarSet();
 
         saveButton = (Button) findViewById(R.id.settingChangePasswordA_saveButton);
         changePassLabel = (TextView) findViewById(R.id.settingChangePasswordA_changePassLabel);
@@ -84,7 +94,7 @@ public class SettingChangePasswordActivity extends AppCompatActivity {
                 } else {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                         passwordEdit.setTextDirection(View.TEXT_DIRECTION_RTL);
-                        passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+                        passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
                     } else {
                         passwordEdit.setGravity(Gravity.START);
                     }
@@ -148,8 +158,45 @@ public class SettingChangePasswordActivity extends AppCompatActivity {
             }
         });
 
+        // show or hide keyboard listener for navigation bar hide
+        LinearLayout masterLayout = (LinearLayout) findViewById(R.id.resetPasswordA_masterLayout);
+        super.showOrHideNavigation(masterLayout);
+
+
+
 
     }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Checks the orientation of the screen
+        if (newConfig.keyboardHidden == Configuration.KEYBOARDHIDDEN_NO) {
+            Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
+        } else if (newConfig.keyboardHidden == Configuration.KEYBOARDHIDDEN_YES){
+            Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+
+
+    private void actionBarSet() {
+        super.clickEventInterface = new OnClickEventInterface() {
+            @Override
+            public void OnButtonClicked(int id) {
+            }
+
+            @Override
+            public void OnBackClicked() {
+                onBackPressed();
+            }
+        };
+
+        super.createActionBar("کنکوق", true, null);
+    }
+
 
     private void changePassword(String pass1, String pass2) {
 
@@ -177,7 +224,7 @@ public class SettingChangePasswordActivity extends AppCompatActivity {
                                                     try {
                                                         final String modified = jsonObject.get("modified").getAsString();
 
-                                                        final Date  modifiedDate = FormatterSingleton.getInstance().getUTCShortDateFormatter().parse(modified);
+                                                        final Date modifiedDate = FormatterSingleton.getInstance().getUTCShortDateFormatter().parse(modified);
 
                                                         AlertClass.showAlertMessage(SettingChangePasswordActivity.this, "ActionResult", "ChangePasswordSuccess", "success", new Function0<Unit>() {
                                                             @Override

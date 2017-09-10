@@ -34,9 +34,9 @@
             android:layout_height="30dp"
             android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="10dp"
             android:background="@drawable/concough_border_round_outline_blue_style"
-            android:gravity="center_vertical"
+            android:gravity="center_vertical|center_horizontal|center"
             android:text="12"
             android:textAlignment="center"
             android:textColor="@color/colorConcoughBlue"
@@ -47,7 +47,7 @@
 
     <LinearLayout
         android:id="@+id/ccEntranceShowHolder1I_linearQuestionsImage"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="2dp"
         android:layout_marginLeft="2dp"
@@ -62,11 +62,12 @@
 
         <ImageView
             android:id="@+id/ccEntranceShowHolder1I_imgPreLoad"
-            android:layout_width="wrap_content"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:scaleType="fitXY"
-            android:src="@drawable/no_image"
+            android:foregroundGravity="center_horizontal|center"
+            android:scaleType="centerCrop"
+            android:src="@drawable/loading_glass"
             android:visibility="gone" />
 
         <ImageView
@@ -89,7 +90,6 @@
             android:id="@+id/ccEntranceShowHolder1I_img3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="top"
             android:layout_weight="1"
             android:adjustViewBounds="false"
             android:scaleType="fitCenter" />

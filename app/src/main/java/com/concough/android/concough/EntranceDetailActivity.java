@@ -2,6 +2,7 @@ package com.concough.android.concough;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -12,6 +13,7 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -134,18 +136,57 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
         recycleView.setLayoutManager(new LinearLayoutManager(this));
 
+
     }
+
+
+    private void actionBarSet() {
+
+        final ArrayList<ButtonDetail> buttonDetailArrayList = new ArrayList<>();
+
+        ButtonDetail buttonDetail;
+        buttonDetail = new ButtonDetail();
+        if (BasketSingleton.getInstance().getSalesCount() > 0) {
+            buttonDetail.hasBadge = true;
+            buttonDetail.badgeCount = BasketSingleton.getInstance().getSalesCount();
+        }
+        buttonDetail.imageSource = R.drawable.buy_icon;
+        buttonDetailArrayList.add(buttonDetail);
+
+        super.clickEventInterface = new OnClickEventInterface() {
+            @Override
+            public void OnButtonClicked(int id) {
+                switch (id) {
+                    case R.drawable.buy_icon: {
+                        Intent i = BasketCheckoutActivity.newIntent(EntranceDetailActivity.this, "EntranceDetail");
+                        EntranceDetailActivity.this.startActivity(i);
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void OnBackClicked() {
+                onBackPressed();
+            }
+        };
+
+        super.createActionBar("اطلاعات آزمون", true, buttonDetailArrayList);
+    }
+
 
     @Override
     protected void onResume() {
         super.onResume();
         setupView();
         BasketSingleton.getInstance().loadBasketItems(this);
-
+        actionBarSet();
     }
 
     private void setupView() {
         pullRefreshLayout = (PullRefreshLayout) findViewById(R.id.entranceDetailA_swipeRefreshLayout);
+        pullRefreshLayout.setColorSchemeColors(Color.TRANSPARENT, Color.GRAY, Color.GRAY, Color.GRAY);
+        pullRefreshLayout.setRefreshStyle(PullRefreshLayout.STYLE_MATERIAL);
         pullRefreshLayout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -181,6 +222,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
                 EntranceDetailActivity.this.entranceDetailAdapter.notifyDataSetChanged();
                 EntranceDetailActivity.this.recycleView.smoothScrollToPosition(EntranceDetailActivity.this.entranceDetailAdapter.getItemCount());
+                actionBarSet();
             }
 
             @Override
@@ -190,6 +232,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
                 EntranceDetailActivity.this.entranceDetailAdapter.notifyDataSetChanged();
                 EntranceDetailActivity.this.recycleView.smoothScrollToPosition(EntranceDetailActivity.this.entranceDetailAdapter.getItemCount());
+                actionBarSet();
             }
 
             @Override
@@ -1258,17 +1301,25 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 }
             }
 
+
             private void downloadImage(final int imageId) {
                 MediaRestAPIClass.downloadEsetImage(EntranceDetailActivity.this, imageId, esetImageView, new Function2<JsonObject, HTTPErrorType, Unit>() {
                     @Override
-                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
-                        if (httpErrorType != HTTPErrorType.Success) {
-                            if (httpErrorType == HTTPErrorType.Refresh) {
-                                downloadImage(imageId);
-                            } else {
-                                // TODO: Set to default
+                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (httpErrorType != HTTPErrorType.Success) {
+                                    Log.d(TAG, "run: ");
+                                    if (httpErrorType == HTTPErrorType.Refresh) {
+                                        downloadImage(imageId);
+                                    } else {
+                                        esetImageView.setImageResource(R.drawable.no_image);
+                                    }
+                                }
                             }
-                        }
+                        });
+                        Log.d(TAG, "invoke: " + jsonObject);
                         return null;
                     }
                 }, new Function1<NetworkErrorType, Unit>() {
@@ -1277,7 +1328,9 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                         return null;
                     }
                 });
+
             }
+
 
         }
 
@@ -1386,6 +1439,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 entranceCostLabelTextView.setText("قیمت:");
                 entranceCheckoutButton.setText("خرید خود را نهایی کنید");
 
+                entranceCostTextView.setText("0 تومان");
+
                 entranceBuyButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -1417,8 +1472,20 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
             public void setupHolder(EntranceStatStruct statStruct, EntranceSaleStruct saleStruct, Boolean buttonState, Integer basketCount) {
                 try {
+                    if (saleStruct == null) {
+                        entranceBuyButton.setVisibility(View.INVISIBLE);
+                        return;
+                    }
+
+                    if (statStruct == null) {
+                        entranceBuyButton.setVisibility(View.INVISIBLE);
+                        return;
+                    }
+
                     entranceBuyCountTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(statStruct.purchased) + " خرید");
                     entranceCostTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(saleStruct.cost) + " تومان");
+
+
                     if (buttonState) {
                         entranceBuyButton.setText("-  سبد خرید");
                         entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_red_style));
@@ -1434,6 +1501,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
                     entranceCheckoutSummeryTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(basketCount) + " قلم در سبد کالا موجود است.");
                 } catch (Exception exc) {
+                    Log.d(TAG, "setupHolder: ");
                 }
             }
         }

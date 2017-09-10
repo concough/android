@@ -4,9 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.concough.android.general.AlertClass;
@@ -21,11 +21,15 @@ import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
-public class ErrorReportActivity extends AppCompatActivity {
+public class ErrorReportActivity extends BottomNavigationActivity {
     private static String TAG = "ErrorReportActivity";
 
     private Button reportButton;
     private TextView editText;
+
+    private boolean isKeyboardShow = false;
+
+
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, ErrorReportActivity.class);
@@ -34,9 +38,16 @@ public class ErrorReportActivity extends AppCompatActivity {
 
 
     @Override
+    protected int getLayoutResourceId() {
+        return R.layout.activity_error_report;
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setMenuSelectedIndex(3);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_error_report);
+
+        actionBarSet();
 
 
         TextView infoTextView = (TextView) findViewById(R.id.errorReport_infoTextView);
@@ -52,7 +63,7 @@ public class ErrorReportActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String description = editText.getText().toString();
-                if (description != "") {
+                if (description.equals("")) {
                     postBug(description);
                 } else {
                     AlertClass.showAlertMessage(getApplicationContext(), "Form", "EmptyFields", "warning", null);
@@ -61,7 +72,37 @@ public class ErrorReportActivity extends AppCompatActivity {
         });
 
 
+        // show or hide keyboard listener for navigation bar hide
+        LinearLayout masterLayout = (LinearLayout) findViewById(R.id.resetPasswordA_masterLayout);
+        super.showOrHideNavigation(masterLayout);
+
+
+
     }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        softKeyboard.unRegisterSoftKeyboardCallback();
+    }
+
+
+    private void actionBarSet() {
+        super.clickEventInterface = new OnClickEventInterface() {
+            @Override
+            public void OnButtonClicked(int id) {
+            }
+
+            @Override
+            public void OnBackClicked() {
+                onBackPressed();
+            }
+        };
+
+        super.createActionBar("کنکوق", true, null);
+    }
+
 
     private void postBug(String description) {
         new PostProfileGradeTask().execute(description);
@@ -112,24 +153,28 @@ public class ErrorReportActivity extends AppCompatActivity {
             }, new Function1<NetworkErrorType, Unit>() {
                 @Override
                 public Unit invoke(final NetworkErrorType networkErrorType) {
+
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO: hide loading dialog
-                            if (networkErrorType != null) {
-                                switch (networkErrorType) {
-                                    case HostUnreachable:
-                                    case NoInternetAccess:
-                                        // TODO: show top error message with NetworkError
-                                        break;
-                                    default:
-                                        // TODO: show top error message with NetworkError
-                                        break;
+                            switch (networkErrorType) {
+                                case NoInternetAccess:
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(ErrorReportActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
+                                    break;
                                 }
-                            }
+                                default: {
+                                    AlertClass.showTopMessage(ErrorReportActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
+                                    break;
+                                }
 
+                            }
                         }
                     });
+
+
+
                     return null;
                 }
             });

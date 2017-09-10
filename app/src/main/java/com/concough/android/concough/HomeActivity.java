@@ -14,9 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.baoyz.widget.PullRefreshLayout;
+import com.concough.android.general.AlertClass;
 import com.concough.android.rest.ActivityRestAPIClass;
 import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
@@ -24,6 +24,7 @@ import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.structures.ConcoughActivityStruct;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
+import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -52,6 +53,7 @@ public class HomeActivity extends BottomNavigationActivity {
     HomeActivityAdapter homeActivityAdapter;
     LinearLayoutManager mLayoutManager;
     private boolean loading = true;
+    private KProgressHUD loadingProgress;
     private boolean isRefresh;
     int homaActivityCheck = 0;
     String lastCreatedStr = "";
@@ -71,7 +73,6 @@ public class HomeActivity extends BottomNavigationActivity {
     protected void onCreate(Bundle savedInstanceState) {
         this.setMenuSelectedIndex(0);
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_home);
 
         counter = 0;
 
@@ -87,7 +88,6 @@ public class HomeActivity extends BottomNavigationActivity {
 
 
         final PullRefreshLayout layout = (PullRefreshLayout) findViewById(R.id.homeA_swipeRefreshLayout);
-        // layout.setColorSchemeColors(Color.CYAN);
         layout.setColorSchemeColors(Color.TRANSPARENT, Color.GRAY, Color.GRAY, Color.GRAY);
         layout.setRefreshStyle(PullRefreshLayout.STYLE_MATERIAL);
         layout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
@@ -108,19 +108,54 @@ public class HomeActivity extends BottomNavigationActivity {
                     if (!loading) {
                         HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
                         counter++;
-                        Toast.makeText(HomeActivity.this, "Loading new Data ...." + counter, Toast.LENGTH_SHORT).show();
                     }
                 }
             }
         });
 
+        actionBarSet();
 
+    }
+
+
+    private void actionBarSet() {
+        ArrayList<ButtonDetail> buttonDetailArrayList = new ArrayList<>();
+
+        ButtonDetail buttonDetail = new ButtonDetail();
+
+        buttonDetail.imageSource = R.drawable.archive_icon;
+        buttonDetailArrayList.add(buttonDetail);
+
+        super.clickEventInterface = new OnClickEventInterface() {
+            @Override
+            public void OnButtonClicked(int id) {
+                switch (id) {
+                    case R.drawable.archive_icon: {
+                        Intent i = ArchiveActivity.newIntent(HomeActivity.this);
+                        startActivity(i);
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void OnBackClicked() {
+
+            }
+        };
+
+        super.createActionBar("خانه", false, buttonDetailArrayList);
     }
 
 
     private void homeActivity(String date) {
         HomeActivity.this.loading = true;
         new HomeActivityTask().execute(date);
+
+        if (date == null) {
+            loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+            loadingProgress.show();
+        }
 
     }
 
@@ -181,7 +216,7 @@ public class HomeActivity extends BottomNavigationActivity {
                                 } else if (httpErrorType == HTTPErrorType.Refresh) {
                                     new HomeActivityTask().execute(params);
                                 } else {
-                                    // TODO: show error with msgType = "HTTPError" and error
+
                                 }
 
 
@@ -198,12 +233,40 @@ public class HomeActivity extends BottomNavigationActivity {
 
             {
                 @Override
-                public Unit invoke(NetworkErrorType networkErrorType) {
+                public Unit invoke(final NetworkErrorType networkErrorType) {
                     HomeActivity.this.loading = false;
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            switch (networkErrorType) {
+                                case NoInternetAccess:
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(HomeActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
+                                    break;
+                                }
+                                default: {
+                                    AlertClass.showTopMessage(HomeActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
+                                    break;
+                                }
+
+                            }
+                        }
+                    });
+
                     return null;
                 }
             });
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            if (loadingProgress != null) {
+                AlertClass.hideLoadingMessage(loadingProgress);
+            }
         }
     }
 
@@ -315,8 +378,13 @@ public class HomeActivity extends BottomNavigationActivity {
                 dateTopLeft.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
 
-                String sellCountText = FormatterSingleton.getInstance().getNumberFormatter().format(concoughActivityStruct.getTarget().getAsJsonObject().get("stats").getAsJsonArray().get(0).getAsJsonObject().get("purchased").getAsInt());
-                sellCount.setText(sellCountText);
+                JsonArray stats = concoughActivityStruct.getTarget().getAsJsonObject().get("stats").getAsJsonArray();
+                Integer sellCountInt = 0;
+                if (stats.size() > 0) {
+                    sellCountInt = stats.get(0).getAsJsonObject().get("purchased").getAsInt();
+                }
+                sellCount.setText(FormatterSingleton.getInstance().getNumberFormatter().format(sellCountInt));
+
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
 
@@ -324,18 +392,8 @@ public class HomeActivity extends BottomNavigationActivity {
                 entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString() + ")");
 
                 int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
-                MediaRestAPIClass.downloadEsetImage(getApplicationContext(), imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
-                        Log.d(TAG, "invoke: " + jsonObject);
-                        return null;
-                    }
-                }, new Function1<NetworkErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(NetworkErrorType networkErrorType) {
-                        return null;
-                    }
-                });
+
+                downloadImage(imageId);
 
                 String s;
                 s = concoughActivityStruct.getTarget().getAsJsonObject().get("extra_data").getAsString();
@@ -351,6 +409,36 @@ public class HomeActivity extends BottomNavigationActivity {
                 extra = TextUtils.join(" - ", extraArray);
                 additionalData.setText(extra);
             }
+
+            private void downloadImage(final int imageId) {
+                MediaRestAPIClass.downloadEsetImage(HomeActivity.this, imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (httpErrorType != HTTPErrorType.Success) {
+                                    Log.d(TAG, "run: ");
+                                    if (httpErrorType == HTTPErrorType.Refresh) {
+                                        downloadImage(imageId);
+                                    } else {
+                                        entranceLogo.setImageResource(R.drawable.no_image);
+                                    }
+                                }
+                            }
+                        });
+                        Log.d(TAG, "invoke: " + jsonObject);
+                        return null;
+                    }
+                }, new Function1<NetworkErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(NetworkErrorType networkErrorType) {
+                        return null;
+                    }
+                });
+
+            }
+
         }
 
         private class EntranceUpdateHolder extends RecyclerView.ViewHolder {
@@ -414,8 +502,12 @@ public class HomeActivity extends BottomNavigationActivity {
                 dateTopLeft.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
 
-                String sellCountText = FormatterSingleton.getInstance().getNumberFormatter().format(concoughActivityStruct.getTarget().getAsJsonObject().get("stats").getAsJsonArray().get(0).getAsJsonObject().get("purchased").getAsInt());
-                sellCount.setText(sellCountText);
+                JsonArray stats = concoughActivityStruct.getTarget().getAsJsonObject().get("stats").getAsJsonArray();
+                Integer sellCountInt = 0;
+                if (stats.size() > 0) {
+                    sellCountInt = stats.get(0).getAsJsonObject().get("purchased").getAsInt();
+                }
+                sellCount.setText(FormatterSingleton.getInstance().getNumberFormatter().format(sellCountInt));
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
 
@@ -423,18 +515,7 @@ public class HomeActivity extends BottomNavigationActivity {
                 entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString() + ")");
 
                 int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
-                MediaRestAPIClass.downloadEsetImage(getApplicationContext(), imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
-                        Log.d(TAG, "invoke: " + jsonObject);
-                        return null;
-                    }
-                }, new Function1<NetworkErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(NetworkErrorType networkErrorType) {
-                        return null;
-                    }
-                });
+                downloadImage(imageId);
 
                 String s;
                 s = concoughActivityStruct.getTarget().getAsJsonObject().get("extra_data").getAsString();
@@ -450,6 +531,36 @@ public class HomeActivity extends BottomNavigationActivity {
                 extra = TextUtils.join(" - ", extraArray);
                 additionalData.setText(extra);
             }
+
+            private void downloadImage(final int imageId) {
+                MediaRestAPIClass.downloadEsetImage(HomeActivity.this, imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (httpErrorType != HTTPErrorType.Success) {
+                                    Log.d(TAG, "run: ");
+                                    if (httpErrorType == HTTPErrorType.Refresh) {
+                                        downloadImage(imageId);
+                                    } else {
+                                        entranceLogo.setImageResource(R.drawable.no_image);
+                                    }
+                                }
+                            }
+                        });
+                        Log.d(TAG, "invoke: " + jsonObject);
+                        return null;
+                    }
+                }, new Function1<NetworkErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(NetworkErrorType networkErrorType) {
+                        return null;
+                    }
+                });
+
+            }
+
         }
 
         @Override

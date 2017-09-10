@@ -16,14 +16,15 @@
 
 package com.concough.android.vendor.progressHUD;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import com.concough.android.concough.R;
-import com.concough.android.vendor.progressHUD.Indeterminate;
 
+@SuppressLint("AppCompatCustomView")
 public class SpinView extends ImageView implements Indeterminate {
 
     private float mRotateDegrees;
@@ -52,6 +53,7 @@ public class SpinView extends ImageView implements Indeterminate {
         setImageResource(R.drawable.kprogresshud_spinner);
         if (color != 0)
             setColorFilter(this.color);
+
         mFrameTime = 1000 / 12;
         mUpdateViewRunnable = new Runnable() {
             @Override

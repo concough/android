@@ -142,7 +142,7 @@ class ProfileRestAPIClass {
 
         @JvmStatic
         fun putProfileGrade(grade: String, context: Context, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
-            
+            // TODO: post profile body
         }
 
 

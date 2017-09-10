@@ -8,8 +8,8 @@
         app:showAsAction="always"/>
     <item
         android:id="@+id/favorite_sync"
-        android:title="همگام سازی با سرور"
         android:icon="@drawable/download_cloud"
-        app:showAsAction="always"/>
+        android:title="همگام سازی با سرور"
+        app:showAsAction="always" />
     <!--android:icon="@drawable/ic_zhycan_settings"-->
 </menu>

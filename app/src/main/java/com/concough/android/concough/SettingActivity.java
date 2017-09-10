@@ -15,9 +15,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -45,6 +42,7 @@ import com.google.gson.JsonObject;
 
 import java.io.File;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 
 import io.realm.RealmResults;
@@ -82,8 +80,6 @@ public class SettingActivity extends BottomNavigationActivity {
     protected void onCreate(Bundle savedInstanceState) {
         setMenuSelectedIndex(3);
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_setting);
-
 
         recyclerView = (RecyclerView) findViewById(R.id.settingA_recycleView);
         recycleAdapter = new RecycleAdapter(getApplicationContext());
@@ -93,38 +89,38 @@ public class SettingActivity extends BottomNavigationActivity {
 
         names = GradeType.values();
 
-
-//        this.signupInfo = new SignupMoreInfoStruct();
-
-//        names = GradeType.values();
-//        this.selectedGradeType = names[0];
+        actionBarSet();
 
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
+    private void actionBarSet() {
+        super.clickEventInterface = new OnClickEventInterface() {
+            @Override
+            public void OnButtonClicked(int id) {
+                switch (id) {
+                    case R.drawable.help_icon: {
+                        String url = getResources().getString(R.string.settingMenu_S_url);
+                        Intent i = SettingsWebViewActivity.newIntent(SettingActivity.this, url, "درباره ما");
+                        startActivity(i);
+                        break;
+                    }
+                }
+            }
 
-        inflater.inflate(R.menu.setting_menu, menu);
+            @Override
+            public void OnBackClicked() {
 
-        return true;
+            }
+        };
+
+        ArrayList<ButtonDetail> buttonDetailArrayList = new ArrayList<>();
+        ButtonDetail buttonDetail = new ButtonDetail();
+        buttonDetail.imageSource = R.drawable.help_icon;
+        buttonDetailArrayList.add(buttonDetail);
+        super.createActionBar("تنظیمات", false, buttonDetailArrayList);
     }
 
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        switch (item.getItemId()) {
-            case R.id.settingMenuI_help:
-                String url = getResources().getString(R.string.settingMenu_S_url);
-                Intent i = SettingsWebViewActivity.newIntent(SettingActivity.this, url);
-                startActivity(i);
-                return true;
-
-        }
-        return false;
-    }
 
     private class AlertDialogCustomize extends ArrayAdapter<GradeType> {
         private GradeType[] objects;
@@ -158,8 +154,8 @@ public class SettingActivity extends BottomNavigationActivity {
 
     }
 
-    private void postProfile(String date) {
-        new PostProfileGradeTask().execute(date);
+    private void postProfile(String grade) {
+        new PostProfileGradeTask().execute(grade);
 
     }
 
@@ -178,7 +174,7 @@ public class SettingActivity extends BottomNavigationActivity {
                                     Date modifiedDate = null;
 
 
-                                    if (status == "OK") {
+                                    if (status.equals("OK")) {
                                         String modified = jsonObject.get("modified").getAsString();
                                         try {
                                             modifiedDate = FormatterSingleton.getInstance().getUTCShortDateFormatter().parse(modified);
@@ -313,14 +309,14 @@ public class SettingActivity extends BottomNavigationActivity {
                                 @Override
                                 public Unit invoke() {
                                     String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
-                                    RealmResults<PurchasedModel> items = PurchasedModelHandler.getAllPurchased(getApplicationContext(),username);
+                                    RealmResults<PurchasedModel> items = PurchasedModelHandler.getAllPurchased(getApplicationContext(), username);
 
-                                    for (PurchasedModel item: items) {
+                                    for (PurchasedModel item : items) {
                                         SettingActivity.this.deletePurchaseData(item.productUniqueId);
 
-                                        if(PurchasedModelHandler.resetDownloadFlags(getApplicationContext(),username, item.id)) {
-                                            EntrancePackageHandler.removePackage(getApplicationContext(),username,item.productUniqueId);
-                                            EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(),username,item.productUniqueId);
+                                        if (PurchasedModelHandler.resetDownloadFlags(getApplicationContext(), username, item.id)) {
+                                            EntrancePackageHandler.removePackage(getApplicationContext(), username, item.productUniqueId);
+                                            EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, item.productUniqueId);
                                         }
                                     }
 
@@ -359,7 +355,7 @@ public class SettingActivity extends BottomNavigationActivity {
                         @Override
                         public void onClick(View v) {
                             String url = getResources().getString(R.string.settingA_S_aboutUs_url);
-                            Intent i = SettingsWebViewActivity.newIntent(SettingActivity.this, url);
+                            Intent i = SettingsWebViewActivity.newIntent(SettingActivity.this, url, "درباره ما");
                             startActivity(i);
                         }
                     });
@@ -372,22 +368,22 @@ public class SettingActivity extends BottomNavigationActivity {
                     holder.itemView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                                AlertClass.showAlertMessageCustom(SettingActivity.this, "آیا مطمین هستید؟", "خروج موقت از سیستم!", "بله", "خیر", new Function0<Unit>() {
-                                    @Override
-                                    public Unit invoke() {
-                                        if (KeyChainAccessProxy.getInstance(getApplicationContext()).clearAllValue() && UserDefaultsSingleton.getInstance(getApplicationContext()).clearAll()) {
-                                            TokenHandlerSingleton.getInstance(getApplicationContext()).invalidateTokens();
-                                            Intent i = StartupActivity.newIntent(getApplicationContext());
-                                            startActivity(i);
-                                            finish();
-                                        }
-
-                                        return null;
+                            AlertClass.showAlertMessageCustom(SettingActivity.this, "آیا مطمین هستید؟", "خروج موقت از سیستم!", "بله", "خیر", new Function0<Unit>() {
+                                @Override
+                                public Unit invoke() {
+                                    if (KeyChainAccessProxy.getInstance(getApplicationContext()).clearAllValue() && UserDefaultsSingleton.getInstance(getApplicationContext()).clearAll()) {
+                                        TokenHandlerSingleton.getInstance(getApplicationContext()).invalidateTokens();
+                                        Intent i = StartupActivity.newIntent(getApplicationContext());
+                                        startActivity(i);
+                                        finish();
                                     }
-                                });
+
+                                    return null;
+                                }
+                            });
 
 
-                            }
+                        }
 
                     });
                     text = getResources().getString(R.string.settingA_S_signout);
@@ -635,11 +631,11 @@ public class SettingActivity extends BottomNavigationActivity {
 
     }
 
-    private void deletePurchaseData(String uniqueId){
+    private void deletePurchaseData(String uniqueId) {
         File f = new File(SettingActivity.this.getFilesDir(), uniqueId);
         if (f.exists() && f.isDirectory()) {
 //                                String[] children = f.list();
-            for (File fc: f.listFiles()) {
+            for (File fc : f.listFiles()) {
                 fc.delete();
             }
             boolean rd = f.delete();

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="@drawable/concough_border_radius_center_dialog_style"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:paddingStart="15dp">
+
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/concough_bottom_line_gray3"
+            android:paddingBottom="15dp">
+
+            <ImageView
+                android:id="@+id/entranceInfoIcon_entLogo"
+                android:layout_width="65dp"
+                android:layout_height="65dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="3dp"
+                android:layout_marginTop="11dp"
+                android:background="@drawable/concough_bottom_line_gray3"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/app_dropbox_icon" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@+id/entranceInfoIcon_entLogo"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/entranceInfoIcon_typeName"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="right|start"
+                    android:text="TextView"
+                    android:textColor="@android:color/black"
+                    android:textDirection="rtl" />
+
+                <TextView
+                    android:id="@+id/entranceInfoIcon_groupName"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="right|start"
+                    android:text="TextView"
+                    android:textColor="@android:color/black"
+                    android:textDirection="rtl"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/entranceInfoIcon_extraData"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="right|start"
+                    android:lines="2"
+                    android:text="TextView"
+                    android:textColor="@color/colorConcoughGray"
+                    android:textDirection="rtl"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </android.support.constraint.ConstraintLayout>
+
+        <Switch
+            android:id="@+id/entranceInfoIcon_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/concough_bottom_transparent_line_gray3"
+            android:layoutDirection="rtl"
+            android:paddingBottom="15dp"
+            android:paddingTop="5dp"
+            android:text="نمایش تمامی جواب ها"
+            android:textColor="@color/colorConcoughGray2"
+            android:textColorLink="@color/colorConcoughGreen"
+            android:textDirection="rtl"
+            android:textSize="13sp" />
+
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/concough_bottom_line_gray3"
+            android:paddingBottom="15dp">
+
+            <TextView
+                android:id="@+id/entranceInfoIcon_starredCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/concough_badge_green_style"
+                android:gravity="center_vertical"
+                android:paddingBottom="4dp"
+                android:paddingEnd="8dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:text="10"
+                android:textColor="@android:color/white"
+                android:textSize="11sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/entranceInfoIcon_btnStarred"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="0dp"
+                android:layout_marginTop="0dp"
+                android:background="@android:color/transparent"
+                android:gravity="right|center_vertical|start"
+                android:text="سوالات نشان شده"
+                android:textColor="@color/colorConcoughBlue"
+                android:textSize="13sp"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </android.support.constraint.ConstraintLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

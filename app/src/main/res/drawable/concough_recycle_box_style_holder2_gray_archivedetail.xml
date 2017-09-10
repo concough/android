@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+
+
+    <!-- Background -->
+    <item>
+        <shape>
+            <solid android:color="@color/colorConcoughHolder2Box"  />
+            <stroke android:color="@color/colorConcoughGray4" android:width="1dp" />
+
+            <corners android:radius="7dp"   />
+        </shape>
+    </item>
+
+</layer-list>

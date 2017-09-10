@@ -2,10 +2,10 @@ package com.concough.android.concough;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -16,8 +16,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.baoyz.widget.PullRefreshLayout;
+import com.concough.android.general.AlertClass;
 import com.concough.android.rest.ArchiveRestAPIClass;
 import com.concough.android.rest.MediaRestAPIClass;
+import com.concough.android.singletons.BasketSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.structures.ArchiveEsetDetailStruct;
@@ -51,7 +54,6 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
     private final static String Detail_Struct = "Detail_Struct";
 
 
-
     private ArchiveEsetDetailStruct mArchiveEsetDetailStruct;
 
     public static Intent newIntent(Context packageContext, @Nullable ArchiveEsetDetailStruct detailStruct) {
@@ -77,17 +79,18 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
         adapter = new GetEntranceAdapter(this, new ArrayList<JsonElement>());
 
-        ActionBar mActionBar = getSupportActionBar();
-        mActionBar.setDisplayShowTitleEnabled(false);
-        mActionBar.setElevation(2);
-        LayoutInflater mInflater = LayoutInflater.from(this);
-        View mCustomView = mInflater.inflate(R.layout.cc_archivedetail_actionbar, null);
+//        ActionBar mActionBar = getSupportActionBar();
+//        mActionBar.setDisplayShowTitleEnabled(false);
+//        mActionBar.setElevation(2);
 
-        TextView abtext = (TextView) mCustomView.findViewById(R.id.archiveDetailActionBarA_title);
-        abtext.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+//        LayoutInflater mInflater = LayoutInflater.from(this);
+//        View mCustomView = mInflater.inflate(R.layout.cc_archivedetail_actionbar, null);
 
-        mActionBar.setCustomView(mCustomView);
-        mActionBar.setDisplayShowCustomEnabled(true);
+//        TextView abtext = (TextView) mCustomView.findViewById(R.id.archiveDetailActionBarA_title);
+//        abtext.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+
+//        mActionBar.setCustomView(mCustomView);
+//        mActionBar.setDisplayShowCustomEnabled(true);
 
 
         recyclerView = (RecyclerView) findViewById(R.id.archiveDetailA_recycle);
@@ -96,18 +99,63 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
         recyclerView.setAdapter(adapter);
 
 
-        Integer setId = mArchiveEsetDetailStruct.esetStruct.id;
+        final Integer setId = mArchiveEsetDetailStruct.esetStruct.id;
         getSets(setId);
+
+
+        final PullRefreshLayout layout = (PullRefreshLayout) findViewById(R.id.homeA_swipeRefreshLayout);
+        layout.setColorSchemeColors(Color.TRANSPARENT, Color.GRAY, Color.GRAY, Color.GRAY);
+        layout.setRefreshStyle(PullRefreshLayout.STYLE_MATERIAL);
+        layout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getSets(setId);
+                layout.setRefreshing(false);
+            }
+        });
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        actionBarSet();
+    }
 
-//    private class GetSetsTask extends AsyncTask<Integer, Void, Void> {
-//        @Override
-//        protected Void doInBackground(Integer... params) {
-//             return null;
-//        }
-//    }
+    private void actionBarSet() {
+        final ArrayList<ButtonDetail> buttonDetailArrayList = new ArrayList<>();
+
+        ButtonDetail buttonDetail;
+        buttonDetail = new ButtonDetail();
+        if(BasketSingleton.getInstance().getSalesCount()>0){
+            buttonDetail.hasBadge = true;
+            buttonDetail.badgeCount = BasketSingleton.getInstance().getSalesCount();
+        }
+        buttonDetail.imageSource = R.drawable.buy_icon;
+        buttonDetailArrayList.add(buttonDetail);
+
+        super.clickEventInterface = new OnClickEventInterface() {
+            @Override
+            public void OnButtonClicked(int id) {
+                switch (id) {
+                    case R.drawable.buy_icon: {
+                        Intent i = BasketCheckoutActivity.newIntent(ArchiveDetailActivity.this, "EntranceDetail");
+                        ArchiveDetailActivity.this.startActivity(i);
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void OnBackClicked() {
+                onBackPressed();
+            }
+        };
+
+        String title = mArchiveEsetDetailStruct.typeTitle;
+
+        super.createActionBar(title, true, buttonDetailArrayList);
+    }
 
     private void getSets(Integer setId) {
         new GetEntranceSetsTask().execute(setId);
@@ -166,7 +214,27 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
             {
                 @Override
-                public Unit invoke(NetworkErrorType networkErrorType) {
+                public Unit invoke(final NetworkErrorType networkErrorType) {
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            switch (networkErrorType) {
+                                case NoInternetAccess:
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
+                                    break;
+                                }
+                                default: {
+                                    AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
+                                    break;
+                                }
+
+                            }
+                        }
+                    });
+
+
                     return null;
                 }
             });
@@ -222,31 +290,71 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
             }
 
             public void setupHolder() {
-                String t1 = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.typeTitle.toString() + " (" + ArchiveDetailActivity.this.mArchiveEsetDetailStruct.groupTitle.toString() + ")";
+                String t1 = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.typeTitle + " (" + ArchiveDetailActivity.this.mArchiveEsetDetailStruct.groupTitle + ")";
                 setName.setText(t1);
 
-                String t2 = "کد: " + ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.code.toString();
+                String t2 = "کد: " + ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.code;
                 code.setText(t2);
 
-                String t3 = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.entrance_count.toString() + " کنکور منتشر شده";
+                String t3 = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.entrance_count + " کنکور منتشر شده";
                 count.setText(t3);
 
 
                 Integer imageId = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.id;
-                MediaRestAPIClass.downloadEsetImage(getApplicationContext(), imageId, logoImage, new Function2<JsonObject, HTTPErrorType, Unit>() {
+
+                downloadImage(imageId);
+
+            }
+
+            private void downloadImage(final int imageId) {
+                MediaRestAPIClass.downloadEsetImage(ArchiveDetailActivity.this, imageId, logoImage, new Function2<JsonObject, HTTPErrorType, Unit>() {
                     @Override
-                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
+                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (httpErrorType != HTTPErrorType.Success) {
+                                    Log.d(TAG, "run: ");
+                                    if (httpErrorType == HTTPErrorType.Refresh) {
+                                        downloadImage(imageId);
+                                    } else {
+                                        logoImage.setImageResource(R.drawable.no_image);
+                                    }
+                                }
+                            }
+                        });
                         Log.d(TAG, "invoke: " + jsonObject);
                         return null;
                     }
                 }, new Function1<NetworkErrorType, Unit>() {
                     @Override
-                    public Unit invoke(NetworkErrorType networkErrorType) {
+                    public Unit invoke(final NetworkErrorType networkErrorType) {
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
+
+                                }
+                            }
+                        });
+
                         return null;
                     }
                 });
 
             }
+
+
         }
 
 
@@ -273,7 +381,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                 logoImage = (ImageView) itemView.findViewById(R.id.archiveDetailHolder2L_imageRight);
 
 
-                extraDataText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                extraDataText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 countText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 typeText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
@@ -302,7 +410,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
                 dateJalali.setText(persianDateString);
 
-                String t3 =  FormatterSingleton.getInstance().getNumberFormatter().format(jsonElement.getAsJsonObject().get("stats").getAsJsonArray().get(0).getAsJsonObject().get("purchased").getAsInt())  + " خرید";
+                String t3 = FormatterSingleton.getInstance().getNumberFormatter().format(jsonElement.getAsJsonObject().get("stats").getAsJsonArray().get(0).getAsJsonObject().get("purchased").getAsInt()) + " خرید";
                 countText.setText(t3);
 
                 String s;
@@ -321,31 +429,58 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
 
                 Integer imageId = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.id;
-//                logoImage.getDrawable().setColorFilter(0x76ffffff, PorterDuff.Mode.MULTIPLY );
 
+                downloadImage(imageId);
+            }
 
-                MediaRestAPIClass.downloadEsetImage(getApplicationContext(), imageId, logoImage, new Function2<JsonObject, HTTPErrorType, Unit>() {
+            private void downloadImage(final int imageId) {
+                MediaRestAPIClass.downloadEsetImage(ArchiveDetailActivity.this, imageId, logoImage, new Function2<JsonObject, HTTPErrorType, Unit>() {
                     @Override
-                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
+                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (httpErrorType != HTTPErrorType.Success) {
+                                    Log.d(TAG, "run: ");
+                                    if (httpErrorType == HTTPErrorType.Refresh) {
+                                        downloadImage(imageId);
+                                    } else {
+                                        logoImage.setImageResource(R.drawable.no_image);
+                                    }
+                                }
+                            }
+                        });
                         Log.d(TAG, "invoke: " + jsonObject);
-
-//                        ColorMatrix matrix = new ColorMatrix();
-//                        matrix.setSaturation(0);
-//                        ColorMatrixColorFilter filter = new ColorMatrixColorFilter(matrix);
-//                        logoImage.setColorFilter(filter);
-                        // logoImage.setAlpha(0.9f);
-
                         return null;
                     }
                 }, new Function1<NetworkErrorType, Unit>() {
                     @Override
-                    public Unit invoke(NetworkErrorType networkErrorType) {
+                    public Unit invoke(final NetworkErrorType networkErrorType) {
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
+
+                                }
+                            }
+                        });
+
                         return null;
                     }
                 });
 
-
             }
+
         }
 
 

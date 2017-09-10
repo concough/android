@@ -20,13 +20,13 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginRight="8dp"
             android:gravity="top|right"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="@+id/settingUserInfoL_userImage"
             app:layout_constraintRight_toLeftOf="@+id/settingUserInfoL_userImage"
             app:layout_constraintTop_toTopOf="@+id/settingUserInfoL_userImage"
-            app:layout_constraintVertical_bias="0.526"
-            android:layout_marginRight="8dp">
+            app:layout_constraintVertical_bias="0.526">
 
             <TextView
                 android:id="@+id/archiveDetailHolder1L_EntranceName"
@@ -71,6 +71,7 @@
             android:layout_marginTop="16dp"
             android:src="@drawable/male_icon_100"
             app:civ_border_color="@color/colorConcoughGray4"
+            app:civ_fill_color="@color/colorWhite"
             app:civ_border_width="0.8dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toRightOf="parent"

@@ -7,6 +7,7 @@
     android:layout_marginLeft="8dp"
     android:layout_marginRight="8dp"
     android:layout_marginTop="8dp"
+    android:background="@drawable/concough_recycle_box_style_holder2_gray_archivedetail"
     android:clipChildren="true"
     tools:context="com.concough.android.concough.ArchiveDetailActivity">
 
@@ -15,10 +16,32 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
 
+
+        android:clipChildren="true"
+        android:clipToPadding="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/linearLayout10"
+            android:layout_width="wrap_content"
+            android:layout_height="70dp"
+            android:layout_marginRight="2dp"
+            android:orientation="horizontal"
+            app:layout_constraintRight_toLeftOf="@+id/frameLayout"
+            tools:layout_editor_absoluteY="0dp">
+
+            <View
+                android:id="@+id/view10"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@color/colorConcoughGray3"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </LinearLayout>
 
         <android.support.constraint.ConstraintLayout
             android:id="@+id/frameLayout"
@@ -26,8 +49,9 @@
             android:layout_height="70dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
 
+
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="1.0">
 
             <RelativeLayout
@@ -48,20 +72,13 @@
                     tools:layout_editor_absoluteX="44dp"
                     tools:layout_editor_absoluteY="206dp" />
 
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:alpha="50"
-                    android:background="@drawable/concough_recycle_box_style_holder2_gray">
-
-                </FrameLayout>
-
                 <android.support.constraint.ConstraintLayout
                     android:id="@+id/archiveDetailHolder2L_constrantRight"
                     android:layout_width="70dp"
                     android:layout_height="70dp"
 
-                    android:background="@android:color/transparent"
+                    android:layout_margin="2dp"
+                    android:background="@drawable/concough_recycle_box_style_holder2_gray_logo_archivedetail"
                     tools:layout_editor_absoluteX="29dp"
                     tools:layout_editor_absoluteY="191dp">
 
@@ -76,6 +93,7 @@
                         android:layout_marginStart="8dp"
                         android:layout_marginTop="8dp"
                         android:text="TextView"
+                        android:textColor="@android:color/black"
                         android:textSize="12sp"
                         app:layout_constraintLeft_toLeftOf="parent"
                         app:layout_constraintRight_toRightOf="parent"
@@ -111,7 +129,10 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
 
+            android:layout_margin="3dp"
             android:background="@drawable/concough_recycle_box_style_holder2_white"
+            android:clipChildren="true"
+            android:clipToPadding="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -127,6 +148,7 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginTop="8dp"
                 android:text="TextView"
+                android:textColor="@android:color/black"
                 android:textSize="11sp"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -187,7 +209,7 @@
                 android:layout_height="wrap_content"
                 android:text="TextView"
                 android:textColor="@color/colorConcoughGray"
-                android:textSize="11sp" />
+                android:textSize="9sp" />
 
             <ImageView
                 android:id="@+id/itemEntranceCreateI_clock"

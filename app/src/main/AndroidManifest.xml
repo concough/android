@@ -61,7 +61,7 @@
             android:name=".ArchiveDetailActivity"
             android:theme="@style/AppThemeArchiveDetailActionBar" />
         <activity android:name=".SettingActivity" />
-        <activity android:name=".ErrorReportActivity" />
+        <activity android:name=".ErrorReportActivity" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".SettingsWebViewActivity" />
         <activity
             android:name=".BottomNavigationActivity"
@@ -71,7 +71,7 @@
             android:theme="@style/AppThemeArchiveActionBar" />
         <activity android:name=".BasketCheckoutActivity" />
         <activity android:name=".FavoritesActivity"></activity>
-        <activity android:name=".SettingChangePasswordActivity"></activity>
+        <activity android:name=".SettingChangePasswordActivity" android:windowSoftInputMode="adjustResize" ></activity>
         <activity android:name=".EntranceShowActivity"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>

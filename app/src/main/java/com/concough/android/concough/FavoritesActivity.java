@@ -11,12 +11,9 @@ import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +35,7 @@ import com.concough.android.models.PurchasedModelHandler;
 import com.concough.android.models.UserLogModelHandler;
 import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.rest.PurchasedRestAPIClass;
+import com.concough.android.singletons.BasketSingleton;
 import com.concough.android.singletons.DownloaderSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
@@ -47,7 +45,7 @@ import com.concough.android.structures.EntranceStruct;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.LogTypeEnum;
 import com.concough.android.structures.NetworkErrorType;
-import com.concough.android.utils.CustomTypefaceSpan;
+import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -92,6 +90,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
     private String showType = "Normal";
     private String selectedShowType = "Show";
 
+    private KProgressHUD loading;
+
     @Override
     protected int getLayoutResourceId() {
         return R.layout.activity_favorites;
@@ -122,7 +122,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
         this.uiHandler = new Handler();
 
         recycleView = (RecyclerView) findViewById(R.id.favoritesA_recycle);
-        recycleView.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recycleView.setLayoutManager(layoutManager);
 
         pullRefreshLayout = (PullRefreshLayout) findViewById(R.id.favoritesA_swipeRefreshLayout);
         pullRefreshLayout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
@@ -132,35 +133,85 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 FavoritesActivity.this.loadData();
             }
         });
+
+        actionBarSet();
+
+
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
 
-        if ("Normal".equals(showType)) {
-            inflater.inflate(R.menu.favorite_menu, menu);
-        } else if ("Edit".equals(showType)) {
-            inflater.inflate(R.menu.favorite_menu_ok, menu);
-        }
+    private void actionBarSet() {
+        final ArrayList<ButtonDetail> buttonDetailArrayList = new ArrayList<>();
 
-        return super.onCreateOptionsMenu(menu);
+
+        ButtonDetail buttonDetail = new ButtonDetail();
+        buttonDetail.imageSource = R.drawable.edit;
+        buttonDetailArrayList.add(buttonDetail);
+
+        buttonDetail=new ButtonDetail();
+        buttonDetail.imageSource = R.drawable.download_cloud;
+        buttonDetailArrayList.add(buttonDetail);
+
+        buttonDetail = new ButtonDetail();
+        buttonDetail.hasBadge=true;
+        buttonDetail.badgeCount= BasketSingleton.getInstance().getSalesCount();
+        buttonDetail.imageSource = R.drawable.buy_icon;
+        buttonDetailArrayList.add(buttonDetail);
+
+        super.createActionBar("آرشیو", false, buttonDetailArrayList);
+
+
+
+
+        super.clickEventInterface = new OnClickEventInterface() {
+            @Override
+            public void OnButtonClicked(int id) {
+                switch (id) {
+                    case R.drawable.edit: {
+                        showType = "Edit";
+                        favAdapter.notifyDataSetChanged();
+
+                        buttonDetailArrayList.clear();
+                        ButtonDetail buttonDetail = new ButtonDetail();
+                        buttonDetail.imageSource = R.drawable.checkmark;
+                        buttonDetailArrayList.add(buttonDetail);
+
+                        FavoritesActivity.super.createActionBar("آرشیو", false, buttonDetailArrayList);
+                        break;
+                    }
+
+                    case R.drawable.checkmark: {
+                        showType = "Normal";
+                        actionBarSet();
+                        favAdapter.notifyDataSetChanged();
+                        break;
+                    }
+
+                    case R.drawable.download_cloud: {
+                        if (FavoritesActivity.this.handler != null) {
+                            Message msg = FavoritesActivity.this.handler.obtainMessage(SYNC_WITH_SERVER);
+                            msg.setTarget(new Handler(FavoritesActivity.this.getMainLooper()));
+
+                            FavoritesActivity.this.handler.sendMessage(msg);
+                        }
+                        break;
+                    }
+
+                    case R.drawable.buy_icon: {
+                        Intent i = BasketCheckoutActivity.newIntent(FavoritesActivity.this, "EntranceDetail");
+                        FavoritesActivity.this.startActivity(i);
+                        break;
+                    }
+                }
+            }
+
+            @Override
+            public void OnBackClicked() {
+
+            }
+        };
     }
 
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        CustomTypefaceSpan typefaceSpan = new CustomTypefaceSpan("", FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-        for (int i = 0; i < menu.size(); i++) {
-            MenuItem menuItem = menu.getItem(i);
-
-            SpannableStringBuilder title = new SpannableStringBuilder(menuItem.getTitle());
-            title.setSpan(typefaceSpan, 0, title.length(), 0);
-
-            menuItem.setTitle(title);
-        }
-
-        return super.onPrepareOptionsMenu(menu);
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -1162,17 +1213,25 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
             }
 
+
             private void downloadImage(final int imageId) {
                 MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, entranceSetImage, new Function2<JsonObject, HTTPErrorType, Unit>() {
                     @Override
-                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
-                        if (httpErrorType != HTTPErrorType.Success) {
-                            if (httpErrorType == HTTPErrorType.Refresh) {
-                                downloadImage(imageId);
-                            } else {
-                                // TODO: Set to default
+                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (httpErrorType != HTTPErrorType.Success) {
+                                    Log.d(TAG, "run: ");
+                                    if (httpErrorType == HTTPErrorType.Refresh) {
+                                        downloadImage(imageId);
+                                    } else {
+                                        entranceSetImage.setImageResource(R.drawable.no_image);
+                                    }
+                                }
                             }
-                        }
+                        });
+                        Log.d(TAG, "invoke: " + jsonObject);
                         return null;
                     }
                 }, new Function1<NetworkErrorType, Unit>() {
@@ -1181,7 +1240,9 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                         return null;
                     }
                 });
+
             }
+
 
             public void changeToDownlaodState(final int total) {
                 FEntranceNotDownloadViewHolder.this.entranceDownloadLayout.setVisibility(View.GONE);
@@ -1322,6 +1383,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 entranceOpenLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+
                         Intent i = EntranceShowActivity.newIntent(FavoritesActivity.this, entrance.getEntranceUniqueId(), "Show");
                         startActivity(i);
                     }
@@ -1334,19 +1396,29 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                         startActivity(i);
                     }
                 });
+
+
             }
+
 
             private void downloadImage(final int imageId) {
                 MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, entranceSetImage, new Function2<JsonObject, HTTPErrorType, Unit>() {
                     @Override
-                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
-                        if (httpErrorType != HTTPErrorType.Success) {
-                            if (httpErrorType == HTTPErrorType.Refresh) {
-                                downloadImage(imageId);
-                            } else {
-                                // TODO: Set to default
+                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (httpErrorType != HTTPErrorType.Success) {
+                                    Log.d(TAG, "run: ");
+                                    if (httpErrorType == HTTPErrorType.Refresh) {
+                                        downloadImage(imageId);
+                                    } else {
+                                        entranceSetImage.setImageResource(R.drawable.no_image);
+                                    }
+                                }
                             }
-                        }
+                        });
+                        Log.d(TAG, "invoke: " + jsonObject);
                         return null;
                     }
                 }, new Function1<NetworkErrorType, Unit>() {
@@ -1355,7 +1427,9 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                         return null;
                     }
                 });
+
             }
+
         }
 
         private class FEntranceDeleteViewHolder extends RecyclerView.ViewHolder {
@@ -1436,17 +1510,25 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 });
             }
 
+
             private void downloadImage(final int imageId) {
                 MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, entranceSetImage, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(JsonObject jsonObject, HTTPErrorType httpErrorType) {
-                        if (httpErrorType != HTTPErrorType.Success) {
-                            if (httpErrorType == HTTPErrorType.Refresh) {
-                                downloadImage(imageId);
-                            } else {
-                                // TODO: Set to default
+                        @Override
+                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (httpErrorType != HTTPErrorType.Success) {
+                                    Log.d(TAG, "run: ");
+                                    if (httpErrorType == HTTPErrorType.Refresh) {
+                                        downloadImage(imageId);
+                                    } else {
+                                        entranceSetImage.setImageResource(R.drawable.no_image);
+                                    }
+                                }
                             }
-                        }
+                        });
+                        Log.d(TAG, "invoke: " + jsonObject);
                         return null;
                     }
                 }, new Function1<NetworkErrorType, Unit>() {
@@ -1455,7 +1537,11 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                         return null;
                     }
                 });
+
             }
+
+
+
         }
 
     }

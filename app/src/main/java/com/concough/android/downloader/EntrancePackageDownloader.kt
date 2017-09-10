@@ -1,16 +1,12 @@
 package com.concough.android.downloader
 
-import android.app.IntentService
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
-import android.provider.ContactsContract
-import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
-import android.widget.ImageView
 import com.concough.android.models.EntranceModelHandler
 import com.concough.android.models.EntrancePackageHandler
 import com.concough.android.models.EntranceQuestionModelHandler
@@ -25,13 +21,10 @@ import com.concough.android.structures.NetworkErrorType
 import com.concough.android.utils.MD5Digester
 import com.google.gson.JsonParser
 import org.cryptonode.jncryptor.AES256JNCryptor
-import org.cryptonode.jncryptor.AES256JNCryptorInputStream
-import org.cryptonode.jncryptor.JNCryptor
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.runOnUiThread
 import java.io.File
 import java.io.FileOutputStream
-import java.io.ObjectOutputStream
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
@@ -325,7 +318,7 @@ class EntrancePackageDownloader : Service() {
                                             val hashStr = "$username:$SECRET_KEY"
                                             val hashKey = MD5Digester.digest(hashStr)
 
-                                            val originalTextBytes = AES256JNCryptor().decryptData(decodedData, hashKey.toCharArray())
+                                            val originalTextBytes = AES256JNCryptor(1000).decryptData(decodedData, hashKey.toCharArray())
                                             val originalText = String(originalTextBytes)
 
                                             val content = JsonParser().parse(originalText)

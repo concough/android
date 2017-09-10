@@ -109,9 +109,9 @@ class AlertClass {
                 }
                 "NetworkError" -> {
                     when(messageSubType) {
-                        "NoInternetAccess" -> {title = "خطای اینترنت"; message="NoInternetAccess"}
-                        "HostUnreachable" -> {title = "خطای اینترنت"; message="NoInternetAccess"}
-                        "UnKnown" -> {title = "خطای اینترنت"; message="NoInternetAccess"}
+                        "NoInternetAccess" -> {title = "خطای اینترنت"; message="لطفا اینترنت خود را فعال نمایید"}
+                        "HostUnreachable" -> {title = "خطای اینترنت"; message="در حال حاضر کنکوق پاسخگو نمیباشد"}
+                        "UnKnown" -> {title = "خطای اینترنت"; message="اشکال در شبکه"}
                         else -> showMessage = false
                     }
                 }

@@ -105,6 +105,53 @@ Setting Activity (faridM)
 
 =================================================================================
 
+Setting Change password  (faridM)
+
+    1 - change password problems
+    2 - create Entrance Show Activity
+
+
+    Fixed
+        1 - Login Activity alignment fix
+        2 - change font size of setting menu
+
+
+
+=================================================================================
+
+Edit and add some problems (faridM)
+
+ 1 - Some Changes To Activities:
+            PulltoRefresh
+            Custom action bar function
+            Aded error alerts
+            Fail error messages
+            Download image failure, change image to default
+            Aded badge icon and 2 other icons on navigation button
+            Make "downloadImage" function for load images
+            Modified Some Layouts and Drawables
+
+ 2 - Aded or Modified Files
+            archive_icon.png
+            back_icon.png
+            buy_icon.png
+            checkmark.png
+            download_cloud.png
+            edit.png
+            help_icon.png
+            info_icon.png
+            loading_glass.gif
+
+
+=================================================================================
+
+
+
+
+
+
+
+
 
 
 

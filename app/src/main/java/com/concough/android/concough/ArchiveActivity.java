@@ -2,6 +2,7 @@ package com.concough.android.concough;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -22,18 +23,23 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.baoyz.widget.PullRefreshLayout;
 import com.concough.android.extensions.RotateViewExtensions;
+import com.concough.android.general.AlertClass;
 import com.concough.android.rest.ArchiveRestAPIClass;
 import com.concough.android.rest.MediaRestAPIClass;
+import com.concough.android.singletons.BasketSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.structures.ArchiveEsetDetailStruct;
 import com.concough.android.structures.ArchiveEsetStructs;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
+import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -70,10 +76,15 @@ public class ArchiveActivity extends BottomNavigationActivity {
     private ViewPager mViewPager;
     private RecyclerView recycleView;
     private Button refreshButton;
+    private View mCustomView;
 
     private Boolean gettingSets = false;
 
+    private KProgressHUD loadingProgress;
+
+
     private Integer currentPositionDropDown;
+    private Integer currentGroupSelected;
 
     private CustomTabLayout tabLayout;
 
@@ -164,34 +175,14 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
                         ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
                         ArchiveActivity.this.adapterSet.notifyDataSetChanged();
-
-
                         ArchiveActivity.this.changeTypeIndex(position);
-
-//                        ArchiveActivity.this.tabLayout.getTabAt(0).select();
-
-//                        if (ArchiveActivity.this.tabLayout.getTabCount() > 0) {
-//                            ArchiveActivity.this.tabLayout.getTabAt(0).select();
-//                        }
-                        // changeTypeIndex(position);
-
-//                        runOnUiThread(
-//                                new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//
-//                                        ArchiveActivity.this.tabLayout.getTabAt(0).select();
-//                                    }
-//                                });
-
-
                         dialog.dismiss();
                     }
                 })
                 .setOnCancelListener(new OnCancelListener() {
                     @Override
                     public void onCancel(DialogPlus dialog) {
-                        texButton.setText(buttonTextMaker(typeList.get(ArchiveActivity.this.currentPositionDropDown).toString(), false));
+                        texButton.setText(buttonTextMaker(typeList.get(ArchiveActivity.this.currentPositionDropDown), false));
                         dialog.dismiss();
                     }
                 })
@@ -208,11 +199,12 @@ public class ArchiveActivity extends BottomNavigationActivity {
         }
 
         LayoutInflater mInflater = LayoutInflater.from(this);
-        View mCustomView = mInflater.inflate(R.layout.cc_archive_actionbar, null);
+        mCustomView = mInflater.inflate(R.layout.cc_archive_actionbar, null);
 
         texButton = (Button) mCustomView
                 .findViewById(R.id.actionBarL_dropDown);
         texButton.setText("");
+
 
         if (mActionBar != null) {
             mActionBar.setCustomView(mCustomView);
@@ -225,14 +217,8 @@ public class ArchiveActivity extends BottomNavigationActivity {
             @Override
             public void onClick(View view) {
                 if (dialog.isShowing()) {
-                    // texButton.setText(buttonTextMaker(typeList.get(currentPositionDropDown).toString(), false));
-
                     dialog.dismiss();
-
-
                 } else {
-                    //  texButton.setText(buttonTextMaker(typeList.get(currentPositionDropDown).toString(), true));
-
                     dialog.show();
 
                 }
@@ -260,10 +246,38 @@ public class ArchiveActivity extends BottomNavigationActivity {
             }
         });
 
+        final PullRefreshLayout pullRefreshLayout = (PullRefreshLayout) findViewById(R.id.homeA_swipeRefreshLayout);
+        pullRefreshLayout.setColorSchemeColors(Color.TRANSPARENT, Color.GRAY, Color.GRAY, Color.GRAY);
+        pullRefreshLayout.setRefreshStyle(PullRefreshLayout.STYLE_MATERIAL);
+        pullRefreshLayout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getSets(currentGroupSelected);
+                pullRefreshLayout.setRefreshing(false);
+            }
+        });
 
         getTypes();
 
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        actionBarSet();
+    }
+
+    private void actionBarSet() {
+        TextView badgeCount = (TextView) mCustomView.findViewById(R.id.actionBar_constraintIcon0Badge);
+        LinearLayout badgeLinear = (LinearLayout) mCustomView.findViewById(R.id.badgeLinear);
+        badgeCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+        if (BasketSingleton.getInstance().getSalesCount() > 0) {
+            String basketCount = String.valueOf(BasketSingleton.getInstance().getSalesCount());
+            badgeCount.setText(basketCount);
+            badgeLinear.setVisibility(View.VISIBLE);
+        } else {
+            badgeLinear.setVisibility(View.GONE);
+        }
     }
 
 
@@ -280,6 +294,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
     // Custom Functions
     private void changeTypeIndex(int index) {
+
         ArchiveActivity.this.currentPositionDropDown = index;
         ArchiveActivity.this.texButton.setText(buttonTextMaker((String) ArchiveActivity.this.adapter.getItem(index), false));
         int id = ArchiveActivity.this.dropDownJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
@@ -287,40 +302,17 @@ public class ArchiveActivity extends BottomNavigationActivity {
     }
 
     private void changeGroupIndex(final int index) {
-//        ArchiveActivity.this.mViewPager.setCurrentItem(0);
-        //ArchiveActivity.this.mViewPager.setCurrentItem(index);
-
-//        ArchiveActivity.this.tabLayout.getTabAt(index).select();
         Integer i = ArchiveActivity.this.tabbarJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
 //        ArchiveActivity.this.currentPositionDropDown = index;
         getSets(i);
-
-
+        currentGroupSelected = 1;
         runOnUiThread(
                 new Runnable() {
                     @Override
                     public void run() {
-
-//                        ArchiveActivity.this.currentPositionDropDown = index;
                         ArchiveActivity.this.tabLayout.getTabAt(index).select();
-
-
                     }
                 });
-
-//
-//        new Handler().postDelayed(
-//                new Runnable() {
-//                    @Override
-//                    public void run() {
-//
-//                        //Integer i = ArchiveActivity.this.tabbarJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
-//                        ArchiveActivity.this.currentPositionDropDown = index;
-////                        getSets(i);
-//
-//                    }
-//                }, 1000);
-
     }
 
 
@@ -391,6 +383,14 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                             }
                                             case "Error": {
                                                 String errorType = jsonObject.get("error_type").getAsString();
+                                                switch (errorType) {
+                                                    case "EmptyArray": {
+                                                        AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.archive_activity), "ErrorResult", errorType, "", null);
+                                                        break;
+                                                    }
+                                                    default:
+                                                        break;
+                                                }
                                                 break;
                                             }
                                         }
@@ -399,7 +399,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                 } else if (httpErrorType == HTTPErrorType.Refresh) {
                                     new GetTypesTask().execute(params);
                                 } else {
-                                    // TODO: show error with msgType = "HTTPError" and error
+                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.archive_activity), "HTTPError", httpErrorType.toString(), "error", null);
                                 }
 
                             } catch (Exception e) {
@@ -412,11 +412,42 @@ public class ArchiveActivity extends BottomNavigationActivity {
                 }
             }, new Function1<NetworkErrorType, Unit>() {
                 @Override
-                public Unit invoke(NetworkErrorType networkErrorType) {
+                public Unit invoke(final NetworkErrorType networkErrorType) {
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            switch (networkErrorType) {
+                                case NoInternetAccess:
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
+                                    break;
+                                }
+                                default: {
+                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
+                                    break;
+                                }
+
+                            }
+                        }
+                    });
                     return null;
                 }
             });
             return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
+            loadingProgress.show();
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            loadingProgress.dismiss();
         }
     }
 
@@ -501,7 +532,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                         } else if (httpErrorType == HTTPErrorType.Refresh) {
                                             new GetGroupsTask().execute(firstIndexOfTypes);
                                         } else {
-                                            // TODO: show error with msgType = "HTTPError" and error
+                                            AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.archive_activity), "HTTPError", httpErrorType.toString(), "error", null);
                                         }
 
                                     } catch (Exception e) {
@@ -516,11 +547,43 @@ public class ArchiveActivity extends BottomNavigationActivity {
                     }
                     , new Function1<NetworkErrorType, Unit>() {
                         @Override
-                        public Unit invoke(NetworkErrorType networkErrorType) {
+                        public Unit invoke(final NetworkErrorType networkErrorType) {
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    switch (networkErrorType) {
+                                        case NoInternetAccess:
+                                        case HostUnreachable: {
+                                            AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
+                                            break;
+                                        }
+                                        default: {
+                                            AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
+                                            break;
+                                        }
+
+                                    }
+                                }
+                            });
+
                             return null;
                         }
                     });
             return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
+            loadingProgress.show();
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            loadingProgress.dismiss();
         }
     }
 
@@ -579,12 +642,16 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                             case "Error": {
                                                 String errorType = jsonObject.get("error_type").getAsString();
 
-                                                ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
-                                                ArchiveActivity.this.adapterSet.notifyDataSetChanged();
+                                                switch (errorType) {
+                                                    case "EmptyArray": {
 
+                                                        ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
+                                                        ArchiveActivity.this.adapterSet.notifyDataSetChanged();
+                                                        break;
+                                                    }
+                                                }
 
                                                 RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
-
 
                                                 break;
                                             }
@@ -599,7 +666,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                     ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
                                     ArchiveActivity.this.adapterSet.notifyDataSetChanged();
 
-                                    // TODO: show error with msgType = "HTTPError" and error
+                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.archive_activity), "HTTPError", httpErrorType.toString(), "error", null);
                                 }
 
                             } catch (Exception exc) {
@@ -617,12 +684,45 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
             {
                 @Override
-                public Unit invoke(NetworkErrorType networkErrorType) {
+                public Unit invoke(final NetworkErrorType networkErrorType) {
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            switch (networkErrorType) {
+                                case NoInternetAccess:
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
+                                    break;
+                                }
+                                default: {
+                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
+                                    break;
+                                }
+
+                            }
+                        }
+                    });
+
+
                     return null;
                 }
             });
 
             return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
+            loadingProgress.show();
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            loadingProgress.dismiss();
         }
     }
 
@@ -701,30 +801,6 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
                 ViewGroup.LayoutParams entranceLogoLP = entranceLogo.getLayoutParams();
                 int imageId = jsonElement.getAsJsonObject().get("id").getAsInt();
-                MediaRestAPIClass.downloadEsetImage(ArchiveActivity.this, imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (httpErrorType != HTTPErrorType.Success) {
-                                    Log.d(TAG, "run: ");
-//                                    entranceLogo.setImageDrawable(getResources().getDrawable(R.drawable.male_icon_100));
-                                    //entranceLogo.setBackgroundResource(R.drawable.male_icon_100);
-                                    entranceLogo.setImageResource(R.drawable.male_icon_100);
-                                }
-                            }
-                        });
-                        Log.d(TAG, "invoke: " + jsonObject);
-                        return null;
-                    }
-                }, new Function1<NetworkErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(NetworkErrorType networkErrorType) {
-                        return null;
-                    }
-                });
-
 
                 ArchiveActivity.this.mArchiveEsetStructs.updated = jsonElement.getAsJsonObject().get("updated").getAsString();
                 ArchiveActivity.this.mArchiveEsetStructs.code = jsonElement.getAsJsonObject().get("code").getAsString();
@@ -758,6 +834,56 @@ public class ArchiveActivity extends BottomNavigationActivity {
                     }
                 });
 
+                downloadImage(imageId);
+
+            }
+
+            private void downloadImage(final int imageId) {
+                MediaRestAPIClass.downloadEsetImage(ArchiveActivity.this, imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (httpErrorType != HTTPErrorType.Success) {
+                                    Log.d(TAG, "run: ");
+                                    if (httpErrorType == HTTPErrorType.Refresh) {
+                                        //downloadImage(imageId);
+                                        downloadImage(imageId);
+                                    } else {
+                                        entranceLogo.setImageResource(R.drawable.no_image);
+                                    }
+                                }
+                            }
+                        });
+                        Log.d(TAG, "invoke: " + jsonObject);
+                        return null;
+                    }
+                }, new Function1<NetworkErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(final NetworkErrorType networkErrorType) {
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
+
+                                }
+                            }
+                        });
+
+                        return null;
+                    }
+                });
 
             }
         }
