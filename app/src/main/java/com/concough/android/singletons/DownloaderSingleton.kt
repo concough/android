@@ -1,13 +1,12 @@
 package com.concough.android.singletons
 
-import com.concough.android.downloader.EntrancePackageDownloader
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.os.IBinder
 import android.content.ServiceConnection
-import android.hardware.camera2.CaptureFailure
+import android.os.IBinder
 import android.util.Log
+import com.concough.android.downloader.EntrancePackageDownloader
 
 
 /**
@@ -55,8 +54,8 @@ class DownloaderSingleton private constructor() {
 ////                    this.listener!!.onDownloadergetReady(downloader!!, index)
 //                }
             } else {
-                val intent = Intent(context, EntrancePackageDownloader::class.java)
-                context.bindService(intent, object : ServiceConnection {
+                val intent = Intent(context.applicationContext, EntrancePackageDownloader::class.java)
+                context.applicationContext.bindService(intent, object : ServiceConnection {
                     override fun onServiceConnected(className: ComponentName, service: IBinder) {
                         Log.d(TAG, "EntrancePackageDownloader created" )
                         val binder = service as EntrancePackageDownloader.LocalBinder
@@ -75,6 +74,12 @@ class DownloaderSingleton private constructor() {
                 }, Context.BIND_AUTO_CREATE)
 
             }
+        }
+    }
+
+    public fun unbind(context: Context, uniqueId : String) {
+        if (this.downloaders.keys.contains(uniqueId)) {
+//            context.unbindService((this.downloaders.get(uniqueId)?.obj as EntrancePackageDownloader).un)
         }
     }
 

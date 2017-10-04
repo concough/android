@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.concough.android.general.AlertClass;
 import com.concough.android.rest.ProfileRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
@@ -23,6 +24,7 @@ import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.utils.KeyChainAccessProxy;
+import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonObject;
 
 import java.util.Date;
@@ -45,6 +47,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextView loginHintTextView;
     private Button registerButton;
     private Button rememberButton;
+    private KProgressHUD loadingProgress;
 
 
     public static Intent newIntent(Context packageContext) {
@@ -133,7 +136,6 @@ public class LoginActivity extends AppCompatActivity {
         });
 
 
-
         passwordEdit.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -146,7 +148,7 @@ public class LoginActivity extends AppCompatActivity {
                         passwordEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
                         passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
                     } else {
-                        usernameEdit.setGravity(Gravity.END);
+                        passwordEdit.setGravity(Gravity.END);
 
                     }
                 } else {
@@ -167,8 +169,6 @@ public class LoginActivity extends AppCompatActivity {
         });
 
 
-
-
         usernameEdit.requestFocus();
 
         signupTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
@@ -185,7 +185,6 @@ public class LoginActivity extends AppCompatActivity {
         final String password = LoginActivity.this.passwordEdit.getText().toString().trim();
 
         if (!"".equals(username) && !"".equals(password)) {
-            // TODO: Show loading
 
             if (username.startsWith("0"))
                 username = username.substring(1);
@@ -196,7 +195,7 @@ public class LoginActivity extends AppCompatActivity {
 
             new LoginTask().execute(username, password);
         } else {
-            // TODO: show message with msgType = "Form" and msgSubType = "EmptyFields"
+            AlertClass.showAlertMessage(LoginActivity.this, "Form", "EmptyFields", "error", null);
         }
     }
 
@@ -208,13 +207,16 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(final Void... params) {
+
             ProfileRestAPIClass.getProfileData(LoginActivity.this, new Function2<JsonObject, HTTPErrorType, Unit>() {
                 @Override
                 public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO: hide loading
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
                             if (httpErrorType == HTTPErrorType.Success) {
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
@@ -282,7 +284,7 @@ public class LoginActivity extends AppCompatActivity {
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new GetProfileTask().execute(params);
                             } else {
-                                // TODO: show error with msgType = "HTTPError" and error
+                                AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                             }
                         }
                     });
@@ -295,18 +297,20 @@ public class LoginActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO: hide loading
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
                             if (networkErrorType != null) {
                                 switch (networkErrorType) {
                                     case NoInternetAccess:
                                     case HostUnreachable: {
-                                        // TODO: Show error message "NetworkError" with type = "error"
+                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                         break;
                                     }
-                                    default:
-                                        // TODO: Show error message "NetworkError" with type = ""
+                                    default: {
+                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                         break;
-
+                                    }
                                 }
                             }
 
@@ -321,19 +325,20 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            // TODO: show loading
+
+            loadingProgress = AlertClass.showLoadingMessage(LoginActivity.this);
+            loadingProgress.show();
+
         }
+
     }
 
     private class LoginTask extends AsyncTask<Object, Void, Void> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            // TODO: show loading
-        }
 
         @Override
         protected Void doInBackground(final Object... params) {
+
+
             TokenHandlerSingleton.getInstance(getApplicationContext()).authorize(new Function1<HTTPErrorType, Unit>() {
 
                 String username = (String) params[0];
@@ -344,7 +349,9 @@ public class LoginActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO: hide loading
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
                             if (httpErrorType == HTTPErrorType.Success) {
                                 if (TokenHandlerSingleton.getInstance(getApplicationContext()).isAuthorized()) {
                                     KeyChainAccessProxy.getInstance(getApplicationContext()).setValueAsString(getUSERNAME_KEY(), username);
@@ -355,7 +362,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
                             } else {
-                                // TODO: show error with msgType = "HTTPError" and error
+                                AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                             }
 
                         }
@@ -369,19 +376,20 @@ public class LoginActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO: hide loading
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
 
                             if (networkErrorType != null) {
                                 switch (networkErrorType) {
                                     case NoInternetAccess:
                                     case HostUnreachable: {
-                                        // TODO: Show error message "NetworkError" with type = "error"
+                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                         break;
                                     }
-                                    default:
-                                        // TODO: Show error message "NetworkError" with type = ""
+                                    default: {
+                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                         break;
-
+                                    }
                                 }
                             }
 
@@ -393,6 +401,14 @@ public class LoginActivity extends AppCompatActivity {
             });
             return null;
 
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            loadingProgress = AlertClass.showLoadingMessage(LoginActivity.this);
+            loadingProgress.show();
         }
     }
 }

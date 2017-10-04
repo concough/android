@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="متقاضی کنکور: "
+        android:text="متقاضی آزمون: "
         android:textColor="@android:color/black"
         android:textSize="13sp"
         app:layout_constraintRight_toRightOf="parent"

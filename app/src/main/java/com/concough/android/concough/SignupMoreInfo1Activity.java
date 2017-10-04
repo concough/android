@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -12,13 +11,16 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.concough.android.general.AlertClass;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.structures.Gender;
 import com.concough.android.structures.SignupMoreInfoStruct;
 
+import java.util.ArrayList;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class SignupMoreInfo1Activity extends AppCompatActivity {
+public class SignupMoreInfo1Activity extends TopNavigationActivity {
     private static final String TAG = "SignupMoreInfo1Activity";
 
     public static SignupMoreInfoStruct signupInfo = null;
@@ -54,24 +56,6 @@ public class SignupMoreInfo1Activity extends AppCompatActivity {
 
         this.signupInfo = new SignupMoreInfoStruct();
         this.selectedGender = Gender.Male;
-
-//        setTitle(getResources().getString(R.string.signupMoreInfo1A_app_name).toString());
-        //setTitle("");
-
-        //View view = (View) LayoutInflater.from(getApplicationContext()).inflate(R.layout.cc_archiveActivity_action_bar, null);
-        //TextView concoughTextView = (TextView) findViewById(R.id.actionbarA_concough);
-        //concoughTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-        //setContentView(view);
-
-
-        //actionbar codes
-//        ViewGroup actionBarLayout = (ViewGroup) this.getLayoutInflater().inflate( R.layout.cc_archiveActivity_action_bar,null);
-//        TextView concoughTextView = (TextView) actionBarLayout.findViewById(R.id.actionbarA_concough);
-//        concoughTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-//        ActionBar actionBar = this.getSupportActionBar();
-//        actionBar.setDisplayShowCustomEnabled(true);
-//        actionBar.setCustomView(actionBarLayout);
-
 
         linearLayoutNeutral = (LinearLayout) findViewById(R.id.signupInfo1A_linearNeutral);
         linearLayoutFemale = (LinearLayout) findViewById(R.id.signupInfo1A_linearFemal);
@@ -115,6 +99,7 @@ public class SignupMoreInfo1Activity extends AppCompatActivity {
             this.selectedGender = Gender.valueOf(gender);
             this.linearClick(this.selectedGender);
         } else {
+            this.selectedGender = Gender.Male;
             this.linearClick(Gender.Male);
 
         }
@@ -160,12 +145,15 @@ public class SignupMoreInfo1Activity extends AppCompatActivity {
                 if (!"".equals(firstname) && !"".equals(lastname)) {
                     SignupMoreInfo1Activity.this.signupInfo.setFirstname(firstname);
                     SignupMoreInfo1Activity.this.signupInfo.setLastname(lastname);
-                    SignupMoreInfo1Activity.this.signupInfo.setGender(SignupMoreInfo1Activity.this.selectedGender.name());
+
+                    String s = SignupMoreInfo1Activity.this.selectedGender.toString();
+
+                    SignupMoreInfo1Activity.this.signupInfo.setGender(s);
 
                     Intent i = SignupMoreInfo2Activity.newIntent(SignupMoreInfo1Activity.this);
                     startActivity(i);
                 } else {
-                    // TODO: Show message with msgType = "Form" and msgSubType = "EmptyFields"
+                    AlertClass.showAlertMessage(SignupMoreInfo1Activity.this, "Form","EmptyFields", "error", null);
                 }
 
             }
@@ -174,40 +162,46 @@ public class SignupMoreInfo1Activity extends AppCompatActivity {
         nextButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
         nextButton.setOnClickListener(listenerNext);
 
+        actionBarSet();
     }
 
 
+    private void actionBarSet() {
+        ArrayList<ButtonDetail> buttonDetailArrayList = new ArrayList<>();
+
+        super.createActionBar("کنکوق", false, buttonDetailArrayList);
+    }
+
 
     private void linearClick(Gender index) {
-        neutralImage.setBorderColor(ContextCompat.getColor(this,R.color.colorConcoughGray));
-        femaleImage.setBorderColor(ContextCompat.getColor(this,R.color.colorConcoughGray));
-        maleImage.setBorderColor(ContextCompat.getColor(this,R.color.colorConcoughGray));
+        neutralImage.setBorderColor(ContextCompat.getColor(this, R.color.colorConcoughGray));
+        femaleImage.setBorderColor(ContextCompat.getColor(this, R.color.colorConcoughGray));
+        maleImage.setBorderColor(ContextCompat.getColor(this, R.color.colorConcoughGray));
 
         neutralImage.setBorderWidth(2);
         femaleImage.setBorderWidth(2);
         maleImage.setBorderWidth(2);
 
-        neutralText.setTextColor(ContextCompat.getColor(this,R.color.colorConcoughGray));
-        femaleText.setTextColor(ContextCompat.getColor(this,R.color.colorConcoughGray));
-        maleText.setTextColor(ContextCompat.getColor(this,R.color.colorConcoughGray));
-
+        neutralText.setTextColor(ContextCompat.getColor(this, R.color.colorConcoughGray));
+        femaleText.setTextColor(ContextCompat.getColor(this, R.color.colorConcoughGray));
+        maleText.setTextColor(ContextCompat.getColor(this, R.color.colorConcoughGray));
 
 
         switch (index) {
             case Other:
                 neutralImage.setBorderWidth(6);
-                neutralText.setTextColor(ContextCompat.getColor(this,R.color.colorConcoughBlue));
-                neutralImage.setBorderColor(ContextCompat.getColor(this,R.color.colorConcoughBlue));
+                neutralText.setTextColor(ContextCompat.getColor(this, R.color.colorConcoughBlue));
+                neutralImage.setBorderColor(ContextCompat.getColor(this, R.color.colorConcoughBlue));
                 break;
             case Female:
                 femaleImage.setBorderWidth(6);
-                femaleText.setTextColor(ContextCompat.getColor(this,R.color.colorConcoughBlue));
-                femaleImage.setBorderColor(ContextCompat.getColor(this,R.color.colorConcoughBlue));
+                femaleText.setTextColor(ContextCompat.getColor(this, R.color.colorConcoughBlue));
+                femaleImage.setBorderColor(ContextCompat.getColor(this, R.color.colorConcoughBlue));
                 break;
             case Male:
                 maleImage.setBorderWidth(6);
-                maleText.setTextColor(ContextCompat.getColor(this,R.color.colorConcoughBlue));
-                maleImage.setBorderColor(ContextCompat.getColor(this,R.color.colorConcoughBlue));
+                maleText.setTextColor(ContextCompat.getColor(this, R.color.colorConcoughBlue));
+                maleImage.setBorderColor(ContextCompat.getColor(this, R.color.colorConcoughBlue));
                 break;
         }
     }

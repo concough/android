@@ -36,10 +36,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
@@ -86,10 +86,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import io.realm.RealmList;
@@ -100,10 +102,7 @@ import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
 import static com.bumptech.glide.request.target.Target.SIZE_ORIGINAL;
-import static com.concough.android.concough.R.id.container;
 import static com.concough.android.settings.ConstantsKt.getSECRET_KEY;
-
-//import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 
 
 public class EntranceShowActivity extends AppCompatActivity implements Handler.Callback {
@@ -161,8 +160,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     private DialogAdapter bookletAdapter;
     private DialogAdapter dialogInfoAdapter;
     private EntranceShowAdapter entranceShowAdapter;
-//    private StarredShowAdapter entranceShowStarredAdapter;
-
 
     private CustomTabLayout tabLayout;
     private ViewPager mViewPager;
@@ -193,6 +190,16 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_entrance_show);
+
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,
+                WindowManager.LayoutParams.FLAG_SECURE);
+
+        entranceUniqueId = getIntent().getStringExtra(ENTRANCE_UNIQUE_ID_KEY);
+        showType = getIntent().getStringExtra(SHOW_TYPE_KEY);
+
+        if (entranceUniqueId.equals("")) {
+            finish();
+        }
 
 
         this.handlerThread = new HandlerThread(HANDLE_THREAD_NAME);
@@ -226,14 +233,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         recyclerView.setLayoutManager(new LinearLayoutManager(EntranceShowActivity.this));
         recyclerView.setAdapter(entranceShowAdapter);
 
-        entranceUniqueId = getIntent().getStringExtra(ENTRANCE_UNIQUE_ID_KEY);
-        showType = getIntent().getStringExtra(SHOW_TYPE_KEY);
 
-        username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
+        username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
 
-        if (entranceUniqueId.equals("")) {
-            finish();
-        }
 
         lessonAdapter = new ArrayAdapter<String>(this, R.layout.cc_archive_listitem_tabbar);
 
@@ -249,7 +251,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         setSupportActionBar(toolbar);
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
-        mViewPager = (ViewPager) findViewById(container);
+        mViewPager = (ViewPager) findViewById(R.id.containerViewPager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
 
@@ -276,8 +278,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                             EntranceShowActivity.this.entranceShowAdapter.notifyDataSetChanged();
                             AlertClass.hideLoadingMessage(loading);
                         }
-                    }, 1000);
-                    // TODO : show data on recycle view
+                    }, 1500);
                 }
 
                 Log.d(TAG, "onTabSelected: ");
@@ -340,7 +341,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             }
         });
 
-        ImageButton backButton = (ImageButton) mCustomView.findViewById(R.id.actionBarL_backButton);
+        LinearLayout backButton = (LinearLayout) mCustomView.findViewById(R.id.linearBack);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -365,15 +366,10 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             @Override
             public void onClick(View view) {
                 if (dialog.isShowing()) {
-                    // texButton.setText(buttonTextMaker(typeList.get(currentPositionDropDown).toString(), false));
-
-
                     dialog.dismiss();
 
 
                 } else {
-                    //  texButton.setText(buttonTextMaker(typeList.get(currentPositionDropDown).toString(), true));
-
                     dialog.show();
 
                 }
@@ -413,7 +409,18 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             recyclerViewStar.setAdapter(starredAdapter);
             recyclerViewStar.setLayoutManager(new StaggeredGridLayoutManager(1, 1));
 
-            texButton.setText("سوالات نشان شده"); // TODO: add count of starred images
+            recyclerView.setVisibility(View.GONE);
+            recyclerViewStar.setVisibility(View.VISIBLE);
+
+            texButton.setText(String.format("سوالات نشان شده (%s)", FormatterSingleton.getInstance().getNumberFormatter().format(starredAdapter.getItemCount() - 1)));
+
+            Handler h = new Handler();
+            h.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    AlertClass.hideLoadingMessage(loading);
+                }
+            }, 1500);
         }
 
 
@@ -445,11 +452,11 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         tvEntranceExtraData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
         entranceSwitch.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
         buttonStarred.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-        tvStarredCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+        tvStarredCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
 
         String entranceYear = FormatterSingleton.getInstance().getNumberFormatter().format(this.entranceDB.year);
-        tvEntranceTypeName.setText("کنکور " + this.entranceDB.type + " " + this.entranceDB.organization + " " + entranceYear);
+        tvEntranceTypeName.setText("آزمون " + this.entranceDB.type + " " + this.entranceDB.organization + " " + entranceYear);
         tvEntranceGroupName.setText(this.entranceDB.group + " (" + this.entranceDB.set + ")");
 
 
@@ -472,7 +479,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             @Override
             public void onShow(DialogInterface dialog) {
                 tvStarredCount.setText(String.format("%s", FormatterSingleton.getInstance().getNumberFormatter().format(EntranceShowActivity.this.globalPairListInteger)));
-
             }
         });
         dialogInfo.setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -483,17 +489,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                     entranceShowAdapter.notifyDataSetChanged();
                     starredAdapter.notifyDataSetChanged();
                 }
-
-//
-//                if (tvStarredCount.getVisibility() == View.VISIBLE) {
-//                    showStarredQuestions = false;
-//                    tabLayout.setVisibility(View.VISIBLE);
-//                } else {
-//                    showStarredQuestions = true;
-//                    tabLayout.setVisibility(View.INVISIBLE);
-//                }
-
-
             }
 
 
@@ -521,6 +516,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 if (tvStarredCount.getVisibility() == View.VISIBLE) { // if must show all questions
                     showType = "Starred";
 
+                    loading = AlertClass.showLoadingMessage(EntranceShowActivity.this);
+                    loading.show();
+
                     buttonStarred.setText("کلیه سوالات");
                     tvStarredCount.setVisibility(View.INVISIBLE);
                     tabLayout.setVisibility(View.GONE);
@@ -543,6 +541,14 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
                     dialogInfo.dismiss();
 
+                    Handler h = new Handler();
+                    h.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            AlertClass.hideLoadingMessage(loading);
+                        }
+                    }, 1500);
+
                 } else {
                     buttonStarred.setText("سوالات نشان شده");
                     tvStarredCount.setVisibility(View.VISIBLE);
@@ -561,48 +567,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
                     recyclerView.setLayoutManager(new LinearLayoutManager(EntranceShowActivity.this));
 
-
-//                    View decorView = getWindow().getDecorView();
-//                    recyclerViewStar.measure(0,0);
-//                    recyclerView.measure(0,0);
-//                    View vg = itemDecoration.getHeaderViewForItem(0,recyclerViewStar);
-//                    vg.setVisibility(View.GONE);
-//                    View vg2 = itemDecoration.getHeaderViewForItem(0,recyclerView);
-//                    vg2.setVisibility(View.GONE);
-
-//
-//                    final ViewGroup viewGroup =  (ViewGroup)((ViewGroup) findViewById(android.R.id.content)).getChildAt(0);
-//                    for(int i=0; i<viewGroup.getChildCount(); i++) {
-//                        View v4 = viewGroup.getChildAt(i);
-//                        Log.d(TAG, "onClick: ");
-//
-//                    }
-
-//                    final ViewGroup viewGroup =  ((ViewGroup) findViewById(android.R.id.content));
-//                    viewGroup.clearDisappearingChildren();
-
-//                    viewGroup.setVisibility(View.GONE);
-
-//
-//                    ActivityManager am = (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
-//                    ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
-
-
-//                   LinearLayout ln = (LinearLayout) getWindow().getDecorView().findViewById(R.id.headerShowStarred_linear);
-//                    ln.setVisibility(View.GONE);
-//                    getAllChildren();
-//                    previousWidthMeasureSpec = 1073742544
-                    //recyclerView.removeItemDecoration(itemDecoration);
-                    //recyclerView.invalidateItemDecorations();
-//                    recyclerView.setLayoutManager(new StaggeredGridLayoutManager(1, 1));
-                    //recyclerView.invalidate();
-
-
-                    //recyclerView.setAdapter(entranceShowAdapter);
-
-                    //entranceShowAdapter.notifyDataSetChanged();
-
-
                     dialogInfo.dismiss();
                     runOnUiThread(new Runnable() {
                         @Override
@@ -612,11 +576,18 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         }
                     });
 
+                    Handler h = new Handler();
+                    h.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            AlertClass.hideLoadingMessage(loading);
+                        }
+                    }, 1500);
+
                     dialogInfo.dismiss();
-
-
                 }
             }
+
         });
 
         esetImageView = (ImageView) dialogInfo.findViewById(R.id.entranceInfoIcon_entLogo);
@@ -648,25 +619,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         }, new Function1<NetworkErrorType, Unit>() {
             @Override
             public Unit invoke(final NetworkErrorType networkErrorType) {
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        switch (networkErrorType) {
-                            case NoInternetAccess:
-                            case HostUnreachable: {
-                                AlertClass.showTopMessage(EntranceShowActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
-                                break;
-                            }
-                            default: {
-                                AlertClass.showTopMessage(EntranceShowActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
-                                break;
-                            }
-
-                        }
-                    }
-                });
-
                 return null;
             }
         });
@@ -703,10 +655,13 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         if (username != null) {
             String uniqueId = UUID.randomUUID().toString();
             Date created = new Date();
-            // TODO : change all Dates to UTC
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
+            calendar.setTime(created);
+            Date createdUtc = calendar.getTime();
 
             try {
-                UserLogModelHandler.add(getApplicationContext(), username, uniqueId, created, logType, extraData);
+                UserLogModelHandler.add(getApplicationContext(), username, uniqueId, createdUtc, logType, extraData);
             } catch (Exception exc) {
             }
         }
@@ -732,17 +687,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
         if (items.size() > 0) {
 
-//
-//            final Handler handler25 = new Handler();
-//            handler25.postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
             bookletAdapter.setItems(items);
             bookletAdapter.notifyDataSetChanged();
-//
-//                }
-//            }, 500);
-
 
             loadLessions(0);
         }
@@ -765,14 +711,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
             EntranceShowActivity.this.mSectionsPagerAdapter.notifyDataSetChanged();
             tabLayout.setupWithViewPager(EntranceShowActivity.this.mViewPager);
-
-            //loadQuestions(0);
-//            if (showType.equals("Show")) {
-//                EntranceShowActivity.this.entranceShowAdapter.setItems(questionsDB);
-//                EntranceShowActivity.this.entranceShowAdapter.notifyDataSetChanged();
-//                // TODO : show data on recycle view
-//            }
-
 
             texButton.setText(buttonTextMaker(bookletAdapter.getItem(index).toString(), false));
             EntranceShowActivity.this.tabLayout.getTabAt(0).select();
@@ -1038,7 +976,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
 
                 if (i > 5) {
-                    //  int temp = j % 3;
                     if (EntranceShowActivity.this.handler != null) {
                         Message msg = EntranceShowActivity.this.handler.obtainMessage(LOAD_IMAGE);
                         msg.setTarget(new Handler(EntranceShowActivity.this.getMainLooper()));
@@ -1050,53 +987,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         EntranceShowActivity.this.handler.sendMessage(msg);
 
                     }
-//
-//                    switch (temp) {
-//                        case 0:
-//                            if (EntranceShowActivity.this.handler != null) {
-//                                Message msg = EntranceShowActivity.this.handler.obtainMessage(LOAD_IMAGE);
-//                                msg.setTarget(new Handler(EntranceShowActivity.this.getMainLooper()));
-//
-//                                Bundle bundle = new Bundle();
-//                                bundle.putString("IMAGES_STRING", item.images);
-//                                msg.setData(bundle);
-//
-//                                EntranceShowActivity.this.handler.sendMessage(msg);
-//
-//                            }
-//                            break;
-//
-//
-//                        case 1:
-//                            if (EntranceShowActivity.this.starredHandler != null) {
-//                                Message msg = EntranceShowActivity.this.starredHandler.obtainMessage(LOAD_IMAGE);
-//                                msg.setTarget(new Handler(EntranceShowActivity.this.getMainLooper()));
-//
-//                                Bundle bundle = new Bundle();
-//                                bundle.putString("IMAGES_STRING", item.images);
-//                                msg.setData(bundle);
-//
-//                                EntranceShowActivity.this.starredHandler.sendMessage(msg);
-//
-//                            }
-//                            break;
-//
-//
-//                        case 2:
-//                            if (EntranceShowActivity.this.handler3 != null) {
-//                                Message msg = EntranceShowActivity.this.handler3.obtainMessage(LOAD_IMAGE);
-//                                msg.setTarget(new Handler(EntranceShowActivity.this.getMainLooper()));
-//
-//                                Bundle bundle = new Bundle();
-//                                bundle.putString("IMAGES_STRING", item.images);
-//                                msg.setData(bundle);
-//
-//                                EntranceShowActivity.this.handler3.sendMessage(msg);
-//
-//                            }
-//                            break;
-//                    }
-//                    j++;
 
                 } else {
                     loadImages(item.images);
@@ -1130,8 +1020,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
             super.onViewAttachedToWindow(holder);
 
-//            ((EntranceShowHolder) holder).setImages();
-//            (ImageView) img1 = (ImageView) holder.itemView.getRootView().findViewById(R.id.ccEntranceShowHolder1I_img1);
         }
 
         @Override
@@ -1222,29 +1110,12 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                             byte[] decoded = Base64.decode(buffer, Base64.DEFAULT);
                             byte[] i = new AES256JNCryptor(1000).decryptData(decoded, hashKey.toCharArray());
 
-//                            ByteArrayInputStream stream = new ByteArrayInputStream(decoded);
-//                            AES256JNCryptorInputStream cryptStream = new AES256JNCryptorInputStream(stream, hashKey.toCharArray());
-//
-//                            byte[] i = convertStreamToByteArray(cryptStream);
-
-
-//                            RNCryptorNative rncryptor = new RNCryptorNative();
-//
-//                            String t = Base64.encodeToString(buffer, Base64.NO_WRAP);
-//                            String data = rncryptor.decrypt(t, hashKey);
-//                            byte[] i = data.getBytes();
-
-
-                            //Bitmap bitmap = BitmapFactory.decodeByteArray(i, 0, i.length);
-
                             imageRepo.put(imageId, i);
 
                             i = null;
-//                            data = null;
-//                            rncryptor = null;
+
                             buffer = null;
 
-//                            imageRepo.put(imageId, i);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -1289,13 +1160,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
                 mainConstraint = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_mainConstrant);
 
-//                img1.setImageDrawable(null);
-//                img2.setImageDrawable(null);
-//                img3.setImageDrawable(null);
-
-//                img1.setScaleType(ImageView.ScaleType.FIT_CENTER);
-//                img1.setAdjustViewBounds(true);
-
                 linearShowAnswer = (LinearLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_linearShowAnswer);
                 answerLabel = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_textViewClickShowAnswer);
                 answerLabelCheckbox = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_checkBox);
@@ -1309,15 +1173,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
 
             public void setImages() {
-
-
-//                final Handler handler = new Handler();
-//                handler.postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
                 insertImage(mEntranceQuestionModel.images);
-//                    }
-//                }, 100);
             }
 
 
@@ -1325,7 +1181,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughBlue));
                 answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughBlue));
                 answer.setVisibility(View.INVISIBLE);
-//                imgPreLoad.setVisibility(View.VISIBLE);
 
                 questionNumber.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.number));
                 answer.setText("گزینه " + FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.answer) + " صحیح است");
@@ -1347,13 +1202,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         answer.setVisibility(View.VISIBLE);
                         if (!EntranceShowActivity.this.showedAnsweresIds.contains(entranceQuestionModel.uniqueId)) {
                             EntranceShowActivity.this.showedAnsweresIds.add(entranceQuestionModel.uniqueId);
-//                            mainConstraint.setBackground(new ColorDrawable(ContextCompat.getColor(getApplicationContext(),R.color.colorConcoughGrayDiasable)));
-//                            img1.setColorFilter(ContextCompat.getColor(getApplicationContext(),R.color.colorConcoughGrayDiasable));
-//                            img2.setColorFilter(ContextCompat.getColor(getApplicationContext(),R.color.colorConcoughGrayDiasable));
-//                            img3.setColorFilter(ContextCompat.getColor(getApplicationContext(),R.color.colorConcoughGrayDiasable));
-
-//                            questionNumber.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.concough_border_round_outline_blue_disabled_style));
-//                            questionNumber.setTextColor(ContextCompat.getColor(getApplicationContext(),R.color.colorConcoughGray4));
 
                             answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
                             answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
@@ -1499,64 +1347,18 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 final ArrayList<byte[]> localBitmaps = new ArrayList<>();
                 for (JsonElement item : jsonObjects) {
                     String imageId = item.getAsJsonObject().get("unique_key").getAsString();
-//                    if (!imageRepo.containsKey(imageId)) {
-//                        String filePath = entranceUniqueId + "/" + imageId;
-//
-//                        File file = new File(EntranceShowActivity.this.getFilesDir(), filePath);
-//                        if (file.exists()) {
-//                            try {
-//                                byte[] buffer = new byte[(int) file.length()];
-//                                FileInputStream input = new FileInputStream(file);
-//
-//
-//                                input.read(buffer);
-//
-//                                byte[] decoded = Base64.decode(buffer, Base64.DEFAULT);
-//                                byte[] i = new AES256JNCryptor(1000).decryptData(decoded, hashKey.toCharArray());
-////
-////                                ByteArrayInputStream stream = new ByteArrayInputStream(decoded);
-////                                AES256JNCryptorInputStream cryptStream = new AES256JNCryptorInputStream(stream, hashKey.toCharArray());
-////
-////                                byte[] i = convertStreamToByteArray(cryptStream);
-//
-////                                RNCryptorNative rncryptor = new RNCryptorNative();
-////                                String data = rncryptor.decrypt(new String(buffer), hashKey);
-////                                byte[] i = data.getBytes();
-//
-//                                localBitmaps.add(i);
-//                                imageRepo.put(imageId, i);
-//
-//                                i = null;
-////                                data = null;
-////                                rncryptor = null;
-//                                buffer = null;
-//                                //decoded = null;
-//                                input.close();
-//
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    } else {
-//                    }
+
                     localBitmaps.add(imageRepo.get(imageId));
                 }
-
-                //img1.setVisibility(View.INVISIBLE);
-                //img2.setVisibility(View.INVISIBLE);
-                //img3.setVisibility(View.INVISIBLE);
 
                 if (localBitmaps.size() >= 1) {
                     try {
                         final byte[] local1 = localBitmaps.get(0);
-                        // Bitmap bitmap = BitmapFactory.decodeByteArray(localBitmaps.get(0), 0, localBitmaps.get(0).length);
-
 
                         Glide.with(EntranceShowActivity.this)
 
                                 .load(local1)
 
-//                                .placeholder(R.drawable.no_image)
                                 .listener(new RequestListener<byte[], GlideDrawable>() {
                                     @Override
                                     public boolean onException(Exception e, byte[] model, Target<GlideDrawable> target, boolean isFirstResource) {
@@ -1575,18 +1377,11 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                                     }
 
                                 })
-                                //.error(R.drawable.ic_thumb_placeholder)
-                                // .transform(new CircleTransform(this))
-                                //.override(mWidth,mHeight)
                                 .override(SIZE_ORIGINAL, SIZE_ORIGINAL)
                                 .crossFade()
                                 .fitCenter()
                                 .into(img1);
 
-
-                        //img1.setImageBitmap(bitmap);
-                        // img1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                        // img1.setScaleType(ImageView.ScaleType.FIT_CENTER);
                         img1.setVisibility(View.VISIBLE);
                         img1.setAdjustViewBounds(true);
 
@@ -1598,14 +1393,10 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
                 if (localBitmaps.size() >= 2) {
                     try {
-
-                        // Bitmap bitmap = BitmapFactory.decodeByteArray(localBitmaps.get(0), 0, localBitmaps.get(0).length);
-
                         Glide.with(EntranceShowActivity.this)
 
                                 .load(localBitmaps.get(1))
 
-//                                .placeholder(R.drawable.no_image)
                                 .listener(new RequestListener<byte[], GlideDrawable>() {
                                     @Override
                                     public boolean onException(Exception e, byte[] model, Target<GlideDrawable> target, boolean isFirstResource) {
@@ -1615,7 +1406,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                                     @Override
                                     public boolean onResourceReady(GlideDrawable resource, byte[] model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
                                         imgPreLoad.setVisibility(View.GONE);
-//                                        img1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                                         img2.setScaleType(ImageView.ScaleType.FIT_CENTER);
                                         img2.setVisibility(View.VISIBLE);
                                         img2.setAdjustViewBounds(true);
@@ -1624,18 +1414,13 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                                     }
 
                                 })
-                                //.error(R.drawable.ic_thumb_placeholder)
-                                // .transform(new CircleTransform(this))
-                                //.override(mWidth,mHeight)
+
                                 .override(SIZE_ORIGINAL, SIZE_ORIGINAL)
                                 .crossFade()
                                 .fitCenter()
 
                                 .into(img2);
 
-
-                        //img1.setImageBitmap(bitmap);
-//                        img1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         img2.setScaleType(ImageView.ScaleType.FIT_CENTER);
                         img2.setVisibility(View.VISIBLE);
                         img2.setAdjustViewBounds(true);
@@ -1649,13 +1434,10 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 if (localBitmaps.size() >= 3) {
                     try {
 
-                        // Bitmap bitmap = BitmapFactory.decodeByteArray(localBitmaps.get(0), 0, localBitmaps.get(0).length);
-
                         Glide.with(EntranceShowActivity.this)
 
                                 .load(localBitmaps.get(2))
 
-//                                .placeholder(R.drawable.no_image)
                                 .listener(new RequestListener<byte[], GlideDrawable>() {
                                     @Override
                                     public boolean onException(Exception e, byte[] model, Target<GlideDrawable> target, boolean isFirstResource) {
@@ -1665,7 +1447,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                                     @Override
                                     public boolean onResourceReady(GlideDrawable resource, byte[] model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
                                         imgPreLoad.setVisibility(View.GONE);
-//                                        img1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                                         img3.setScaleType(ImageView.ScaleType.FIT_CENTER);
                                         img3.setVisibility(View.VISIBLE);
                                         img3.setAdjustViewBounds(true);
@@ -1674,17 +1455,12 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                                     }
 
                                 })
-                                //.error(R.drawable.ic_thumb_placeholder)
-                                // .transform(new CircleTransform(this))
-                                //.override(mWidth,mHeight)
+
                                 .override(SIZE_ORIGINAL, SIZE_ORIGINAL)
                                 .crossFade()
                                 .fitCenter()
                                 .into(img3);
 
-
-                        //img1.setImageBitmap(bitmap);
-//                        img1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                         img3.setScaleType(ImageView.ScaleType.FIT_CENTER);
                         img3.setVisibility(View.VISIBLE);
                         img3.setAdjustViewBounds(true);
@@ -1823,7 +1599,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 tv.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 tvCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
 
-//                itemView.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.color.colorAccent));
 
             }
 
@@ -1871,13 +1646,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
                 mainConstraint = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_mainConstrant);
 
-//                img1.setImageDrawable(null);
-//                img2.setImageDrawable(null);
-//                img3.setImageDrawable(null);
-
-//                img1.setScaleType(ImageView.ScaleType.FIT_CENTER);
-//                img1.setAdjustViewBounds(true);
-
                 linearShowAnswer = (LinearLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_linearShowAnswer);
                 answerLabel = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_textViewClickShowAnswer);
                 answerLabelCheckbox = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_checkBox);
@@ -1918,13 +1686,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         answer.setVisibility(View.VISIBLE);
                         if (!EntranceShowActivity.this.showedAnsweresIds.contains(entranceQuestionModel.uniqueId)) {
                             EntranceShowActivity.this.showedAnsweresIds.add(entranceQuestionModel.uniqueId);
-//                            mainConstraint.setBackground(new ColorDrawable(ContextCompat.getColor(getApplicationContext(),R.color.colorConcoughGrayDiasable)));
-//                            img1.setColorFilter(ContextCompat.getColor(getApplicationContext(),R.color.colorConcoughGrayDiasable));
-//                            img2.setColorFilter(ContextCompat.getColor(getApplicationContext(),R.color.colorConcoughGrayDiasable));
-//                            img3.setColorFilter(ContextCompat.getColor(getApplicationContext(),R.color.colorConcoughGrayDiasable));
-
-//                            questionNumber.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.concough_border_round_outline_blue_disabled_style));
-//                            questionNumber.setTextColor(ContextCompat.getColor(getApplicationContext(),R.color.colorConcoughGray4));
 
                             answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
                             answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
@@ -2081,64 +1842,18 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 final ArrayList<byte[]> localBitmaps = new ArrayList<>();
                 for (JsonElement item : jsonObjects) {
                     String imageId = item.getAsJsonObject().get("unique_key").getAsString();
-//                    if (!imageRepo.containsKey(imageId)) {
-//                        String filePath = entranceUniqueId + "/" + imageId;
-//
-//                        File file = new File(EntranceShowActivity.this.getFilesDir(), filePath);
-//                        if (file.exists()) {
-//                            try {
-//                                byte[] buffer = new byte[(int) file.length()];
-//                                FileInputStream input = new FileInputStream(file);
-//
-//
-//                                input.read(buffer);
-//
-//                                byte[] decoded = Base64.decode(buffer, Base64.DEFAULT);
-//                                byte[] i = new AES256JNCryptor(1000).decryptData(decoded, hashKey.toCharArray());
-////
-////                                ByteArrayInputStream stream = new ByteArrayInputStream(decoded);
-////                                AES256JNCryptorInputStream cryptStream = new AES256JNCryptorInputStream(stream, hashKey.toCharArray());
-////
-////                                byte[] i = convertStreamToByteArray(cryptStream);
-//
-////                                RNCryptorNative rncryptor = new RNCryptorNative();
-////                                String data = rncryptor.decrypt(new String(buffer), hashKey);
-////                                byte[] i = data.getBytes();
-//
-//                                localBitmaps.add(i);
-//                                imageRepo.put(imageId, i);
-//
-//                                i = null;
-////                                data = null;
-////                                rncryptor = null;
-//                                buffer = null;
-//                                //decoded = null;
-//                                input.close();
-//
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    } else {
-//                    }
+
                     localBitmaps.add(imageRepo.get(imageId));
                 }
-
-                //img1.setVisibility(View.INVISIBLE);
-                //img2.setVisibility(View.INVISIBLE);
-                //img3.setVisibility(View.INVISIBLE);
 
                 if (localBitmaps.size() >= 1) {
                     try {
                         final byte[] local1 = localBitmaps.get(0);
-                        // Bitmap bitmap = BitmapFactory.decodeByteArray(localBitmaps.get(0), 0, localBitmaps.get(0).length);
-
 
                         Glide.with(EntranceShowActivity.this)
 
                                 .load(local1)
 
-//                                .placeholder(R.drawable.no_image)
                                 .listener(new RequestListener<byte[], GlideDrawable>() {
                                     @Override
                                     public boolean onException(Exception e, byte[] model, Target<GlideDrawable> target, boolean isFirstResource) {
@@ -2157,18 +1872,13 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                                     }
 
                                 })
-                                //.error(R.drawable.ic_thumb_placeholder)
-                                // .transform(new CircleTransform(this))
-                                //.override(mWidth,mHeight)
+
                                 .override(SIZE_ORIGINAL, SIZE_ORIGINAL)
                                 .crossFade()
                                 .fitCenter()
                                 .into(img1);
 
 
-                        //img1.setImageBitmap(bitmap);
-                        // img1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                        // img1.setScaleType(ImageView.ScaleType.FIT_CENTER);
                         img1.setVisibility(View.VISIBLE);
                         img1.setAdjustViewBounds(true);
 
@@ -2232,6 +1942,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                                 .listener(new RequestListener<byte[], GlideDrawable>() {
                                     @Override
                                     public boolean onException(Exception e, byte[] model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                        //TODO: V2> On Error Loading Image , need to refresh button for any unloaded image
                                         return false;
                                     }
 
@@ -2267,7 +1978,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             }
         }
 
-
         @Override
         public int getItemViewType(int position) {
             String type = mPairList.get(position).first;
@@ -2276,12 +1986,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             } else {
                 return 1;
             }
-//
-//            if (i == 0 || i == 7 || i == 14 || i == 24 || i == 47) {
-//
-//            } else {
-//                return 1;
-//            }
+
         }
 
 
@@ -2326,14 +2031,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             } else {
                 return false;
             }
-
-//
-//            int i = itemPosition;
-//            if (i == 0 || i == 7 || i == 14 || i == 24 || i == 47) {
-//                return true;
-//            } else {
-//                return false;
-//            }
         }
 
 
@@ -2459,7 +2156,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 public boolean onInterceptTouchEvent(RecyclerView recyclerView, MotionEvent motionEvent) {
                     if (motionEvent.getY() <= mStickyHeaderHeight) {
                         // Handle the clicks on the header here ...
-                        return true;
+                     //   return true;
                     }
                     return false;
                 }
@@ -2600,690 +2297,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
          */
         boolean isHeader(int itemPosition);
     }
-
-
-//
-//
-//    private class EntranceShowStarredAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-//
-//
-//        private Context context;
-//        private RealmList<EntranceStarredQuestionModel> starredQuestionModelList;
-//
-////        private  String hashKey;
-//
-//        public EntranceShowStarredAdapter(Context context) {
-//            this.context = context;
-//            this.starredQuestionModelList = new RealmList<>();
-//
-//
-//        }
-//
-//
-//
-//        public void setItems(RealmList<EntranceStarredQuestionModel> starredQuestionModelList) {
-//            this.starredQuestionModelList = starredQuestionModelList;
-//            int i = 0;
-//            int j = 0;
-//            for (EntranceStarredQuestionModel item : starredQuestionModelList) {
-//
-//
-//                if (i > 5) {
-//                    int temp = j % 3;
-//
-//                    switch (temp) {
-//                        case 0:
-//                            if (EntranceShowActivity.this.handler != null) {
-//                                Message msg = EntranceShowActivity.this.handler.obtainMessage(LOAD_IMAGE);
-//                                msg.setTarget(new Handler(EntranceShowActivity.this.getMainLooper()));
-//
-//                                Bundle bundle = new Bundle();
-//                                bundle.putString("IMAGES_STRING", item.images);
-//                                msg.setData(bundle);
-//
-//                                EntranceShowActivity.this.handler.sendMessage(msg);
-//
-//                            }
-//                            break;
-//
-//
-//                        case 1:
-//                            if (EntranceShowActivity.this.starredHandler != null) {
-//                                Message msg = EntranceShowActivity.this.starredHandler.obtainMessage(LOAD_IMAGE);
-//                                msg.setTarget(new Handler(EntranceShowActivity.this.getMainLooper()));
-//
-//                                Bundle bundle = new Bundle();
-//                                bundle.putString("IMAGES_STRING", item.images);
-//                                msg.setData(bundle);
-//
-//                                EntranceShowActivity.this.starredHandler.sendMessage(msg);
-//
-//                            }
-//                            break;
-//
-//
-//                        case 2:
-//                            if (EntranceShowActivity.this.handler3 != null) {
-//                                Message msg = EntranceShowActivity.this.handler3.obtainMessage(LOAD_IMAGE);
-//                                msg.setTarget(new Handler(EntranceShowActivity.this.getMainLooper()));
-//
-//                                Bundle bundle = new Bundle();
-//                                bundle.putString("IMAGES_STRING", item.images);
-//                                msg.setData(bundle);
-//
-//                                EntranceShowActivity.this.handler3.sendMessage(msg);
-//
-//                            }
-//                            break;
-//                    }
-//                    j++;
-//
-//                } else {
-//                    loadImages(item.images);
-//                }
-//                i++;
-//
-//            }
-//
-//            recyclerView.post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    // Call smooth scroll
-//                    recyclerView.smoothScrollToPosition(0);
-//                }
-//            });
-//        }
-//
-//        @Override
-//        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-//            View view = LayoutInflater.from(context).inflate(R.layout.cc_entrance_show_holder1, parent, false);
-//            return new EntranceShowHolder(view);
-//        }
-//
-//        @Override
-//        public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
-//            final EntranceQuestionModel oneItem = this.questionModelList.get(position);
-//            ((EntranceShowHolder) holder).setupHolder(oneItem);
-//        }
-//
-//        @Override
-//        public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
-//            super.onViewAttachedToWindow(holder);
-//
-////            ((EntranceShowHolder) holder).setImages();
-////            (ImageView) img1 = (ImageView) holder.itemView.getRootView().findViewById(R.id.ccEntranceShowHolder1I_img1);
-//        }
-//
-//        @Override
-//        public int getItemCount() {
-//            return questionModelList.size();
-//        }
-//
-//        public byte[] convertStreamToByteArray(InputStream is) throws IOException {
-//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//            byte[] buff = new byte[4096];
-//            int i = Integer.MAX_VALUE;
-//            while ((i = is.read(buff, 0, buff.length)) > 0) {
-//                baos.write(buff, 0, i);
-//            }
-//
-//            return baos.toByteArray(); // be sure to close InputStream in calling function
-//        }
-//
-//        public void loadImages(String imageString) {
-//            ArrayList<JsonObject> jsonObjects = new ArrayList<>();
-//            JsonArray jsonArray = new JsonParser().parse(imageString).getAsJsonArray();
-//
-//            for (JsonElement item : jsonArray) {
-//                jsonObjects.add(item.getAsJsonObject());
-//            }
-//
-//            Collections.sort(jsonObjects, new SortedList.Callback<JsonObject>() {
-//                @Override
-//                public int compare(JsonObject o1, JsonObject o2) {
-//
-//                    if (o1.get("order").getAsInt() > o2.get("order").getAsInt()) {
-//                        return 1;
-//                    } else if (o1.get("order").getAsInt() < o2.get("order").getAsInt()) {
-//                        return -1;
-//                    } else {
-//                        return 0;
-//                    }
-//                }
-//
-//                @Override
-//                public void onChanged(int position, int count) {
-//
-//                }
-//
-//                @Override
-//                public boolean areContentsTheSame(JsonObject oldItem, JsonObject newItem) {
-//                    return false;
-//                }
-//
-//                @Override
-//                public boolean areItemsTheSame(JsonObject item1, JsonObject item2) {
-//                    return false;
-//                }
-//
-//                @Override
-//                public void onInserted(int position, int count) {
-//
-//                }
-//
-//                @Override
-//                public void onRemoved(int position, int count) {
-//
-//                }
-//
-//                @Override
-//                public void onMoved(int fromPosition, int toPosition) {
-//
-//                }
-//            });
-//
-//            String hashStr = username + ":" + getSECRET_KEY();
-//            String hashKey = MD5Digester.digest(hashStr);
-//
-//            for (JsonElement item : jsonObjects) {
-//                String imageId = item.getAsJsonObject().get("unique_key").getAsString();
-//                if (!imageRepo.containsKey(imageId)) {
-//                    String filePath = entranceUniqueId + "/" + imageId;
-//
-//                    File file = new File(EntranceShowActivity.this.getFilesDir(), filePath);
-//                    if (file.exists()) {
-//                        try {
-//                            byte[] buffer = new byte[(int) file.length()];
-//                            FileInputStream input = new FileInputStream(file);
-//
-//
-//                            input.read(buffer);
-//
-//                            byte[] decoded = Base64.decode(buffer, Base64.DEFAULT);
-//                            byte[] i = new AES256JNCryptor(1000).decryptData(decoded, hashKey.toCharArray());
-//
-////                            ByteArrayInputStream stream = new ByteArrayInputStream(decoded);
-////                            AES256JNCryptorInputStream cryptStream = new AES256JNCryptorInputStream(stream, hashKey.toCharArray());
-////
-////                            byte[] i = convertStreamToByteArray(cryptStream);
-//
-//
-////                            RNCryptorNative rncryptor = new RNCryptorNative();
-////
-////                            String t = Base64.encodeToString(buffer, Base64.NO_WRAP);
-////                            String data = rncryptor.decrypt(t, hashKey);
-////                            byte[] i = data.getBytes();
-//
-//
-//                            //Bitmap bitmap = BitmapFactory.decodeByteArray(i, 0, i.length);
-//
-//                            imageRepo.put(imageId, i);
-//
-//                            i = null;
-////                            data = null;
-////                            rncryptor = null;
-//                            buffer = null;
-//
-////                            imageRepo.put(imageId, i);
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }
-//            }
-//
-//        }
-//
-//
-//        private class EntranceShowHolder extends RecyclerView.ViewHolder {
-//            private TextView questionNumber;
-//            private ImageView starImage;
-//            private ImageView imgPreLoad;
-//            private ConstraintLayout mainConstraint;
-//            private ImageView img1;
-//            private ImageView img2;
-//            private ImageView img3;
-//            private LinearLayout linearShowAnswer;
-//            private TextView answerLabel;
-//            private ImageView answerLabelCheckbox;
-//
-//            private TextView answer;
-//            private Boolean starred = false;
-//            private EntranceQuestionModel mEntranceQuestionModel;
-//            private Integer mWidth;
-//            private Integer mHeight;
-//
-//
-//            public EntranceShowHolder(View itemView) {
-//
-//                super(itemView);
-//
-//                questionNumber = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_questionNumber);
-//                starImage = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_star);
-//
-//                imgPreLoad = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_imgPreLoad);
-//                img1 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img1);
-//                img2 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img2);
-//                img3 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img3);
-//
-//
-//                mainConstraint = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_mainConstrant);
-//
-////                img1.setImageDrawable(null);
-////                img2.setImageDrawable(null);
-////                img3.setImageDrawable(null);
-//
-////                img1.setScaleType(ImageView.ScaleType.FIT_CENTER);
-////                img1.setAdjustViewBounds(true);
-//
-//                linearShowAnswer = (LinearLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_linearShowAnswer);
-//                answerLabel = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_textViewClickShowAnswer);
-//                answerLabelCheckbox = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_checkBox);
-//                answer = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_answer);
-//
-//
-//                questionNumber.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
-//                answerLabel.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
-//                answer.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
-//            }
-//
-//
-//            public void setImages() {
-//
-//
-////                final Handler handler = new Handler();
-////                handler.postDelayed(new Runnable() {
-////                    @Override
-////                    public void run() {
-//                insertImage(mEntranceQuestionModel.images);
-////                    }
-////                }, 100);
-//            }
-//
-//
-//            public void setupHolder(final EntranceQuestionModel entranceQuestionModel) {
-//                answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughBlue));
-//                answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughBlue));
-//                answer.setVisibility(View.INVISIBLE);
-////                imgPreLoad.setVisibility(View.VISIBLE);
-//
-//                questionNumber.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.number));
-//                answer.setText("گزینه " + FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.answer) + " صحیح است");
-//
-//                mEntranceQuestionModel = entranceQuestionModel;
-//
-//                if (EntranceShowActivity.this.starredIds.contains(entranceQuestionModel.uniqueId)) {
-//                    starred = true;
-//                } else {
-//                    starred = false;
-//                }
-//
-//                changeStarredState(starred);
-//
-//
-//                linearShowAnswer.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        answer.setVisibility(View.VISIBLE);
-//                        if (!EntranceShowActivity.this.showedAnsweresIds.contains(entranceQuestionModel.uniqueId)) {
-//                            EntranceShowActivity.this.showedAnsweresIds.add(entranceQuestionModel.uniqueId);
-////                            mainConstraint.setBackground(new ColorDrawable(ContextCompat.getColor(getApplicationContext(),R.color.colorConcoughGrayDiasable)));
-////                            img1.setColorFilter(ContextCompat.getColor(getApplicationContext(),R.color.colorConcoughGrayDiasable));
-////                            img2.setColorFilter(ContextCompat.getColor(getApplicationContext(),R.color.colorConcoughGrayDiasable));
-////                            img3.setColorFilter(ContextCompat.getColor(getApplicationContext(),R.color.colorConcoughGrayDiasable));
-//
-////                            questionNumber.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.concough_border_round_outline_blue_disabled_style));
-////                            questionNumber.setTextColor(ContextCompat.getColor(getApplicationContext(),R.color.colorConcoughGray4));
-//
-//                            answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-//                            answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-//                        }
-//                    }
-//                });
-//
-//                starImage.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        starred = !starred;
-//                        changeStarredState(starred);
-//                        addStarQuestionId(entranceQuestionModel.uniqueId, entranceQuestionModel.number, starred);
-//                    }
-//                });
-//
-//                if (EntranceShowActivity.this.showAllAnswers) {
-//                    answer.setVisibility(View.VISIBLE);
-//                    answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-//                    answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-//                } else {
-//
-//                    if (EntranceShowActivity.this.showedAnsweresIds.contains(entranceQuestionModel.uniqueId)) {
-//                        answer.setVisibility(View.VISIBLE);
-//                        answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-//                        answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-//                    }
-//                }
-//
-//                setImages();
-//            }
-//
-//            public void changeStarredState(Boolean state) {
-//                if (state) {
-//                    starImage.setImageResource(R.drawable.star_filled);
-//                    starImage.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughRedLight));
-//                } else {
-//                    starImage.setImageResource(R.drawable.star_empty);
-//                    starImage.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray2));
-//                }
-//            }
-//
-//
-//            public Boolean addStarQuestionId(String questionId, Integer questionNumber, Boolean state) {
-//                Boolean flag = false;
-//
-//                if (state) {
-//                    if (!EntranceShowActivity.this.starredIds.contains(questionId)) {
-//                        if (EntranceQuestionStarredModelHandler.add(getApplicationContext(), username, entranceUniqueId, questionId)) {
-//                            EntranceShowActivity.this.starredIds.add(questionId);
-//                            flag = true;
-//
-//                            JsonObject eData = new JsonObject();
-//                            eData.addProperty("uniqueId", entranceUniqueId);
-//                            eData.addProperty("questionNo", questionNumber);
-//                            EntranceShowActivity.this.createLog(LogTypeEnum.EntranceQuestionStar.getTitle(), eData);
-//
-//                        }
-//                    }
-//                } else {
-//                    if (EntranceShowActivity.this.starredIds.contains(questionId)) {
-//                        if (EntranceQuestionStarredModelHandler.remove(getApplicationContext(), username, entranceUniqueId, questionId)) {
-//                            EntranceShowActivity.this.starredIds.remove(questionId);
-//                            flag = true;
-//
-//                            JsonObject eData = new JsonObject();
-//                            eData.addProperty("uniqueId", entranceUniqueId);
-//                            eData.addProperty("questionNo", questionNumber);
-//                            EntranceShowActivity.this.createLog(LogTypeEnum.EntranceQuestionUnStar.getTitle(), eData);
-//
-//                        }
-//                    }
-//                }
-//
-//                return flag;
-//            }
-//
-//            public void insertImage(String imageString) {
-//                img1.setImageDrawable(null);
-//                img2.setImageDrawable(null);
-//                img3.setImageDrawable(null);
-//
-//                imgPreLoad.setVisibility(View.VISIBLE);
-//
-//                ArrayList<JsonObject> jsonObjects = new ArrayList<>();
-//                JsonArray jsonArray = new JsonParser().parse(imageString).getAsJsonArray();
-//
-//                if (hashKey == null) {
-//                    String hashStr = username + ":" + getSECRET_KEY();
-//                    hashKey = MD5Digester.digest(hashStr);
-//                }
-//
-//                for (JsonElement item : jsonArray) {
-//                    jsonObjects.add(item.getAsJsonObject());
-//                }
-//
-//                Collections.sort(jsonObjects, new SortedList.Callback<JsonObject>() {
-//                    @Override
-//                    public int compare(JsonObject o1, JsonObject o2) {
-//
-//                        if (o1.get("order").getAsInt() > o2.get("order").getAsInt()) {
-//                            return 1;
-//                        } else if (o1.get("order").getAsInt() < o2.get("order").getAsInt()) {
-//                            return -1;
-//                        } else {
-//                            return 0;
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onChanged(int position, int count) {
-//
-//                    }
-//
-//                    @Override
-//                    public boolean areContentsTheSame(JsonObject oldItem, JsonObject newItem) {
-//                        return false;
-//                    }
-//
-//                    @Override
-//                    public boolean areItemsTheSame(JsonObject item1, JsonObject item2) {
-//                        return false;
-//                    }
-//
-//                    @Override
-//                    public void onInserted(int position, int count) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onRemoved(int position, int count) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onMoved(int fromPosition, int toPosition) {
-//
-//                    }
-//                });
-//
-//                final ArrayList<byte[]> localBitmaps = new ArrayList<>();
-//                for (JsonElement item : jsonObjects) {
-//                    String imageId = item.getAsJsonObject().get("unique_key").getAsString();
-////                    if (!imageRepo.containsKey(imageId)) {
-////                        String filePath = entranceUniqueId + "/" + imageId;
-////
-////                        File file = new File(EntranceShowActivity.this.getFilesDir(), filePath);
-////                        if (file.exists()) {
-////                            try {
-////                                byte[] buffer = new byte[(int) file.length()];
-////                                FileInputStream input = new FileInputStream(file);
-////
-////
-////                                input.read(buffer);
-////
-////                                byte[] decoded = Base64.decode(buffer, Base64.DEFAULT);
-////                                byte[] i = new AES256JNCryptor(1000).decryptData(decoded, hashKey.toCharArray());
-//////
-//////                                ByteArrayInputStream stream = new ByteArrayInputStream(decoded);
-//////                                AES256JNCryptorInputStream cryptStream = new AES256JNCryptorInputStream(stream, hashKey.toCharArray());
-//////
-//////                                byte[] i = convertStreamToByteArray(cryptStream);
-////
-//////                                RNCryptorNative rncryptor = new RNCryptorNative();
-//////                                String data = rncryptor.decrypt(new String(buffer), hashKey);
-//////                                byte[] i = data.getBytes();
-////
-////                                localBitmaps.add(i);
-////                                imageRepo.put(imageId, i);
-////
-////                                i = null;
-//////                                data = null;
-//////                                rncryptor = null;
-////                                buffer = null;
-////                                //decoded = null;
-////                                input.close();
-////
-////                            } catch (Exception e) {
-////                                e.printStackTrace();
-////                            }
-////                        }
-////                    } else {
-////                    }
-//                    localBitmaps.add(imageRepo.get(imageId));
-//                }
-//
-//                //img1.setVisibility(View.INVISIBLE);
-//                //img2.setVisibility(View.INVISIBLE);
-//                //img3.setVisibility(View.INVISIBLE);
-//
-//                if (localBitmaps.size() >= 1) {
-//                    try {
-//                        final byte[] local1 = localBitmaps.get(0);
-//                        // Bitmap bitmap = BitmapFactory.decodeByteArray(localBitmaps.get(0), 0, localBitmaps.get(0).length);
-//
-//
-//                        Glide.with(EntranceShowActivity.this)
-//
-//                                .load(local1)
-//
-////                                .placeholder(R.drawable.no_image)
-//                                .listener(new RequestListener<byte[], GlideDrawable>() {
-//                                    @Override
-//                                    public boolean onException(Exception e, byte[] model, Target<GlideDrawable> target, boolean isFirstResource) {
-//                                        return false;
-//                                    }
-//
-//                                    @Override
-//                                    public boolean onResourceReady(GlideDrawable resource, byte[] model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-//                                        imgPreLoad.setVisibility(View.GONE);
-//                                        img1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-//                                        img1.setScaleType(ImageView.ScaleType.FIT_CENTER);
-//                                        img1.setVisibility(View.VISIBLE);
-//                                        img1.setAdjustViewBounds(true);
-//
-//                                        return false;
-//                                    }
-//
-//                                })
-//                                //.error(R.drawable.ic_thumb_placeholder)
-//                                // .transform(new CircleTransform(this))
-//                                //.override(mWidth,mHeight)
-//                                .override(SIZE_ORIGINAL, SIZE_ORIGINAL)
-//                                .crossFade()
-//                                .fitCenter()
-//                                .into(img1);
-//
-//
-//                        //img1.setImageBitmap(bitmap);
-//                        // img1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-//                        // img1.setScaleType(ImageView.ScaleType.FIT_CENTER);
-//                        img1.setVisibility(View.VISIBLE);
-//                        img1.setAdjustViewBounds(true);
-//
-//
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//
-//                if (localBitmaps.size() >= 2) {
-//                    try {
-//
-//                        // Bitmap bitmap = BitmapFactory.decodeByteArray(localBitmaps.get(0), 0, localBitmaps.get(0).length);
-//
-//                        Glide.with(EntranceShowActivity.this)
-//
-//                                .load(localBitmaps.get(1))
-//
-////                                .placeholder(R.drawable.no_image)
-//                                .listener(new RequestListener<byte[], GlideDrawable>() {
-//                                    @Override
-//                                    public boolean onException(Exception e, byte[] model, Target<GlideDrawable> target, boolean isFirstResource) {
-//                                        return false;
-//                                    }
-//
-//                                    @Override
-//                                    public boolean onResourceReady(GlideDrawable resource, byte[] model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-//                                        imgPreLoad.setVisibility(View.GONE);
-////                                        img1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-//                                        img2.setScaleType(ImageView.ScaleType.FIT_CENTER);
-//                                        img2.setVisibility(View.VISIBLE);
-//                                        img2.setAdjustViewBounds(true);
-//
-//                                        return false;
-//                                    }
-//
-//                                })
-//                                //.error(R.drawable.ic_thumb_placeholder)
-//                                // .transform(new CircleTransform(this))
-//                                //.override(mWidth,mHeight)
-//                                .override(SIZE_ORIGINAL, SIZE_ORIGINAL)
-//                                .crossFade()
-//                                .fitCenter()
-//
-//                                .into(img2);
-//
-//
-//                        //img1.setImageBitmap(bitmap);
-////                        img1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-//                        img2.setScaleType(ImageView.ScaleType.FIT_CENTER);
-//                        img2.setVisibility(View.VISIBLE);
-//                        img2.setAdjustViewBounds(true);
-//
-//
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//
-//                if (localBitmaps.size() >= 3) {
-//                    try {
-//
-//                        // Bitmap bitmap = BitmapFactory.decodeByteArray(localBitmaps.get(0), 0, localBitmaps.get(0).length);
-//
-//                        Glide.with(EntranceShowActivity.this)
-//
-//                                .load(localBitmaps.get(2))
-//
-////                                .placeholder(R.drawable.no_image)
-//                                .listener(new RequestListener<byte[], GlideDrawable>() {
-//                                    @Override
-//                                    public boolean onException(Exception e, byte[] model, Target<GlideDrawable> target, boolean isFirstResource) {
-//                                        return false;
-//                                    }
-//
-//                                    @Override
-//                                    public boolean onResourceReady(GlideDrawable resource, byte[] model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-//                                        imgPreLoad.setVisibility(View.GONE);
-////                                        img1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-//                                        img3.setScaleType(ImageView.ScaleType.FIT_CENTER);
-//                                        img3.setVisibility(View.VISIBLE);
-//                                        img3.setAdjustViewBounds(true);
-//
-//                                        return false;
-//                                    }
-//
-//                                })
-//                                //.error(R.drawable.ic_thumb_placeholder)
-//                                // .transform(new CircleTransform(this))
-//                                //.override(mWidth,mHeight)
-//                                .override(SIZE_ORIGINAL, SIZE_ORIGINAL)
-//                                .crossFade()
-//                                .fitCenter()
-//                                .into(img3);
-//
-//
-//                        //img1.setImageBitmap(bitmap);
-////                        img1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-//                        img3.setScaleType(ImageView.ScaleType.FIT_CENTER);
-//                        img3.setVisibility(View.VISIBLE);
-//                        img3.setAdjustViewBounds(true);
-//
-//
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//
-//                localBitmaps.clear();
-//
-//
-//            }
-//
-//
-//        }
-//
-//    }
-//
-//
 
 
 }

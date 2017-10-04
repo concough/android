@@ -10,6 +10,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -25,6 +26,7 @@ import android.widget.TextView;
 
 import com.baoyz.widget.PullRefreshLayout;
 import com.concough.android.downloader.EntrancePackageDownloader;
+import com.concough.android.general.AlertClass;
 import com.concough.android.models.EntranceModel;
 import com.concough.android.models.EntranceModelHandler;
 import com.concough.android.models.PurchasedModel;
@@ -47,6 +49,7 @@ import com.concough.android.structures.EntranceVCStateEnum;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.LogTypeEnum;
 import com.concough.android.structures.NetworkErrorType;
+import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -59,6 +62,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
@@ -79,7 +83,10 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     private static final int DOWNLOAD_ENTRANCE_SALE = 3;
     private static final int UPDATE_USER_PURCHASE_DATE = 4;
 
-    private String entranceUniqueId = "fc4419fc2ceb4aaca787a25ff6c00117";
+    private static int BUY_BADGE_INDEX = 0;
+
+
+    private String entranceUniqueId = "";
     private String contextFromWho = "";
     private Boolean selfBasketAdd = false;
     private EntranceVCStateEnum state = null;
@@ -92,6 +99,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     private PullRefreshLayout pullRefreshLayout = null;
     private RecyclerView recycleView;
     private EntranceDetailAdapter entranceDetailAdapter;
+
+    private KProgressHUD loadingProgress;
 
     public static Intent newIntent(Context packageContext, String entranceUniqueId, String who) {
         Intent i = new Intent(packageContext, EntranceDetailActivity.class);
@@ -115,7 +124,6 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         } else if ("Archive".equals(this.contextFromWho)) {
             this.setMenuSelectedIndex(1);
         }
-//        this.setMenuSelectedIndex(1);
         super.onCreate(savedInstanceState);
 
 
@@ -149,9 +157,10 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         if (BasketSingleton.getInstance().getSalesCount() > 0) {
             buttonDetail.hasBadge = true;
             buttonDetail.badgeCount = BasketSingleton.getInstance().getSalesCount();
+            buttonDetail.imageSource = R.drawable.buy_icon;
+            buttonDetailArrayList.add(buttonDetail);
         }
-        buttonDetail.imageSource = R.drawable.buy_icon;
-        buttonDetailArrayList.add(buttonDetail);
+
 
         super.clickEventInterface = new OnClickEventInterface() {
             @Override
@@ -222,7 +231,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
                 EntranceDetailActivity.this.entranceDetailAdapter.notifyDataSetChanged();
                 EntranceDetailActivity.this.recycleView.smoothScrollToPosition(EntranceDetailActivity.this.entranceDetailAdapter.getItemCount());
-                actionBarSet();
+//                actionBarSet();
             }
 
             @Override
@@ -232,7 +241,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
                 EntranceDetailActivity.this.entranceDetailAdapter.notifyDataSetChanged();
                 EntranceDetailActivity.this.recycleView.smoothScrollToPosition(EntranceDetailActivity.this.entranceDetailAdapter.getItemCount());
-                actionBarSet();
+//                actionBarSet();
             }
 
             @Override
@@ -252,6 +261,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     protected void onDestroy() {
         stopHandler();
         super.onDestroy();
+        DownloaderSingleton.getInstance().unbind(EntranceDetailActivity.this,entranceUniqueId);
     }
 
     private void resetView() {
@@ -268,13 +278,15 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     }
 
     private void setupBarButton() {
-        if (BasketSingleton.getInstance().getSalesCount() > 0) {
-            // TODO: Setup basket badge
-        }
+        actionBarSet();
     }
 
     private void updateBasketBadge(int count) {
-
+        if (count == 1) { // if first time aded to basket
+            actionBarSet();
+        } else {
+            super.updateBadge(BUY_BADGE_INDEX, count);
+        }
     }
 
     @Override
@@ -307,7 +319,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             switch (this.state) {
                 case Initialize:
                     username = UserDefaultsSingleton.getInstance(getApplicationContext())
-                            .getUsername(getApplicationContext());
+                            .getUsername();
 
                     if (username != null && EntranceModelHandler.existById(getApplicationContext(), EntranceDetailActivity.this.entranceUniqueId, username)) {
                         pullRefreshLayout.setRefreshing(false);
@@ -335,7 +347,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     break;
                 case EntranceComplete:
                     username = UserDefaultsSingleton.getInstance(getApplicationContext())
-                            .getUsername(getApplicationContext());
+                            .getUsername();
 
                     if (username != null) {
                         PurchasedModel purchased = PurchasedModelHandler.getByProductId(getApplicationContext(), username, "Entrance", EntranceDetailActivity.this.entranceUniqueId);
@@ -376,7 +388,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     EntranceDetailActivity.this.entranceDetailAdapter.notifyDataSetChanged();
 
                     username = UserDefaultsSingleton.getInstance(getApplicationContext())
-                            .getUsername(getApplicationContext());
+                            .getUsername();
 
                     if (username != null) {
                         PurchasedModel localPurchased = PurchasedModelHandler.getByProductId(EntranceDetailActivity.this, username, "Entrance", EntranceDetailActivity.this.entranceUniqueId);
@@ -452,7 +464,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     }
 
     private void createLog(String logType, JsonObject extraData) {
-        String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
+        String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
         if (username != null) {
             String uniqueId = UUID.randomUUID().toString();
             Date created = new Date();
@@ -466,7 +478,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
     private void localEntrance() {
         String username = UserDefaultsSingleton.getInstance(getApplicationContext())
-                .getUsername(getApplicationContext());
+                .getUsername();
 
         if (username != null && EntranceModelHandler.existById(getApplicationContext(), EntranceDetailActivity.this.entranceUniqueId, username)) {
             EntranceModel localEntrance = EntranceModelHandler.getByUsernameAndId(EntranceDetailActivity.this, EntranceDetailActivity.this.entranceUniqueId, username);
@@ -500,7 +512,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
-                // TODO: Show loading dialog
+                loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
+                loadingProgress.show();
             }
         });
 
@@ -510,7 +523,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // TODO: hide loading dialog
+                        AlertClass.hideLoadingMessage(loadingProgress);
                         EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
 
                         if (httpErrorType != HTTPErrorType.Success) {
@@ -522,7 +535,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                     EntranceDetailActivity.this.handler.sendMessage(msg);
                                 }
                             } else {
-                                // Show top message with "HTTPError" and type = error
+                                AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                             }
                         } else {
                             if (jsonElement != null) {
@@ -542,7 +555,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                                     int downloaded = purchaseRecord.get("downloaded").getAsInt();
 
                                                     String username = UserDefaultsSingleton.getInstance(getApplicationContext())
-                                                            .getUsername(getApplicationContext());
+                                                            .getUsername();
 
                                                     EntranceDetailActivity.this.entrancePurchase.downloaded = downloaded;
 
@@ -566,10 +579,9 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                         switch (errorType) {
                                             case "EntranceNotExist":
                                             case "EmptyArray":
-                                                // TODO: Show alert message EntranceResult with subType = "EntranceNotExist"
                                                 break;
                                             default:
-                                                // TODO: Show alert message ErrorResult
+                                                AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "ErrorResult", errorType, "", null);
                                                 break;
                                         }
                                         break;
@@ -586,17 +598,20 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // TODO: hide loading dialog
+                        AlertClass.hideLoadingMessage(loadingProgress);
                         EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
                         if (networkErrorType != null) {
                             switch (networkErrorType) {
-                                case HostUnreachable:
                                 case NoInternetAccess:
-                                    // TODO: show top error message with NetworkError
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                     break;
-                                default:
-                                    // TODO: show top error message with NetworkError
+                                }
+                                default: {
+                                    AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                     break;
+                                }
+
                             }
                         }
 
@@ -612,7 +627,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
-                // TODO: Show loading dialog
+                loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
+                loadingProgress.show();
             }
         });
 
@@ -622,8 +638,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // TODO: hide loading dialog
-
+                        AlertClass.hideLoadingMessage(loadingProgress);
                         EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
 
                         if (httpErrorType != HTTPErrorType.Success) {
@@ -635,7 +650,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                     EntranceDetailActivity.this.handler.sendMessage(msg);
                                 }
                             } else {
-                                // Show top message with "HTTPError" and type = error
+                                AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                             }
                         } else {
                             if (jsonElement != null) {
@@ -663,10 +678,16 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                         switch (errorType) {
                                             case "EntranceNotExist":
                                             case "EmptyArray":
-                                                // TODO: Show alert message EntranceResult with subType = "EntranceNotExist"
+                                                AlertClass.showAlertMessage(EntranceDetailActivity.this, "EntranceResult", "EntranceNotExist", "error", new Function0<Unit>() {
+                                                    @Override
+                                                    public Unit invoke() {
+                                                        finish();
+                                                        return null;
+                                                    }
+                                                });
                                                 break;
                                             default:
-                                                // TODO: Show alert message ErrorResult
+                                                AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "ErrorResult", errorType, "", null);
                                                 break;
                                         }
                                         break;
@@ -692,17 +713,20 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // TODO: hide loading dialog
+                        AlertClass.hideLoadingMessage(loadingProgress);
                         EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
                         if (networkErrorType != null) {
                             switch (networkErrorType) {
-                                case HostUnreachable:
                                 case NoInternetAccess:
-                                    // TODO: show top error message with NetworkError
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                     break;
-                                default:
-                                    // TODO: show top error message with NetworkError
+                                }
+                                default: {
+                                    AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                     break;
+                                }
+
                             }
                         }
                     }
@@ -716,7 +740,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
-                // TODO: Show loading dialog
+                loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
+                loadingProgress.show();
             }
         });
 
@@ -726,8 +751,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // TODO: hide loading dialog
-
+                        AlertClass.hideLoadingMessage(loadingProgress);
                         EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
 
                         if (httpErrorType != HTTPErrorType.Success) {
@@ -739,7 +763,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                     EntranceDetailActivity.this.handler.sendMessage(msg);
                                 }
                             } else {
-                                // Show top message with "HTTPError" and type = error
+                                AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                             }
                         } else {
                             if (jsonElement != null) {
@@ -770,10 +794,16 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                         switch (errorType) {
                                             case "EntranceNotExist":
                                             case "EmptyArray":
-                                                // TODO: Show alert message EntranceResult with subType = "EntranceNotExist"
+                                                AlertClass.showAlertMessage(EntranceDetailActivity.this, "EntranceResult", "EntranceNotExist", "error", new Function0<Unit>() {
+                                                    @Override
+                                                    public Unit invoke() {
+                                                        finish();
+                                                        return null;
+                                                    }
+                                                });
                                                 break;
                                             default:
-                                                // TODO: Show alert message ErrorResult
+                                                AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "ErrorResult", errorType, "", null);
                                                 break;
                                         }
                                         break;
@@ -799,17 +829,20 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // TODO: hide loading dialog
+                        AlertClass.hideLoadingMessage(loadingProgress);
                         EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
                         if (networkErrorType != null) {
                             switch (networkErrorType) {
-                                case HostUnreachable:
                                 case NoInternetAccess:
-                                    // TODO: show top error message with NetworkError
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                     break;
-                                default:
-                                    // TODO: show top error message with NetworkError
+                                }
+                                default: {
+                                    AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                     break;
+                                }
+
                             }
                         }
                     }
@@ -823,7 +856,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
-                // TODO: Show loading dialog
+                loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
+                loadingProgress.show();
             }
         });
 
@@ -833,7 +867,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // TODO: hide loading dialog
+                        AlertClass.hideLoadingMessage(loadingProgress);
                         EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
 
                         if (httpErrorType != HTTPErrorType.Success) {
@@ -845,7 +879,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                     EntranceDetailActivity.this.handler.sendMessage(msg);
                                 }
                             } else {
-                                // Show top message with "HTTPError" and type = error
+                                AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                             }
                         } else {
                             if (jsonElement != null) {
@@ -879,7 +913,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                                     EntranceDetailActivity.this.entrancePurchase = ep;
 
                                                     String username = UserDefaultsSingleton.getInstance(getApplicationContext())
-                                                            .getUsername(getApplicationContext());
+                                                            .getUsername();
 
                                                     if (EntranceModelHandler.add(getApplicationContext(), username, EntranceDetailActivity.this.entrance)) {
                                                         if (!PurchasedModelHandler.add(getApplicationContext(), id, username, false, downloaded, false, "Entrance", EntranceDetailActivity.this.entranceUniqueId, created)) {
@@ -903,10 +937,16 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                         switch (errorType) {
                                             case "EntranceNotExist":
                                             case "EmptyArray":
-                                                // TODO: Show alert message EntranceResult with subType = "EntranceNotExist"
+                                                AlertClass.showAlertMessage(EntranceDetailActivity.this, "EntranceResult", "EntranceNotExist", "error", new Function0<Unit>() {
+                                                    @Override
+                                                    public Unit invoke() {
+                                                        finish();
+                                                        return null;
+                                                    }
+                                                });
                                                 break;
                                             default:
-                                                // TODO: Show alert message ErrorResult
+                                                AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "ErrorResult", errorType, "", null);
                                                 break;
                                         }
                                         break;
@@ -923,17 +963,20 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // TODO: hide loading dialog
+                        AlertClass.hideLoadingMessage(loadingProgress);
                         EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
                         if (networkErrorType != null) {
                             switch (networkErrorType) {
-                                case HostUnreachable:
                                 case NoInternetAccess:
-                                    // TODO: show top error message with NetworkError
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                     break;
-                                default:
-                                    // TODO: show top error message with NetworkError
+                                }
+                                default: {
+                                    AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                     break;
+                                }
+
                             }
                         }
 
@@ -948,8 +991,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
-                // TODO: Show loading dialog
-
+                loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
+                loadingProgress.show();
             }
         });
 
@@ -959,7 +1002,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // TODO: hide loading dialog
+                        AlertClass.hideLoadingMessage(loadingProgress);
                         EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
 
                         if (httpErrorType != HTTPErrorType.Success) {
@@ -971,7 +1014,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                     EntranceDetailActivity.this.handler.sendMessage(msg);
                                 }
                             } else {
-                                // Show top message with "HTTPError" and type = error
+                                AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                             }
                         } else {
                             if (jsonElement != null) {
@@ -1023,10 +1066,16 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                         switch (errorType) {
                                             case "EntranceNotExist":
                                             case "EmptyArray":
-                                                // TODO: Show alert message EntranceResult with subType = "EntranceNotExist"
+                                                AlertClass.showAlertMessage(EntranceDetailActivity.this, "EntranceResult", "EntranceNotExist", "error", new Function0<Unit>() {
+                                                    @Override
+                                                    public Unit invoke() {
+                                                        finish();
+                                                        return null;
+                                                    }
+                                                });
                                                 break;
                                             default:
-                                                // TODO: Show alert message ErrorResult
+                                                AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "ErrorResult", errorType, "", null);
                                                 break;
                                         }
                                         break;
@@ -1044,16 +1093,19 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // TODO: hide loading dialog
+                        AlertClass.hideLoadingMessage(loadingProgress);
                         if (networkErrorType != null) {
                             switch (networkErrorType) {
-                                case HostUnreachable:
                                 case NoInternetAccess:
-                                    // TODO: show top error message with NetworkError
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                     break;
-                                default:
-                                    // TODO: show top error message with NetworkError
+                                }
+                                default: {
+                                    AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                     break;
+                                }
+
                             }
                         }
                     }
@@ -1067,8 +1119,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
-                // TODO: Show loading dialog
-
+                loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
+                loadingProgress.show();
             }
         });
 
@@ -1078,7 +1130,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // TODO: hide loading dialog
+                       AlertClass.hideLoadingMessage(loadingProgress);
+
                         EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
 
                         if (httpErrorType != HTTPErrorType.Success) {
@@ -1090,7 +1143,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                     EntranceDetailActivity.this.handler.sendMessage(msg);
                                 }
                             } else {
-                                // Show top message with "HTTPError" and type = error
+                                AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                             }
                         } else {
                             if (jsonElement != null) {
@@ -1107,7 +1160,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
                                                     EntranceDetailActivity.this.entrancePurchase.downloaded = downloaded;
 
-                                                    String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
+                                                    String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
                                                     if (username != null) {
                                                         PurchasedModelHandler.updateDownloadTimes(getApplicationContext(), username, id, downloaded);
 
@@ -1126,10 +1179,9 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                         switch (errorType) {
                                             case "EntranceNotExist":
                                             case "EmptyArray":
-                                                // TODO: Show alert message EntranceResult with subType = "EntranceNotExist"
                                                 break;
                                             default:
-                                                // TODO: Show alert message ErrorResult
+                                                AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "ErrorResult", errorType, "", null);
                                                 break;
                                         }
                                         break;
@@ -1147,16 +1199,19 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // TODO: hide loading dialog
+                        AlertClass.hideLoadingMessage(loadingProgress);
                         if (networkErrorType != null) {
                             switch (networkErrorType) {
-                                case HostUnreachable:
                                 case NoInternetAccess:
-                                    // TODO: show top error message with NetworkError
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                     break;
-                                default:
-                                    // TODO: show top error message with NetworkError
+                                }
+                                default: {
+                                    AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                     break;
+                                }
+
                             }
                         }
                     }
@@ -1483,7 +1538,14 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     }
 
                     entranceBuyCountTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(statStruct.purchased) + " خرید");
-                    entranceCostTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(saleStruct.cost) + " تومان");
+
+                    if (saleStruct.cost == 0) {
+                        entranceCostTextView.setText("رایگان");
+                        entranceCostTextView.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughRedLight));
+
+                    } else {
+                        entranceCostTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(saleStruct.cost) + " تومان");
+                    }
 
 
                     if (buttonState) {
@@ -1518,6 +1580,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             private TextView downloadingTextView;
             private ProgressBar downloadingProgressBar;
             private ProgressBar downloadProgressBar;
+            private ProgressBar preDownloadProgressBar;
             private Button downloadButton;
             private TextView saleLabelTextView;
             private TextView saleDateTextView;
@@ -1533,6 +1596,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 downloadingTextView = (TextView) itemView.findViewById(R.id.EDItem_purchased_section_downloading_text);
                 downloadingProgressBar = (ProgressBar) itemView.findViewById(R.id.EDItem_purchased_section_downloading_progress);
                 downloadProgressBar = (ProgressBar) itemView.findViewById(R.id.EDItem_purchased_section_download_progress);
+                preDownloadProgressBar = (ProgressBar) itemView.findViewById(R.id.EDItem_purchased_section_pre_download);
                 downloadButton = (Button) itemView.findViewById(R.id.EDItem_purchased_section_download_button);
                 saleLabelTextView = (TextView) itemView.findViewById(R.id.EDItem_purchased_section_sale_label);
                 saleDateTextView = (TextView) itemView.findViewById(R.id.EDItem_purchased_section_sale_date);
@@ -1556,94 +1620,6 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 DownloaderSingleton.getInstance().setListener(new DownloaderSingleton.DownloaderSingletonListener() {
                     @Override
                     public void onDownloadergetReady(Object downloader, int index) {
-//                        EDPurchasedSectionViewHolder.this.downloader = (EntrancePackageDownloader) downloader;
-//                        EDPurchasedSectionViewHolder.this.downloader.setListener(new EntrancePackageDownloader.EntrancePackageDownloaderListener() {
-//                            @Override
-//                            public void onDownloadImagesFinishedForViewHolder(boolean result, int index) {
-//
-//                            }
-//
-//                            @Override
-//                            public void onDownloadImagesFinished(boolean result) {
-//                                if (result) {
-//                                    uiHandler.post(new Runnable() {
-//                                        @Override
-//                                        public void run() {
-//                                            DownloaderSingleton.getInstance().removeDownloader(entranceUniqueId);
-//
-//                                            if (EntranceDetailActivity.this.handler != null) {
-//                                                Message msg = EntranceDetailActivity.this.handler.obtainMessage(UPDATE_USER_PURCHASE_DATE);
-//                                                msg.setTarget(new Handler(EntranceDetailActivity.this.getMainLooper()));
-//
-//                                                EntranceDetailActivity.this.handler.sendMessage(msg);
-//                                            }
-//
-//
-//                                            JsonObject eData = new JsonObject();
-//                                            eData.addProperty("uniqueId", entranceUniqueId);
-//                                            EntranceDetailActivity.this.createLog(LogTypeEnum.EntranceDownload.getTitle(), eData);
-//
-//                                            // TODO: show top message "ActionResult", and message subType = "DownloadSuccess" and type = "success"
-//
-//                                            EntranceDetailActivity.this.state = EntranceVCStateEnum.Downloaded;
-//                                            EntranceDetailActivity.this.stateMachine();
-//                                            return;
-//                                        }
-//                                    });
-//                                } else {
-//                                    uiHandler.post(new Runnable() {
-//                                        @Override
-//                                        public void run() {
-//                                            DownloaderSingleton.getInstance().removeDownloader(entranceUniqueId);
-//
-//                                            // TODO: show top message "ActionResult", and message subType = "DownloadFailed" and type = "error"
-//
-//                                            EntranceDetailActivity.this.state = EntranceVCStateEnum.Purchased;
-//                                            EntranceDetailActivity.this.stateMachine();
-//                                            return;
-//
-//                                        }
-//                                    });
-//                                }
-//                            }
-//
-//                            @Override
-//                            public void onDownloadProgress(final int count) {
-//                                uiHandler.post(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        changeProgressValue(count);
-//                                    }
-//                                });
-//                            }
-//
-//                            @Override
-//                            public void onDownloadprogressForViewHolder(int count, int totalCount, int index) {
-//
-//                            }
-//
-//                            @Override
-//                            public void onDownloadPaused() {
-//                                DownloaderSingleton.getInstance().removeDownloader(entranceUniqueId);
-//                                uiHandler.post(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        EntranceDetailActivity.this.state = EntranceVCStateEnum.Purchased;
-//                                        EntranceDetailActivity.this.stateMachine();
-//                                    }
-//                                });
-//                            }
-//
-//                            @Override
-//                            public void onDownloadPausedForViewHolder(int index) {
-//
-//                            }
-//
-//                            @Override
-//                            public void onDismissActivity(boolean b) {
-//                                EntranceDetailActivity.this.finish();
-//                            }
-//                        });
                     }
                 });
             }
@@ -1653,6 +1629,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 saleDateTextView.setText(FormatterSingleton.getInstance().getPersianDateString(entrancePurchased.created));
 
                 downloadProgressBar.setVisibility(View.GONE);
+                preDownloadProgressBar.setVisibility(View.GONE);
                 refreshProgressBar.setVisibility(View.GONE);
                 downloadButton.setVisibility(View.VISIBLE);
 
@@ -1686,7 +1663,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                             eData.addProperty("uniqueId", entranceUniqueId);
                                             EntranceDetailActivity.this.createLog(LogTypeEnum.EntranceDownload.getTitle(), eData);
 
-                                            // TODO: show top message "ActionResult", and message subType = "DownloadSuccess" and type = "success"
+                                            AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "ActionResult", "DownloadSuccess", "success", null);
 
                                             EntranceDetailActivity.this.state = EntranceVCStateEnum.Downloaded;
                                             EntranceDetailActivity.this.stateMachine();
@@ -1699,7 +1676,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                         public void run() {
                                             DownloaderSingleton.getInstance().removeDownloader(entranceUniqueId);
 
-                                            // TODO: show top message "ActionResult", and message subType = "DownloadFailed" and type = "error"
+                                            AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "ActionResult", "DownloadFailed", "error", null);
 
                                             EntranceDetailActivity.this.state = EntranceVCStateEnum.Purchased;
                                             EntranceDetailActivity.this.stateMachine();
@@ -1755,9 +1732,12 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 downloadButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // TODO: show top message msgType="ActionResult" with subMsg = DownloadStarted and type="warning"
+                        downloadButton.setVisibility(View.INVISIBLE);
+                        preDownloadProgressBar.setVisibility(View.VISIBLE);
 
-                        final String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
+                        AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "ActionResult", "DownloadStarted", "warning", null);
+
+                        final String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
                         if (username != null) {
                             Boolean isDownloaded = PurchasedModelHandler.isInitialDataDownloaded(getApplicationContext(), username, entranceUniqueId, "Entrance");
                             if (isDownloaded) {

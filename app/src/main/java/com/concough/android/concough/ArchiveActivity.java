@@ -78,13 +78,11 @@ public class ArchiveActivity extends BottomNavigationActivity {
     private Button refreshButton;
     private View mCustomView;
 
-    private Boolean gettingSets = false;
-
     private KProgressHUD loadingProgress;
-
 
     private Integer currentPositionDropDown;
     private Integer currentGroupSelected;
+    private Boolean gettingSets = false;
 
     private CustomTabLayout tabLayout;
 
@@ -130,7 +128,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
         setSupportActionBar(toolbar);
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
-        mViewPager = (ViewPager) findViewById(R.id.container);
+        mViewPager = (ViewPager) findViewById(R.id.containerView);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
 
@@ -172,7 +170,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                 .setOnItemClickListener(new OnItemClickListener() {
                     @Override
                     public void onItemClick(DialogPlus dialog, Object item, View view, int position) {
-
+                        currentGroupSelected = -1;
                         ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
                         ArchiveActivity.this.adapterSet.notifyDataSetChanged();
                         ArchiveActivity.this.changeTypeIndex(position);
@@ -182,7 +180,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                 .setOnCancelListener(new OnCancelListener() {
                     @Override
                     public void onCancel(DialogPlus dialog) {
-                        texButton.setText(buttonTextMaker(typeList.get(ArchiveActivity.this.currentPositionDropDown), false));
+//                        texButton.setText(buttonTextMaker(typeList.get(ArchiveActivity.this.currentPositionDropDown), false));
                         dialog.dismiss();
                     }
                 })
@@ -252,7 +250,9 @@ public class ArchiveActivity extends BottomNavigationActivity {
         pullRefreshLayout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                getSets(currentGroupSelected);
+                if (currentGroupSelected != null && currentGroupSelected > -1) {
+                    getSets(currentGroupSelected);
+                }
                 pullRefreshLayout.setRefreshing(false);
             }
         });
@@ -270,6 +270,16 @@ public class ArchiveActivity extends BottomNavigationActivity {
     private void actionBarSet() {
         TextView badgeCount = (TextView) mCustomView.findViewById(R.id.actionBar_constraintIcon0Badge);
         LinearLayout badgeLinear = (LinearLayout) mCustomView.findViewById(R.id.badgeLinear);
+
+
+        badgeLinear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = BasketCheckoutActivity.newIntent(ArchiveActivity.this, "EntranceDetail");
+                ArchiveActivity.this.startActivity(i);
+            }
+        });
+
         badgeCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
         if (BasketSingleton.getInstance().getSalesCount() > 0) {
             String basketCount = String.valueOf(BasketSingleton.getInstance().getSalesCount());
@@ -305,7 +315,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
         Integer i = ArchiveActivity.this.tabbarJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
 //        ArchiveActivity.this.currentPositionDropDown = index;
         getSets(i);
-        currentGroupSelected = 1;
+        currentGroupSelected = i;
         runOnUiThread(
                 new Runnable() {
                     @Override
@@ -341,12 +351,17 @@ public class ArchiveActivity extends BottomNavigationActivity {
     private class GetTypesTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(final Void... params) {
+
             ArchiveRestAPIClass.getEntranceTypes(getApplicationContext(), new Function2<JsonObject, HTTPErrorType, Unit>() {
                 @Override
                 public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
+                            RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
                             try {
                                 if (httpErrorType == HTTPErrorType.Success) {
                                     if (jsonObject != null) {
@@ -385,7 +400,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                                 String errorType = jsonObject.get("error_type").getAsString();
                                                 switch (errorType) {
                                                     case "EmptyArray": {
-                                                        AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.archive_activity), "ErrorResult", errorType, "", null);
+                                                        AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "ErrorResult", errorType, "", null);
                                                         break;
                                                     }
                                                     default:
@@ -399,7 +414,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                 } else if (httpErrorType == HTTPErrorType.Refresh) {
                                     new GetTypesTask().execute(params);
                                 } else {
-                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.archive_activity), "HTTPError", httpErrorType.toString(), "error", null);
+                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                                 }
 
                             } catch (Exception e) {
@@ -417,14 +432,18 @@ public class ArchiveActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
+                            RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
                             switch (networkErrorType) {
                                 case NoInternetAccess:
                                 case HostUnreachable: {
-                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
+                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                     break;
                                 }
                                 default: {
-                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
+                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                     break;
                                 }
 
@@ -440,15 +459,11 @@ public class ArchiveActivity extends BottomNavigationActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+
             loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
             loadingProgress.show();
         }
 
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            loadingProgress.dismiss();
-        }
     }
 
     private class GetGroupsTask extends AsyncTask<Integer, Void, Void> {
@@ -470,6 +485,11 @@ public class ArchiveActivity extends BottomNavigationActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+
+                                    AlertClass.hideLoadingMessage(loadingProgress);
+
+                                    RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
+
                                     try {
                                         if (httpErrorType == HTTPErrorType.Success) {
                                             if (jsonObject != null) {
@@ -506,23 +526,28 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                                         ArchiveActivity.this.mSectionsPagerAdapter.notifyDataSetChanged();
                                                         tabLayout.setupWithViewPager(ArchiveActivity.this.mViewPager);
 
-//                                                        ArchiveActivity.this.changeGroupIndex(0);
                                                         break;
                                                     }
                                                     case "Error": {
                                                         String errorType = jsonObject.get("error_type").getAsString();
 
+
+                                                        switch (errorType) {
+                                                            case "EmptyArray": {
+
+                                                                ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
+                                                                ArchiveActivity.this.adapterSet.notifyDataSetChanged();
+                                                                break;
+                                                            }
+                                                        }
+
+
                                                         ArchiveActivity.this.adapterTab.clear();
                                                         ArchiveActivity.this.adapterTab.notifyDataSetChanged();
 
                                                         ArchiveActivity.this.tabbarJsonElement.clear();
-
-//                                                        ArchiveActivity.this.mViewPager.setAdapter(mSectionsPagrAdapter);
                                                         ArchiveActivity.this.mSectionsPagerAdapter.notifyDataSetChanged();
                                                         tabLayout.setupWithViewPager(ArchiveActivity.this.mViewPager);
-
-//                                                        ArchiveActivity.this.tabLayout.getTabAt(0).select();
-
 
                                                         break;
                                                     }
@@ -532,7 +557,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                         } else if (httpErrorType == HTTPErrorType.Refresh) {
                                             new GetGroupsTask().execute(firstIndexOfTypes);
                                         } else {
-                                            AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.archive_activity), "HTTPError", httpErrorType.toString(), "error", null);
+                                            AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                                         }
 
                                     } catch (Exception e) {
@@ -552,14 +577,18 @@ public class ArchiveActivity extends BottomNavigationActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+
+                                    AlertClass.hideLoadingMessage(loadingProgress);
+
+                                    RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
                                     switch (networkErrorType) {
                                         case NoInternetAccess:
                                         case HostUnreachable: {
-                                            AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
+                                            AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                             break;
                                         }
                                         default: {
-                                            AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
+                                            AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                             break;
                                         }
 
@@ -576,15 +605,12 @@ public class ArchiveActivity extends BottomNavigationActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+
             loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
             loadingProgress.show();
         }
 
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            loadingProgress.dismiss();
-        }
+
     }
 
 
@@ -593,6 +619,8 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
         @Override
         protected Void doInBackground(final Integer... params) {
+
+
             if (params == null) {
                 firstIndexOfGroups = ArchiveActivity.this.dropDownJsonElement.get(0).getAsJsonObject().get("id").getAsInt();
             } else {
@@ -605,6 +633,11 @@ public class ArchiveActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
+                            RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
+
                             try {
                                 if (httpErrorType == HTTPErrorType.Success) {
                                     if (jsonObject != null) {
@@ -633,9 +666,6 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                                 ArchiveActivity.this.adapterSet.notifyDataSetChanged();
 
                                                 RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
-
-//                                                ArchiveActivity.this.tabLayout.getTabAt(0).select();
-
                                                 break;
                                             }
 
@@ -658,20 +688,20 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
                                         }
                                     }
-
-
                                 } else if (httpErrorType == HTTPErrorType.Refresh) {
                                     new GetSetsTask().execute(params[0]);
                                 } else {
                                     ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
                                     ArchiveActivity.this.adapterSet.notifyDataSetChanged();
 
-                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.archive_activity), "HTTPError", httpErrorType.toString(), "error", null);
+                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                                 }
 
                             } catch (Exception exc) {
                                 ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
                                 ArchiveActivity.this.adapterSet.notifyDataSetChanged();
+
+                                RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
 
 
                                 Log.d(TAG, "run: ");
@@ -680,55 +710,51 @@ public class ArchiveActivity extends BottomNavigationActivity {
                     });
                     return null;
                 }
-            }, new Function1<NetworkErrorType, Unit>()
-
-            {
+            }, new Function1<NetworkErrorType, Unit>() {
                 @Override
                 public Unit invoke(final NetworkErrorType networkErrorType) {
 
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            switch (networkErrorType) {
-                                case NoInternetAccess:
-                                case HostUnreachable: {
-                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
-                                    break;
-                                }
-                                default: {
-                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
-                                    break;
-                                }
 
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
+                            RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
+                            if (networkErrorType != null) {
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
+
+                                }
                             }
                         }
                     });
-
-
                     return null;
                 }
             });
-
             return null;
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+
             loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
             loadingProgress.show();
         }
 
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            loadingProgress.dismiss();
-        }
     }
 
 
     private class GetSetsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
 
         private Context context;
         private ArrayList<JsonElement> mArrayList = new ArrayList<>();
@@ -741,10 +767,6 @@ public class ArchiveActivity extends BottomNavigationActivity {
         public void setItems(ArrayList<JsonElement> arrayList) {
             this.mArrayList = arrayList;
         }
-//
-//        public void addItem(ArrayList<JsonElement> arrayList) {
-//            this.mArrayList.addAll(arrayList);
-//        }
 
         private class ItemHolder extends RecyclerView.ViewHolder {
             private ImageView entranceLogo;
@@ -753,7 +775,6 @@ public class ArchiveActivity extends BottomNavigationActivity {
             private TextView concourCode;
             private TextView concourCount;
             private View constraint;
-
 
             private JsonObject extraData;
 
@@ -765,8 +786,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                 concourCode = (TextView) itemView.findViewById(R.id.ccListitemArchiveL_concourCode);
                 concourCount = (TextView) itemView.findViewById(R.id.ccListitemArchiveL_concourCount);
                 entranceLogo = (ImageView) itemView.findViewById(R.id.settingUserInfoL_userImage);
-                constraint = itemView.findViewById(R.id.archiveDetailA_constraitItem);
-
+                constraint = itemView.findViewById(R.id.container);
 
                 concourName.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 concourCode.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
@@ -780,13 +800,18 @@ public class ArchiveActivity extends BottomNavigationActivity {
                 concourName.setText(t1);
 
                 String concourCodeInt = FormatterSingleton.getInstance().getNumberFormatter().format(jsonElement.getAsJsonObject().get("code").getAsInt());
-                String t2 = "کد: " + concourCodeInt;
+                String t2 = "";
+                if (jsonElement.getAsJsonObject().get("code").getAsInt() == 0) {
+                    t2 = "کد: " + "ندارد";
+                } else {
+                    t2 = "کد: " + concourCodeInt;
+                }
+
                 concourCode.setText(t2);
 
                 String concourCountInt = FormatterSingleton.getInstance().getNumberFormatter().format(jsonElement.getAsJsonObject().get("entrance_count").getAsInt());
-                String t3 = concourCountInt + " کنکور";
+                String t3 = concourCountInt + " آزمون";
                 concourCount.setText(t3);
-
 
                 Date georgianDate = null;
                 String persianDateString = "";
@@ -797,7 +822,6 @@ public class ArchiveActivity extends BottomNavigationActivity {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-
 
                 ViewGroup.LayoutParams entranceLogoLP = entranceLogo.getLayoutParams();
                 int imageId = jsonElement.getAsJsonObject().get("id").getAsInt();
@@ -814,9 +838,6 @@ public class ArchiveActivity extends BottomNavigationActivity {
                 constraint.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-//                        Toast.makeText(getApplicationContext(), jsonElement.getAsJsonObject().get("title").getAsString(), Toast.LENGTH_SHORT).show();
-
-
                         ArchiveActivity.this.mArchiveEsetDetailStruct.esetStruct = ArchiveActivity.this.mArchiveEsetStructs;
                         ArchiveActivity.this.mArchiveEsetDetailStruct.groupTitle = ArchiveActivity.this.tabbarJsonElement.get(ArchiveActivity.this.tabLayout.getSelectedTabPosition()).getAsJsonObject().get("title").getAsString();
 
@@ -827,13 +848,12 @@ public class ArchiveActivity extends BottomNavigationActivity {
                             Intent i = ArchiveDetailActivity.newIntent(ArchiveActivity.this, ArchiveActivity.this.mArchiveEsetDetailStruct);
                             startActivity(i);
                         } else {
-                            Toast.makeText(context, "تعداد کنکور موجود 0 عدد است", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, "تعداد آزمون موجود 0 عدد است", Toast.LENGTH_SHORT).show();
                         }
 
 
                     }
                 });
-
                 downloadImage(imageId);
 
             }
@@ -845,13 +865,15 @@ public class ArchiveActivity extends BottomNavigationActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if (httpErrorType != HTTPErrorType.Success) {
-                                    Log.d(TAG, "run: ");
-                                    if (httpErrorType == HTTPErrorType.Refresh) {
-                                        //downloadImage(imageId);
-                                        downloadImage(imageId);
-                                    } else {
-                                        entranceLogo.setImageResource(R.drawable.no_image);
+                                if (httpErrorType != null) {
+                                    if (httpErrorType != HTTPErrorType.Success) {
+                                        Log.d(TAG, "run: ");
+                                        if (httpErrorType == HTTPErrorType.Refresh) {
+                                            //downloadImage(imageId);
+                                            downloadImage(imageId);
+                                        } else {
+                                            entranceLogo.setImageResource(R.drawable.no_image);
+                                        }
                                     }
                                 }
                             }
@@ -862,57 +884,88 @@ public class ArchiveActivity extends BottomNavigationActivity {
                 }, new Function1<NetworkErrorType, Unit>() {
                     @Override
                     public Unit invoke(final NetworkErrorType networkErrorType) {
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
-                                    }
-                                    default: {
-                                        AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
-                                    }
-
-                                }
-                            }
-                        });
-
                         return null;
                     }
                 });
 
+            }
+
+        }
+
+        private class ItemEmptyHolder extends RecyclerView.ViewHolder {
+
+            private TextView emptyText;
+            private ImageView emptyImage;
+            private ViewGroup linearLayout;
+
+
+            public ItemEmptyHolder(View itemView) {
+                super(itemView);
+
+                emptyImage = (ImageView) itemView.findViewById(R.id.noItemL_image);
+                emptyText = (TextView) itemView.findViewById(R.id.noItemL_text);
+                linearLayout = (ViewGroup) itemView.findViewById(R.id.container);
+
+                emptyText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+            }
+
+
+            public void setupHolder() {
+                emptyImage.setImageResource(R.drawable.refresh_empty);
+                emptyText.setText("داده ای موجود نیست");
+
+                linearLayout.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (ArchiveActivity.this.currentGroupSelected != null && ArchiveActivity.this.currentGroupSelected > 0)
+                            ArchiveActivity.this.getSets(ArchiveActivity.this.currentGroupSelected);
+                    }
+                });
             }
         }
 
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            if (viewType == 50) {
+                View view = LayoutInflater.from(context).inflate(R.layout.cc_recycle_not_item, parent, false);
+                return new ItemEmptyHolder(view);
+            } else {
+                View view = LayoutInflater.from(context).inflate(R.layout.cc_archive_listitem_details, parent, false);
+                return new ItemHolder(view);
+            }
+        }
 
-            View view = LayoutInflater.from(context).inflate(R.layout.cc_archive_listitem_details, parent, false);
-            return new ItemHolder(view);
-
+        @Override
+        public int getItemViewType(int position) {
+            if (mArrayList.size() == 0) {
+                return 50;
+            } else {
+                return 2;
+            }
         }
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
-            JsonElement oneItem = this.mArrayList.get(position);
-
-            ItemHolder itemHolder = (ItemHolder) holder;
-            itemHolder.setupHolder(oneItem);
-
+            if (holder.getClass() == ItemEmptyHolder.class) {
+                ItemEmptyHolder itemEmptyHolder = (ItemEmptyHolder) holder;
+                itemEmptyHolder.setupHolder();
+            } else if (holder.getClass() == ItemHolder.class) {
+                JsonElement oneItem = this.mArrayList.get(position);
+                ItemHolder itemHolder = (ItemHolder) holder;
+                itemHolder.setupHolder(oneItem);
+            }
         }
 
 
         @Override
         public int getItemCount() {
-            return mArrayList.size();
+            if (mArrayList.size() == 0) {
+                return 1;
+            } else {
+                return mArrayList.size();
+            }
         }
-
-
     }
 
 

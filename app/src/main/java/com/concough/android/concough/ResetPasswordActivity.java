@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.concough.android.general.AlertClass;
 import com.concough.android.rest.AuthRestAPIClass;
 import com.concough.android.rest.ProfileRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
@@ -23,11 +24,13 @@ import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.structures.SignupStruct;
+import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonObject;
 
 import java.util.Date;
 
 import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
@@ -36,6 +39,8 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private EditText passwordEdit;
     private EditText passwordEditConfirm;
     private Button saveButton;
+    private KProgressHUD loadingProgress;
+
 
     private final static String SIGNUP_STRUCTURE_KEY = "SignupS";
     private SignupStruct infoStruct;
@@ -151,14 +156,14 @@ public class ResetPasswordActivity extends AppCompatActivity {
                 String pass1 = passwordEdit.getText().toString();
                 String pass2 = passwordEditConfirm.getText().toString();
 
-                if (pass1 != "" && pass2 != "") {
+                if (pass1.equals("") && pass2.equals("")) {
                     if (pass1.equals(pass2)) {
                         ResetPasswordActivity.this.resetPassword(pass1, pass2);
                     } else {
-                        // TODO: show error message "Form" and "NotSameFields"
+                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "Form", "NotSameFields", "error", null);
                     }
                 } else {
-                    // TODO: show error message "Form" and "EmptyFields"
+                    AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "Form", "EmptyFields", "error", null);
                 }
             }
         });
@@ -179,14 +184,13 @@ public class ResetPasswordActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if(httpErrorType == HTTPErrorType.Success && aBoolean ) {
+                                if (httpErrorType == HTTPErrorType.Success && aBoolean) {
                                     getProfile();
                                 } else {
                                     Intent i = LoginActivity.newIntent(ResetPasswordActivity.this);
                                     ResetPasswordActivity.this.startActivity(i);
                                     finish();
                                 }
-
                             }
                         });
 
@@ -198,7 +202,6 @@ public class ResetPasswordActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                // TODO: hide loading
                                 if (networkErrorType != null) {
                                     Intent i = LoginActivity.newIntent(ResetPasswordActivity.this);
                                     ResetPasswordActivity.this.startActivity(i);
@@ -214,6 +217,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private class ResetPasswordTask extends AsyncTask<String, Void, Void> {
         @Override
         protected Void doInBackground(final String... params) {
+
             AuthRestAPIClass.resetPassword(infoStruct.getUsername(), Integer.valueOf(infoStruct.getPreSignupId()), params[0],
                     params[1], Integer.valueOf(infoStruct.getPassword()),
                     new Function2<JsonObject, HTTPErrorType, Unit>() {
@@ -222,6 +226,9 @@ public class ResetPasswordActivity extends AppCompatActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+
+                                    AlertClass.hideLoadingMessage(loadingProgress);
+
                                     if (httpErrorType == HTTPErrorType.Success) {
                                         if (jsonObject != null) {
                                             String status = jsonObject.get("status").getAsString();
@@ -240,14 +247,26 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                                         String error_type = jsonObject.get("error_type").toString();
                                                         switch (error_type) {
                                                             case "ExpiredCode": {
-                                                                // TODO: show error with ErrorResult and on OK send to ForgotPass
+                                                                AlertClass.showAlertMessage(ResetPasswordActivity.this, "ErrorResult", error_type, "error", new Function0<Unit>() {
+                                                                    @Override
+                                                                    public Unit invoke() {
+                                                                        Intent i = ForgotPasswordActivity.newIntent(ResetPasswordActivity.this);
+                                                                        startActivity(i);
+                                                                        finish();
+                                                                        return null;
+                                                                    }
+                                                                });
                                                                 break;
                                                             }
                                                             case "UserNotExist":
                                                             case "PreAuthNotExist":
-                                                                // TODO: Show AuthProfile error message and make ForgotPassword Activity
+                                                                AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "AuthProfile", error_type, "error", null);
+                                                                Intent i = ForgotPasswordActivity.newIntent(ResetPasswordActivity.this);
+                                                                startActivity(i);
+                                                                finish();
                                                                 break;
-                                                            default: break;
+                                                            default:
+                                                                break;
                                                         }
                                                     } catch (Exception exc) {
 
@@ -259,7 +278,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                     } else if (httpErrorType == HTTPErrorType.Refresh) {
                                         new ResetPasswordTask().execute(params);
                                     } else {
-                                        // TODO: show error with msgType = "HTTPError" and error
+                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                                     }
                                 }
                             });
@@ -269,12 +288,38 @@ public class ResetPasswordActivity extends AppCompatActivity {
                     new Function1<NetworkErrorType, Unit>() {
                         @Override
                         public Unit invoke(NetworkErrorType networkErrorType) {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
+                            if (networkErrorType != null) {
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
+                                }
+                            }
+
                             return null;
                         }
                     }
             );
             return null;
         }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            loadingProgress = AlertClass.showLoadingMessage(ResetPasswordActivity.this);
+            loadingProgress.show();
+        }
+
     }
 
     private void getProfile() {
@@ -286,13 +331,19 @@ public class ResetPasswordActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(final Void... params) {
+
+            loadingProgress = AlertClass.showLoadingMessage(ResetPasswordActivity.this);
+            loadingProgress.show();
+
             ProfileRestAPIClass.getProfileData(ResetPasswordActivity.this, new Function2<JsonObject, HTTPErrorType, Unit>() {
                 @Override
                 public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO: hide loading
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
                             if (httpErrorType == HTTPErrorType.Success) {
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
@@ -328,7 +379,8 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                                         startActivity(moreInfoIntent);
                                                     }
 
-                                                } catch (Exception exc) {}
+                                                } catch (Exception exc) {
+                                                }
 
                                             }
                                             break;
@@ -355,7 +407,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new GetProfileTask().execute(params);
                             } else {
-                                // TODO: show error with msgType = "HTTPError" and error
+                                AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                             }
                         }
                     });
@@ -368,19 +420,20 @@ public class ResetPasswordActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO: hide loading
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
                             if (networkErrorType != null) {
                                 switch (networkErrorType) {
                                     case NoInternetAccess:
-                                    case HostUnreachable:
-                                    {
-                                        // TODO: Show error message "NetworkError" with type = "error"
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                         break;
                                     }
-                                    default:
-                                        // TODO: Show error message "NetworkError" with type = ""
+                                    default: {
+                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                         break;
-
+                                    }
                                 }
                             }
 
@@ -392,13 +445,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
             return null;
         }
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            // TODO: show loading
-        }
     }
-
 
 
 }

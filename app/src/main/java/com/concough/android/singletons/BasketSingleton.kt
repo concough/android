@@ -3,30 +3,23 @@ package com.concough.android.singletons
 import android.app.Activity
 import android.content.Context
 import android.os.*
-import android.util.Log
-import com.concough.android.concough.HomeActivity
-import com.concough.android.concough.LoginActivity
 import com.concough.android.concough.R
-import com.concough.android.concough.SignupCodeActivity
+import com.concough.android.general.AlertClass
 import com.concough.android.models.EntranceModelHandler
 import com.concough.android.models.PurchasedModelHandler
 import com.concough.android.rest.BasketRestAPIClass
 import com.concough.android.structures.EntranceStruct
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
+import com.concough.android.vendor.progressHUD.KProgressHUD
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import kotlinx.android.synthetic.main.activity_signup.*
 import java.io.Serializable
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-/**
- * Created by abolfazl on 7/10/17.
- */
+
 class BasketSingleton : Handler.Callback {
     interface BasketSingletonListener {
         fun onLoadItemCompleted(count: Int)
@@ -46,6 +39,9 @@ class BasketSingleton : Handler.Callback {
     private var totalCost: Int = 0
     private var sales: ArrayList<SaleItem> = ArrayList()
 
+    private var loadingProgress: KProgressHUD? = null
+
+
     var listener: BasketSingletonListener? = null
 
     companion object Factory {
@@ -59,10 +55,10 @@ class BasketSingleton : Handler.Callback {
         private val DELETE_FROM_BASKET = 3
         private val CHECKOUT_BASKET = 4
 
-        private var sharedInstance : BasketSingleton? = null
+        private var sharedInstance: BasketSingleton? = null
 
         @JvmStatic
-        fun  getInstance(): BasketSingleton {
+        fun getInstance(): BasketSingleton {
             if (sharedInstance == null)
                 sharedInstance = BasketSingleton()
 
@@ -86,7 +82,9 @@ class BasketSingleton : Handler.Callback {
 
     var BasketId: String?
         get() = this.basketId
-        set(value) {this.basketId = value}
+        set(value) {
+            this.basketId = value
+        }
 
     val SalesCount: Int
         get() = this.sales.count()
@@ -102,7 +100,7 @@ class BasketSingleton : Handler.Callback {
                 if (entrance != null) {
                     productId = entrance.entranceUniqueId
 
-                    if(this.findSaleByTargetId(productId!!, type) != null) {
+                    if (this.findSaleByTargetId(productId!!, type) != null) {
                         if (this.findSaleByTargetId(productId!!, type)!! >= 0) {
                             return
                         }
@@ -256,7 +254,7 @@ class BasketSingleton : Handler.Callback {
         synchronized(this.sales) {
             for (item in this.sales) {
                 if (item.id == saleId)
-                        local = item.type
+                    local = item.type
             }
         }
 
@@ -287,7 +285,7 @@ class BasketSingleton : Handler.Callback {
     }
 
     override fun handleMessage(msg: Message?): Boolean {
-        when(msg?.what) {
+        when (msg?.what) {
             0 -> this.handleLoadBasketItems(msg)
             1 -> this.handleCreateBasket(msg)
             2 -> this.handleAddSale(msg)
@@ -299,12 +297,16 @@ class BasketSingleton : Handler.Callback {
 
 
     private fun handleLoadBasketItems(msg: Message?) {
-//            // TODO: show loading
 
         val context: Context? = msg?.obj as Context?
 
-        BasketRestAPIClass.loadBasketItems(context?.applicationContext!!, {data, error ->
-            // TODO: hide loading that showed before
+//        if (context != null) {
+//            loadingProgress = AlertClass.showLoadingMessage(context)
+//            loadingProgress?.show()
+//        }
+
+        BasketRestAPIClass.loadBasketItems(context?.applicationContext!!, { data, error ->
+//            AlertClass.hideLoadingMessage(loadingProgress)
             if (error == HTTPErrorType.Success) {
                 if (data != null) {
                     try {
@@ -371,7 +373,7 @@ class BasketSingleton : Handler.Callback {
                                         }
                                     }
                                     else -> {
-                                        // TODO: show simple error message with messageType = "ErrorResult"
+                                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", errorType, "error", null)
                                     }
                                 }
                             }
@@ -382,18 +384,22 @@ class BasketSingleton : Handler.Callback {
                     }
                 }
             } else {
-                // TODO: show top message with type = error
+                if (error == HTTPErrorType.Refresh) {
+                    this@BasketSingleton.handleLoadBasketItems(msg)
+                } else {
+                    AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                }
             }
 
-        }, {error ->
-            // TODO: hide loading that showed before
+        }, { error ->
+            AlertClass.hideLoadingMessage(loadingProgress)
             if (error != null) {
                 when (error) {
-                    NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
-                        // TODO: show top message about error with type error
+                    NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
                     }
                     else -> {
-                        // TODO: Show top message about error without type
+                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
                     }
                 }
             }
@@ -402,12 +408,18 @@ class BasketSingleton : Handler.Callback {
     }
 
     private fun handleCreateBasket(msg: Message?) {
-//            // TODO: show loading
 
         val context: Context? = msg?.obj as Context?
 
-        BasketRestAPIClass.createBasket(context?.applicationContext!!, {data, error ->
-            // TODO: hide loading that showed before
+        if (context != null) {
+            loadingProgress = AlertClass.showLoadingMessage(context)
+            loadingProgress?.show()
+        }
+
+        BasketRestAPIClass.createBasket(context?.applicationContext!!, { data, error ->
+
+            AlertClass.hideLoadingMessage(loadingProgress)
+
             if (error == HTTPErrorType.Success) {
                 if (data != null) {
                     try {
@@ -427,7 +439,6 @@ class BasketSingleton : Handler.Callback {
                                 val errorType = data.get("error_type").asString
                                 when (errorType) {
                                     else -> {
-                                        // TODO: show simple error message with messageType = "ErrorResult"
                                     }
                                 }
                             }
@@ -438,18 +449,24 @@ class BasketSingleton : Handler.Callback {
                     }
                 }
             } else {
-                // TODO: show top message with type = error
+                if (error == HTTPErrorType.Refresh) {
+                    this@BasketSingleton.handleCreateBasket(msg)
+                } else {
+                    AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                }
             }
 
-        }, {error ->
-            // TODO: hide loading that showed before
+        }, { error ->
+
+            AlertClass.hideLoadingMessage(loadingProgress)
+
             if (error != null) {
                 when (error) {
-                    NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
-                        // TODO: show top message about error with type error
+                    NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
                     }
                     else -> {
-                        // TODO: Show top message about error without type
+                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
                     }
                 }
             }
@@ -458,7 +475,6 @@ class BasketSingleton : Handler.Callback {
     }
 
     private fun handleAddSale(msg: Message?) {
-//            // TODO: show loading
 
         val context: Context? = msg?.obj as Context?
         val bundle = msg?.data ?: return
@@ -467,8 +483,7 @@ class BasketSingleton : Handler.Callback {
         val productType = bundle.getString("TYPE")
         val target: Any = bundle.getSerializable("TARGET")
 
-        BasketRestAPIClass.addProductToBasket(context?.applicationContext!!, this.basketId!!, productId!!, productType!!,  {data, error ->
-            // TODO: hide loading that showed before
+        BasketRestAPIClass.addProductToBasket(context?.applicationContext!!, this.basketId!!, productId!!, productType!!, { data, error ->
             if (error == HTTPErrorType.Success) {
                 if (data != null) {
                     try {
@@ -509,14 +524,16 @@ class BasketSingleton : Handler.Callback {
                                 val errorType = data.get("error_type").asString
                                 when (errorType) {
                                     "DuplicateSale" -> {
-                                        // TODO: show simple error message "BasketResult"
+                                        AlertClass.showAlertMessage(context, "BasketResult", errorType, "error", {
+                                            // TODO : refresh sales
+                                        })
                                     }
-                                    "EntrancenotExist" -> {
-                                        // TODO: show simple error message "EntranceResult"
+                                    "EntranceNotExist" -> {
+                                        AlertClass.showAlertMessage(context, "EntranceResult", errorType, "error", null)
                                     }
 
                                     else -> {
-                                        // TODO: show simple error message with messageType = "ErrorResult"
+                                        AlertClass.showAlertMessage(context, "ErrorResult", errorType, "error", null)
                                     }
                                 }
                             }
@@ -527,18 +544,21 @@ class BasketSingleton : Handler.Callback {
                     }
                 }
             } else {
-                // TODO: show top message with type = error
+                if (error == HTTPErrorType.Refresh) {
+                    this@BasketSingleton.handleAddSale(msg)
+                } else {
+                    AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                }
             }
 
-        }, {error ->
-            // TODO: hide loading that showed before
+        }, { error ->
             if (error != null) {
                 when (error) {
-                    NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
-                        // TODO: show top message about error with type error
+                    NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
                     }
                     else -> {
-                        // TODO: Show top message about error without type
+                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
                     }
                 }
             }
@@ -547,7 +567,6 @@ class BasketSingleton : Handler.Callback {
     }
 
     private fun handleRemoveFromBasket(msg: Message?) {
-//            // TODO: show loading
 
         val context: Context? = msg?.obj as Context?
         val bundle = msg?.data ?: return
@@ -555,8 +574,7 @@ class BasketSingleton : Handler.Callback {
         val saleId = bundle.getInt("SALE_ID")
         val salePosition = bundle.getInt("SALE_POSITION")
 
-        BasketRestAPIClass.removeSaleFromBasket(context?.applicationContext!!, this.basketId!!, saleId!!,  {data, error ->
-            // TODO: hide loading that showed before
+        BasketRestAPIClass.removeSaleFromBasket(context?.applicationContext!!, this.basketId!!, saleId!!, { data, error ->
             if (error == HTTPErrorType.Success) {
                 if (data != null) {
                     try {
@@ -564,9 +582,9 @@ class BasketSingleton : Handler.Callback {
                         when (status) {
                             "OK" -> {
                                 try {
-                                    synchronized(this.sales) {
-                                        this@BasketSingleton.removeSaleById(saleId)
-                                    }
+//                                    synchronized(this.sales) {
+                                    this@BasketSingleton.removeSaleById(saleId)
+//                                    }
                                     if (this@BasketSingleton.listener != null) {
                                         this@BasketSingleton.listener?.onRemoveCompleted(this@BasketSingleton.sales.count(), salePosition)
                                     }
@@ -579,10 +597,9 @@ class BasketSingleton : Handler.Callback {
                                 val errorType = data.get("error_type").asString
                                 when (errorType) {
                                     "SaleNotExist" -> {
-                                        // TODO: show simple error message "BasketResult"
+                                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "BasketResult", errorType, "error", null)
                                     }
                                     else -> {
-                                        // TODO: show simple error message with messageType = "ErrorResult"
                                     }
                                 }
                             }
@@ -593,18 +610,21 @@ class BasketSingleton : Handler.Callback {
                     }
                 }
             } else {
-                // TODO: show top message with type = error
+                if (error == HTTPErrorType.Refresh) {
+                    this@BasketSingleton.handleRemoveFromBasket(msg)
+                } else {
+                    AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                }
             }
 
-        }, {error ->
-            // TODO: hide loading that showed before
+        }, { error ->
             if (error != null) {
                 when (error) {
-                    NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
-                        // TODO: show top message about error with type error
+                    NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
                     }
                     else -> {
-                        // TODO: Show top message about error without type
+                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
                     }
                 }
             }
@@ -613,12 +633,10 @@ class BasketSingleton : Handler.Callback {
     }
 
     private fun handleCheckout(msg: Message?) {
-//            // TODO: show loading
 
         val context: Context? = msg?.obj as Context?
 
-        BasketRestAPIClass.checkoutBasket(context?.applicationContext!!, this@BasketSingleton.basketId!!,  {data, error ->
-            // TODO: hide loading that showed before
+        BasketRestAPIClass.checkoutBasket(context?.applicationContext!!, this@BasketSingleton.basketId!!, { data, error ->
             if (error == HTTPErrorType.Success) {
                 if (data != null) {
                     try {
@@ -628,7 +646,7 @@ class BasketSingleton : Handler.Callback {
                                 try {
                                     val purchased = data.getAsJsonArray("purchased")
                                     if (purchased != null) {
-                                        val username: String? = UserDefaultsSingleton.getInstance(context.applicationContext!!).getUsername(context.applicationContext!!)
+                                        val username: String? = UserDefaultsSingleton.getInstance(context.applicationContext!!).getUsername()
                                         var localPurchased = HashMap<Int, PurchasedItem>()
 
                                         for (item in purchased) {
@@ -649,7 +667,7 @@ class BasketSingleton : Handler.Callback {
                                                                 downloaded, false, saleType, entrance.entranceUniqueId!!, purchasedTime)) {
 
                                                             // rollback entrance insert
-                                                            EntranceModelHandler.removeById(context.applicationContext,username, entrance.entranceUniqueId!!)
+                                                            EntranceModelHandler.removeById(context.applicationContext, username, entrance.entranceUniqueId!!)
                                                         }
                                                     }
                                                 }
@@ -676,14 +694,17 @@ class BasketSingleton : Handler.Callback {
                                 val errorType = data.get("error_type").asString
                                 when (errorType) {
                                     "EmptyBasket" -> {
-                                        // TODO: show simple error message "BasketResult" and on result
+                                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "BasketResult", errorType, "error", null)
                                         this@BasketSingleton.basketId = null
                                         this@BasketSingleton.removeAllSales()
+
+                                        if(this@BasketSingleton.listener != null) {
+                                            this@BasketSingleton.listener?.onCheckout(0, HashMap())
+                                        }
 
                                     }
 
                                     else -> {
-                                        // TODO: show simple error message with messageType = "ErrorResult"
                                     }
                                 }
                             }
@@ -694,18 +715,21 @@ class BasketSingleton : Handler.Callback {
                     }
                 }
             } else {
-                // TODO: show top message with type = error
+                if (error == HTTPErrorType.Refresh) {
+                    this@BasketSingleton.handleCheckout(msg)
+                } else {
+                    AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                }
             }
 
-        }, {error ->
-            // TODO: hide loading that showed before
+        }, { error ->
             if (error != null) {
                 when (error) {
-                    NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
-                        // TODO: show top message about error with type error
+                    NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
                     }
                     else -> {
-                        // TODO: Show top message about error without type
+                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
                     }
                 }
             }

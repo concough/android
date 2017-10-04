@@ -12,7 +12,6 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +24,7 @@ import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.utils.KeyChainAccessProxy;
+import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonObject;
 
 import java.text.ParseException;
@@ -46,6 +46,9 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
     private EditText passwordEditConfirm;
     private TextView changePassLabel;
 
+    private KProgressHUD loadingProgress;
+
+
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, SettingChangePasswordActivity.class);
         return i;
@@ -61,7 +64,6 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
         setMenuSelectedIndex(3);
         super.onCreate(savedInstanceState);
 
-        actionBarSet();
 
         saveButton = (Button) findViewById(R.id.settingChangePasswordA_saveButton);
         changePassLabel = (TextView) findViewById(R.id.settingChangePasswordA_changePassLabel);
@@ -94,7 +96,7 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
                 } else {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                         passwordEdit.setTextDirection(View.TEXT_DIRECTION_RTL);
-                        passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
+                        passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
                     } else {
                         passwordEdit.setGravity(Gravity.START);
                     }
@@ -121,7 +123,7 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
                         passwordEditConfirm.setTextDirection(View.TEXT_DIRECTION_LTR);
                         passwordEditConfirm.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
                     } else {
-                        passwordEdit.setGravity(Gravity.END);
+                        passwordEditConfirm.setGravity(Gravity.END);
 
                     }
                 } else {
@@ -148,21 +150,16 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
                 String pass2 = passwordEditConfirm.getText().toString().trim();
 
 
-                if (pass1 != "" && pass2 != "") {
-
+                if (pass1.equals("") && pass2.equals("") ) {
                     SettingChangePasswordActivity.this.changePassword(pass1, pass2);
                 } else {
-                    //TODO: show alert password is empty Message:Form SubMessage:Empty Field
+                    AlertClass.showTopMessage(SettingChangePasswordActivity.this,findViewById(R.id.container),"Form","EmptyFields","error",null);
                 }
 
             }
         });
 
-        // show or hide keyboard listener for navigation bar hide
-        LinearLayout masterLayout = (LinearLayout) findViewById(R.id.resetPasswordA_masterLayout);
-        super.showOrHideNavigation(masterLayout);
-
-
+        actionBarSet();
 
 
     }
@@ -199,7 +196,6 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
 
 
     private void changePassword(String pass1, String pass2) {
-
         new SettingChangePasswordTask().execute(pass1, pass2);
 
     }
@@ -208,6 +204,7 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
     private class SettingChangePasswordTask extends AsyncTask<String, Void, Void> {
         @Override
         protected Void doInBackground(final String... params) {
+
             AuthRestAPIClass.changePassword(params[0], params[1], getApplicationContext(),
                     new Function2<JsonObject, HTTPErrorType, Unit>() {
                         @Override
@@ -215,6 +212,9 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+
+                                    AlertClass.hideLoadingMessage(loadingProgress);
+
                                     if (httpErrorType == HTTPErrorType.Success) {
                                         if (jsonObject != null) {
                                             String status = jsonObject.get("status").getAsString();
@@ -244,13 +244,12 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
                                                         String error_type = jsonObject.get("error_type").toString();
                                                         switch (error_type) {
                                                             case "PassCannotChange": {
-                                                                // TODO: show error with ErrorResult and on OK send to ForgotPass
+                                                                AlertClass.showTopMessage(SettingChangePasswordActivity.this,findViewById(R.id.container),"AuthProfile","ForgotPass","error",null);
                                                                 break;
                                                             }
                                                             case "MultiRecord":
                                                             case "RemoteDBError":
                                                             case "BadData":
-                                                                // TODO: Show AuthProfile error message and make ForgotPassword Activity
                                                                 break;
                                                             default:
                                                                 break;
@@ -265,7 +264,7 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
                                     } else if (httpErrorType == HTTPErrorType.Refresh) {
                                         new SettingChangePasswordTask().execute(params);
                                     } else {
-                                        // TODO: show error with msgType = "HTTPError" and error
+                                        AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                                     }
                                 }
                             });
@@ -278,16 +277,21 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    // TODO: hide loading dialog
+
+                                    AlertClass.hideLoadingMessage(loadingProgress);
+
                                     if (networkErrorType != null) {
                                         switch (networkErrorType) {
-                                            case HostUnreachable:
                                             case NoInternetAccess:
-                                                // TODO: show top error message with NetworkError
+                                            case HostUnreachable: {
+                                                AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                                 break;
-                                            default:
-                                                // TODO: show top error message with NetworkError
+                                            }
+                                            default: {
+                                                AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                                 break;
+                                            }
+
                                         }
                                     }
 
@@ -299,11 +303,21 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
             );
             return null;
         }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            loadingProgress = AlertClass.showLoadingMessage(SettingChangePasswordActivity.this);
+            loadingProgress.show();
+
+        }
+
     }
 
 
     private void changeSetting(String pass, Date modified) {
-        String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
+        String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
         if (username != null) {
             TokenHandlerSingleton.getInstance(getApplicationContext()).setUsernameAndPassword(username, pass);
             KeyChainAccessProxy.getInstance(getApplicationContext()).setValueAsString(getPASSWORD_KEY(), pass);
@@ -318,7 +332,7 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
                             if (httpErrorType == HTTPErrorType.Success) {
                                 SettingChangePasswordActivity.this.finish();
                             } else {
-                                //TODO : show top message HttpError
+                                AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                             }
                         }
                     });
@@ -330,16 +344,18 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO: hide loading dialog
                             if (networkErrorType != null) {
                                 switch (networkErrorType) {
-                                    case HostUnreachable:
                                     case NoInternetAccess:
-                                        // TODO: show top error message with NetworkError
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                         break;
-                                    default:
-                                        // TODO: show top error message with NetworkError
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                         break;
+                                    }
+
                                 }
                             }
 

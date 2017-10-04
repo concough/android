@@ -9,7 +9,6 @@ import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +19,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.concough.android.general.AlertClass;
 import com.concough.android.rest.ProfileRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
@@ -28,15 +28,17 @@ import com.concough.android.structures.GradeType;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.structures.SignupMoreInfoStruct;
+import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonObject;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
-public class SignupMoreInfo3Activity extends AppCompatActivity {
+public class SignupMoreInfo3Activity extends TopNavigationActivity {
     private static final String TAG = "SignupMoreInfo3Activity";
 
     private GradeType names[];
@@ -46,6 +48,9 @@ public class SignupMoreInfo3Activity extends AppCompatActivity {
     private AlertDialog showedAlertDialog;
     AlertDialog.Builder alertDialog;
     private TextView customAlertDialogTitle;
+
+    private KProgressHUD loadingProgress;
+
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, SignupMoreInfo3Activity.class);
@@ -133,7 +138,29 @@ public class SignupMoreInfo3Activity extends AppCompatActivity {
 
             }
         });
+
+        actionBarSet();
     }
+
+    private void actionBarSet() {
+        ArrayList<ButtonDetail> buttonDetailArrayList = new ArrayList<>();
+
+        super.clickEventInterface = new OnClickEventInterface() {
+            @Override
+            public void OnButtonClicked(int id) {
+
+            }
+
+            @Override
+            public void OnBackClicked() {
+                onBackPressed();
+            }
+        };
+
+
+        super.createActionBar("کنکوق", true, buttonDetailArrayList);
+    }
+
 
 
     private class AlertDialogCustomize extends ArrayAdapter<GradeType> {
@@ -173,15 +200,15 @@ public class SignupMoreInfo3Activity extends AppCompatActivity {
         @Override
         protected Void doInBackground(final SignupMoreInfoStruct... params) {
 
-            ProfileRestAPIClass.postProfileData(params[0], SignupMoreInfo3Activity.this, new Function2<JsonObject, HTTPErrorType, Unit>()
-            {
+            ProfileRestAPIClass.postProfileData(params[0], SignupMoreInfo3Activity.this, new Function2<JsonObject, HTTPErrorType, Unit>() {
                 @Override
-                public Unit invoke ( final JsonObject jsonObject, final HTTPErrorType httpErrorType)
-                {
+                public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO: hide loading
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
                             if (httpErrorType == HTTPErrorType.Success) {
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
@@ -190,7 +217,7 @@ public class SignupMoreInfo3Activity extends AppCompatActivity {
                                             Date modified = new Date();
                                             String modifiedStr = jsonObject.get("modified").getAsString();
                                             if (!"".equals(modifiedStr)) {
-                                                try{
+                                                try {
                                                     modified = FormatterSingleton.getInstance().getUTCDateFormatter().parse(modifiedStr);
                                                 } catch (Exception exc) {
                                                 }
@@ -208,7 +235,7 @@ public class SignupMoreInfo3Activity extends AppCompatActivity {
                                             String errorType = jsonObject.get("error_type").getAsString();
                                             switch (errorType) {
                                                 case "UserNotExist": {
-                                                    // TODO: Show message with msgTYpe = "AuthProfile"
+                                                    AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "AuthProfile", errorType, "error", null);
                                                     break;
                                                 }
                                                 default:
@@ -223,37 +250,40 @@ public class SignupMoreInfo3Activity extends AppCompatActivity {
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new PostProfileTask().execute(params);
                             } else {
-
-                                // TODO: show error with msgType = "HTTPError" and error
+                                AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                             }
                         }
                     });
 
                     return null;
                 }
-            },new Function1<NetworkErrorType, Unit>(){
+            }, new Function1<NetworkErrorType, Unit>() {
                 @Override
-                public Unit invoke(final NetworkErrorType networkErrorType){
+                public Unit invoke(final NetworkErrorType networkErrorType) {
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO: hide loading
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
                             if (networkErrorType != null) {
                                 switch (networkErrorType) {
                                     case NoInternetAccess:
                                     case HostUnreachable: {
-                                        // TODO: Show error message "NetworkError" with type = "error"
+                                        AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                         break;
                                     }
-                                    default:
-                                        // TODO: Show error message "NetworkError" with type = ""
+                                    default: {
+                                        AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                         break;
+                                    }
 
                                 }
                             }
-
                         }
                     });
+
                     return null;
                 }
             });
@@ -263,8 +293,12 @@ public class SignupMoreInfo3Activity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            // TODO: show loading
+
+            loadingProgress = AlertClass.showLoadingMessage(SignupMoreInfo3Activity.this);
+            loadingProgress.show();
+
         }
+
     }
 
 

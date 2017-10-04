@@ -86,7 +86,7 @@
                     <Button
                         android:id="@+id/EDItem_sale_section_buy_button"
                         android:layout_width="100dp"
-                        android:layout_height="48dp"
+                        android:layout_height="30dp"
                         android:background="@drawable/concough_border_radius_style"
                         android:text="Button"
                         android:textColor="@color/colorConcoughBlue"

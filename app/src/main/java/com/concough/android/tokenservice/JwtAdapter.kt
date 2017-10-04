@@ -65,7 +65,7 @@ class JwtAdapter {
                                 completion(null, 0, HTTPErrorType.UnKnown)
                             }
                         }
-                        else -> completion(null, 0, resCode)
+                        else -> completion(null, response?.code()!!, resCode)
                     }
                 }
             })
@@ -105,7 +105,7 @@ class JwtAdapter {
                                 completion(null, 0, HTTPErrorType.UnKnown)
                             }
                         }
-                        else -> completion(null, 0, resCode)
+                        else -> completion(null, response?.code()!!, resCode)
                     }
                 }
             })
@@ -145,7 +145,7 @@ class JwtAdapter {
                                 completion(null, 0, HTTPErrorType.UnKnown)
                             }
                         }
-                        else -> completion(null, 0, resCode)
+                        else -> completion(null, response?.code()!!, resCode)
                     }
                 }
             })

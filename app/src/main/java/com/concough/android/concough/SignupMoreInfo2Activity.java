@@ -3,7 +3,6 @@ package com.concough.android.concough;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.NumberPicker;
@@ -14,10 +13,11 @@ import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.utils.PersianCalendar;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-public class SignupMoreInfo2Activity extends AppCompatActivity {
+public class SignupMoreInfo2Activity extends TopNavigationActivity {
     private static String TAG = "SignupMoreInfo2Activity";
 
     private NumberPicker numberPicker;
@@ -40,7 +40,7 @@ public class SignupMoreInfo2Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup_more_info2);
 
-        infoTextView = (TextView)findViewById(R.id.signupInfo2A_infoTextView);
+        infoTextView = (TextView) findViewById(R.id.signupInfo2A_infoTextView);
         numberPicker = (NumberPicker) findViewById(R.id.signupInfo2A_numberPicker);
 
         int jdate = PersianCalendar.getPersianYear(new Date());
@@ -88,5 +88,28 @@ public class SignupMoreInfo2Activity extends AppCompatActivity {
         nextButton = (Button) findViewById(R.id.signupInfo2A_nextButton);
         nextButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
         nextButton.setOnClickListener(nextListener);
+
+        actionBarSet();
     }
+
+    private void actionBarSet() {
+        ArrayList<ButtonDetail> buttonDetailArrayList = new ArrayList<>();
+
+        super.clickEventInterface = new OnClickEventInterface() {
+            @Override
+            public void OnButtonClicked(int id) {
+
+            }
+
+            @Override
+            public void OnBackClicked() {
+                onBackPressed();
+            }
+        };
+
+
+        super.createActionBar("کنکوق", true, buttonDetailArrayList);
+    }
+
+
 }

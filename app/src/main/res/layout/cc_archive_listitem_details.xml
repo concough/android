@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/archiveDetailA_constraitItem"
+    android:id="@+id/container"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -82,7 +82,7 @@
         android:layout_height="45dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginRight="0dp"
-        android:src="@drawable/male_icon_100"
+        android:src="@drawable/no_image"
         app:civ_border_color="@color/colorConcoughGray4"
         app:civ_border_width="1.5dp"
         app:layout_constraintBottom_toBottomOf="parent"

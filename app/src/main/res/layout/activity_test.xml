@@ -1,12 +1,8 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     android:id="@+id/tttt"
     tools:context=".TestActivity">
 
@@ -14,27 +10,56 @@
         android:id="@+id/simpleSpinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="100dp" />
+        android:visibility="gone"
+        app:layout_constraintRight_toLeftOf="parent"
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintBottom_creator="1"
+        app:layout_constraintBottom_toTopOf="parent"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:text="Read Key Store Value"
+        android:id="@+id/testA_read_keystore"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/testA_read_keystore"
-        android:layout_marginTop="24dp"
-        android:layout_below="@+id/testA_set_keystore"
-        android:layout_centerHorizontal="true" />
+        android:text="Read Key Store Value"
+        android:visibility="gone"
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintBottom_creator="1"
+        app:layout_constraintBottom_toTopOf="parent"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/testA_imageView"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_alignEnd="@+id/testA_set_keystore"
-        android:layout_alignParentTop="true"
-        android:layout_alignRight="@+id/testA_set_keystore"
-        android:layout_marginTop="14dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:scaleType="fitCenter"
-        android:visibility="visible"
-        app:srcCompat="@drawable/app_dropbox_icon" />
-</RelativeLayout>
+        android:visibility="gone"
+        app:srcCompat="@drawable/app_dropbox_icon"
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintRight_creator="1"
+        app:layout_constraintRight_toRightOf="@+id/testA_read_keystore"
+        app:layout_constraintTop_toBottomOf="@+id/testA_read_keystore"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toRightOf="@+id/testA_read_keystore" />
+
+    <ImageView
+        android:id="@+id/imageView8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/alert_dark_frame" />
+
+
+</android.support.constraint.ConstraintLayout>

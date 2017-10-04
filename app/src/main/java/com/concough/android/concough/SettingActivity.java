@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
@@ -38,6 +39,7 @@ import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.structures.ProfileStruct;
 import com.concough.android.utils.KeyChainAccessProxy;
+import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonObject;
 
 import java.io.File;
@@ -60,9 +62,9 @@ public class SettingActivity extends BottomNavigationActivity {
     private AlertDialog showedAlertDialog;
     AlertDialog.Builder alertDialog;
 
+    private KProgressHUD loadingProgress;
 
     private GradeType gradeType = null;
-    //    public static SignupMoreInfoStruct signupInfo = null;
     private GradeType names[];
 
     @Override
@@ -105,6 +107,20 @@ public class SettingActivity extends BottomNavigationActivity {
                         startActivity(i);
                         break;
                     }
+                    case R.drawable.share_icon: {
+                        Intent share = new Intent(Intent.ACTION_SEND);
+                        share.setType("image/*");
+                        share.putExtra(Intent.EXTRA_TEXT, "**HELLO BABY**  \nhttps://zhycan.com  ");
+                        share.putExtra(Intent.EXTRA_SUBJECT, "CONCOUGH SUBJECT");
+
+                        Uri uri = Uri.parse("android.resource://com.concough.android.concough/raw/zhycan_logo");
+                        share.putExtra(Intent.EXTRA_STREAM, uri);
+
+
+                        startActivity(Intent.createChooser(share, "لطفا به اشتراک بزار زودتر"));
+
+                        break;
+                    }
                 }
             }
 
@@ -115,9 +131,15 @@ public class SettingActivity extends BottomNavigationActivity {
         };
 
         ArrayList<ButtonDetail> buttonDetailArrayList = new ArrayList<>();
+
         ButtonDetail buttonDetail = new ButtonDetail();
         buttonDetail.imageSource = R.drawable.help_icon;
         buttonDetailArrayList.add(buttonDetail);
+
+        buttonDetail = new ButtonDetail();
+        buttonDetail.imageSource = R.drawable.share_icon;
+        buttonDetailArrayList.add(buttonDetail);
+
         super.createActionBar("تنظیمات", false, buttonDetailArrayList);
     }
 
@@ -162,12 +184,16 @@ public class SettingActivity extends BottomNavigationActivity {
     private class PostProfileGradeTask extends AsyncTask<String, Void, Void> {
         @Override
         protected Void doInBackground(final String... params) {
+
             ProfileRestAPIClass.putProfileGrade(params[0], getApplicationContext(), new Function2<JsonObject, HTTPErrorType, Unit>() {
                 @Override
                 public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
                             if (httpErrorType == HTTPErrorType.Success) {
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
@@ -181,10 +207,25 @@ public class SettingActivity extends BottomNavigationActivity {
                                         } catch (ParseException e) {
                                             e.printStackTrace();
                                         }
+
                                         UserDefaultsSingleton.getInstance(getApplicationContext()).updateGrade(params[0], modifiedDate);
                                         SettingActivity.this.recycleAdapter.notifyDataSetChanged();
+                                    } else if(status.equals("Error")){
+                                        String errorType = jsonObject.get("error_type").getAsString();
+                                        switch (errorType) {
+                                            case "UserNotExist": {
+                                                AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "AuthProfile", errorType, "error", null);
+                                                break;
+                                            }
+                                            default:
+                                                break;
+                                        }
                                     }
                                 }
+                            } else if (httpErrorType == HTTPErrorType.Refresh) {
+                                new PostProfileGradeTask().execute(params);
+                            } else {
+                                AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                             }
                         }
                     });
@@ -192,12 +233,44 @@ public class SettingActivity extends BottomNavigationActivity {
                 }
             }, new Function1<NetworkErrorType, Unit>() {
                 @Override
-                public Unit invoke(NetworkErrorType networkErrorType) {
+                public Unit invoke(final NetworkErrorType networkErrorType) {
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
+                            switch (networkErrorType) {
+                                case NoInternetAccess:
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                    break;
+                                }
+                                default: {
+                                    AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                    break;
+                                }
+
+                            }
+                        }
+                    });
+
                     return null;
                 }
             });
             return null;
         }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            loadingProgress = AlertClass.showLoadingMessage(SettingActivity.this);
+            loadingProgress.show();
+
+        }
+
     }
 
 
@@ -308,21 +381,24 @@ public class SettingActivity extends BottomNavigationActivity {
                             AlertClass.showAlertMessageCustom(SettingActivity.this, "آیا مطمین هستید؟", "تنها اطلاعات محصولات حذف خواهند شد و مجددا قابل بارگزاری است", "بله", "خیر", new Function0<Unit>() {
                                 @Override
                                 public Unit invoke() {
-                                    String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
-                                    RealmResults<PurchasedModel> items = PurchasedModelHandler.getAllPurchased(getApplicationContext(), username);
-
-                                    for (PurchasedModel item : items) {
-                                        SettingActivity.this.deletePurchaseData(item.productUniqueId);
-
-                                        if (PurchasedModelHandler.resetDownloadFlags(getApplicationContext(), username, item.id)) {
-                                            EntrancePackageHandler.removePackage(getApplicationContext(), username, item.productUniqueId);
-                                            EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, item.productUniqueId);
-                                        }
+                                    String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+                                    RealmResults<PurchasedModel> items = null;
+                                    if (username != null) {
+                                        items = PurchasedModelHandler.getAllPurchased(getApplicationContext(), username);
                                     }
 
-                                    SettingActivity.this.recycleAdapter.notifyDataSetChanged();
+                                    if (items != null) {
+                                        for (PurchasedModel item : items) {
+                                            SettingActivity.this.deletePurchaseData(item.productUniqueId);
 
-                                    AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.settingA_root), "ActionResult", "FreeMemorySuccess", "success", null);
+                                            if (PurchasedModelHandler.resetDownloadFlags(getApplicationContext(), username, item.id)) {
+                                                EntrancePackageHandler.removePackage(getApplicationContext(), username, item.productUniqueId);
+                                                EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, item.productUniqueId);
+                                            }
+                                        }
+                                        SettingActivity.this.recycleAdapter.notifyDataSetChanged();
+                                        AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "ActionResult", "FreeMemorySuccess", "success", null);
+                                    }
 
                                     return null;
                                 }
@@ -334,7 +410,7 @@ public class SettingActivity extends BottomNavigationActivity {
                     });
                     text = getResources().getString(R.string.settingA_S_clearCache);
                     image = R.drawable.housekeeping_100;
-                    ((LinksViewHolder) holder).setupHolder(text, image, null, 50);
+                    ((LinksViewHolder) holder).setupHolder(text, image, null, 180);
                     break;
 
                 case 5:
@@ -347,7 +423,7 @@ public class SettingActivity extends BottomNavigationActivity {
                     });
                     text = getResources().getString(R.string.settingA_S_bugReport);
                     image = R.drawable.bug_filled_100;
-                    ((WithArrowViewHolder) holder).setupHolder(text, image, null, null);
+                    ((WithArrowViewHolder) holder).setupHolder(text, image, null, 0);
                     break;
 
                 case 6:
@@ -479,8 +555,29 @@ public class SettingActivity extends BottomNavigationActivity {
             public void setupHolder() {
                 ProfileStruct profile = UserDefaultsSingleton.getInstance(getApplicationContext()).getProfile();
 
-                final String grade = profile.getGrade();
-                typeTitle.setText(GradeType.selectWithString(grade).toString());
+                if (profile != null) {
+                    final String grade = profile.getGrade();
+                    typeTitle.setText(GradeType.selectWithString(grade).toString());
+                } else {
+                    AlertClass.showAlertMessageCustom(SettingActivity.this, "عدم دسترسی به اطلاعات کاربری",
+                            "لطفا جهت رفع مشکل از بخش تنظیمات، گزینه خروج را انتخاب کنید و مجددا وارد شوید",
+                            "خروج",
+                            "متوجه شدم",
+                            new Function0<Unit>() {
+                                @Override
+                                public Unit invoke() {
+                                    if (KeyChainAccessProxy.getInstance(getApplicationContext()).clearAllValue() && UserDefaultsSingleton.getInstance(getApplicationContext()).clearAll()) {
+                                        TokenHandlerSingleton.getInstance(getApplicationContext()).invalidateTokens();
+                                        Intent i = StartupActivity.newIntent(getApplicationContext());
+                                        startActivity(i);
+                                        finish();
+                                    }
+                                    return null;
+                                }
+                            }
+                    );
+
+                }
 
 
                 editTv.setOnClickListener(new View.OnClickListener() {
@@ -523,38 +620,15 @@ public class SettingActivity extends BottomNavigationActivity {
                         final AlertDialogCustomize adapter = new AlertDialogCustomize(SettingActivity.this, R.layout.cc_alert_dialog_textview, names);
                         lv.setAdapter(adapter);
 
-                        //editBtn.setText(names[0].toString());
-
-
-                        //SettingActivity.this.selectedGradeType = SettingActivity.this.names[0];
-//                        typeTitle.setText(SettingActivity.this.selectedGradeType.name());
-
-
-//                        View.OnClickListener li = new View.OnClickListener() {
-//                            @Override
-//                            public void onClick(View v) {
-//                                showedAlertDialog.show();
-//                            }
-//                        };
-//                        editBtn.setOnClickListener(li);
-
                         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                             @Override
                             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                                 if (showedAlertDialog != null) {
                                     showedAlertDialog.dismiss();
-                                    int intId = (int) id;
 
-                                    String gradeName = SettingActivity.this.names[position].name();
-                                    SettingActivity.this.postProfile(grade);
-                                    typeTitle.setText(gradeName);
+                                    SettingActivity.this.postProfile(SettingActivity.this.names[position].name());
 
-
-                                    //typeTitle.setText(SettingActivity.this.names[intId].toString());
-
-                                    // SettingActivity.this.selectedGradeType = SettingActivity.this.names[intId];
-                                    //  SignupMoreInfo1Activity.signupInfo.setGrade(SettingActivity.this.selectedGradeType.name());
                                 }
 
                             }
@@ -624,6 +698,8 @@ public class SettingActivity extends BottomNavigationActivity {
                 if (padding != null) {
                     itemView.setPadding(itemView.getPaddingLeft(), itemView.getPaddingTop(), itemView.getPaddingRight(), padding);
                 }
+
+
             }
 
         }
@@ -634,7 +710,6 @@ public class SettingActivity extends BottomNavigationActivity {
     private void deletePurchaseData(String uniqueId) {
         File f = new File(SettingActivity.this.getFilesDir(), uniqueId);
         if (f.exists() && f.isDirectory()) {
-//                                String[] children = f.list();
             for (File fc : f.listFiles()) {
                 fc.delete();
             }

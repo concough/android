@@ -2,7 +2,7 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_startup"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white">
@@ -11,13 +11,8 @@
     <android.support.constraint.ConstraintLayout
         android:id="@+id/StartupA_centerView"
         android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:layout_marginBottom="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -46,4 +41,227 @@
             app:srcCompat="@drawable/refresh" />
     </android.support.constraint.ConstraintLayout>
 
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/StartupA_splash"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+
+        <ImageView
+            android:id="@+id/imageView11"
+            android:layout_width="200dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:srcCompat="@drawable/app_dropbox_icon" />
+
+        <ImageView
+            android:id="@+id/imageView9"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="100dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/app_dropbox_icon" />
+    </android.support.constraint.ConstraintLayout>
+
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/StartupA_intro"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0">
+
+        <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/home_container"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@color/colorConcoughVideoIntro"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.concough.android.vendor.introVideo.IntroVideoView
+                android:id="@+id/introVideoView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent" />
+
+            <ImageView
+                android:id="@+id/imageView13"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/video" />
+
+            <FrameLayout
+                android:id="@+id/home_container_intro"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorConcoughVideoIntro">
+
+            </FrameLayout>
+        </FrameLayout>
+
+        <ImageView
+            android:id="@+id/imageView12"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="32dp"
+            app:layout_constraintLeft_toLeftOf="@+id/home_container"
+            app:layout_constraintRight_toRightOf="@+id/home_container"
+            app:layout_constraintTop_toTopOf="@+id/home_container"
+            app:srcCompat="@drawable/app_dropbox_icon" />
+
+        <Button
+            android:id="@+id/ExitFromLockModeButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="40dp"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="70dp"
+            android:background="@drawable/concough_outline_blue_rounded_style_2dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:text="خروج از حالت قفل"
+            android:textColor="@color/colorConcoughBlue"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="@+id/home_container"
+            app:layout_constraintTop_toBottomOf="@+id/imageView12" />
+
+        <Button
+            android:id="@+id/ResetPasswordButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="40dp"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/concough_outline_gray_rounded_style_2dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:text="بازیابی رمز عبور"
+            android:textColor="@color/colorConcoughGray2"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="@+id/home_container"
+            app:layout_constraintTop_toBottomOf="@+id/ExitFromLockModeButton" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/StartupA_introLogin"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0">
+
+        <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/masterFrameLogin"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@color/colorConcoughVideoIntro"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.concough.android.vendor.introVideo.IntroVideoView
+                android:id="@+id/introVideoViewLogin"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent" />
+
+            <ImageView
+                android:id="@+id/videoImageLogin"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/video" />
+
+            <FrameLayout
+                android:id="@+id/frameBlackLogin"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorConcoughVideoIntro">
+
+            </FrameLayout>
+        </FrameLayout>
+
+        <ImageView
+            android:id="@+id/logoLogin"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="32dp"
+            app:layout_constraintLeft_toLeftOf="@+id/StartupA_introLogin"
+            app:layout_constraintRight_toRightOf="@+id/StartupA_introLogin"
+            app:layout_constraintTop_toTopOf="@+id/StartupA_introLogin"
+            app:srcCompat="@drawable/app_dropbox_icon" />
+
+        <Button
+            android:id="@+id/LoginButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="40dp"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="70dp"
+            android:background="@drawable/concough_outline_blue_rounded_style_2dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:text="ورود"
+            android:textColor="@color/colorConcoughBlue"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="@+id/StartupA_introLogin"
+            app:layout_constraintTop_toBottomOf="@+id/logoLogin" />
+
+        <Button
+            android:id="@+id/SignUpButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="40dp"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/concough_outline_green_rounded_style_2dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:text="عضویت"
+            android:textColor="@color/colorConcoughGreen"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="@+id/StartupA_introLogin"
+            app:layout_constraintTop_toBottomOf="@+id/LoginButton" />
+
+    </android.support.constraint.ConstraintLayout>
+
 </android.support.constraint.ConstraintLayout>
+
+
+

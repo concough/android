@@ -3,14 +3,12 @@ package com.concough.android.concough
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.view.View
-import android.widget.Toast
+import com.concough.android.general.AlertClass
 import com.concough.android.rest.ProfileRestAPIClass
-import com.concough.android.singletons.FontCacheSingleton
-import com.concough.android.singletons.FormatterSingleton
-import com.concough.android.singletons.TokenHandlerSingleton
-import com.concough.android.singletons.UserDefaultsSingleton
+import com.concough.android.singletons.*
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
 import kotlinx.android.synthetic.main.activity_startup.*
@@ -20,6 +18,7 @@ import org.jetbrains.anko.uiThread
 class StartupActivity : AppCompatActivity() {
     companion object {
         private val TAG = "StartupActivity"
+        private val SPLASH_DISPLAY_LENGTH = 5000
 
         @JvmStatic
         fun newIntent(packageContext: Context): Intent {
@@ -31,45 +30,65 @@ class StartupActivity : AppCompatActivity() {
     }
 
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_startup)
 
+
+        ExitFromLockModeButton.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Bold
+        ResetPasswordButton.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Bold
+
+        LoginButton.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Bold
+        SignUpButton.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Bold
+
         supportActionBar?.hide()
-        StartupA_info.typeface = FontCacheSingleton.getInstance(applicationContext).Regular
+        StartupA_splash.visibility = View.VISIBLE
+        val handler = Handler()
+        handler.postDelayed(Runnable {
+            StartupA_splash.visibility = View.GONE
 
-//        val i: Intent = SignupActivity.newIntent(this@StartupActivity)
-//        startActivity(i)
-//        finish()
+        }, 4000)
 
-        StartupA_centerView.visibility = View.GONE
-        StartupA_centerView.setOnClickListener {
-            StartupA_centerView.visibility = View.GONE
-            startup()
-        }
+
+
+        LoginButton.setOnClickListener(View.OnClickListener {
+            val loginIntent = LoginActivity.newIntent(this@StartupActivity)
+            startActivity(loginIntent)
+            finish()
+        })
+
+        SignUpButton.setOnClickListener(View.OnClickListener {
+            val loginIntent = SignupActivity.newIntent(this@StartupActivity)
+            startActivity(loginIntent)
+            finish()
+        })
+
+
 
         this.startup()
     }
 
     private fun startup() {
-        if (TokenHandlerSingleton.getInstance(applicationContext).isAuthorized()) {
-            if (UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
-
-                val homeIntent = HomeActivity.newIntent(this@StartupActivity)
-                startActivity(homeIntent)
-                finish()
-
-            } else {
-                this@StartupActivity.getProfile()
-            }
-        } else if (TokenHandlerSingleton.getInstance(applicationContext).isAuthenticated()) {
+//        if (TokenHandlerSingleton.getInstance(applicationContext).isAuthorized()) {
+//            if (UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
+//
+//                this@StartupActivity.loadBasketItems()
+//                val homeIntent = HomeActivity.newIntent(this@StartupActivity)
+//                startActivity(homeIntent)
+//                finish()
+//
+//            } else {
+//                this@StartupActivity.getProfile()
+//            }
+//        } else
+        if (TokenHandlerSingleton.getInstance(applicationContext).isAuthenticated()) {
             doAsync {
                 TokenHandlerSingleton.getInstance(applicationContext).assureAuthorized(true, { authenticated, error ->
                     if (authenticated) {
                         uiThread {
                             if (UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
+
+                                this@StartupActivity.loadBasketItems()
                                 val homeIntent = HomeActivity.newIntent(this@StartupActivity)
                                 startActivity(homeIntent)
                                 finish()
@@ -86,7 +105,7 @@ class StartupActivity : AppCompatActivity() {
                     }
                 }, { error ->
                     uiThread {
-                        this@StartupActivity.StartupA_centerView.visibility = View.VISIBLE
+                        //this@StartupActivity.StartupA_centerView.visibility = View.VISIBLE
                         val loginIntent = LoginActivity.newIntent(this@StartupActivity)
                         startActivity(loginIntent)
                         finish()
@@ -139,6 +158,7 @@ class StartupActivity : AppCompatActivity() {
 
                                             if (UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
 
+                                                this@StartupActivity.loadBasketItems()
                                                 val homeIntent = HomeActivity.newIntent(this@StartupActivity)
                                                 startActivity(homeIntent)
                                                 finish()
@@ -171,21 +191,24 @@ class StartupActivity : AppCompatActivity() {
                 uiThread {
                     if (error != null) {
                         when (error) {
-                            NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
-                                // TODO: show top message about error with type error
+                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
                             }
                             else -> {
-                                // TODO: Show top message about error without type
+                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
                             }
                         }
+
                     }
 
-                    val t = Toast.makeText(this@StartupActivity, error.toString(), Toast.LENGTH_LONG)
-                    t.show()
                 }
 
             })
 
         }
+    }
+
+    private fun loadBasketItems() {
+        BasketSingleton.getInstance().loadBasketItems(this@StartupActivity)
     }
 }

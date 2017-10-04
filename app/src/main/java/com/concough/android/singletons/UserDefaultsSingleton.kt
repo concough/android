@@ -3,7 +3,6 @@ package com.concough.android.singletons
 import android.content.Context
 import android.content.SharedPreferences
 import com.concough.android.structures.ProfileStruct
-import com.concough.android.utils.KeyChainAccessProxy
 import java.util.*
 
 /**
@@ -12,8 +11,10 @@ import java.util.*
 class UserDefaultsSingleton {
 
     private var prefs: SharedPreferences
+    private var context: Context
 
     private constructor(context: Context) {
+        this.context = context
         this.prefs = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE)
     }
 
@@ -81,8 +82,8 @@ class UserDefaultsSingleton {
         this.updateModified(modified)
     }
 
-    public fun getUsername(context: Context): String? {
-        return TokenHandlerSingleton.getInstance(context).getUsername()
+    public fun getUsername(): String? {
+        return TokenHandlerSingleton.getInstance(this.context).getUsername()
     }
 
     public fun checkPassword(context: Context, password: String): Boolean {

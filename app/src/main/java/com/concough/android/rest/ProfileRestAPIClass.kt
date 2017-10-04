@@ -1,5 +1,3 @@
-
-
 package com.concough.android.rest
 
 import android.content.Context
@@ -17,6 +15,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.*
 
 /**
  * Created by abolfazl on 7/8/17.
@@ -30,7 +29,7 @@ class ProfileRestAPIClass {
         fun getProfileData(context: Context, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
             val fullPath = UrlMakerSingleton.getInstance().profileUrl() ?: return
 
-            TokenHandlerSingleton.getInstance(context).assureAuthorized(completion = {authenticated, error ->
+            TokenHandlerSingleton.getInstance(context).assureAuthorized(completion = { authenticated, error ->
                 if (authenticated && error == HTTPErrorType.Success) {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
 
@@ -38,7 +37,7 @@ class ProfileRestAPIClass {
                     val profile = Obj.create(RestAPIService::class.java)
                     val request = profile.get(url = fullPath, headers = headers!!)
 
-                    request.enqueue(object: Callback<ResponseBody> {
+                    request.enqueue(object : Callback<ResponseBody> {
                         override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
                             failure(NetworkErrorType.toType(t))
                         }
@@ -58,7 +57,7 @@ class ProfileRestAPIClass {
                                     }
                                 }
                                 HTTPErrorType.UnAuthorized, HTTPErrorType.ForbiddenAccess -> {
-                                    TokenHandlerSingleton.getInstance(context).assureAuthorized(true, completion = {authenticated, error ->
+                                    TokenHandlerSingleton.getInstance(context).assureAuthorized(true, completion = { authenticated, error ->
                                         if (authenticated && error == HTTPErrorType.Success) {
                                             completion(null, HTTPErrorType.Refresh)
                                         }
@@ -73,7 +72,7 @@ class ProfileRestAPIClass {
                 } else {
                     completion(null, error)
                 }
-            }, failure = {error ->
+            }, failure = { error ->
                 failure(error)
             })
         }
@@ -83,23 +82,27 @@ class ProfileRestAPIClass {
         fun postProfileData(info: SignupMoreInfoStruct, context: Context, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
             val fullPath = UrlMakerSingleton.getInstance().profileUrl() ?: return
 
-            TokenHandlerSingleton.getInstance(context).assureAuthorized(completion = {authenticated, error ->
+            TokenHandlerSingleton.getInstance(context).assureAuthorized(completion = { authenticated, error ->
                 if (authenticated && error == HTTPErrorType.Success) {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
 
+                    var cal = Calendar.getInstance()
+                    cal.time = info.birthday!!
+                    val year = cal.get(Calendar.YEAR)
+
                     val parameters: HashMap<String, Any> = hashMapOf("firstname" to info.firstname!!,
-                                                                    "lastname" to info.lastname!!,
-                                                                    "grade" to info.grade!!,
-                                                                    "gender" to info.gender!!,
-                                                                    "byear" to info.birthday?.year!!,
-                                                                    "bmonth" to info.birthday?.month!!,
-                                                                    "bday" to info.birthday?.day!!)
+                            "lastname" to info.lastname!!,
+                            "grade" to info.grade!!,
+                            "gender" to info.gender!!,
+                            "byear" to year,
+                            "bmonth" to info.birthday?.month!!,
+                            "bday" to info.birthday?.day!!)
 
                     val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
                     val request = profile.post(fullPath, parameters, headers!!)
 
-                    request.enqueue(object: Callback<ResponseBody> {
+                    request.enqueue(object : Callback<ResponseBody> {
                         override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
                             failure(NetworkErrorType.toType(t))
                         }
@@ -119,7 +122,7 @@ class ProfileRestAPIClass {
                                     }
                                 }
                                 HTTPErrorType.UnAuthorized, HTTPErrorType.ForbiddenAccess -> {
-                                    TokenHandlerSingleton.getInstance(context).assureAuthorized(true, completion = {authenticated, error ->
+                                    TokenHandlerSingleton.getInstance(context).assureAuthorized(true, completion = { authenticated, error ->
                                         if (authenticated && error == HTTPErrorType.Success) {
                                             completion(null, HTTPErrorType.Refresh)
                                         }
@@ -134,7 +137,7 @@ class ProfileRestAPIClass {
                 } else {
                     completion(null, error)
                 }
-            }, failure = {error ->
+            }, failure = { error ->
                 failure(error)
             })
         }
@@ -142,10 +145,60 @@ class ProfileRestAPIClass {
 
         @JvmStatic
         fun putProfileGrade(grade: String, context: Context, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
-            // TODO: post profile body
+            val fullPath = UrlMakerSingleton.getInstance().editGradeProfileUrl() ?: return
+
+            TokenHandlerSingleton.getInstance(context).assureAuthorized(completion = { authenticated, error ->
+                if (authenticated && error == HTTPErrorType.Success) {
+                    val headers = TokenHandlerSingleton.getInstance(context).getHeader()
+
+                    val parameters: HashMap<String, Any> = hashMapOf(
+                            "grade" to grade
+                    )
+
+                    val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+                    val profile = Obj.create(RestAPIService::class.java)
+                    val request = profile.put(fullPath, parameters, headers!!)
+
+                    request.enqueue(object : Callback<ResponseBody> {
+                        override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
+                            failure(NetworkErrorType.toType(t))
+                        }
+
+                        override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
+                            val resCode = HTTPErrorType.toType(response?.code()!!)
+//                          Log.d(TAG, resCode.toString())
+                            when (resCode) {
+                                HTTPErrorType.Success -> {
+                                    val res = response.body()!!.string()
+                                    try {
+                                        val jobj = Gson().fromJson(res, JsonObject::class.java)
+
+                                        completion(jobj, resCode)
+                                    } catch (exc: JsonParseException) {
+                                        completion(null, HTTPErrorType.UnKnown)
+                                    }
+                                }
+                                HTTPErrorType.UnAuthorized, HTTPErrorType.ForbiddenAccess -> {
+                                    TokenHandlerSingleton.getInstance(context).assureAuthorized(true, completion = { authenticated, error ->
+                                        if (authenticated && error == HTTPErrorType.Success) {
+                                            completion(null, HTTPErrorType.Refresh)
+                                        }
+                                    }, failure = { error ->
+                                        failure(error)
+                                    })
+                                }
+                                else -> completion(null, resCode)
+                            }
+                        }
+                    })
+                } else {
+                    completion(null, error)
+                }
+            }, failure = { error ->
+                failure(error)
+            })
         }
 
 
-
-        }
+    }
 }

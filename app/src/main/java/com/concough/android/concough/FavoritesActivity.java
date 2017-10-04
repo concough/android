@@ -2,6 +2,7 @@ package com.concough.android.concough;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -24,6 +25,7 @@ import android.widget.TextView;
 
 import com.baoyz.widget.PullRefreshLayout;
 import com.concough.android.downloader.EntrancePackageDownloader;
+import com.concough.android.general.AlertClass;
 import com.concough.android.models.EntranceModel;
 import com.concough.android.models.EntranceModelHandler;
 import com.concough.android.models.EntranceOpenedCountModelHandler;
@@ -35,7 +37,6 @@ import com.concough.android.models.PurchasedModelHandler;
 import com.concough.android.models.UserLogModelHandler;
 import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.rest.PurchasedRestAPIClass;
-import com.concough.android.singletons.BasketSingleton;
 import com.concough.android.singletons.DownloaderSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
@@ -59,6 +60,7 @@ import java.util.UUID;
 
 import io.realm.RealmResults;
 import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
@@ -89,8 +91,10 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
     private String showType = "Normal";
     private String selectedShowType = "Show";
+    private String entranceUniqueId = "";
 
-    private KProgressHUD loading;
+
+    private KProgressHUD loadingProgress;
 
     @Override
     protected int getLayoutResourceId() {
@@ -126,6 +130,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
         recycleView.setLayoutManager(layoutManager);
 
         pullRefreshLayout = (PullRefreshLayout) findViewById(R.id.favoritesA_swipeRefreshLayout);
+        pullRefreshLayout.setColorSchemeColors(Color.TRANSPARENT, Color.GRAY, Color.GRAY, Color.GRAY);
+        pullRefreshLayout.setRefreshStyle(PullRefreshLayout.STYLE_MATERIAL);
         pullRefreshLayout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -136,6 +142,14 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
         actionBarSet();
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(FavoritesActivity.this.entranceUniqueId.equals("") == false) {
+            DownloaderSingleton.getInstance().unbind(FavoritesActivity.this,entranceUniqueId);
+        }
 
     }
 
@@ -148,19 +162,11 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
         buttonDetail.imageSource = R.drawable.edit;
         buttonDetailArrayList.add(buttonDetail);
 
-        buttonDetail=new ButtonDetail();
+        buttonDetail = new ButtonDetail();
         buttonDetail.imageSource = R.drawable.download_cloud;
         buttonDetailArrayList.add(buttonDetail);
 
-        buttonDetail = new ButtonDetail();
-        buttonDetail.hasBadge=true;
-        buttonDetail.badgeCount= BasketSingleton.getInstance().getSalesCount();
-        buttonDetail.imageSource = R.drawable.buy_icon;
-        buttonDetailArrayList.add(buttonDetail);
-
         super.createActionBar("آرشیو", false, buttonDetailArrayList);
-
-
 
 
         super.clickEventInterface = new OnClickEventInterface() {
@@ -182,8 +188,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
                     case R.drawable.checkmark: {
                         showType = "Normal";
+                        loadData();
                         actionBarSet();
-                        favAdapter.notifyDataSetChanged();
                         break;
                     }
 
@@ -194,12 +200,6 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
                             FavoritesActivity.this.handler.sendMessage(msg);
                         }
-                        break;
-                    }
-
-                    case R.drawable.buy_icon: {
-                        Intent i = BasketCheckoutActivity.newIntent(FavoritesActivity.this, "EntranceDetail");
-                        FavoritesActivity.this.startActivity(i);
                         break;
                     }
                 }
@@ -253,7 +253,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             ArrayList<FavoriteItem> localPurchased = new ArrayList<>();
             ArrayList<Integer> localDownloadCount = new ArrayList<>();
 
-            String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
+            String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
             if (username != null) {
                 RealmResults<PurchasedModel> items = PurchasedModelHandler.getAllPurchased(getApplicationContext(), username);
                 if (items != null) {
@@ -322,7 +322,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
-                // TODO: show loading message
+                loadingProgress = AlertClass.showLoadingMessage(FavoritesActivity.this);
+                loadingProgress.show();
             }
         });
 
@@ -332,7 +333,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // TODO: hide loading dialog
+                        AlertClass.hideLoadingMessage(loadingProgress);
 
                         if (httpErrorType != HTTPErrorType.Success) {
                             if (httpErrorType == HTTPErrorType.Refresh) {
@@ -343,7 +344,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                     FavoritesActivity.this.handler.sendMessage(msg);
                                 }
                             } else {
-                                // Show top message with "HTTPError" and type = error
+                                AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                             }
                         } else {
                             if (jsonElement != null) {
@@ -353,7 +354,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                         try {
                                             ArrayList<Integer> purchasedId = new ArrayList<Integer>();
                                             JsonArray records = jsonElement.getAsJsonObject().get("records").getAsJsonArray();
-                                            String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
+                                            String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
                                             if (username != null) {
                                                 for (JsonElement record : records) {
                                                     int id = record.getAsJsonObject().get("id").getAsInt();
@@ -438,7 +439,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                         String errorType = jsonElement.getAsJsonObject().get("error_type").getAsString();
                                         switch (errorType) {
                                             case "EmptyArray":
-                                                String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
+                                                String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
                                                 if (username != null) {
                                                     RealmResults<PurchasedModel> items = PurchasedModelHandler.getAllPurchased(getApplicationContext(), username);
 
@@ -458,10 +459,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
                                                 }
 
-                                                // TODO: Show alert message EntranceResult with subType = "EntranceNotExist"
                                                 break;
                                             default:
-                                                // TODO: Show alert message ErrorResult
                                                 break;
                                         }
                                         break;
@@ -479,16 +478,19 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // TODO: hide loading dialog
+                        AlertClass.hideLoadingMessage(loadingProgress);
                         if (networkErrorType != null) {
                             switch (networkErrorType) {
-                                case HostUnreachable:
                                 case NoInternetAccess:
-                                    // TODO: show top error message with NetworkError
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                     break;
-                                default:
-                                    // TODO: show top error message with NetworkError
+                                }
+                                default: {
+                                    AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                     break;
+                                }
+
                             }
                         }
 
@@ -543,7 +545,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
     }
 
     private void createLog(String logType, JsonObject extraData) {
-        String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
+        String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
         if (username != null) {
             String uniqueId = UUID.randomUUID().toString();
             Date created = new Date();
@@ -559,8 +561,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
-                // TODO: Show loading dialog
-
+                loadingProgress = AlertClass.showLoadingMessage(FavoritesActivity.this);
+                loadingProgress.show();
             }
         });
 
@@ -577,7 +579,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                     uiHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO: hide loading dialog
+                            AlertClass.hideLoadingMessage(loadingProgress);
                             if (httpErrorType != HTTPErrorType.Success) {
                                 if (httpErrorType == HTTPErrorType.Refresh) {
                                     if (FavoritesActivity.this.handler != null) {
@@ -592,7 +594,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                         FavoritesActivity.this.handler.sendMessage(msg);
                                     }
                                 } else {
-                                    // Show top message with "HTTPError" and type = error
+                                    AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                                 }
                             } else {
                                 if (jsonElement != null) {
@@ -607,7 +609,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                         int id = purchase_record.get("id").getAsInt();
                                                         int downloaded = purchase_record.get("downloaded").getAsInt();
 
-                                                        String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
+                                                        String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
                                                         if (username != null) {
                                                             PurchasedModelHandler.updateDownloadTimes(getApplicationContext(), username, id, downloaded);
                                                         }
@@ -622,10 +624,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                             switch (errorType) {
                                                 case "EntranceNotExist":
                                                 case "EmptyArray":
-                                                    // TODO: Show alert message EntranceResult with subType = "EntranceNotExist"
                                                     break;
                                                 default:
-                                                    // TODO: Show alert message ErrorResult
                                                     break;
                                             }
                                             break;
@@ -643,20 +643,24 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                     uiHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO: hide loading dialog
+                            AlertClass.hideLoadingMessage(loadingProgress);
                             if (networkErrorType != null) {
                                 switch (networkErrorType) {
-                                    case HostUnreachable:
                                     case NoInternetAccess:
-                                        // TODO: show top error message with NetworkError
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                         break;
-                                    default:
-                                        // TODO: show top error message with NetworkError
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                         break;
+                                    }
+
                                 }
                             }
                         }
                     });
+
                     return null;
                 }
             });
@@ -674,20 +678,15 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             this.context = context;
             this.purchased = items;
             this.DownloadCount = dCounts;
-
-//            DownloaderSingleton.getInstance().setListener(new DownloaderSingleton.DownloaderSingletonListener() {
-//                @Override
-//                public void onDownloadergetReady(final Object downloader, final int index) {
-//
-//                }
-//            });
-
         }
 
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            if (viewType == FavViewHolderType.ENTRANCE_NOT_DOWNLOADED.getValue()) {
+            if (viewType == 50) {
+                View view = LayoutInflater.from(context).inflate(R.layout.cc_recycle_not_item, parent, false);
+                return new ItemEmptyHolder(view);
+            } else if (viewType == FavViewHolderType.ENTRANCE_NOT_DOWNLOADED.getValue()) {
                 View view = LayoutInflater.from(this.context).inflate(R.layout.item_favorite_entrance_not_downloaded, parent, false);
                 return new FEntranceNotDownloadViewHolder(view);
             } else if (viewType == FavViewHolderType.ENTRANCE_DOWNLOADED.getValue()) {
@@ -703,7 +702,10 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-            if (holder.getClass() == FEntranceNotDownloadViewHolder.class) {
+            if (holder.getClass() == ItemEmptyHolder.class) {
+                ItemEmptyHolder itemEmptyHolder = (ItemEmptyHolder) holder;
+                itemEmptyHolder.setupHolder();
+            } else if (holder.getClass() == FEntranceNotDownloadViewHolder.class) {
                 FavoriteItem item = this.purchased.get(position);
                 EntrancePurchasedStruct purchasedData = (EntrancePurchasedStruct) item.purchased;
                 ((FEntranceNotDownloadViewHolder) holder).setupHolder((EntranceStruct) item.object, purchasedData, position);
@@ -721,11 +723,15 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
         @Override
         public int getItemCount() {
-            switch (FavoritesActivity.this.showType) {
-                case "Normal":
-                    return this.purchased.size();
-                case "Edit":
-                    return this.DownloadCount.size();
+            if (purchased.size() == 0) {
+                return 1;
+            } else {
+                switch (FavoritesActivity.this.showType) {
+                    case "Normal":
+                        return this.purchased.size();
+                    case "Edit":
+                        return this.DownloadCount.size();
+                }
             }
             return 0;
         }
@@ -746,7 +752,9 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
         @Override
         public int getItemViewType(int position) {
             if ("Normal".equals(FavoritesActivity.this.showType)) {
-                if (position < this.purchased.size()) {
+                if (this.purchased.size() == 0) {
+                    return 50;
+                } else if (position < this.purchased.size()) {
                     FavoriteItem item = this.purchased.get(position);
                     if ("Entrance".equals(item.type)) {
                         EntrancePurchasedStruct purchasedData = (EntrancePurchasedStruct) item.purchased;
@@ -758,7 +766,9 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                     }
                 }
             } else if ("Edit".equals(FavoritesActivity.this.showType)) {
-                if (position < this.purchased.size()) {
+                if (this.purchased.size() == 0) {
+                    return 50;
+                } else if (position < this.purchased.size()) {
                     Integer i = this.DownloadCount.get(position);
                     FavoriteItem item = this.purchased.get(i);
                     if ("Entrance".equals(item.type)) {
@@ -767,6 +777,31 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 }
             }
             return 0;
+        }
+
+
+        private class ItemEmptyHolder extends RecyclerView.ViewHolder {
+
+            private TextView emptyText;
+            private ImageView emptyImage;
+            private ViewGroup linearLayout;
+
+
+            public ItemEmptyHolder(View itemView) {
+                super(itemView);
+
+                emptyImage = (ImageView) itemView.findViewById(R.id.noItemL_image);
+                emptyText = (TextView) itemView.findViewById(R.id.noItemL_text);
+                linearLayout = (ViewGroup) itemView.findViewById(R.id.container);
+
+                emptyText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+            }
+
+
+            public void setupHolder() {
+                emptyImage.setImageResource(R.drawable.refresh_empty);
+                emptyText.setText("داده ای موجود نیست");
+            }
         }
 
 
@@ -787,6 +822,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             private TextView entranceDownloadCountTextView;
             private LinearLayout entranceDownloadLayout;
             private ProgressBar downloadProgress;
+            private ProgressBar preStartProgressBar;
+            private ProgressBar isDownloadingProgressBar;
             private ConstraintLayout downloadProgress2;
             private LinearLayout downloadProgress2Level;
             private LinearLayout line;
@@ -809,6 +846,9 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
                 downloadProgress2 = (ConstraintLayout) itemView.findViewById(R.id.FItem_entrance_download_progress2);
                 downloadProgress2Level = (LinearLayout) itemView.findViewById(R.id.FItem_entrance_download_progress_level);
+
+                preStartProgressBar = (ProgressBar) itemView.findViewById(R.id.preStartProgressBar);
+                isDownloadingProgressBar = (ProgressBar) itemView.findViewById(R.id.isDownloadingProgressBar);
 
                 line = (LinearLayout) itemView.findViewById(R.id.FItem_entrance_line_gray);
 
@@ -833,6 +873,9 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 });
                 downloadProgress2.setVisibility(View.GONE);
 
+                preStartProgressBar.setVisibility(View.GONE);
+                isDownloadingProgressBar.setVisibility(View.GONE);
+
                 FEntranceNotDownloadViewHolder.this.downloader = null;
                 FEntranceNotDownloadViewHolder.this.entranceDownloadLayout.setVisibility(View.GONE);
 
@@ -846,7 +889,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 //                params.width = 0;
 //                FEntranceNotDownloadViewHolder.this.downloadProgress2Level.setLayoutParams(params);
 
-                entranceOrgTextView.setText("کنکور " + entrance.getEntranceTypeTitle() + " " + entrance.getEntranceOrgTitle() + " " +
+                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " + entrance.getEntranceOrgTitle() + " " +
                         FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
                 entranceSetTextView.setText(entrance.getEntranceSetTitle() + " (" + entrance.getEntranceGroupTitle() + ")");
 
@@ -875,8 +918,6 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
                 downloadImage(entrance.getEntranceSetId());
                 checkForState(index);
-
-
             }
 
 //            private void setDownloader(Object downloader) {
@@ -940,7 +981,6 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 //                                        }
 //                                    }
 //
-//                                    // TODO: show top message "ActionResult", and message subType = "DownloadSuccess" and type = "success"
 //                                }
 //                            });
 //                        } else {
@@ -949,7 +989,6 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 //                                public void run() {
 //                                    DownloaderSingleton.getInstance().removeDownloader(entranceS.getEntranceUniqueId());
 //
-//                                    // TODO: show top message "ActionResult", and message subType = "DownloadFailed" and type = "error"
 //                                }
 //                            });
 //                        }
@@ -1006,10 +1045,12 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                     DownloaderSingleton.getInstance().getMeDownloader(FavoritesActivity.this, "Entrance", entranceS.getEntranceUniqueId(), index, new Function2<Object, Integer, Unit>() {
                         @Override
                         public Unit invoke(final Object o, final Integer integer) {
+                            isDownloadingProgressBar.setVisibility(View.VISIBLE);
                             FEntranceNotDownloadViewHolder.this.downloader = (EntrancePackageDownloader) o;
 
                             setListener(integer);
                             changeToDownlaodState(0);
+                            FavoritesActivity.this.entranceUniqueId = entranceS.getEntranceUniqueId();
                             return null;
                         }
                     });
@@ -1048,7 +1089,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                     eData.addProperty("uniqueId", entranceS.getEntranceUniqueId());
                                     FavoritesActivity.this.createLog(LogTypeEnum.EntranceDownload.getTitle(), eData);
 
-                                    String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
+                                    String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
                                     if (username != null) {
                                         FavoriteItem item = favAdapter.purchased.get(index);
                                         PurchasedModel p = PurchasedModelHandler.getByProductId(getApplicationContext(), username, item.type, item.uniqueId);
@@ -1080,7 +1121,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                         }
                                     }
 
-                                    // TODO: show top message "ActionResult", and message subType = "DownloadSuccess" and type = "success"
+                                    AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "ActionResult", "DownloadSuccess", "success", null);
+                                    FavoritesActivity.this.entranceUniqueId = "";
                                 }
                             });
                         } else {
@@ -1088,8 +1130,9 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                 @Override
                                 public void run() {
                                     DownloaderSingleton.getInstance().removeDownloader(entranceS.getEntranceUniqueId());
-
-                                    // TODO: show top message "ActionResult", and message subType = "DownloadFailed" and type = "error"
+                                    AlertClass.showTopMessage(FavoritesActivity.this,findViewById(R.id.container), "ActionResult","DownloadFailed","error",null);
+                                    favAdapter.notifyItemRangeChanged(index, 1);
+                                    FavoritesActivity.this.entranceUniqueId = "";
                                 }
                             });
                         }
@@ -1116,6 +1159,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                     @Override
                     public void onDownloadPausedForViewHolder(int index) {
                         DownloaderSingleton.getInstance().removeDownloader(entranceS.getEntranceUniqueId());
+                        FavoritesActivity.this.entranceUniqueId = "";
                     }
 
                     @Override
@@ -1132,12 +1176,19 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 FEntranceNotDownloadViewHolder.this.entranceDownloadLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+
                         if (DownloaderSingleton.getInstance().getIsInDownloadProgress()) {
-                            // TODO: show top message about another download is in progress
+                            AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "DownloadError", "DownloadInProgress", "warning", null);
+                            preStartProgressBar.setVisibility(View.GONE);
+                            entranceDownloadLayout.setClickable(true);
                             return;
+                        } else {
+                            preStartProgressBar.setVisibility(View.VISIBLE);
+                            entranceDownloadLayout.setClickable(false);
                         }
 
                         if (!DownloaderSingleton.getInstance().getIsInDownloadProgress()) {
+                            AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "ActionResult", "DownloadStarted", "warning", null);
                             DownloaderSingleton.getInstance().getMeDownloader(FavoritesActivity.this, "Entrance", entranceS.getEntranceUniqueId(), index, new Function2<Object, Integer, Unit>() {
                                 @Override
                                 public Unit invoke(final Object o, final Integer integer) {
@@ -1148,11 +1199,12 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
                                             setListener(integer);
 
-                                            if (DownloaderSingleton.getInstance().getDownloaderState(entranceS.getEntranceUniqueId()) == DownloaderSingleton.DownloaderState.Initialize)
+                                            if (DownloaderSingleton.getInstance().getDownloaderState(entranceS.getEntranceUniqueId()) == DownloaderSingleton.DownloaderState.Initialize) {
                                                 entranceDownloadLayout.setVisibility(View.VISIBLE);
+                                                FavoritesActivity.this.entranceUniqueId = entranceS.getEntranceUniqueId();
+                                            }
 
-
-                                            final String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
+                                            final String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
                                             if (username != null) {
                                                 Boolean isDownloaded = PurchasedModelHandler.isInitialDataDownloaded(getApplicationContext(), username, entranceS.getEntranceUniqueId(), "Entrance");
                                                 if (isDownloaded) {
@@ -1186,6 +1238,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                                         Integer count = (Integer) FEntranceNotDownloadViewHolder.this.downloader.getDownloadCount();
 
                                                                         changeToDownlaodState(count);
+                                                                        isDownloadingProgressBar.setVisibility(View.VISIBLE);
                                                                         DownloaderSingleton.getInstance().setDownloaderStarted(entranceS.getEntranceUniqueId());
                                                                         FEntranceNotDownloadViewHolder.this.downloader.downloadPackageImages(f);
 
@@ -1236,7 +1289,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                     }
                 }, new Function1<NetworkErrorType, Unit>() {
                     @Override
-                    public Unit invoke(NetworkErrorType networkErrorType) {
+                    public Unit invoke(final NetworkErrorType networkErrorType) {
                         return null;
                     }
                 });
@@ -1277,23 +1330,12 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 int chunck = (int) (widthI / 100);
 
                 float delta = (((float) totalC - (float) value) / totalC) * 100;
+                if (delta < 8) delta = 8;
 
                 ViewGroup.LayoutParams params = FEntranceNotDownloadViewHolder.this.downloadProgress2Level.getLayoutParams();
                 params.width = (int) (chunck * delta);
                 FEntranceNotDownloadViewHolder.this.downloadProgress2Level.setLayoutParams(params);
-//
-//                downloadProgress2Level.setLayoutParams(new LinearLayout.LayoutParams( (int)(chunck * delta) , downloadProgress2Level.getLayoutParams().height));
 
-//                downloadProgress.postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        float delta = (((float)totalC - (float)value) / totalC) * 100;
-//                        downloadProgress.invalidate();
-//                        FEntranceNotDownloadViewHolder.this.downloadProgress.setProgress(0);
-//                        FEntranceNotDownloadViewHolder.this.downloadProgress.setMax(100);
-//                        FEntranceNotDownloadViewHolder.this.downloadProgress.setProgress((int)delta);
-//                    }
-//                }, 50);
             }
         }
 
@@ -1345,10 +1387,10 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
             }
 
-            public void setupHolder(final EntranceStruct entrance, EntrancePurchasedStruct purchased, int index, int starCount, int openedCount, long qCount) {
+            public void setupHolder(final EntranceStruct entrance, EntrancePurchasedStruct purchased, int index, final int starCount, int openedCount, long qCount) {
 
 
-                entranceOrgTextView.setText("کنکور " + entrance.getEntranceTypeTitle() + " " + entrance.getEntranceOrgTitle() + " " +
+                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " + entrance.getEntranceOrgTitle() + " " +
                         FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
                 entranceSetTextView.setText(entrance.getEntranceSetTitle() + " (" + entrance.getEntranceGroupTitle() + ")");
 
@@ -1392,8 +1434,17 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 entranceOpenStarredLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent i = EntranceShowActivity.newIntent(FavoritesActivity.this, entrance.getEntranceUniqueId(), "Starred");
-                        startActivity(i);
+                        if (starCount == 0) {
+                            AlertClass.showAlertMessage(FavoritesActivity.this, "EntranceResult", "EntranceStarredNotExist", "", new Function0<Unit>() {
+                                @Override
+                                public Unit invoke() {
+                                    return null;
+                                }
+                            });
+                        } else {
+                            Intent i = EntranceShowActivity.newIntent(FavoritesActivity.this, entrance.getEntranceUniqueId(), "Starred");
+                            startActivity(i);
+                        }
                     }
                 });
 
@@ -1423,7 +1474,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                     }
                 }, new Function1<NetworkErrorType, Unit>() {
                     @Override
-                    public Unit invoke(NetworkErrorType networkErrorType) {
+                    public Unit invoke(final NetworkErrorType networkErrorType) {
                         return null;
                     }
                 });
@@ -1459,7 +1510,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
             public void setupHolder(final FavoriteItem favoriteItem, final int index) {
                 final EntranceStruct entrance = (EntranceStruct) favoriteItem.object;
-                entranceOrgTextView.setText("کنکور " + entrance.getEntranceTypeTitle() + " " + entrance.getEntranceOrgTitle() + " " +
+                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " + entrance.getEntranceOrgTitle() + " " +
                         FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
                 entranceSetTextView.setText(entrance.getEntranceSetTitle() + " (" + entrance.getEntranceGroupTitle() + ")");
 
@@ -1488,24 +1539,31 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 entranceDeleteLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // TODO: Show Alert message with title and message and two buttons and on result
-                        try {
-                            String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername(getApplicationContext());
-                            if (username != null) {
-                                String newDir = favoriteItem.uniqueId;
-                                FavoritesActivity.this.deletePurchaseData(newDir);
+                        AlertClass.showAlertMessageCustom(FavoritesActivity.this, "آیا مطمئنید؟", "تنها اطلاعات آزمون حذف خواهد شد و مجددا قابل بارگزاری است", "بله", "خیر", new Function0<Unit>() {
+                            @Override
+                            public Unit invoke() {
+                                try {
+                                    String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+                                    if (username != null) {
+                                        String newDir = favoriteItem.uniqueId;
+                                        FavoritesActivity.this.deletePurchaseData(newDir);
 
-                                if (PurchasedModelHandler.resetDownloadFlags(getApplicationContext(), username, ((EntrancePurchasedStruct) favoriteItem.purchased).id)) {
-                                    EntrancePackageHandler.removePackage(getApplicationContext(), username, favoriteItem.uniqueId);
-                                    EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, favoriteItem.uniqueId);
-                                    EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, favoriteItem.uniqueId);
+                                        if (PurchasedModelHandler.resetDownloadFlags(getApplicationContext(), username, ((EntrancePurchasedStruct) favoriteItem.purchased).id)) {
+                                            EntrancePackageHandler.removePackage(getApplicationContext(), username, favoriteItem.uniqueId);
+                                            EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, favoriteItem.uniqueId);
+                                            EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, favoriteItem.uniqueId);
 
-                                    DownloadCount.remove(index);
-                                    favAdapter.notifyItemRemoved(index);
+                                            DownloadCount.remove(index);
+                                            favAdapter.notifyItemRemoved(index);
+                                            favAdapter.notifyItemRangeChanged(index, getItemCount());
+                                        }
+                                    }
+                                } catch (Exception exc) {
                                 }
+                                return null;
                             }
-                        } catch (Exception exc) {
-                        }
+                        });
+
                     }
                 });
             }
@@ -1513,7 +1571,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
             private void downloadImage(final int imageId) {
                 MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, entranceSetImage, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                        @Override
+                    @Override
                     public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
                         runOnUiThread(new Runnable() {
                             @Override
@@ -1539,7 +1597,6 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 });
 
             }
-
 
 
         }

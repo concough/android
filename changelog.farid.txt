@@ -145,9 +145,24 @@ Edit and add some problems (faridM)
 
 =================================================================================
 
+Refactors  (faridM)
+
+ 1 - Bottom Navigation jump on reset passwords and report bug solved (Adjust pan on manifest)
+ 2 - Grade change on setting activity fixed
+ 3 - Aded share button with images and text to setting activity
+ 4 - Fixed problem on recycleview basket remove
+ 5 - load basket on start activity before home load
+ 6 - badge onclick problem on archive activity
+ 7 - aded spinner loading for download
+ 8 - Change color of icon of archive activity on finish
+ 9 - add FLAG_ACTIVITY_NO_ANIMATION on button navigation to avoid animation
+ 10 - bottom navigation return false if current item menu reselected
+ 11 - reduce sizes of loading, change icons of share, help
+ 12 - Aded all alerts
+ 13 - Removed Loading from BasketSingleton > handleLoadBasketItems
 
 
-
+==================================================================================
 
 
 

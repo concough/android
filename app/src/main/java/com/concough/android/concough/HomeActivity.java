@@ -169,6 +169,9 @@ public class HomeActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
                             try {
                                 if (httpErrorType == HTTPErrorType.Success) {
                                     if (jsonObject != null) {
@@ -236,17 +239,19 @@ public class HomeActivity extends BottomNavigationActivity {
                 public Unit invoke(final NetworkErrorType networkErrorType) {
                     HomeActivity.this.loading = false;
 
+                    AlertClass.hideLoadingMessage(loadingProgress);
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             switch (networkErrorType) {
                                 case NoInternetAccess:
                                 case HostUnreachable: {
-                                    AlertClass.showTopMessage(HomeActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
+                                    AlertClass.showTopMessage(HomeActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                     break;
                                 }
                                 default: {
-                                    AlertClass.showTopMessage(HomeActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
+                                    AlertClass.showTopMessage(HomeActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                     break;
                                 }
 
@@ -260,14 +265,7 @@ public class HomeActivity extends BottomNavigationActivity {
             return null;
         }
 
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
 
-            if (loadingProgress != null) {
-                AlertClass.hideLoadingMessage(loadingProgress);
-            }
-        }
     }
 
 
@@ -470,7 +468,6 @@ public class HomeActivity extends BottomNavigationActivity {
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
 
-
             }
 
             public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
@@ -511,7 +508,7 @@ public class HomeActivity extends BottomNavigationActivity {
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
 
-                entranceType.setText("کنکور " + concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString() + " " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString());
+                entranceType.setText("آزمون " + concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString() + " " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString());
                 entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString() + ")");
 
                 int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
@@ -563,9 +560,39 @@ public class HomeActivity extends BottomNavigationActivity {
 
         }
 
+        private class ItemEmptyHolder extends RecyclerView.ViewHolder {
+
+            private TextView emptyText;
+            private ImageView emptyImage;
+            private ViewGroup linearLayout;
+
+
+            public ItemEmptyHolder(View itemView) {
+                super(itemView);
+
+                emptyImage = (ImageView) itemView.findViewById(R.id.noItemL_image);
+                emptyText = (TextView) itemView.findViewById(R.id.noItemL_text);
+                linearLayout = (ViewGroup) itemView.findViewById(R.id.container);
+
+                emptyText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+            }
+
+
+            public void setupHolder() {
+                emptyImage.setImageResource(R.drawable.refresh_empty);
+                emptyText.setText("داده ای موجود نیست");
+            }
+
+        }
+
+
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            if (viewType == ConcoughActivityType.ENTRANCE_UPDATE.getValue()) {
+            if (viewType == 50) {
+                View view = LayoutInflater.from(context).inflate(R.layout.cc_recycle_not_item, parent, false);
+                return new ItemEmptyHolder(view);
+
+            } else if (viewType == ConcoughActivityType.ENTRANCE_UPDATE.getValue()) {
                 View view = LayoutInflater.from(context).inflate(R.layout.item_entrance_update, parent, false);
                 return new EntranceUpdateHolder(view);
 
@@ -577,31 +604,38 @@ public class HomeActivity extends BottomNavigationActivity {
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
-            final ConcoughActivityStruct oneItem = this.concoughActivityStructList.get(position);
 
+            if (holder.getClass() == ItemEmptyHolder.class) {
+                ItemEmptyHolder itemEmptyHolder = (ItemEmptyHolder) holder;
+                itemEmptyHolder.setupHolder();
 
-            switch (oneItem.getActivityType()) {
-                case "ENTRANCE_UPDATE":
-                    EntranceUpdateHolder itemHolder = (EntranceUpdateHolder) holder;
-                    itemHolder.setupHolder(oneItem);
-                    itemHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Intent i = EntranceDetailActivity.newIntent(HomeActivity.this, oneItem.getTarget().getAsJsonObject().get("unique_key").getAsString(), "Home");
-                            startActivity(i);
-                        }
-                    });
-                    break;
-                default:
-                    ItemHolder itemHolder2 = (ItemHolder) holder;
-                    itemHolder2.itemView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Intent i = EntranceDetailActivity.newIntent(HomeActivity.this, oneItem.getTarget().getAsJsonObject().get("unique_key").getAsString(), "Home");
-                            startActivity(i);
-                        }
-                    });
-                    itemHolder2.setupHolder(oneItem);
+            } else {
+                final ConcoughActivityStruct oneItem = this.concoughActivityStructList.get(position);
+                switch (oneItem.getActivityType()) {
+                    case "ENTRANCE_UPDATE": {
+                        EntranceUpdateHolder itemHolder = (EntranceUpdateHolder) holder;
+                        itemHolder.setupHolder(oneItem);
+                        itemHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent i = EntranceDetailActivity.newIntent(HomeActivity.this, oneItem.getTarget().getAsJsonObject().get("unique_key").getAsString(), "Home");
+                                startActivity(i);
+                            }
+                        });
+                        break;
+                    }
+                    default: {
+                        ItemHolder itemHolder2 = (ItemHolder) holder;
+                        itemHolder2.itemView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent i = EntranceDetailActivity.newIntent(HomeActivity.this, oneItem.getTarget().getAsJsonObject().get("unique_key").getAsString(), "Home");
+                                startActivity(i);
+                            }
+                        });
+                        itemHolder2.setupHolder(oneItem);
+                    }
+                }
             }
 
         }
@@ -609,17 +643,27 @@ public class HomeActivity extends BottomNavigationActivity {
 
         @Override
         public int getItemCount() {
-            return concoughActivityStructList.size();
+            if (concoughActivityStructList.size() == 0) {
+                return 1;
+            } else {
+                return concoughActivityStructList.size();
+            }
         }
 
         @Override
         public int getItemViewType(int position) {
-            switch (concoughActivityStructList.get(position).getActivityType()) {
-                case "ENTRANCE_UPDATE":
-                    return ConcoughActivityType.ENTRANCE_UPDATE.getValue();
-                default:
-                    return ConcoughActivityType.ENTRANCE_CREATE.getValue();
+
+            if (concoughActivityStructList.size() == 0) {
+                return 50;
+            } else {
+                switch (concoughActivityStructList.get(position).getActivityType()) {
+                    case "ENTRANCE_UPDATE":
+                        return ConcoughActivityType.ENTRANCE_UPDATE.getValue();
+                    default:
+                        return ConcoughActivityType.ENTRANCE_CREATE.getValue();
+                }
             }
+
         }
 
 

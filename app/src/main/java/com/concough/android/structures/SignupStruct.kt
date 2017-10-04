@@ -19,8 +19,11 @@ class SignupMoreInfoStruct(): Serializable {
     var birthday: Date? = null
 }
 
-enum class Gender(value: String) {
-    Male("M"), Female("F"), Other("O")
+enum class Gender(val value: String) {
+    Male("M"), Female("F"), Other("O");
+
+    override fun toString(): String = value
+
 }
 
 enum class GradeType(value: String) {

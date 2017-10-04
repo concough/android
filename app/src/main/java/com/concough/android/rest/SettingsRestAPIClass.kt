@@ -25,15 +25,14 @@ class SettingsRestAPIClass {
         val TAG = "SettingsRestAPIClass"
 
         @JvmStatic
-        fun postBug(context: Context, description: String, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+        fun postBug(context: Context, description: String, deviceModel: String, osVersion: String, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
             val fullPath = UrlMakerSingleton.getInstance().getReportBugUrl() ?: return
 
             TokenHandlerSingleton.getInstance(context).assureAuthorized(completion = { authenticated, error ->
                 if (authenticated && error == HTTPErrorType.Success) {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
 
-                    // TODO: must get device_model , os_version from android
-                    val parameters: HashMap<String, Any> = hashMapOf("description" to description, "app_version" to APP_VERSION, "api_version" to API_VERSION, "device_model" to "Samsung Test", "os_version" to "Marshmelow Test")
+                    val parameters: HashMap<String, Any> = hashMapOf("description" to description, "app_version" to APP_VERSION, "api_version" to API_VERSION, "device_model" to deviceModel, "os_version" to osVersion)
 
                     val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)

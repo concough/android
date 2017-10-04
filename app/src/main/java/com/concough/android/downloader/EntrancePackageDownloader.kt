@@ -1,12 +1,16 @@
 package com.concough.android.downloader
 
-import android.app.Service
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import android.support.v4.app.NotificationCompat
 import android.util.Base64
 import android.util.Log
+import com.concough.android.concough.FavoritesActivity
+import com.concough.android.concough.R
+import com.concough.android.general.AlertClass
 import com.concough.android.models.EntranceModelHandler
 import com.concough.android.models.EntrancePackageHandler
 import com.concough.android.models.EntranceQuestionModelHandler
@@ -28,6 +32,7 @@ import java.io.FileOutputStream
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
+
 
 /**
  * Created by abolfazl on 7/30/17.
@@ -73,6 +78,10 @@ class EntrancePackageDownloader : Service() {
     private var username: String = ""
     private var indexPath: Int? = null
 
+    private var notificationBuilder: NotificationCompat.Builder? = null
+    private var notificationManager: NotificationManager? = null
+    private var currentNotificationID: Int = 0
+
     public var DownloadCount: Number = 0
         get private set
 
@@ -85,6 +94,9 @@ class EntrancePackageDownloader : Service() {
         this.vcType = vcType
         this.username = username
         this.indexPath = index
+
+        notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?
+
     }
 
     public fun registerActivity(context: Context, vcType: String, index: Int) {
@@ -94,8 +106,8 @@ class EntrancePackageDownloader : Service() {
     }
 
     public fun fillImageArray(): Boolean {
-        val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername(applicationContext)!!
-        val questions = EntranceQuestionModelHandler.getQuestions(applicationContext, username, entranceUniqueId)
+        val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()!!
+        val questions = EntranceQuestionModelHandler.getQuestionsNotDownloaded(applicationContext, username, entranceUniqueId)
         if (questions != null) {
             if (questions.count() > 0) {
                 questionsList.clear()
@@ -119,7 +131,8 @@ class EntrancePackageDownloader : Service() {
                     this.DownloadCount = this.imageList.count()
                     return true
 
-                } catch (exc: Exception) {}
+                } catch (exc: Exception) {
+                }
 
             }
         }
@@ -152,9 +165,10 @@ class EntrancePackageDownloader : Service() {
 
                         val entrance = EntranceModelHandler.getByUsernameAndId(context!!.applicationContext, username, entranceUniqueId)
                         if (entrance != null) {
-                            val message = "کنکور" + " ${entrance.type} ${entrance.year} " + "دانلود شد"
+                            val message = "آزمون" + " ${entrance.type} سال ${entrance.year} " + "دانلود شد"
+                            val subMessage = "${entrance.set} (${entrance.group})"
 
-                            // TODO: make local notification
+                            simpleNotification(message,subMessage)
                         }
 
                         if (vcType == "ED") {
@@ -254,16 +268,21 @@ class EntrancePackageDownloader : Service() {
                     processNext(saveDirectory)
                 }
 
-            }, failure = {error ->
+            }, failure = { error ->
                 runOnUiThread {
                     if (error != null) {
                         when (error) {
-                            NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
+                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                if(this@EntrancePackageDownloader.context!=null && this@EntrancePackageDownloader.context is Activity) {
+                                    AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                                }
                             }
                             else -> {
+                                if(this@EntrancePackageDownloader.context!=null && this@EntrancePackageDownloader.context is Activity) {
+                                    AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+                                }
                             }
-                        }// TODO: show top error message with NetworkError
-                        // TODO: show top error message with NetworkError
+                        }
                     }
 
                     if (vcType == "ED") {
@@ -296,13 +315,15 @@ class EntrancePackageDownloader : Service() {
 
     fun downloadInitialData(completion: (result: Boolean, indexPath: Int?) -> Unit) {
         doAsync {
-            EntranceRestAPIClass.getEntrancePackageDataInit(context?.applicationContext!!, entranceUniqueId, completion = {data, error ->
+            EntranceRestAPIClass.getEntrancePackageDataInit(context?.applicationContext!!, entranceUniqueId, completion = { data, error ->
                 runOnUiThread {
                     if (error != HTTPErrorType.Success) {
                         if (error == HTTPErrorType.Refresh) {
                             downloadInitialData(completion)
                         } else {
-                            // TODO: show toip message with HTTPError and subtype = error
+                            if(this@EntrancePackageDownloader.context!=null && this@EntrancePackageDownloader.context is Activity) {
+                                AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                            }
                         }
                     } else {
                         if (data != null) {
@@ -313,7 +334,7 @@ class EntrancePackageDownloader : Service() {
                                         try {
                                             val packageStr = data.asJsonObject.get("package").asString
                                             val decodedData = Base64.decode(packageStr, Base64.DEFAULT)
-                                            val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername(applicationContext)
+                                            val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()
 
                                             val hashStr = "$username:$SECRET_KEY"
                                             val hashKey = MD5Digester.digest(hashStr)
@@ -347,7 +368,9 @@ class EntrancePackageDownloader : Service() {
                                         val errorType = data.asJsonObject.get("error_type").asString
                                         when (errorType) {
                                             "PackageNotExist", "EntranceNotExist" -> {
-                                                // TODO: show top message with msgType = "EntranceResult", and subType = "EntranceNotExist"
+                                                if(this@EntrancePackageDownloader.context!=null && this@EntrancePackageDownloader.context is Activity) {
+                                                    AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "EntranceResult", "EntranceNotExist", "error", null)
+                                                }
 
                                                 if (vcType == "ED") {
                                                     if (listener != null) {
@@ -356,7 +379,6 @@ class EntrancePackageDownloader : Service() {
                                                 }
                                             }
                                             else -> {
-                                                // TODO: show simple error message with messageType = "ErrorResult"
                                             }
                                         }
                                     }
@@ -370,18 +392,21 @@ class EntrancePackageDownloader : Service() {
                     }
                 }
 
-            }, failure = {error ->
+            }, failure = { error ->
                 runOnUiThread {
                     if (error != null) {
                         when (error) {
-                            NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
-                                // TODO: show top error message with NetworkError
+                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                if(this@EntrancePackageDownloader.context!=null && this@EntrancePackageDownloader.context is Activity) {
+                                    AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                                }
                             }
                             else -> {
-                                // TODO: show top error message with NetworkError
+                                if(this@EntrancePackageDownloader.context!=null && this@EntrancePackageDownloader.context is Activity) {
+                                    AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+                                }
                             }
                         }
-
                     }
 
                     if (vcType == "ED") {
@@ -401,5 +426,33 @@ class EntrancePackageDownloader : Service() {
         }
 
         completion(false, null)
+    }
+
+    private fun sendNotification() {
+        val notificationIntent = Intent(this@EntrancePackageDownloader, FavoritesActivity::class.java)
+        val contentIntent = PendingIntent.getActivity(this@EntrancePackageDownloader, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+//        notificationBuilder = NotificationCompat.Builder(this@EntrancePackageDownloader)
+        notificationBuilder?.setContentIntent(contentIntent)
+
+        val notification = notificationBuilder!!.build()
+        notification.flags = notification.flags or Notification.FLAG_AUTO_CANCEL
+        notification.defaults = notification.defaults or Notification.DEFAULT_SOUND
+        currentNotificationID++
+        var notificationId: Int = currentNotificationID
+        if (notificationId == Integer.MAX_VALUE - 1) {
+            notificationId = 0
+        }
+        notificationManager?.notify(notificationId, notification)
+    }
+
+    private fun simpleNotification(message:String, subMessage:String) {
+        notificationBuilder= NotificationCompat
+                .Builder(this)
+                .setContentTitle(message)
+                .setContentText(subMessage)
+                .setSmallIcon(R.drawable.hand_with_pen)
+
+        sendNotification()
     }
 }

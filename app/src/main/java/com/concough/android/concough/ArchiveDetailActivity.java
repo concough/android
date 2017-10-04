@@ -26,6 +26,7 @@ import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.structures.ArchiveEsetDetailStruct;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
+import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -53,6 +54,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
     private final static String Detail_Struct = "Detail_Struct";
 
+    private KProgressHUD loadingProgress;
 
     private ArchiveEsetDetailStruct mArchiveEsetDetailStruct;
 
@@ -78,20 +80,6 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
         mArchiveEsetDetailStruct = (ArchiveEsetDetailStruct) getIntent().getSerializableExtra(Detail_Struct);
 
         adapter = new GetEntranceAdapter(this, new ArrayList<JsonElement>());
-
-//        ActionBar mActionBar = getSupportActionBar();
-//        mActionBar.setDisplayShowTitleEnabled(false);
-//        mActionBar.setElevation(2);
-
-//        LayoutInflater mInflater = LayoutInflater.from(this);
-//        View mCustomView = mInflater.inflate(R.layout.cc_archivedetail_actionbar, null);
-
-//        TextView abtext = (TextView) mCustomView.findViewById(R.id.archiveDetailActionBarA_title);
-//        abtext.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-
-//        mActionBar.setCustomView(mCustomView);
-//        mActionBar.setDisplayShowCustomEnabled(true);
-
 
         recyclerView = (RecyclerView) findViewById(R.id.archiveDetailA_recycle);
         RecyclerView.LayoutManager layoutManagerDetails = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
@@ -123,16 +111,17 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
     }
 
     private void actionBarSet() {
+
         final ArrayList<ButtonDetail> buttonDetailArrayList = new ArrayList<>();
 
         ButtonDetail buttonDetail;
         buttonDetail = new ButtonDetail();
-        if(BasketSingleton.getInstance().getSalesCount()>0){
+        if (BasketSingleton.getInstance().getSalesCount() > 0) {
             buttonDetail.hasBadge = true;
             buttonDetail.badgeCount = BasketSingleton.getInstance().getSalesCount();
+            buttonDetail.imageSource = R.drawable.buy_icon;
+            buttonDetailArrayList.add(buttonDetail);
         }
-        buttonDetail.imageSource = R.drawable.buy_icon;
-        buttonDetailArrayList.add(buttonDetail);
 
         super.clickEventInterface = new OnClickEventInterface() {
             @Override
@@ -164,7 +153,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
     private class GetEntranceSetsTask extends AsyncTask<Integer, Void, Void> {
 
         @Override
-        protected Void doInBackground(Integer... params) {
+        protected Void doInBackground(final Integer... params) {
 
             ArchiveRestAPIClass.getEntrances(getApplicationContext(), params[0], new Function2<JsonObject, HTTPErrorType, Unit>() {
                 @Override
@@ -172,38 +161,61 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
                             if (jsonObject != null) {
                                 if (httpErrorType == HTTPErrorType.Success) {
-//                                    try {
-                                    //HashMap<Integer, String> jsonHashMap = new HashMap<Integer, String>();
-                                    JsonObject json = jsonObject.getAsJsonObject();
-                                    JsonArray leaders = json.getAsJsonArray("record");
+
+                                    String status = jsonObject.get("status").getAsString();
+
+                                    switch (status) {
+                                        case "OK": {
+                                            JsonObject json = jsonObject.getAsJsonObject();
+                                            JsonArray leaders = json.getAsJsonArray("record");
 
 
-                                    // ArrayList<JsonElement> localListJson = new ArrayList<JsonElement>();
-                                    ArrayList<JsonElement> localList = new ArrayList<JsonElement>();
-                                    if (leaders != null) {
-                                        for (JsonElement je : leaders) {
-                                            //je = je.getAsJsonObject().get("organization");
-                                            if (je != null) {
-                                                //String j = je.getAsJsonObject().get("title").getAsString();
-                                                localList.add(je);
+                                            ArrayList<JsonElement> localList = new ArrayList<JsonElement>();
+                                            if (leaders != null) {
+                                                for (JsonElement je : leaders) {
+                                                    //je = je.getAsJsonObject().get("organization");
+                                                    if (je != null) {
+                                                        //String j = je.getAsJsonObject().get("title").getAsString();
+                                                        localList.add(je);
+                                                    }
+                                                }
                                             }
+
+
+                                            ArchiveDetailActivity.this.adapter.setItems(localList);
+                                            ArchiveDetailActivity.this.adapter.notifyDataSetChanged();
+                                            break;
                                         }
+                                        case "Error": {
+                                            String errorType = jsonObject.get("error_type").getAsString();
+
+                                            switch (errorType) {
+                                                case "EmptyArray": {
+
+                                                    ArchiveDetailActivity.this.adapter.setItems(new ArrayList<JsonElement>());
+                                                    ArchiveDetailActivity.this.adapter.notifyDataSetChanged();
+
+                                                    break;
+                                                }
+                                            }
+                                            break;
+                                        }
+
                                     }
 
 
-                                    ArchiveDetailActivity.this.adapter.setItems(localList);
-                                    ArchiveDetailActivity.this.adapter.notifyDataSetChanged();
-
-//                                        ArchiveActivity.this.mSectionsPagerAdapter.notifyDataSetChanged();
-//                                        tabLayout.setupWithViewPager(ArchiveActivity.this.mViewPager);
-
-//                                        ArchiveActivity.this.changeGroupIndex(0);
-
-//                                    } catch (Exception e) {
-//                                        Log.d(TAG, "run: ");
 //                                    }
+                                } else {
+                                    if(httpErrorType == HTTPErrorType.Refresh) {
+                                        getSets(params[0]);
+                                    } else {
+                                        AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                    }
                                 }
                             }
                         }
@@ -219,14 +231,17 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
                             switch (networkErrorType) {
                                 case NoInternetAccess:
                                 case HostUnreachable: {
-                                    AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
+                                    AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                     break;
                                 }
                                 default: {
-                                    AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
+                                    AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                     break;
                                 }
 
@@ -240,6 +255,13 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
             });
 
             return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            loadingProgress = AlertClass.showLoadingMessage(ArchiveDetailActivity.this);
+            loadingProgress.show();
         }
     }
 
@@ -293,10 +315,16 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                 String t1 = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.typeTitle + " (" + ArchiveDetailActivity.this.mArchiveEsetDetailStruct.groupTitle + ")";
                 setName.setText(t1);
 
-                String t2 = "کد: " + ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.code;
+                String t2 = "";
+                if (Integer.valueOf(ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.code) == 0) {
+                    t2 = "کد: " + "ندارد";
+                } else {
+                    t2 = "کد: " + ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.code;
+                }
+
                 code.setText(t2);
 
-                String t3 = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.entrance_count + " کنکور منتشر شده";
+                String t3 = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.entrance_count + " آزمون منتشر شده";
                 count.setText(t3);
 
 
@@ -329,25 +357,6 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                 }, new Function1<NetworkErrorType, Unit>() {
                     @Override
                     public Unit invoke(final NetworkErrorType networkErrorType) {
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
-                                    }
-                                    default: {
-                                        AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
-                                    }
-
-                                }
-                            }
-                        });
-
                         return null;
                     }
                 });
@@ -456,25 +465,6 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                 }, new Function1<NetworkErrorType, Unit>() {
                     @Override
                     public Unit invoke(final NetworkErrorType networkErrorType) {
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
-                                    }
-                                    default: {
-                                        AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
-                                    }
-
-                                }
-                            }
-                        });
-
                         return null;
                     }
                 });

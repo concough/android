@@ -126,6 +126,18 @@ class UrlMakerSingleton private constructor(){
         return fullPath
     }
 
+
+    fun editGradeProfileUrl(): String? {
+        var fullPath: String? = null
+        val functionName = "edit/grade"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._profile_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+
     fun activityUrl(): String? {
         var fullPath: String? = null
 

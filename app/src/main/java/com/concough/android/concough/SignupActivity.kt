@@ -11,11 +11,13 @@ import android.view.Gravity
 import android.view.View
 import android.widget.Toast
 import com.concough.android.extensions.isValidPhoneNumber
+import com.concough.android.general.AlertClass
 import com.concough.android.rest.AuthRestAPIClass
 import com.concough.android.singletons.FontCacheSingleton
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
 import com.concough.android.structures.SignupStruct
+import com.concough.android.vendor.progressHUD.KProgressHUD
 import kotlinx.android.synthetic.main.activity_signup.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -24,6 +26,8 @@ class SignupActivity : AppCompatActivity() {
     private var isUsernameValid = false
     private var mainUsernameText: String = ""
     private var signupStruct: SignupStruct? = null
+    private var loadingProgress: KProgressHUD? = null
+
 
     companion object {
         val TAG = "SignupActivity"
@@ -63,7 +67,9 @@ class SignupActivity : AppCompatActivity() {
         signupA_sendCode.setOnClickListener {
             // request server to send code
             var username = signupA_usernameEdit.text.toString()
-            if (username.isValidPhoneNumber) {
+            if (username == "") {
+                AlertClass.showAlertMessage(this@SignupActivity, "Form", "EmptyFields", "error", null)
+            } else if (username.isValidPhoneNumber) {
 
                 if (username.startsWith("0")) {
                     username = username.substring(1)
@@ -71,6 +77,7 @@ class SignupActivity : AppCompatActivity() {
                 username = "98$username"
                 this.signupStruct?.username = username
                 this.makePreSignup(username)
+            } else {
             }
         }
 
@@ -81,7 +88,7 @@ class SignupActivity : AppCompatActivity() {
             finish()
         }
 
-        signupA_usernameEdit.addTextChangedListener(object : TextWatcher{
+        signupA_usernameEdit.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
@@ -133,7 +140,7 @@ class SignupActivity : AppCompatActivity() {
                                                     isUsernameValid = false
                                                     val error_type = data?.get("error_type")?.asString
                                                     error_type.let {
-                                                        when(error_type) {
+                                                        when (error_type) {
                                                             "ExistUsername" -> {
                                                                 signupA_usernameCheckTextView.text = "این شماره همراه قبلا رزرو شده است"
                                                                 signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughRedLight))
@@ -142,8 +149,8 @@ class SignupActivity : AppCompatActivity() {
                                                             else -> {
                                                                 signupA_usernameCheckTextView.text = mainUsernameText
                                                                 signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughGray))
+                                                                AlertClass.showAlertMessage(this@SignupActivity, "ErrorResult", error_type.toString(), "error", null);
 
-                                                                // Show Alert to user
                                                             }
                                                         }
                                                     }
@@ -151,25 +158,34 @@ class SignupActivity : AppCompatActivity() {
                                             }
                                         }
                                     } else {
-                                        // show error Alert
+                                        AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                                        signupA_usernameCheckTextView.text = mainUsernameText
+                                        signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughGray))
                                     }
 
                                 }
 
                             }, failure = { error ->
-//                                Log.d(TAG, error.toString())
+                                //                                Log.d(TAG, error.toString())
                                 uiThread {
                                     signupA_SignupAloading.visibility = View.GONE
 
                                     if (error != null) {
                                         when (error) {
-                                            NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
-                                                // TODO: show top message about error with type error
+                                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                                AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
                                             }
                                             else -> {
-                                                // TODO: Show top message about error without type
+                                                AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
                                             }
                                         }
+
+//                                        when (error) {
+//                                            NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
+//                                            }
+//                                            else -> {
+//                                            }
+//                                        }
                                     }
 
                                     val t = Toast.makeText(this@SignupActivity, error.toString(), Toast.LENGTH_LONG)
@@ -200,13 +216,13 @@ class SignupActivity : AppCompatActivity() {
     }
 
     private fun makePreSignup(username: String) {
-        // TODO: show loading in view
-
+        loadingProgress = AlertClass.showLoadingMessage(this@SignupActivity)
+        loadingProgress?.show()
         doAsync {
 
             AuthRestAPIClass.preSignup(username, { data, error ->
                 uiThread {
-                    // TODO: hide loading that showed before
+                    AlertClass.hideLoadingMessage(loadingProgress)
                     if (error == HTTPErrorType.Success) {
                         if (data != null) {
                             try {
@@ -225,11 +241,10 @@ class SignupActivity : AppCompatActivity() {
                                             "ExistUsername" -> {
                                                 this@SignupActivity.signupA_usernameCheckTextView.text = "این شماره همراه قبلا رزرو شده است"
                                                 this@SignupActivity.signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughRedLight))
-
-                                                // TODO: show simple error message with messageType = "AuthProfile"
+                                                AlertClass.showAlertMessage(this@SignupActivity, "AuthProfile", errorType, "error", null)
                                             }
                                             else -> {
-                                                // TODO: show simple error message with messageType = "ErrorResult"
+                                                AlertClass.showAlertMessage(this@SignupActivity, "ErrorResult", errorType, "error", null)
                                             }
                                         }
                                     }
@@ -240,19 +255,19 @@ class SignupActivity : AppCompatActivity() {
                             }
                         }
                     } else {
-                        // TODO: show top message with type = error
+                        AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
                     }
                 }
             }, { error ->
                 uiThread {
-                    // TODO: hide loading that showed before
+                    AlertClass.hideLoadingMessage(loadingProgress)
                     if (error != null) {
                         when (error) {
-                            NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
-                                // TODO: show top message about error with type error
+                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
                             }
                             else -> {
-                                // TODO: Show top message about error without type
+                                AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
                             }
                         }
                     }

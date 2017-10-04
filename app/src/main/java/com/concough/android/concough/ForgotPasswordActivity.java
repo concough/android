@@ -14,11 +14,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.concough.android.general.AlertClass;
 import com.concough.android.rest.AuthRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.structures.SignupStruct;
+import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonObject;
 
 import kotlin.Unit;
@@ -33,6 +35,8 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     private Button loginButton;
     private EditText usernameEdittext;
     private SignupStruct signupStruct;
+    private KProgressHUD loadingProgress;
+
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, ForgotPasswordActivity.class);
@@ -107,6 +111,8 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                     username = "98" + username;
 
                     ForgotPasswordActivity.this.forgotPassword(username);
+                } else {
+                    AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "Form", "PhoneVerifyWrong", "error", null);
                 }
             }
         });
@@ -130,12 +136,17 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(final String... params) {
+
+
             AuthRestAPIClass.forgotPassword(params[0], new Function2<JsonObject, HTTPErrorType, Unit>() {
                 @Override
                 public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
                             if (httpErrorType == HTTPErrorType.Success) {
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
@@ -156,7 +167,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                                                 String errorType = jsonObject.get("error_type").getAsString();
                                                 switch (errorType) {
                                                     case "UserNotExist":
-                                                        // TODO: Show error message eith msgType = "AuthProfile"
+                                                        AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "AuthProfile", errorType, "error", null);
                                                         break;
                                                     default:
                                                         break;
@@ -170,7 +181,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new ForgotPasswordTask().execute(params);
                             } else {
-                                // TODO: show error with msgType = "HTTPError" and error
+                                AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                             }
                         }
                     });
@@ -183,16 +194,20 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO: hide loading
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
                             if (networkErrorType != null) {
                                 switch (networkErrorType) {
-                                    case HostUnreachable:
                                     case NoInternetAccess:
-                                        // TODO: Show error message "NetworkError" with type = "error"
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
                                         break;
-                                    default:
-                                        // TODO: Show error message "NetworkError" with type = ""
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
                                         break;
+                                    }
                                 }
                             }
 
@@ -210,7 +225,9 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            // TODO: show loading
+            loadingProgress = AlertClass.showLoadingMessage(ForgotPasswordActivity.this);
+            loadingProgress.show();
         }
+
     }
 }

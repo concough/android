@@ -48,10 +48,8 @@ public enum  Effectstype {
 	} catch (ClassCastException e) {
 		throw new Error("Can not init animatorClazz instance");
 	} catch (InstantiationException e) {
-		// TODO Auto-generated catch block
 		throw new Error("Can not init animatorClazz instance");
 	} catch (IllegalAccessException e) {
-		// TODO Auto-generated catch block
 		throw new Error("Can not init animatorClazz instance");
 	}
 	return bEffects;

@@ -3,13 +3,14 @@ package com.concough.android.concough
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.Gravity
 import android.view.View
+import com.concough.android.general.AlertClass
 import com.concough.android.rest.AuthRestAPIClass
 import com.concough.android.settings.PASSWORD_KEY
 import com.concough.android.settings.USERNAME_KEY
@@ -19,6 +20,7 @@ import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
 import com.concough.android.structures.SignupStruct
 import com.concough.android.utils.KeyChainAccessProxy
+import com.concough.android.vendor.progressHUD.KProgressHUD
 import kotlinx.android.synthetic.main.activity_signup_code.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -26,6 +28,8 @@ import org.jetbrains.anko.uiThread
 class SignupCodeActivity : AppCompatActivity() {
     private var signupStruct: SignupStruct? = null
     private var fromWhichActivity: String? = null
+    private var loadingProgress: KProgressHUD? = null
+
 
     companion object {
         private val TAG = "SignupCodeActivity"
@@ -89,7 +93,7 @@ class SignupCodeActivity : AppCompatActivity() {
         })
 
         SignupCodeA_ResendButton.setOnClickListener {
-            when(this@SignupCodeActivity.fromWhichActivity) {
+            when (this@SignupCodeActivity.fromWhichActivity) {
                 "SignupA" -> makePreSignup()
                 "ForgotPassA" -> makeForgotPass()
                 else -> return@setOnClickListener
@@ -97,7 +101,7 @@ class SignupCodeActivity : AppCompatActivity() {
         }
 
         SignupCodeA_SubmitButton.setOnClickListener {
-            when(this@SignupCodeActivity.fromWhichActivity) {
+            when (this@SignupCodeActivity.fromWhichActivity) {
                 "SignupA" -> sendPreSignupCode()
                 "ForgotPassA" -> sendForgotPassCode()
                 else -> return@setOnClickListener
@@ -115,81 +119,81 @@ class SignupCodeActivity : AppCompatActivity() {
 
             }
             if (intCode == null) {
-                // TODO: Shoe error message with msgType = "Form" and msgSubType = "CodeWrong"
+                AlertClass.showTopMessage(this@SignupCodeActivity,findViewById(R.id.container),"Form","CodeWrong","error",null)
                 return
             }
 
-                // TODO: show loading in view
-                doAsync {
+            loadingProgress = AlertClass.showLoadingMessage(this@SignupCodeActivity)
+            loadingProgress?.show()
+            doAsync {
 
-                    AuthRestAPIClass.signup(this@SignupCodeActivity.signupStruct?.username!!, this@SignupCodeActivity.signupStruct?.preSignupId!!, intCode!!, { data, error ->
-                        uiThread {
-                            // TODO: hide loading that showed before
-                            if (error == HTTPErrorType.Success) {
-                                if (data != null) {
-                                    try {
-                                        val status = data.get("status").asString
-                                        when (status) {
-                                            "OK" -> {
-                                                this@SignupCodeActivity.signupStruct?.password = code
-                                                // TODO: make login request
-                                                this@SignupCodeActivity.login()
+                AuthRestAPIClass.signup(this@SignupCodeActivity.signupStruct?.username!!, this@SignupCodeActivity.signupStruct?.preSignupId!!, intCode!!, { data, error ->
+                    uiThread {
+                        AlertClass.hideLoadingMessage(loadingProgress)
+                        if (error == HTTPErrorType.Success) {
+                            if (data != null) {
+                                try {
+                                    val status = data.get("status").asString
+                                    when (status) {
+                                        "OK" -> {
+                                            this@SignupCodeActivity.signupStruct?.password = code
+                                            this@SignupCodeActivity.login()
 
-                                            }
-                                            "Error" -> {
-                                                val errorType = data.get("error_type").asString
-                                                when (errorType) {
-                                                    "ExistUsername", "PreAuthNoExist" -> {
-                                                        // TODO: show simple error message with messageType = "AuthProfile"
-                                                    }
-                                                    "ExpiredCode" -> {
-                                                        // TODO: show simple error message with messageType = "ErrorResult"
-                                                    }
+                                        }
+                                        "Error" -> {
+                                            val errorType = data.get("error_type").asString
+                                            when (errorType) {
+                                                "ExistUsername", "PreAuthNoExist" -> {
+                                                    AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "AuthProfile", errorType, "", null)
+                                                }
+                                                "ExpiredCode" -> {
+                                                    AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "ErrorResult", errorType, "", null)
                                                 }
                                             }
                                         }
+                                    }
 
-                                    } catch (exc: Exception) {
+                                } catch (exc: Exception) {
 
-                                    }
-                                }
-                            } else {
-                                // TODO: show top message with type = error
-                            }
-                        }
-                    }, { error ->
-                        uiThread {
-                            // TODO: hide loading that showed before
-                            if (error != null) {
-                                when (error) {
-                                    NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
-                                        // TODO: show top message about error with type error
-                                    }
-                                    else -> {
-                                        // TODO: Show top message about error without type
-                                    }
                                 }
                             }
-
+                        } else {
+                            AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
                         }
-                    })
-                }
+                    }
+                }, { error ->
+                    uiThread {
+                        AlertClass.hideLoadingMessage(loadingProgress)
+                        if (error != null) {
+                            when (error) {
+                                NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                    AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                                }
+                                else -> {
+                                    AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+                                }
+                            }
+                        }
+
+                    }
+                })
+            }
 
 
         } else {
-            // TODO: Show message with msgType = "Form" and msgSubType = "EmptyFields"
+            AlertClass.showTopMessage(this@SignupCodeActivity,findViewById(R.id.container),"Form","EmptyFields","error",null)
         }
     }
 
     private fun makePreSignup() {
         val username = this@SignupCodeActivity.signupStruct?.username ?: return
-
-        // TODO: show loading in view
+        loadingProgress = AlertClass.showLoadingMessage(this@SignupCodeActivity)
+        loadingProgress?.show()
         doAsync {
 
             AuthRestAPIClass.preSignup(username, { data, error ->
                 uiThread {
-                    // TODO: hide loading that showed before
+                    AlertClass.hideLoadingMessage(loadingProgress)
                     if (error == HTTPErrorType.Success) {
                         if (data != null) {
                             try {
@@ -198,19 +202,15 @@ class SignupCodeActivity : AppCompatActivity() {
                                     "OK" -> {
                                         val id = data.get("id").asInt
                                         this@SignupCodeActivity.signupStruct?.preSignupId = id
-
-                                        // TODO: Show message to user about resending successful msgType = "ActionResult" and msgSubType = "ResendCodeSuccessful"
-
+                                        AlertClass.showAlertMessage(this@SignupCodeActivity, "ActionResult", "ResendCodeSuccessful", "", null)
                                     }
                                     "Error" -> {
                                         val errorType = data.get("error_type").asString
                                         when (errorType) {
                                             "ExistUsername" -> {
-
-                                                // TODO: show simple error message with messageType = "AuthProfile"
+                                                AlertClass.showAlertMessage(this@SignupCodeActivity, "AuthProfile", errorType, "error", null)
                                             }
                                             else -> {
-                                                // TODO: show simple error message with messageType = "ErrorResult"
                                             }
                                         }
                                     }
@@ -221,23 +221,22 @@ class SignupCodeActivity : AppCompatActivity() {
                             }
                         }
                     } else {
-                        // TODO: show top message with type = error
+                        AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
                     }
                 }
             }, { error ->
                 uiThread {
-                    // TODO: hide loading that showed before
+                    AlertClass.hideLoadingMessage(loadingProgress)
                     if (error != null) {
                         when (error) {
-                            NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
-                                // TODO: show top message about error with type error
+                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
                             }
                             else -> {
-                                // TODO: Show top message about error without type
+                                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
                             }
                         }
                     }
-
                 }
             })
         }
@@ -245,13 +244,13 @@ class SignupCodeActivity : AppCompatActivity() {
 
     private fun makeForgotPass() {
         val username = this@SignupCodeActivity.signupStruct?.username ?: return
-
-        // TODO: show loading in view
+        loadingProgress = AlertClass.showLoadingMessage(this@SignupCodeActivity)
+        loadingProgress?.show()
         doAsync {
 
             AuthRestAPIClass.preSignup(username, { data, error ->
                 uiThread {
-                    // TODO: hide loading that showed before
+                    AlertClass.hideLoadingMessage(loadingProgress)
                     if (error == HTTPErrorType.Success) {
                         if (data != null) {
                             try {
@@ -260,19 +259,17 @@ class SignupCodeActivity : AppCompatActivity() {
                                     "OK" -> {
                                         val id = data.get("id").asInt
                                         this@SignupCodeActivity.signupStruct?.preSignupId = id
-
-                                        // TODO: Show message to user about resending successful msgType = "ActionResult" and msgSubType = "ResendCodeSuccessful"
+                                        AlertClass.showAlertMessage(this@SignupCodeActivity, "ActionResult", "ResendCodeSuccessful", "", null)
 
                                     }
                                     "Error" -> {
                                         val errorType = data.get("error_type").asString
                                         when (errorType) {
                                             "UserNotExist" -> {
-
-                                                // TODO: show simple error message with messageType = "AuthProfile"
+                                                AlertClass.showAlertMessage(this@SignupCodeActivity, "AuthProfile", errorType, "error", null)
                                             }
                                             else -> {
-                                                // TODO: show simple error message with messageType = "ErrorResult"
+
                                             }
                                         }
                                     }
@@ -283,19 +280,19 @@ class SignupCodeActivity : AppCompatActivity() {
                             }
                         }
                     } else {
-                        // TODO: show top message with type = error
+                        AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
                     }
                 }
             }, { error ->
                 uiThread {
-                    // TODO: hide loading that showed before
+                    AlertClass.hideLoadingMessage(loadingProgress)
                     if (error != null) {
                         when (error) {
-                            NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
-                                // TODO: show top message about error with type error
+                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
                             }
                             else -> {
-                                // TODO: Show top message about error without type
+                                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
                             }
                         }
                     }
@@ -309,18 +306,19 @@ class SignupCodeActivity : AppCompatActivity() {
         // Set Username and password
         TokenHandlerSingleton.getInstance(applicationContext).setUsernameAndPassword(this@SignupCodeActivity.signupStruct?.username!!, this@SignupCodeActivity.signupStruct?.password!!)
 
-        // TODO: show loading in view
+        loadingProgress = AlertClass.showLoadingMessage(this@SignupCodeActivity)
+        loadingProgress?.show()
         doAsync {
             TokenHandlerSingleton.getInstance(applicationContext).authorize({ error ->
                 uiThread {
-                    // TODO: hide loading that showed before
+                    AlertClass.hideLoadingMessage(loadingProgress)
                     if (error == HTTPErrorType.Success) {
                         if (TokenHandlerSingleton.getInstance(applicationContext).isAuthorized()) {
                             KeyChainAccessProxy.getInstance(applicationContext).setValueAsString(USERNAME_KEY, this@SignupCodeActivity.signupStruct?.username!!)
                             KeyChainAccessProxy.getInstance(applicationContext).setValueAsString(PASSWORD_KEY, this@SignupCodeActivity.signupStruct?.password!!)
 
                             // Navigate to Signup More Info Activity
-                            val moreInfoIntent =  SignupMoreInfo1Activity.newIntent(this@SignupCodeActivity)
+                            val moreInfoIntent = SignupMoreInfo1Activity.newIntent(this@SignupCodeActivity)
                             startActivity(moreInfoIntent)
                             this@SignupCodeActivity.finish()
 
@@ -331,14 +329,24 @@ class SignupCodeActivity : AppCompatActivity() {
                             startActivity(i)
                         }
                     } else {
-                        // TODO: Show Simple message box "HTTPError" and in completion navigate to login activity
-                        // Navigate to LoginActivity
-                        val i = LoginActivity.newIntent(this@SignupCodeActivity)
-                        startActivity(i)
+                        AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
                     }
                 }
             }, { error ->
+                uiThread {
+                    AlertClass.hideLoadingMessage(loadingProgress)
+                    if (error != null) {
+                        when (error) {
+                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                            }
+                            else -> {
+                                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+                            }
+                        }
+                    }
 
+                }
             })
         }
     }
@@ -353,15 +361,15 @@ class SignupCodeActivity : AppCompatActivity() {
 
             }
             if (intCode == null) {
-                // TODO: Shoe error message with msgType = "Form" and msgSubType = "CodeWrong"
+                AlertClass.showTopMessage(this@SignupCodeActivity,findViewById(R.id.container),"Form","CodeWrong","error",null)
                 return
             }
 
             this@SignupCodeActivity.signupStruct?.password = code
-            // TODO: make login request
-
             val i = ResetPasswordActivity.newIntent(this@SignupCodeActivity, this@SignupCodeActivity.signupStruct, false)
             startActivity(i)
+        } else {
+            AlertClass.showTopMessage(this@SignupCodeActivity,findViewById(R.id.container),"Form","EmptyFields","error",null)
         }
     }
 }

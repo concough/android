@@ -3,7 +3,9 @@ package com.concough.android.concough;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -25,6 +27,7 @@ import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.structures.EntranceStruct;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
+import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -47,6 +50,8 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
     private TextView costLabelTextView;
     private TextView costValueTextView;
     private RecyclerView recycleView;
+    private KProgressHUD loadingProgress;
+
     //    private BottomNavigationView bottomNavigationView;
     private BasketCheckoutActivity.BasketCheckoutAdapter basketCheckoutAdapter;
 
@@ -68,11 +73,6 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
         this.setMenuSelectedIndex(1);
         super.onCreate(savedInstanceState);
         this.contextFromWho = getIntent().getStringExtra(CONTEXT_WHO_KEY);
-
-//        setContentView(R.layout.activity_basket_checkout);
-
-//        bottomNavigationView = (BottomNavigationView) findViewById(R.id.navigation);
-//        bottomNavigationView.setVisibility(View.GONE);
 
         // Initialize controls
         checkoutButton = (Button) findViewById(R.id.basketCheckoutA_checkout);
@@ -102,6 +102,8 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
         recycleView.setAdapter(basketCheckoutAdapter);
 
         pullRefreshLayout = (PullRefreshLayout) findViewById(R.id.basketCheckoutA_swipeRefreshLayout);
+        pullRefreshLayout.setColorSchemeColors(Color.TRANSPARENT, Color.GRAY, Color.GRAY, Color.GRAY);
+        pullRefreshLayout.setRefreshStyle(PullRefreshLayout.STYLE_MATERIAL);
         pullRefreshLayout.setOnRefreshListener(new PullRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -142,10 +144,12 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        AlertClass.hideLoadingMessage(loadingProgress);
                         BasketCheckoutActivity.this.updateTotalCost();
                         BasketCheckoutActivity.this.basketCheckoutAdapter.notifyItemRemoved(position);
+                        BasketCheckoutActivity.this.basketCheckoutAdapter.notifyItemRangeChanged(position, count);
 
-                        // TODO; show top message with "ActionResult" and sub message "BasketDeleteSuccess"
+                        AlertClass.showTopMessage(BasketCheckoutActivity.this, findViewById(R.id.container), "ActionResult", "BasketDeleteSuccess", "success", null);
                         if (count == 0) {
                             BasketCheckoutActivity.this.checkoutButton.setVisibility(View.GONE);
                         }
@@ -158,8 +162,9 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
             @Override
             public void onCheckout(final int count, HashMap<Integer, BasketSingleton.PurchasedItem> purchased) {
                 if (purchased != null) {
-                    // TODO: show alert message with ActionResult and sub message of PurchasedSuccess
-                    // TODO: update badge of navigation bar
+                    AlertClass.showAlertMessage(BasketCheckoutActivity.this, "ActionResult", "PurchasedSuccess", "success", null);
+
+                    BasketCheckoutActivity.this.setMenuItemColor(1, R.color.colorConcoughRedLight);
 
                     runOnUiThread(new Runnable() {
                         @Override
@@ -232,38 +237,59 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            if (viewType == CheckoutViewHolderType.ENTRANCE.getValue()) {
+            if (viewType == 50) {
+                View view = LayoutInflater.from(context).inflate(R.layout.cc_recycle_not_item, parent, false);
+                return new ItemEmptyHolder(view);
+
+            } else if (viewType == CheckoutViewHolderType.ENTRANCE.getValue()) {
                 View v = LayoutInflater.from(BasketCheckoutActivity.this).inflate(R.layout.item_checkout_entrance, parent, false);
                 return new CKEntranceHolder(v);
+
             }
             return null;
         }
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-            BasketSingleton.SaleItem sale = BasketSingleton.getInstance().getSaleByIndex(position);
-            if (sale != null) {
-                if (sale.getType() == "Entrance") {
-                    ((CKEntranceHolder) holder).setupHolder((EntranceStruct) sale.getTarget(), sale.getCost(), position);
+            if (holder.getClass() == ItemEmptyHolder.class) {
+                ItemEmptyHolder itemEmptyHolder = (ItemEmptyHolder) holder;
+                itemEmptyHolder.setupHolder();
+            } else {
+                BasketSingleton.SaleItem sale = BasketSingleton.getInstance().getSaleByIndex(position);
+                if (sale != null) {
+                    if (sale.getType() == "Entrance") {
+                        ((CKEntranceHolder) holder).setupHolder((EntranceStruct) sale.getTarget(), sale.getCost(), position);
+
+                    }
+
                 }
             }
+
 
         }
 
         @Override
         public int getItemCount() {
-            return BasketSingleton.getInstance().getSalesCount();
+            if (BasketSingleton.getInstance().getSalesCount() == 0) {
+                return 1;
+            } else {
+                return BasketSingleton.getInstance().getSalesCount();
+            }
+
         }
 
         @Override
         public int getItemViewType(int position) {
-            BasketSingleton.SaleItem sale = BasketSingleton.getInstance().getSaleByIndex(position);
-            if (sale != null) {
-                if (sale.getType() == "Entrance") {
-                    return CheckoutViewHolderType.ENTRANCE.getValue();
+            if (BasketSingleton.getInstance().getSalesCount() == 0) {
+                return 50;
+            } else {
+                BasketSingleton.SaleItem sale = BasketSingleton.getInstance().getSaleByIndex(position);
+                if (sale != null) {
+                    if (sale.getType() == "Entrance") {
+                        return CheckoutViewHolderType.ENTRANCE.getValue();
+                    }
                 }
             }
-
             return 0;
         }
 
@@ -298,10 +324,16 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
 
             @SuppressLint("SetTextI18n")
             public void setupHolder(EntranceStruct entrance, int cost, final int position) {
-                orgTypeTextView.setText("کنکور " + entrance.getEntranceTypeTitle() + " " + entrance.getEntranceOrgTitle() + " " +
+                orgTypeTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " + entrance.getEntranceOrgTitle() + " " +
                         FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
                 groupTextView.setText(entrance.getEntranceSetTitle() + " (" + entrance.getEntranceGroupTitle() + ")");
-                costTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(cost) + " تومان");
+
+                if (cost == 0) {
+                    costTextView.setText("رایگان");
+                    costTextView.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray));
+                } else {
+                    costTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(cost) + " تومان");
+                }
 
                 ArrayList<String> extraArray = new ArrayList<>();
 
@@ -323,7 +355,8 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
                         BasketSingleton.SaleItem sale = BasketSingleton.getInstance().getSaleByIndex(position);
 
                         if (sale != null) {
-                            // TODO: show loading message
+                            loadingProgress = AlertClass.showLoadingMessage(BasketCheckoutActivity.this);
+                            loadingProgress.show();
                             BasketSingleton.getInstance().removeSaleById(BasketCheckoutActivity.this, sale.getId(), position);
                         }
                     }
@@ -353,25 +386,6 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
                 }, new Function1<NetworkErrorType, Unit>() {
                     @Override
                     public Unit invoke(final NetworkErrorType networkErrorType) {
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(BasketCheckoutActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
-                                    }
-                                    default: {
-                                        AlertClass.showTopMessage(BasketCheckoutActivity.this, findViewById(R.id.activity_home), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
-                                    }
-
-                                }
-                            }
-                        });
-
                         return null;
                     }
                 });
@@ -379,6 +393,32 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
             }
 
         }
+
+        private class ItemEmptyHolder extends RecyclerView.ViewHolder {
+
+            private TextView emptyText;
+            private ImageView emptyImage;
+            private ViewGroup linearLayout;
+
+
+            public ItemEmptyHolder(View itemView) {
+                super(itemView);
+
+                emptyImage = (ImageView) itemView.findViewById(R.id.noItemL_image);
+                emptyText = (TextView) itemView.findViewById(R.id.noItemL_text);
+                linearLayout = (ViewGroup) itemView.findViewById(R.id.container);
+
+                emptyText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+            }
+
+
+            public void setupHolder() {
+                emptyImage.setImageResource(R.drawable.shopping_cart_empty);
+                emptyText.setText("سبد کالای شما خالیست");
+            }
+
+        }
+
 
     }
 }

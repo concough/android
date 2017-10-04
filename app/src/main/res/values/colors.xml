@@ -12,6 +12,7 @@
     <color name="colorConcoughRedLight">#DD0000</color>
     <color name="colorConcoughGreen">#008000</color>
     <color name="colorConcoughGrayDiasable">#75f7f7f7</color>
+    <color name="colorConcoughYellow">#e6b903</color>
     <color name="colorConcoughGray">#b7b7b7</color>
     <color name="colorConcoughGray2">#575757</color>
     <color name="colorConcoughGray3">#f7f7f7</color>
@@ -19,7 +20,8 @@
 
     <color name="colorConcoughGrayBackground">#f6f6f6</color>
     <color name="colorConcoughBorderWhite">#cccccc</color>
-    <color name="colorConcoughShadow">#d8d8d8</color>
+
+    <color name="colorConcoughVideoIntro">#99000000</color>
 
 
     <color name="colorConcoughHolder2Box">#DDFCFCFC</color>

@@ -31,87 +31,183 @@ class AlertClass {
             var title: String = ""
             var message: String = ""
 
-            when(messageType) {
+            when (messageType) {
                 "Contacts" -> {
-                    when(messageSubType) {
-                        "Denied" -> {title = "خطا"; message="لطفا اجازه دسترسی به لیست مخاطبین را از طریق تنظیمات گوشی صادر نمایید"}
-                        "FetchError" -> {title = "خطا"; message="خطا در بارگذاری مخاطبین"}
+                    when (messageSubType) {
+                        "Denied" -> {
+                            title = "خطا"; message = "لطفا اجازه دسترسی به لیست مخاطبین را از طریق تنظیمات گوشی صادر نمایید"
+                        }
+                        "FetchError" -> {
+                            title = "خطا"; message = "خطا در بارگذاری مخاطبین"
+                        }
                         else -> showMessage = false
                     }
                 }
                 "Form" -> {
-                    when(messageSubType) {
-                        "EmptyFields" -> {title = "خطا"; message="لطفا همه فیلدها را پر نمایید"}
-                        "NotSameFields" -> {title = "خطا"; message="مقادیر وارد شده باید یکسان باشند"}
-                        "OldPasswordNotCorrect" -> {title = "خطا"; message="گذرواژه فعلی نادرست است"}
-                        "CodeWrong" -> {title = "خطا"; message="کد وارد شده صحیح نمی باشد"}
+                    when (messageSubType) {
+                        "EmptyFields" -> {
+                            title = "خطا"; message = "لطفا همه فیلدها را پر نمایید"
+                        }
+                        "NotSameFields" -> {
+                            title = "خطا"; message = "مقادیر وارد شده باید یکسان باشند"
+                        }
+                        "OldPasswordNotCorrect" -> {
+                            title = "خطا"; message = "گذرواژه فعلی نادرست است"
+                        }
+                        "CodeWrong" -> {
+                            title = "خطا"; message = "کد وارد شده صحیح نمی باشد"
+                        }
+                        "PhoneVerifyWrong" -> {
+                            title = "خطا"; message = "فرمت شماره همراه اشتباه است"
+                        }
                         else -> showMessage = false
                     }
                 }
                 "ActionResult" -> {
-                    when(messageSubType) {
-                        "ResendCodeSuccess" -> {title = "پیغام"; message="کد فعالسازی مجددا ارسال گردید"}
-                        "PurchasedSuccess" -> {title = "پیغام"; message="خرید با موفقیت انجام گردید"}
-                        "DownloadSuccess" -> {title = "پیغام"; message="دانلود با موفقیت انجام گردید"}
-                        "BasketDeleteSuccess" -> {title = "پیغام"; message="از سبد کالا با موفقیت حذف گردید"}
-                        "BugReportedSuccess" -> {title = "پیغام"; message="خطای گزارش شده با موفقیت ثبت گردید"}
-                        "DownloadStarted" -> {title = "پیغام"; message="دانلود شروع شده است"}
-                        "QuestionStarred" -> {title = "پیغام"; message="✮" + " اضافه شد"}
-                        "QuestionUnStarred" -> {title = "پیغام"; message="✩" + " حذف شد"}
-                        "InviteSuccess" -> {title = "پیغام"; message="دعوتنامه ها با موفقیت ارسال گردید"}
-                        "ChangePasswordSuccess" -> {title = "پیغام"; message="گذرواژه شما با موفقیت تغییر یافت"}
-                        "FreeMemorySuccess" -> {title = "پیغام"; message="داده های شما با موفقیت پاک گردید"}
+                    when (messageSubType) {
+                        "ResendCodeSuccess" -> {
+                            title = "پیغام"; message = "کد فعالسازی مجددا ارسال گردید"
+                        }
+                        "DownloadFailed" -> {
+                            title = "پیغام"; message = "دانلود با خطا مواجه گردید"
+                        }
+                        "PurchasedSuccess" -> {
+                            title = "پیغام"; message = "خرید با موفقیت انجام گردید"
+                        }
+                        "DownloadSuccess" -> {
+                            title = "پیغام"; message = "دانلود با موفقیت انجام گردید"
+                        }
+                        "BasketDeleteSuccess" -> {
+                            title = "پیغام"; message = "از سبد کالا با موفقیت حذف گردید"
+                        }
+                        "BugReportedSuccess" -> {
+                            title = "پیغام"; message = "خطای گزارش شده با موفقیت ثبت گردید"
+                        }
+                        "DownloadStarted" -> {
+                            title = "پیغام"; message = "دانلود شروع شده است"
+                        }
+                        "QuestionStarred" -> {
+                            title = "پیغام"; message = "✮" + " اضافه شد"
+                        }
+                        "QuestionUnStarred" -> {
+                            title = "پیغام"; message = "✩" + " حذف شد"
+                        }
+                        "InviteSuccess" -> {
+                            title = "پیغام"; message = "دعوتنامه ها با موفقیت ارسال گردید"
+                        }
+                        "ChangePasswordSuccess" -> {
+                            title = "پیغام"; message = "گذرواژه شما با موفقیت تغییر یافت"
+                        }
+                        "FreeMemorySuccess" -> {
+                            title = "پیغام"; message = "داده های شما با موفقیت پاک گردید"
+                        }
                         else -> showMessage = false
                     }
                 }
                 "ErrorResult" -> {
-                    when(messageSubType) {
-                        "RemoteDBError" -> {title = "خطا"; message="دسترسی به پایگاه داده مقدور نیست"}
-                        "BadData" -> {title = "خطا"; message="لطفا دوباره سعی نمایید"}
-                        "ExpiredCode" -> {title = "خطا"; message="کد ارسالی نامعتبر است. لطفا درخواست کد مجدد نمایید"}
-                        "MultiRecord" -> {title = "خطا"; message="اطلاعات نامشخص است"}
-                        "EmptyArray" -> {title = "خطا"; message="اطلاعات برای نمایش ناموجود است"}
+                    when (messageSubType) {
+                        "RemoteDBError" -> {
+                            title = "خطا"; message = "دسترسی به پایگاه داده مقدور نیست"
+                        }
+                        "BadData" -> {
+                            title = "خطا"; message = "لطفا دوباره سعی نمایید"
+                        }
+                        "ExpiredCode" -> {
+                            title = "خطا"; message = "کد ارسالی نامعتبر است. لطفا درخواست کد مجدد نمایید"
+                        }
+                        "MultiRecord" -> {
+                            title = "خطا"; message = "اطلاعات نامشخص است"
+                        }
+                        "EmptyArray" -> {
+                            title = "خطا"; message = "اطلاعات برای نمایش ناموجود است"
+                        }
                         else -> showMessage = false
                     }
                 }
                 "EntranceResult" -> {
-                    when(messageSubType) {
-                        "EntranceNotExist" -> {title = "خطا"; message="کنکور درخواستی موجود نمی باشد"}
+                    when (messageSubType) {
+                        "EntranceNotExist" -> {
+                            title = "خطا"; message = "آزمون درخواستی موجود نمی باشد"
+                        }
+                        "EntranceStarredNotExist" -> {
+                            title = "خطا"; message = "سوال نشان شده ای وجود ندارد"
+                        }
                         else -> showMessage = false
                     }
                 }
                 "BasketResult" -> {
-                    when(messageSubType) {
-                        "SaleNotExist" -> {title = "خطا"; message="چنین خریدی موجود نیست"}
-                        "DuplicateSale" -> {title = "خطا"; message="این خرید قبلا ثبت شده است"}
-                        "EmptyBasket" -> {title = "خطا"; message="سبد خرید شما خالی است"}
+                    when (messageSubType) {
+                        "SaleNotExist" -> {
+                            title = "خطا"; message = "چنین خریدی موجود نیست"
+                        }
+                        "DuplicateSale" -> {
+                            title = "خطا"; message = "این خرید قبلا ثبت شده است"
+                        }
+                        "EmptyBasket" -> {
+                            title = "خطا"; message = "سبد خرید شما خالی است"
+                        }
                         else -> showMessage = false
                     }
                 }
                 "AuthProfile" -> {
-                    when(messageSubType) {
-                        "ExistUsername" -> {title = "خطا"; message="این شماره همراه قبلا انتخاب شده است"}
-                        "UserNotExist" -> {title = "خطا"; message="لطفا ابتدا ثبت نام کنید"}
-                        "PreAuthNotExist" -> {title = "خطا"; message="لطفا مجددا تقاضای کد نمایید"}
-                        "MismatchPassword" -> {title = "خطا"; message="هر دو فیلد گذرواژه باید یکی باشند"}
-                        "PassCannotChange" -> {title = "خطا"; message="امکان تغییر گذرواژه وجود ندارد"}
+                    when (messageSubType) {
+                        "ExistUsername" -> {
+                            title = "خطا"; message = "این شماره همراه قبلا انتخاب شده است"
+                        }
+                        "UserNotExist" -> {
+                            title = "خطا"; message = "لطفا ابتدا ثبت نام کنید"
+                        }
+                        "PreAuthNotExist" -> {
+                            title = "خطا"; message = "لطفا مجددا تقاضای کد نمایید"
+                        }
+                        "MismatchPassword" -> {
+                            title = "خطا"; message = "هر دو فیلد گذرواژه باید یکی باشند"
+                        }
+                        "PassCannotChange" -> {
+                            title = "خطا"; message = "امکان تغییر گذرواژه وجود ندارد"
+                        }
                         else -> showMessage = false
                     }
                 }
                 "HTTPError" -> {
-                    when(messageSubType) {
-                        "BadRequest", "UnAuthorized" -> {title = "خطای دسترسی"; message="اطلاعات وارد شده صحیح نمی باشد."}
-                        "ForbiddenAccess" -> {title = "خطای دسترسی"; message="دسترسی غیر مجاز"}
-                        "Unknown", "NetworkError" -> {title = "خطای دسترسی"; message="برقراری ارتباط با سرور مقدور نیست"}
-                        "NotFound" -> {title = "خطای دسترسی"; message="آدرس نامعتبر است"}
+                    when (messageSubType) {
+                        "BadRequest", "UnAuthorized" -> {
+                            title = "خطای دسترسی"; message = "اطلاعات وارد شده صحیح نمی باشد."
+                        }
+                        "ForbiddenAccess" -> {
+                            title = "خطای دسترسی"; message = "دسترسی غیر مجاز"
+                        }
+                        "Unknown", "NetworkError" -> {
+                            title = "خطای دسترسی"; message = "برقراری ارتباط با سرور مقدور نیست"
+                        }
+                        "NotFound" -> {
+                            title = "خطای دسترسی"; message = "آدرس نامعتبر است"
+                        }
                         else -> showMessage = false
                     }
                 }
                 "NetworkError" -> {
-                    when(messageSubType) {
-                        "NoInternetAccess" -> {title = "خطای اینترنت"; message="لطفا اینترنت خود را فعال نمایید"}
-                        "HostUnreachable" -> {title = "خطای اینترنت"; message="در حال حاضر کنکوق پاسخگو نمیباشد"}
-                        "UnKnown" -> {title = "خطای اینترنت"; message="اشکال در شبکه"}
+                    when (messageSubType) {
+                        "NoInternetAccess" -> {
+                            title = "خطای اینترنت"; message = "لطفا اینترنت خود را فعال نمایید"
+                        }
+                        "HostUnreachable" -> {
+                            title = "خطای اینترنت"; message = "در حال حاضر کنکوق پاسخگو نمیباشد"
+                        }
+                        "UnKnown" -> {
+                            title = "خطای اینترنت"; message = "اشکال در شبکه"
+                        }
+                        "Timeout" -> {
+                            title = "خطای اینترنت"; message = "اشکال در شبکه"
+                        }
+                        else -> showMessage = false
+                    }
+                }
+                "DownloadError" -> {
+                    when (messageSubType) {
+                        "DownloadInProgress" -> {
+                            title = "خطای دانلود"; message = "امکان دانلود همزمان وجود ندارد"
+                        }
                         else -> showMessage = false
                     }
                 }
@@ -120,6 +216,7 @@ class AlertClass {
 
             return Message(title, message, showMessage)
         }
+
         @JvmStatic
         fun showLoadingMessage(context: Context): KProgressHUD {
             val v = SpinView(context, context.resources.getColor(R.color.colorConcoughBlue))
@@ -178,6 +275,7 @@ class AlertClass {
                         .withTypeface(FontCacheSingleton.getInstance(context.applicationContext!!).Regular)
                         .setMessageTypeface(FontCacheSingleton.getInstance(context.applicationContext!!).Light)
                         .setButton1Click(View.OnClickListener {
+                            dialogBuilder.dismiss()
                             if (completion != null) {
                                 completion()
                             }
@@ -190,26 +288,26 @@ class AlertClass {
         fun showAlertMessageCustom(context: Context, title: String, message: String, yesButtonTitle: String, noButtonTitle: String, completion: (() -> Unit)?) {
             val dialogBuilder = ZhycanNiftyDialogBuilder(context, R.style.zhycan_dialog_untran)
 
-                dialogBuilder
-                        .withTitle(title)
-                        .withMessage(message)
-                        .withDuration(500)
-                        .withMessageType("error")
-                        .withEffect(Effectstype.Slidetop)
-                        .withButton1Text(yesButtonTitle)
-                        .withButton2Text(noButtonTitle)
-                        .withTypeface(FontCacheSingleton.getInstance(context.applicationContext!!).Regular)
-                        .setMessageTypeface(FontCacheSingleton.getInstance(context.applicationContext!!).Light)
-                        .setButton1Click(View.OnClickListener {
-                            if (completion != null){
-                                dialogBuilder.dismiss()
-                                completion()
-                            }
-                        })
-                        .setButton2Click(View.OnClickListener {
-                            dialogBuilder.dismiss()
-                        })
-                        .show()
+            dialogBuilder
+                    .withTitle(title)
+                    .withMessage(message)
+                    .withDuration(500)
+                    .withMessageType("error")
+                    .withEffect(Effectstype.Slidetop)
+                    .withButton1Text(yesButtonTitle)
+                    .withButton2Text(noButtonTitle)
+                    .withTypeface(FontCacheSingleton.getInstance(context.applicationContext!!).Regular)
+                    .setMessageTypeface(FontCacheSingleton.getInstance(context.applicationContext!!).Light)
+                    .setButton1Click(View.OnClickListener {
+                        dialogBuilder.dismiss()
+                        if (completion != null) {
+                            completion()
+                        }
+                    })
+                    .setButton2Click(View.OnClickListener {
+                        dialogBuilder.dismiss()
+                    })
+                    .show()
         }
 
         @JvmStatic
@@ -220,10 +318,10 @@ class AlertClass {
                 val snack = Snackbar.make(view, "", Snackbar.LENGTH_LONG)
                 val layout = snack.getView() as Snackbar.SnackbarLayout
 
-                when(type) {
+                when (type) {
                     "success" -> layout.setBackgroundColor(context.resources.getColor(R.color.colorConcoughGreen))
                     "error" -> layout.setBackgroundColor(context.resources.getColor(R.color.colorConcoughRedLight))
-                    "warning" -> layout.setBackgroundColor(context.resources.getColor(R.color.colorConcoughBlue))
+                    "warning" -> layout.setBackgroundColor(context.resources.getColor(R.color.colorConcoughYellow))
                     else -> layout.setBackgroundColor(context.resources.getColor(R.color.colorConcoughGray4))
                 }
                 val textView = layout.findViewById(android.support.design.R.id.snackbar_text) as TextView
@@ -240,7 +338,8 @@ class AlertClass {
                 textViewTop.setTextColor(Color.WHITE)
                 textViewTop.setTypeface(FontCacheSingleton.getInstance(context.applicationContext).Light)
                 when (type) {
-                    "success", "error", "warning" -> {}
+                    "success", "error", "warning" -> {
+                    }
                     else -> textViewTop.setTextColor(context.resources.getColor(android.R.color.black))
                 }
 

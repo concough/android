@@ -6,9 +6,10 @@
         <item name="actionBarStyle">@style/MyActionBar</item>
         <!--<item name="colorPrimary">@color/colorConcoughGrayBackground</item>-->
         <!--<item name="colorPrimaryDark">@color/dialogplus_black_overlay</item>-->
-        <!--<item name="colorAccent">@color/colorConcoughBlue</item>-->
+        <item name="colorAccent">@color/colorConcoughBlue</item>
         <!--<item name="android:windowBackground">@android:color/white</item>-->
         <!--<item name="android:textColorPrimary">@android:color/black</item>-->
+
 
     </style>
 
@@ -78,5 +79,10 @@
         <item name="android:textSize">10sp</item>
     </style>
 
+    <style name="SwitchStyle" parent="Theme.AppCompat.Light">
+        <item name="colorControlActivated">@color/colorConcoughBlue</item>
+        <item name="colorSwitchThumbNormal">@color/colorConcoughRedLight</item>
+        <item name="android:colorForeground">@color/colorConcoughGreen</item>
+    </style>
 
 </resources>

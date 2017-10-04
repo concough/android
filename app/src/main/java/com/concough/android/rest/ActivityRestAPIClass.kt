@@ -1,6 +1,7 @@
 package com.concough.android.rest
 
 import android.content.Context
+import android.util.Log
 import com.concough.android.singletons.TokenHandlerSingleton
 import com.concough.android.singletons.UrlMakerSingleton
 import com.concough.android.structures.HTTPErrorType
@@ -34,8 +35,11 @@ class ActivityRestAPIClass {
             }
 
             TokenHandlerSingleton.getInstance(context).assureAuthorized(completion = {authenticated, error ->
+                Log.d(TAG,"Authenticated : " +authenticated)
+                Log.d(TAG,"Error : " +error)
                 if (authenticated && error == HTTPErrorType.Success) {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
+                    Log.d("HEADER REST:",headers.toString())
 
                     val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
@@ -61,12 +65,12 @@ class ActivityRestAPIClass {
                                     }
                                 }
                                 HTTPErrorType.UnAuthorized, HTTPErrorType.ForbiddenAccess -> {
-                                    TokenHandlerSingleton.getInstance(context).assureAuthorized(true, completion = {authenticated, error ->
-                                        if (authenticated && error == HTTPErrorType.Success) {
+                                    TokenHandlerSingleton.getInstance(context).assureAuthorized(true, completion = {authenticated1, error1 ->
+                                        if (authenticated1 && error1 == HTTPErrorType.Success) {
                                             completion(false, null, HTTPErrorType.Refresh)
                                         }
-                                    }, failure = { error ->
-                                        failure(error)
+                                    }, failure = { error1 ->
+                                        failure(error1)
                                     })
                                 }
                                 else -> completion(false, null, resCode)

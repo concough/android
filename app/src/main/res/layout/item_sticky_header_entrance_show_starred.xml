@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_horizontal"
+    android:background="@drawable/concough_bottom_line_gray3"
     android:orientation="horizontal">
 
     <android.support.constraint.ConstraintLayout
@@ -39,10 +40,10 @@
             android:background="@drawable/concough_badge_green_style"
             android:gravity="center_vertical"
             android:paddingBottom="4dp"
-            android:paddingEnd="8dp"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp"
-            android:paddingStart="8dp"
+            android:paddingEnd="12dp"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:paddingStart="12dp"
             android:paddingTop="4dp"
             android:text="10"
             android:textColor="@android:color/white"
