@@ -164,6 +164,25 @@ Refactors  (faridM)
 
 ==================================================================================
 
+Refactor 2 (faridM)
+
+ 1 - Setting Activity layout changes
+ 2 - create MediaCacheSingleton
+ 3 - change downloadImage() function of all activities for LruCache
+ 4 - SignupStruct aded GradeString
+ 5 - SignupInfo3 and other activities that contains GradeType struct -> Adapter changed to Async
+ 6 - resolve problem of back button on entrance_show
+ 7 - logstatus aded to LoginActivity
+ 8 - aded Network Utils
+ 9 - DeviceInformationSingleton adeds
+
+
+==================================================================================
+
+
+
+
+
 
 
 

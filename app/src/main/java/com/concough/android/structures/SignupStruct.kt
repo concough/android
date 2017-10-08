@@ -15,6 +15,7 @@ class SignupMoreInfoStruct(): Serializable {
     var firstname: String? = null
     var lastname: String? = null
     var grade: String? = null
+    var gradeString: String? = null
     var gender: String? = null
     var birthday: Date? = null
 }

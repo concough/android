@@ -9,6 +9,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
@@ -28,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.baoyz.widget.PullRefreshLayout;
+import com.bumptech.glide.Glide;
 import com.concough.android.extensions.RotateViewExtensions;
 import com.concough.android.general.AlertClass;
 import com.concough.android.rest.ArchiveRestAPIClass;
@@ -35,6 +37,7 @@ import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.singletons.BasketSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
+import com.concough.android.singletons.MediaCacheSingleton;
 import com.concough.android.structures.ArchiveEsetDetailStruct;
 import com.concough.android.structures.ArchiveEsetStructs;
 import com.concough.android.structures.HTTPErrorType;
@@ -859,36 +862,56 @@ public class ArchiveActivity extends BottomNavigationActivity {
             }
 
             private void downloadImage(final int imageId) {
-                MediaRestAPIClass.downloadEsetImage(ArchiveActivity.this, imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (httpErrorType != null) {
+                final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+                byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+                if (data != null) {
+
+                    Glide.with(ArchiveActivity.this)
+                            .load(data)
+                            //.crossFade()
+                            .dontAnimate()
+                            .into(entranceLogo)
+                            .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+
+                } else {
+                    MediaRestAPIClass.downloadEsetImage(ArchiveActivity.this, imageId, entranceLogo, new Function2<byte[], HTTPErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
+//                            runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
                                     if (httpErrorType != HTTPErrorType.Success) {
                                         Log.d(TAG, "run: ");
                                         if (httpErrorType == HTTPErrorType.Refresh) {
-                                            //downloadImage(imageId);
                                             downloadImage(imageId);
                                         } else {
                                             entranceLogo.setImageResource(R.drawable.no_image);
                                         }
-                                    }
-                                }
-                            }
-                        });
-                        Log.d(TAG, "invoke: " + jsonObject);
-                        return null;
-                    }
-                }, new Function1<NetworkErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final NetworkErrorType networkErrorType) {
-                        return null;
-                    }
-                });
+                                    } else {
+                                        MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
 
+                                        Glide.with(ArchiveActivity.this)
+
+                                                .load(data)
+                                                .crossFade()
+                                                .into(entranceLogo)
+                                                .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+                                    }
+//                                }
+//                            });
+                            return null;
+                        }
+                    }, new Function1<NetworkErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(NetworkErrorType networkErrorType) {
+                            return null;
+                        }
+                    });
+                }
             }
+
 
         }
 

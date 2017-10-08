@@ -6,24 +6,30 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.baoyz.widget.PullRefreshLayout;
+import com.bumptech.glide.Glide;
 import com.concough.android.general.AlertClass;
+import com.concough.android.models.EntranceModelHandler;
 import com.concough.android.rest.ArchiveRestAPIClass;
 import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.singletons.BasketSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
+import com.concough.android.singletons.MediaCacheSingleton;
+import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.ArchiveEsetDetailStruct;
+import com.concough.android.structures.EntranceStruct;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.vendor.progressHUD.KProgressHUD;
@@ -35,7 +41,7 @@ import com.google.gson.JsonParser;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Map;
+import java.util.HashMap;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -53,8 +59,10 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
     private ArrayList<JsonElement> setsList;
 
     private final static String Detail_Struct = "Detail_Struct";
+    private String username = "";
 
     private KProgressHUD loadingProgress;
+
 
     private ArchiveEsetDetailStruct mArchiveEsetDetailStruct;
 
@@ -102,12 +110,62 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
             }
         });
 
+        username = UserDefaultsSingleton.getInstance(ArchiveDetailActivity.this).getUsername();
+
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         actionBarSet();
+        adapter.notifyDataSetChanged();
+
+
+        BasketSingleton.getInstance().setListener(new BasketSingleton.BasketSingletonListener() {
+            @Override
+            public void onLoadItemCompleted(int count) {
+
+            }
+
+            @Override
+            public void onCreateCompleted(Integer position) {
+                ((GetEntranceAdapter.ItemsHolder) ArchiveDetailActivity.this.recyclerView.findViewHolderForLayoutPosition(position)).addSaleToBasket();
+            }
+
+            @Override
+            public void onAddCompleted(final int count) {
+                if (count == 1) {
+                    ArchiveDetailActivity.this.actionBarSet();
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ArchiveDetailActivity.this.adapter.notifyDataSetChanged();
+                        ArchiveDetailActivity.super.updateBadge(0, count);
+
+                    }
+                });
+
+            }
+
+            @Override
+            public void onRemoveCompleted(final int count, int position) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ArchiveDetailActivity.this.adapter.notifyDataSetChanged();
+                        ArchiveDetailActivity.super.updateBadge(0, count);
+
+                    }
+                });
+            }
+
+            @Override
+            public void onCheckout(int count, HashMap<Integer, BasketSingleton.PurchasedItem> purchased) {
+
+            }
+        });
     }
 
     private void actionBarSet() {
@@ -211,7 +269,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
 //                                    }
                                 } else {
-                                    if(httpErrorType == HTTPErrorType.Refresh) {
+                                    if (httpErrorType == HTTPErrorType.Refresh) {
                                         getSets(params[0]);
                                     } else {
                                         AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
@@ -315,16 +373,17 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                 String t1 = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.typeTitle + " (" + ArchiveDetailActivity.this.mArchiveEsetDetailStruct.groupTitle + ")";
                 setName.setText(t1);
 
-                String t2 = "";
-                if (Integer.valueOf(ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.code) == 0) {
-                    t2 = "کد: " + "ندارد";
+                int codeInteger = Integer.valueOf(ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.code);
+
+                if (codeInteger == 0) {
+                    code.setText("کد: " + "ندارد");
                 } else {
-                    t2 = "کد: " + ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.code;
+                    code.setText("کد: " + FormatterSingleton.getInstance().getNumberFormatter().format(codeInteger));
                 }
 
-                code.setText(t2);
 
-                String t3 = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.entrance_count + " آزمون منتشر شده";
+                Integer entranceCountInteger =  ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.entrance_count;
+                String t3 = "آزمون منتشر شده: " + FormatterSingleton.getInstance().getNumberFormatter().format(entranceCountInteger) ;
                 count.setText(t3);
 
 
@@ -334,33 +393,58 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
             }
 
-            private void downloadImage(final int imageId) {
-                MediaRestAPIClass.downloadEsetImage(ArchiveDetailActivity.this, imageId, logoImage, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (httpErrorType != HTTPErrorType.Success) {
-                                    Log.d(TAG, "run: ");
-                                    if (httpErrorType == HTTPErrorType.Refresh) {
-                                        downloadImage(imageId);
-                                    } else {
-                                        logoImage.setImageResource(R.drawable.no_image);
-                                    }
-                                }
-                            }
-                        });
-                        Log.d(TAG, "invoke: " + jsonObject);
-                        return null;
-                    }
-                }, new Function1<NetworkErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final NetworkErrorType networkErrorType) {
-                        return null;
-                    }
-                });
 
+            private void downloadImage(final int imageId) {
+                final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+                byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+                if (data != null) {
+
+                    Glide.with(ArchiveDetailActivity.this)
+
+                            .load(data)
+                            //.crossFade()
+                            .dontAnimate()
+                            .into(logoImage)
+                            .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+
+                } else {
+                    MediaRestAPIClass.downloadEsetImage(ArchiveDetailActivity.this, imageId, logoImage, new Function2<byte[], HTTPErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
+//                            runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
+                            if (httpErrorType != HTTPErrorType.Success) {
+                                Log.d(TAG, "run: ");
+                                if (httpErrorType == HTTPErrorType.Refresh) {
+                                    downloadImage(imageId);
+                                } else {
+                                    logoImage.setImageResource(R.drawable.no_image);
+                                }
+                            } else {
+                                MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+
+                                Glide.with(ArchiveDetailActivity.this)
+
+                                        .load(data)
+                                        //.crossFade()
+                                        .dontAnimate()
+                                        .into(logoImage)
+                                        .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+                            }
+//                                }
+//                            });
+                            return null;
+                        }
+                    }, new Function1<NetworkErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(NetworkErrorType networkErrorType) {
+                            return null;
+                        }
+                    });
+                }
             }
 
 
@@ -371,13 +455,17 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
             private TextView extraDataText;
             private TextView countText;
             private TextView dateJalali;
-            private TextView typeText;
+            //            private TextView typeText;
             private TextView yearText;
 
-            private ImageView logoImage;
+            private ImageView doubleCheck;
+
+            private Button entranceBuyButton;
+
+//            private ImageView logoImage;
 
             private JsonObject extraData;
-
+            private JsonElement jsonElement;
 
             public ItemsHolder(View itemView) {
                 super(itemView);
@@ -385,22 +473,30 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                 extraDataText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_extraDataText);
                 countText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_countText);
                 dateJalali = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_dateJalali);
-                typeText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_typeText);
+//                typeText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_constrantRight);
                 yearText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_yearText);
-                logoImage = (ImageView) itemView.findViewById(R.id.archiveDetailHolder2L_imageRight);
+                entranceBuyButton = (Button) itemView.findViewById(R.id.archiveDetailHolder2L_BuyButton);
+                doubleCheck = (ImageView) itemView.findViewById(R.id.archiveDetailHolder2L_DoubleCheck);
+//                logoImage = (ImageView) itemView.findViewById(R.id.archiveDetailHolder2L_imageRight);
 
 
                 extraDataText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 countText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
-                typeText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+//                typeText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 yearText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                entranceBuyButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
 
             }
 
-            public void setupHolder(JsonElement jsonElement) {
-                String t1 = jsonElement.getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString();
-                typeText.setText(t1);
+            public void setupHolder(final JsonElement je, final Integer position) {
+//                String t1 = jsonElement.getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString();
+//                typeText.setText(t1);
+
+                jsonElement = je;
+
+                doubleCheck.setVisibility(View.GONE);
+                entranceBuyButton.setVisibility(View.GONE);
 
                 Integer t2 = jsonElement.getAsJsonObject().get("year").getAsInt();
                 yearText.setText(FormatterSingleton.getInstance().getNumberFormatter().format(t2).toString());
@@ -422,54 +518,182 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                 String t3 = FormatterSingleton.getInstance().getNumberFormatter().format(jsonElement.getAsJsonObject().get("stats").getAsJsonArray().get(0).getAsJsonObject().get("purchased").getAsInt()) + " خرید";
                 countText.setText(t3);
 
+//                String s;
+//                s = jsonElement.getAsJsonObject().get("extra_data").getAsString();
+//                extraData = new JsonParser().parse(s).getAsJsonObject();
+
+                final String sorganizationTitle;
+                sorganizationTitle = jsonElement.getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString();
+
+
+                final String lastPublished;
+                Date lastPublishedDate = new Date();
+                lastPublished = jsonElement.getAsJsonObject().get("last_published").getAsString();
+                try {
+                    lastPublishedDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(lastPublished);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
                 String s;
                 s = jsonElement.getAsJsonObject().get("extra_data").getAsString();
                 extraData = new JsonParser().parse(s).getAsJsonObject();
 
-                String extra = "";
-                ArrayList<String> extraArray = new ArrayList<>();
+//                String extra = "";
+//                ArrayList<String> extraArray = new ArrayList<>();
+//
+//                for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
+//                    extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
+//                }
 
-                for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
-                    extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
-                }
-
-                extra = TextUtils.join(" - ", extraArray);
-                extraDataText.setText(extra);
+//                extra = TextUtils.join(" - ", extraArray);
+                extraDataText.setText(sorganizationTitle);
 
 
-                Integer imageId = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.id;
+                final String uniqId = jsonElement.getAsJsonObject().get("unique_key").getAsString();
 
-                downloadImage(imageId);
-            }
+                final Integer statIndex = BasketSingleton.getInstance().findSaleByTargetId(uniqId, "Entrance");
 
-            private void downloadImage(final int imageId) {
-                MediaRestAPIClass.downloadEsetImage(ArchiveDetailActivity.this, imageId, logoImage, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (httpErrorType != HTTPErrorType.Success) {
-                                    Log.d(TAG, "run: ");
-                                    if (httpErrorType == HTTPErrorType.Refresh) {
-                                        downloadImage(imageId);
-                                    } else {
-                                        logoImage.setImageResource(R.drawable.no_image);
-                                    }
-                                }
-                            }
-                        });
-                        Log.d(TAG, "invoke: " + jsonObject);
-                        return null;
+                if (EntranceModelHandler.existById(ArchiveDetailActivity.this, username, uniqId)) {
+                    doubleCheck.setVisibility(View.VISIBLE);
+
+                } else {
+                    entranceBuyButton.setVisibility(View.VISIBLE);
+                    if (statIndex != null && statIndex >= 0) {
+                        entranceBuyButton.setText("-  سبد خرید");
+                        entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_red_style));
+                        entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughRed));
+
+                    } else {
+                        entranceBuyButton.setText("+  سبد خرید");
+                        entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_style));
+                        entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughBlue));
                     }
-                }, new Function1<NetworkErrorType, Unit>() {
+                }
+                entranceBuyButton.setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public Unit invoke(final NetworkErrorType networkErrorType) {
-                        return null;
+                    public void onClick(View v) {
+
+                        Integer statIndex = BasketSingleton.getInstance().findSaleByTargetId(uniqId, "Entrance");
+
+                        if (BasketSingleton.getInstance().getBasketId() == null) {
+                            BasketSingleton.getInstance().createBasket(getApplicationContext(), position);
+                        } else {
+                            addSaleToBasket();
+                        }
                     }
                 });
 
+                Integer imageId = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.id;
+
+//                downloadImage(imageId);
             }
+
+            public void addSaleToBasket() {
+
+                final String sorganizationTitle;
+                sorganizationTitle = jsonElement.getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString();
+
+                final String uniqId = jsonElement.getAsJsonObject().get("unique_key").getAsString();
+
+                final Integer bookletCount;
+                bookletCount = jsonElement.getAsJsonObject().get("booklets_count").getAsInt();
+
+                final Integer entranceYear;
+                entranceYear = jsonElement.getAsJsonObject().get("year").getAsInt();
+
+                final Integer entranceDuration;
+                entranceDuration = jsonElement.getAsJsonObject().get("duration").getAsInt();
+
+                final String lastPublished;
+                Date lastPublishedDate = new Date();
+                lastPublished = jsonElement.getAsJsonObject().get("last_published").getAsString();
+                try {
+                    lastPublishedDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(lastPublished);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                Integer id = BasketSingleton.getInstance().findSaleByTargetId(uniqId, "Entrance");
+                if (id != null && id > 0) {
+                    BasketSingleton.getInstance().removeSaleById(ArchiveDetailActivity.this, id, 0);
+                    entranceBuyButton.setText("-  سبد خرید");
+                    entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_red_style));
+                    entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughRed));
+                } else {
+                    EntranceStruct myLocalEntrance = new EntranceStruct();
+                    myLocalEntrance.setEntranceBookletCounts(bookletCount);
+                    myLocalEntrance.setEntranceDuration(entranceDuration);
+                    myLocalEntrance.setEntranceExtraData(extraData);
+                    myLocalEntrance.setEntranceGroupTitle(ArchiveDetailActivity.this.mArchiveEsetDetailStruct.groupTitle);
+                    myLocalEntrance.setEntranceLastPublished(lastPublishedDate);
+                    myLocalEntrance.setEntranceOrgTitle(sorganizationTitle);
+                    myLocalEntrance.setEntranceSetId(ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.id);
+                    myLocalEntrance.setEntranceSetTitle(ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.title);
+                    myLocalEntrance.setEntranceTypeTitle(ArchiveDetailActivity.this.mArchiveEsetDetailStruct.typeTitle);
+                    myLocalEntrance.setEntranceUniqueId(uniqId);
+                    myLocalEntrance.setEntranceYear(entranceYear);
+
+                    entranceBuyButton.setText("+  سبد خرید");
+
+                    BasketSingleton.getInstance().addSale(ArchiveDetailActivity.this, myLocalEntrance, "Entrance");
+                }
+
+            }
+
+//            private void downloadImage(final int imageId) {
+//                final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+//                byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+//                if (data != null) {
+//
+//                    Glide.with(ArchiveDetailActivity.this)
+//
+//                            .load(data)
+//                            //.crossFade()
+//                            .dontAnimate()
+//                            .into(logoImage)
+//                            .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+//
+//
+//                } else {
+//                    MediaRestAPIClass.downloadEsetImage(ArchiveDetailActivity.this, imageId, logoImage, new Function2<byte[], HTTPErrorType, Unit>() {
+//                        @Override
+//                        public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
+////                            runOnUiThread(new Runnable() {
+////                                @Override
+////                                public void run() {
+//                                    if (httpErrorType != HTTPErrorType.Success) {
+//                                        Log.d(TAG, "run: ");
+//                                        if (httpErrorType == HTTPErrorType.Refresh) {
+//                                            downloadImage(imageId);
+//                                        } else {
+//                                            logoImage.setImageResource(R.drawable.no_image);
+//                                        }
+//                                    } else {
+//                                        MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+//
+//                                        Glide.with(ArchiveDetailActivity.this)
+//
+//                                                .load(data)
+//                                                //.crossFade()
+//                                                .dontAnimate()
+//                                                .into(logoImage)
+//                                                .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+//
+//                                    }
+////                                }
+////                            });
+//                            return null;
+//                        }
+//                    }, new Function1<NetworkErrorType, Unit>() {
+//                        @Override
+//                        public Unit invoke(NetworkErrorType networkErrorType) {
+//                            return null;
+//                        }
+//                    });
+//                }
+//            }
+
 
         }
 
@@ -506,7 +730,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                         startActivity(i);
                     }
                 });
-                itemHolder.setupHolder(oneItem);
+                itemHolder.setupHolder(oneItem, position);
             }
 
 

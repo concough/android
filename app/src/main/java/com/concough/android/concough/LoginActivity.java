@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -15,8 +16,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.concough.android.extensions.ValidatorExtensionsKt;
 import com.concough.android.general.AlertClass;
-import com.concough.android.rest.ProfileRestAPIClass;
+import com.concough.android.rest.DeviceRestAPIClass;
+import com.concough.android.singletons.DeviceInformationSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.singletons.TokenHandlerSingleton;
@@ -30,9 +33,11 @@ import com.google.gson.JsonObject;
 import java.util.Date;
 
 import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
+import static com.concough.android.rest.ProfileRestAPIClass.getProfileData;
 import static com.concough.android.settings.ConstantsKt.getPASSWORD_KEY;
 import static com.concough.android.settings.ConstantsKt.getUSERNAME_KEY;
 
@@ -186,17 +191,27 @@ public class LoginActivity extends AppCompatActivity {
 
         if (!"".equals(username) && !"".equals(password)) {
 
-            if (username.startsWith("0"))
-                username = username.substring(1);
-            username = "98" + username;
+            if (ValidatorExtensionsKt.isValidPhoneNumber(username)) {
+                if (username.startsWith("0"))
+                    username = username.substring(1);
+                username = "98" + username;
 
-            TokenHandlerSingleton.getInstance(getApplicationContext()).setUsernameAndPassword(username, password);
+                TokenHandlerSingleton.getInstance(getApplicationContext()).setUsernameAndPassword(username, password);
 //            final String finalUsername = username;
 
-            new LoginTask().execute(username, password);
+                new LoginTask().execute(username, password);
+            } else {
+                AlertClass.showAlertMessage(LoginActivity.this, "Form", "PhoneVerifyWrong", "error", null);
+            }
+
+
         } else {
             AlertClass.showAlertMessage(LoginActivity.this, "Form", "EmptyFields", "error", null);
         }
+    }
+
+    private void getLockedStatus() {
+
     }
 
     private void getProfile() {
@@ -208,7 +223,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(final Void... params) {
 
-            ProfileRestAPIClass.getProfileData(LoginActivity.this, new Function2<JsonObject, HTTPErrorType, Unit>() {
+            getProfileData(LoginActivity.this, new Function2<JsonObject, HTTPErrorType, Unit>() {
                 @Override
                 public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
                     runOnUiThread(new Runnable() {
@@ -228,6 +243,7 @@ public class LoginActivity extends AppCompatActivity {
                                                 try {
                                                     String gender = profile.get("gender").getAsString();
                                                     String grade = profile.get("grade").getAsString();
+                                                    String gradeString = profile.get("grade_string").getAsString();
                                                     String birthday = profile.get("birthday").getAsString();
                                                     String modified = profile.get("modified").getAsString();
                                                     String firstname = profile.get("user").getAsJsonObject().get("first_name").getAsString();
@@ -238,7 +254,7 @@ public class LoginActivity extends AppCompatActivity {
                                                     Date modifiedDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(modified);
 
                                                     if (!"".equals(firstname) && !"".equals(lastname) && !"".equals(gender) && !"".equals(grade)) {
-                                                        UserDefaultsSingleton.getInstance(getApplicationContext()).createProfile(firstname, lastname, grade, gender, birthdayDate, modifiedDate);
+                                                        UserDefaultsSingleton.getInstance(getApplicationContext()).createProfile(firstname, lastname, grade, gradeString, gender, birthdayDate, modifiedDate);
                                                     }
 
                                                     if (UserDefaultsSingleton.getInstance(getApplicationContext()).hasProfile()) {
@@ -320,6 +336,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
             });
             return null;
+
         }
 
         @Override
@@ -328,6 +345,7 @@ public class LoginActivity extends AppCompatActivity {
 
             loadingProgress = AlertClass.showLoadingMessage(LoginActivity.this);
             loadingProgress.show();
+            //
 
         }
 
@@ -350,18 +368,18 @@ public class LoginActivity extends AppCompatActivity {
                         @Override
                         public void run() {
 
-                            AlertClass.hideLoadingMessage(loadingProgress);
-
                             if (httpErrorType == HTTPErrorType.Success) {
                                 if (TokenHandlerSingleton.getInstance(getApplicationContext()).isAuthorized()) {
                                     KeyChainAccessProxy.getInstance(getApplicationContext()).setValueAsString(getUSERNAME_KEY(), username);
                                     KeyChainAccessProxy.getInstance(getApplicationContext()).setValueAsString(getPASSWORD_KEY(), password);
 
-                                    LoginActivity.this.getProfile();
+//                                    LoginActivity.this.getProfile();
+                                    LoginActivity.this.getLockedStatus();
                                 }
 
 
                             } else {
+                                AlertClass.hideLoadingMessage(loadingProgress);
                                 AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                             }
 
@@ -376,7 +394,6 @@ public class LoginActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             AlertClass.hideLoadingMessage(loadingProgress);
 
                             if (networkErrorType != null) {
@@ -411,4 +428,144 @@ public class LoginActivity extends AppCompatActivity {
             loadingProgress.show();
         }
     }
+
+
+    private class LockStatusTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(final Void... params) {
+
+            DeviceRestAPIClass.deviceCreate(LoginActivity.this, new Function2<JsonObject, HTTPErrorType, Unit>() {
+                @Override
+                public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            if (httpErrorType == HTTPErrorType.Success) {
+                                if (jsonObject != null) {
+                                    String status = jsonObject.get("status").getAsString();
+                                    switch (status) {
+                                        case "OK": {
+                                            String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+                                            if (username != null) {
+                                                String deviceUniqueId = jsonObject.get("data").getAsJsonObject().get("device_unique_id").getAsString();
+                                                Boolean deviceState = jsonObject.get("data").getAsJsonObject().get("state").getAsBoolean();
+                                                String deviceModel = Build.MANUFACTURER + " " + Build.MODEL;
+
+                                                if (deviceUniqueId != null) {
+                                                    String androidId = Settings.Secure.getString(getApplicationContext().getContentResolver(),
+                                                            Settings.Secure.ANDROID_ID);
+
+                                                    if (androidId.equals(deviceUniqueId)) {
+                                                        if (DeviceInformationSingleton.getInstance(getApplicationContext()).setDeviceState(username, "android", deviceModel, deviceState, false)) {
+                                                            if (deviceState) {
+                                                                getProfile();
+                                                                return;
+                                                            } else {
+
+                                                                Intent i = StartupActivity.newIntent(LoginActivity.this);
+                                                                startActivity(i);
+                                                                finish();
+                                                            }
+                                                        }
+                                                    }
+
+                                                }
+
+                                            }
+                                            AlertClass.hideLoadingMessage(loadingProgress);
+                                            break;
+                                        }
+                                        case "Error": {
+                                            AlertClass.hideLoadingMessage(loadingProgress);
+
+                                            String errorType = jsonObject.get("error_type").getAsString();
+                                            switch (errorType) {
+                                                case "AnotherDevice": {
+                                                    final String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+                                                    if (username != null) {
+                                                        AlertClass.showAlertMessage(LoginActivity.this, "DeviceInfoError", errorType, "error", new Function0<Unit>() {
+                                                            @Override
+                                                            public Unit invoke() {
+
+                                                                String deviceName = jsonObject.get("error_data").getAsJsonObject().get("device_name").getAsString();
+                                                                String deviceModel = jsonObject.get("error_data").getAsJsonObject().get("device_model").getAsString();
+
+                                                                if (DeviceInformationSingleton.getInstance(getApplicationContext()).setDeviceState(username, deviceName, deviceModel, false, true)) {
+                                                                    Intent i = StartupActivity.newIntent(LoginActivity.this);
+                                                                    startActivity(i);
+                                                                    finish();
+                                                                }
+                                                                return null;
+                                                            }
+                                                        });
+                                                    }
+                                                    break;
+                                                }
+                                                case "UserNotExist":
+                                                case "DeviceNotRegistered":
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                            break;
+                                        }
+                                    }
+
+                                }
+
+                            } else if (httpErrorType == HTTPErrorType.Refresh) {
+                                new LockStatusTask().execute(params);
+                            } else {
+                                AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                            }
+                        }
+                    });
+
+                    return null;
+                }
+            }, new Function1<NetworkErrorType, Unit>() {
+                @Override
+                public Unit invoke(final NetworkErrorType networkErrorType) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
+                            if (networkErrorType != null) {
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
+                                }
+                            }
+
+                        }
+                    });
+                    return null;
+                }
+            });
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+//            loadingProgress = AlertClass.showLoadingMessage(LoginActivity.this);
+//            loadingProgress.show();
+
+        }
+
+    }
+
+
 }

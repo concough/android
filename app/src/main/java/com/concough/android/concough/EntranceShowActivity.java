@@ -63,6 +63,7 @@ import com.concough.android.models.UserLogModelHandler;
 import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
+import com.concough.android.singletons.MediaCacheSingleton;
 import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.EntranceStruct;
 import com.concough.android.structures.HTTPErrorType;
@@ -102,6 +103,7 @@ import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
 import static com.bumptech.glide.request.target.Target.SIZE_ORIGINAL;
+import static com.concough.android.concough.R.id.headerShowStarred_countEntrance;
 import static com.concough.android.settings.ConstantsKt.getSECRET_KEY;
 
 
@@ -168,6 +170,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     private Dialog dialogInfo;
     private Button texButton;
     private Button infoButton;
+    private LinearLayout backButton;
     private RecyclerView recyclerView;
     private RecyclerView recyclerViewStar;
     private KProgressHUD loading;
@@ -333,6 +336,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         }
 
         View mCustomView = LayoutInflater.from(this).inflate(R.layout.cc_entrance_actionbar, null);
+
         infoButton = (Button) mCustomView.findViewById(R.id.actionBarL_infoButton);
         infoButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -341,7 +345,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             }
         });
 
-        LinearLayout backButton = (LinearLayout) mCustomView.findViewById(R.id.linearBack);
+        backButton = (LinearLayout) mCustomView.findViewById(R.id.linearBack);
+        backButton.setVisibility(View.VISIBLE);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -494,6 +499,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
         });
 
+
         if (showType.equals("Show")) {
             buttonStarred.setText("سوالات نشان شده");
             tvStarredCount.setVisibility(View.VISIBLE);
@@ -513,7 +519,12 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         buttonStarred.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+
                 if (tvStarredCount.getVisibility() == View.VISIBLE) { // if must show all questions
+                    backButton.setVisibility(View.GONE);
+
+
                     showType = "Starred";
 
                     loading = AlertClass.showLoadingMessage(EntranceShowActivity.this);
@@ -549,7 +560,12 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         }
                     }, 1500);
 
+
                 } else {
+
+                    backButton.setVisibility(View.VISIBLE);
+
+
                     buttonStarred.setText("سوالات نشان شده");
                     tvStarredCount.setVisibility(View.VISIBLE);
                     tabLayout.setVisibility(View.VISIBLE);
@@ -596,33 +612,59 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     }
 
-    private void downloadImage(final int imageId) {
-        MediaRestAPIClass.downloadEsetImage(EntranceShowActivity.this, imageId, esetImageView, new Function2<JsonObject, HTTPErrorType, Unit>() {
-            @Override
-            public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (httpErrorType != HTTPErrorType.Success) {
-                            Log.d(TAG, "run: ");
-                            if (httpErrorType == HTTPErrorType.Refresh) {
-                                downloadImage(imageId);
-                            } else {
-                                esetImageView.setImageResource(R.drawable.no_image);
-                            }
-                        }
-                    }
-                });
-                Log.d(TAG, "invoke: " + jsonObject);
-                return null;
-            }
-        }, new Function1<NetworkErrorType, Unit>() {
-            @Override
-            public Unit invoke(final NetworkErrorType networkErrorType) {
-                return null;
-            }
-        });
 
+    private void downloadImage(final int imageId) {
+        final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+        byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+        if (data != null) {
+
+            Glide.with(EntranceShowActivity.this)
+
+                    .load(data)
+
+                    //.crossFade()
+                    .dontAnimate()
+                    .into(esetImageView)
+                    .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+
+        } else {
+            MediaRestAPIClass.downloadEsetImage(EntranceShowActivity.this, imageId, esetImageView, new Function2<byte[], HTTPErrorType, Unit>() {
+                @Override
+                public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+                    if (httpErrorType != HTTPErrorType.Success) {
+                        Log.d(TAG, "run: ");
+                        if (httpErrorType == HTTPErrorType.Refresh) {
+                            downloadImage(imageId);
+                        } else {
+                            esetImageView.setImageResource(R.drawable.no_image);
+                        }
+                    } else {
+                        MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+
+                        Glide.with(EntranceShowActivity.this)
+
+                                .load(data)
+                                //.crossFade()
+                                .dontAnimate()
+                                .into(esetImageView)
+                                .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+                    }
+//                        }
+//                    });
+                    return null;
+                }
+            }, new Function1<NetworkErrorType, Unit>() {
+                @Override
+                public Unit invoke(NetworkErrorType networkErrorType) {
+                    return null;
+                }
+            });
+        }
     }
 
 
@@ -1108,7 +1150,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                             input.read(buffer);
 
                             byte[] decoded = Base64.decode(buffer, Base64.DEFAULT);
-                            byte[] i = new AES256JNCryptor(1000).decryptData(decoded, hashKey.toCharArray());
+                            byte[] i = new AES256JNCryptor(1023).decryptData(decoded, hashKey.toCharArray());
 
                             imageRepo.put(imageId, i);
 
@@ -1238,10 +1280,10 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
             public void changeStarredState(Boolean state) {
                 if (state) {
-                    starImage.setImageResource(R.drawable.star_filled);
+                    starImage.setImageResource(R.drawable.bookmark_filled);
                     starImage.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughRedLight));
                 } else {
-                    starImage.setImageResource(R.drawable.star_empty);
+                    starImage.setImageResource(R.drawable.bookmark_empty);
                     starImage.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray2));
                 }
             }
@@ -1595,7 +1637,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             public HeaderHolder(View itemView) {
                 super(itemView);
                 tv = (TextView) itemView.findViewById(R.id.headerShowStarred_headerTitle);
-                tvCount = (TextView) itemView.findViewById(R.id.headerShowStarred_countEntrance);
+                tvCount = (TextView) itemView.findViewById(headerShowStarred_countEntrance);
+
                 tv.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 tvCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
 
@@ -1767,10 +1810,10 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
             public void changeStarredState(Boolean state) {
                 if (state) {
-                    starImage.setImageResource(R.drawable.star_filled);
+                    starImage.setImageResource(R.drawable.bookmark_filled);
                     starImage.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughRedLight));
                 } else {
-                    starImage.setImageResource(R.drawable.star_empty);
+                    starImage.setImageResource(R.drawable.bookmark_empty);
                     starImage.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray2));
                 }
             }
@@ -2013,7 +2056,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         @Override
         public void bindHeaderData(View header, int headerPosition) {
             TextView tv = (TextView) header.findViewById(R.id.headerShowStarred_headerTitle);
-            TextView tvCount = (TextView) header.findViewById(R.id.headerShowStarred_countEntrance);
+            TextView tvCount = (TextView) header.findViewById(headerShowStarred_countEntrance);
             tv.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
             tvCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
             Lessions temp = (Lessions) mPairList.get(headerPosition).second;
@@ -2104,7 +2147,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                             input.read(buffer);
 
                             byte[] decoded = Base64.decode(buffer, Base64.DEFAULT);
-                            byte[] i = new AES256JNCryptor(1000).decryptData(decoded, hashKey.toCharArray());
+                            byte[] i = new AES256JNCryptor(1023).decryptData(decoded, hashKey.toCharArray());
 
 //                            ByteArrayInputStream stream = new ByteArrayInputStream(decoded);
 //                            AES256JNCryptorInputStream cryptStream = new AES256JNCryptorInputStream(stream, hashKey.toCharArray());
@@ -2156,7 +2199,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 public boolean onInterceptTouchEvent(RecyclerView recyclerView, MotionEvent motionEvent) {
                     if (motionEvent.getY() <= mStickyHeaderHeight) {
                         // Handle the clicks on the header here ...
-                     //   return true;
+                        //   return true;
                     }
                     return false;
                 }

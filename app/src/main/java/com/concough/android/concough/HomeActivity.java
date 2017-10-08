@@ -5,9 +5,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,11 +16,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.baoyz.widget.PullRefreshLayout;
+import com.bumptech.glide.Glide;
 import com.concough.android.general.AlertClass;
 import com.concough.android.rest.ActivityRestAPIClass;
 import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
+import com.concough.android.singletons.MediaCacheSingleton;
 import com.concough.android.structures.ConcoughActivityStruct;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
@@ -28,12 +30,10 @@ import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Map;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -386,61 +386,84 @@ public class HomeActivity extends BottomNavigationActivity {
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
 
-                entranceType.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString() + " " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString());
+                entranceType.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString());
                 entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString() + ")");
 
                 int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
 
                 downloadImage(imageId);
-
-                String s;
-                s = concoughActivityStruct.getTarget().getAsJsonObject().get("extra_data").getAsString();
-                extraData = new JsonParser().parse(s).getAsJsonObject();
-
-                String extra = "";
-                ArrayList<String> extraArray = new ArrayList<>();
-
-                for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
-                    extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
-                }
-
-                extra = TextUtils.join(" - ", extraArray);
-                additionalData.setText(extra);
+//
+//                String s;
+//                s = concoughActivityStruct.getTarget().getAsJsonObject().get("extra_data").getAsString();
+//                extraData = new JsonParser().parse(s).getAsJsonObject();
+//
+//                String extra = "";
+//                ArrayList<String> extraArray = new ArrayList<>();
+//
+//                for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
+//                    extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
+//                }
+//
+//                extra = TextUtils.join(" - ", extraArray);
+                additionalData.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString());
             }
 
             private void downloadImage(final int imageId) {
-                MediaRestAPIClass.downloadEsetImage(HomeActivity.this, imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (httpErrorType != HTTPErrorType.Success) {
-                                    Log.d(TAG, "run: ");
-                                    if (httpErrorType == HTTPErrorType.Refresh) {
-                                        downloadImage(imageId);
-                                    } else {
-                                        entranceLogo.setImageResource(R.drawable.no_image);
-                                    }
-                                }
-                            }
-                        });
-                        Log.d(TAG, "invoke: " + jsonObject);
-                        return null;
-                    }
-                }, new Function1<NetworkErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(NetworkErrorType networkErrorType) {
-                        return null;
-                    }
-                });
+                final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+                byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+                if (data != null) {
 
+                    Glide.with(HomeActivity.this)
+                            .load(data)
+                            //.crossFade()
+                            .dontAnimate()
+                            .into(entranceLogo)
+                            .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+
+                } else {
+                    MediaRestAPIClass.downloadEsetImage(HomeActivity.this, imageId, entranceLogo, new Function2<byte[], HTTPErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
+//                            runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
+                            if (httpErrorType != HTTPErrorType.Success) {
+                                Log.d(TAG, "run: ");
+                                if (httpErrorType == HTTPErrorType.Refresh) {
+                                    downloadImage(imageId);
+                                } else {
+                                    entranceLogo.setImageResource(R.drawable.no_image);
+                                }
+                            } else {
+                                MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+
+                                Glide.with(getApplicationContext())
+
+                                        .load(data)
+                                        //.crossFade()
+                                        .dontAnimate()
+                                        .into(entranceLogo)
+                                        .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+                            }
+//                                }
+//                            });
+                            return null;
+                        }
+                    }, new Function1<NetworkErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(NetworkErrorType networkErrorType) {
+                            return null;
+                        }
+                    });
+                }
             }
 
         }
 
         private class EntranceUpdateHolder extends RecyclerView.ViewHolder {
-            private ImageView entranceLogo;
+            private de.hdodenhof.circleimageview.CircleImageView entranceLogo;
             private TextView dateTopLeft;
             private TextView entranceType;
             private TextView entranceSetGroup;
@@ -460,7 +483,7 @@ public class HomeActivity extends BottomNavigationActivity {
                 additionalData = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_additionalData);
                 sellCount = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_sellCount);
                 dateJalali = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_dateJalali);
-                entranceLogo = (ImageView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceLogo);
+                entranceLogo = (de.hdodenhof.circleimageview.CircleImageView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceLogo);
 
                 entranceType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 entranceSetGroup.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
@@ -508,54 +531,84 @@ public class HomeActivity extends BottomNavigationActivity {
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
 
-                entranceType.setText("آزمون " + concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString() + " " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString());
+                entranceType.setText("آزمون " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString());
                 entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString() + ")");
 
                 int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
                 downloadImage(imageId);
 
-                String s;
-                s = concoughActivityStruct.getTarget().getAsJsonObject().get("extra_data").getAsString();
-                extraData = new JsonParser().parse(s).getAsJsonObject();
-
-                String extra = "";
-                ArrayList<String> extraArray = new ArrayList<>();
-
-                for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
-                    extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
-                }
-
-                extra = TextUtils.join(" - ", extraArray);
-                additionalData.setText(extra);
+//                String s;
+//                s = concoughActivityStruct.getTarget().getAsJsonObject().get("extra_data").getAsString();
+//                extraData = new JsonParser().parse(s).getAsJsonObject();
+//
+//                String extra = "";
+//                ArrayList<String> extraArray = new ArrayList<>();
+//
+//                for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
+//                    extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
+//                }
+//
+//                extra = TextUtils.join(" - ", extraArray);
+                additionalData.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString());
             }
 
             private void downloadImage(final int imageId) {
-                MediaRestAPIClass.downloadEsetImage(HomeActivity.this, imageId, entranceLogo, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (httpErrorType != HTTPErrorType.Success) {
-                                    Log.d(TAG, "run: ");
-                                    if (httpErrorType == HTTPErrorType.Refresh) {
-                                        downloadImage(imageId);
-                                    } else {
-                                        entranceLogo.setImageResource(R.drawable.no_image);
-                                    }
-                                }
-                            }
-                        });
-                        Log.d(TAG, "invoke: " + jsonObject);
-                        return null;
-                    }
-                }, new Function1<NetworkErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(NetworkErrorType networkErrorType) {
-                        return null;
-                    }
-                });
+                final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+                final byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+                if (data != null) {
 
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+                    Glide.with(HomeActivity.this)
+
+                            .load(data)
+                            //.crossFade()
+                            .dontAnimate()
+                            .into(entranceLogo)
+                            .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+//                        }
+//                    });
+
+
+                } else {
+                    MediaRestAPIClass.downloadEsetImage(HomeActivity.this, imageId, entranceLogo, new Function2<byte[], HTTPErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
+//                            runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
+                            if (httpErrorType != HTTPErrorType.Success) {
+                                Log.d(TAG, "run: ");
+                                if (httpErrorType == HTTPErrorType.Refresh) {
+                                    downloadImage(imageId);
+                                } else {
+                                    entranceLogo.setImageResource(R.drawable.no_image);
+                                }
+                            } else {
+                                MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+
+                                Glide.with(HomeActivity.this)
+
+                                        .load(data)
+                                        //.crossFade()
+                                        .dontAnimate()
+                                        .into(entranceLogo)
+                                        .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+                            }
+//                                }
+//                            });
+                            return null;
+                        }
+                    }, new Function1<NetworkErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(NetworkErrorType networkErrorType) {
+                            return null;
+                        }
+                    });
+                }
             }
 
         }

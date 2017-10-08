@@ -5,9 +5,9 @@ package com.concough.android.settings
  */
 
 // Application Version
-val APP_VERSION = "v1"
+val APP_VERSION = 1
 val API_VERSION = "v1"
-val SECRET_KEY = "67mnnv^vs7&^v87YrV&6*njs*99__==ncdjncdujb"
+val SECRET_KEY = "67mnnv^vs7&^v87YrV&hd8bw92bu9b%\$\$#b8728^%93y6==37yb&BBB6*njs*99__==ncdjncdujb"
 
 // Host UrlsP
 val BASE_URL = "http://192.168.1.15:8000/api/"
@@ -23,6 +23,7 @@ val ENTRANCE_CLASS_NAME = "entrance"
 val PURCHASED_CLASS_NAME = "purchased"
 val PRODUCT_CLASS_NAME = "product"
 val BASKET_CLASS_NAME = "basket"
+val DEVICE_CLASS_NAME = "device"
 val JWT_URL_PREFIX = "j"
 
 // OAuth Settings
@@ -53,3 +54,4 @@ val RED_COLOR_HEX_2:Int = 0xDD0000
 val GREEN_COLOR_HEX:Int = 0x1008000
 val GRAY_COLOR_HEX_1: Int = 0xB7B7B7
 
+val MEDIA_CACHE_SIZE = 1024 * 1024 * 10

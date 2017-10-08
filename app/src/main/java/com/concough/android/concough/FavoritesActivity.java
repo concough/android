@@ -10,9 +10,9 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -24,6 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.baoyz.widget.PullRefreshLayout;
+import com.bumptech.glide.Glide;
 import com.concough.android.downloader.EntrancePackageDownloader;
 import com.concough.android.general.AlertClass;
 import com.concough.android.models.EntranceModel;
@@ -40,6 +41,7 @@ import com.concough.android.rest.PurchasedRestAPIClass;
 import com.concough.android.singletons.DownloaderSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
+import com.concough.android.singletons.MediaCacheSingleton;
 import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.EntrancePurchasedStruct;
 import com.concough.android.structures.EntranceStruct;
@@ -52,10 +54,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Map;
 import java.util.UUID;
 
 import io.realm.RealmResults;
@@ -92,6 +98,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
     private String showType = "Normal";
     private String selectedShowType = "Show";
     private String entranceUniqueId = "";
+    private String username;
 
 
     private KProgressHUD loadingProgress;
@@ -140,15 +147,16 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             }
         });
 
-        actionBarSet();
+        username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
 
+        actionBarSet();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(FavoritesActivity.this.entranceUniqueId.equals("") == false) {
-            DownloaderSingleton.getInstance().unbind(FavoritesActivity.this,entranceUniqueId);
+        if (FavoritesActivity.this.entranceUniqueId.equals("") == false) {
+            DownloaderSingleton.getInstance().unbind(FavoritesActivity.this, entranceUniqueId);
         }
 
     }
@@ -428,6 +436,9 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                     }
                                                 }
 
+                                                //RealmResults<PurchasedModel> purchasedIn = PurchasedModelHandler.getAllPurchasedIn(BasketCheckoutActivity.this, username, purchasedIds);
+
+                                                purchasedIds(dat);
                                                 FavoritesActivity.this.loadData();
 
                                             }
@@ -500,6 +511,58 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             }
         });
     }
+
+    private void purchasedIds(Integer[] ids) {
+
+        RealmResults<PurchasedModel> purchasedIn = PurchasedModelHandler.getAllPurchasedIn(FavoritesActivity.this, username, ids);
+        if (purchasedIn != null) {
+            for (PurchasedModel purchasedModel : purchasedIn) {
+                if (purchasedModel.productType.equals("Entrance")) {
+                    EntranceModel entranceModel = EntranceModelHandler.getByUsernameAndId(getApplicationContext(), username, purchasedModel.productUniqueId);
+                    if (entranceModel != null) {
+                        downloadImage(entranceModel.setId);
+                    }
+                }
+            }
+        }
+    }
+
+
+
+    private void downloadImage(final int imageId) {
+        final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+
+        if (url != null) {
+            byte[]  data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+            if (data != null) {
+
+                File folder = new File(getApplicationContext().getFilesDir(),"images");
+                File folder2 = new File(getApplicationContext().getFilesDir()+"/images","eset");
+                if (!folder.exists()) {
+                    folder.mkdir();
+                    folder2.mkdir();
+                }
+
+                File photo=new File(getApplicationContext().getFilesDir()+"/images/eset", String.valueOf(imageId));
+                if (photo.exists()) {
+                    photo.delete();
+                }
+
+                try {
+                    FileOutputStream fos=new FileOutputStream(photo.getPath());
+
+                    fos.write(data);
+                    fos.close();
+                }
+                catch (java.io.IOException e) {
+                    Log.e("PictureDemo", "Exception in photoCallback", e);
+                }
+            }
+        }
+
+    }
+
+
 
     private void deletePurchaseData(String uniqueId) {
         File f = new File(FavoritesActivity.this.getFilesDir(), uniqueId);
@@ -889,26 +952,26 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 //                params.width = 0;
 //                FEntranceNotDownloadViewHolder.this.downloadProgress2Level.setLayoutParams(params);
 
-                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " + entrance.getEntranceOrgTitle() + " " +
+                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " +
                         FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
                 entranceSetTextView.setText(entrance.getEntranceSetTitle() + " (" + entrance.getEntranceGroupTitle() + ")");
 
                 try {
-                    JsonObject extraData = entrance.getEntranceExtraData().getAsJsonObject();
+//                    JsonObject extraData = entrance.getEntranceExtraData().getAsJsonObject();
+//
+//                    if (extraData != null) {
+//                        String extra = "";
+//                        ArrayList<String> extraArray = new ArrayList<>();
+//
+//                        for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
+//                            extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
+//                        }
+//
+//                        extra = TextUtils.join(" - ", extraArray);
 
-                    if (extraData != null) {
-                        String extra = "";
-                        ArrayList<String> extraArray = new ArrayList<>();
+                        entranceExtraDataTextView.setText(entrance.getEntranceOrgTitle());
 
-                        for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
-                            extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
-                        }
-
-                        extra = TextUtils.join(" - ", extraArray);
-
-                        entranceExtraDataTextView.setText(extra);
-
-                    }
+//                    }
                 } catch (Exception exc) {
                 }
 
@@ -1130,7 +1193,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                 @Override
                                 public void run() {
                                     DownloaderSingleton.getInstance().removeDownloader(entranceS.getEntranceUniqueId());
-                                    AlertClass.showTopMessage(FavoritesActivity.this,findViewById(R.id.container), "ActionResult","DownloadFailed","error",null);
+                                    AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "ActionResult", "DownloadFailed", "error", null);
                                     favAdapter.notifyItemRangeChanged(index, 1);
                                     FavoritesActivity.this.entranceUniqueId = "";
                                 }
@@ -1204,7 +1267,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                 FavoritesActivity.this.entranceUniqueId = entranceS.getEntranceUniqueId();
                                             }
 
-                                            final String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+
                                             if (username != null) {
                                                 Boolean isDownloaded = PurchasedModelHandler.isInitialDataDownloaded(getApplicationContext(), username, entranceS.getEntranceUniqueId(), "Entrance");
                                                 if (isDownloaded) {
@@ -1267,33 +1330,71 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             }
 
 
-            private void downloadImage(final int imageId) {
-                MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, entranceSetImage, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (httpErrorType != HTTPErrorType.Success) {
-                                    Log.d(TAG, "run: ");
-                                    if (httpErrorType == HTTPErrorType.Refresh) {
-                                        downloadImage(imageId);
-                                    } else {
-                                        entranceSetImage.setImageResource(R.drawable.no_image);
-                                    }
-                                }
-                            }
-                        });
-                        Log.d(TAG, "invoke: " + jsonObject);
-                        return null;
-                    }
-                }, new Function1<NetworkErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final NetworkErrorType networkErrorType) {
-                        return null;
-                    }
-                });
 
+
+
+            private void downloadImage(final int imageId) {
+                byte[] data;
+                final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+
+                File photo=new File(getApplicationContext().getFilesDir()+"/images/eset", String.valueOf(imageId));
+                if (photo.exists()) {
+                    data = convertFileToByteArray(photo);
+                    Log.d(TAG, "downloadImage: From File");
+                } else {
+                      data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+                }
+
+                if (data != null) {
+
+                    Glide.with(FavoritesActivity.this)
+
+                            .load(data)
+                            //.crossFade()
+                            .dontAnimate()
+                            .into(entranceSetImage)
+                            .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+
+                } else {
+                    MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, entranceSetImage, new Function2<byte[], HTTPErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
+//                            runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
+                                    if (httpErrorType != HTTPErrorType.Success) {
+                                        Log.d(TAG, "run: ");
+                                        if (httpErrorType == HTTPErrorType.Refresh) {
+                                            downloadImage(imageId);
+                                        } else {
+                                            entranceSetImage.setImageResource(R.drawable.no_image);
+                                        }
+                                    } else {
+                                        if (url != null) {
+                                            MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+                                        }
+
+                                        Glide.with(FavoritesActivity.this)
+
+                                                .load(data)
+                                                //.crossFade()
+                                                .dontAnimate()
+                                                .into(entranceSetImage)
+                                                .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+                                    }
+//                                }
+//                            });
+                            return null;
+                        }
+                    }, new Function1<NetworkErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(NetworkErrorType networkErrorType) {
+                            return null;
+                        }
+                    });
+                }
             }
 
 
@@ -1390,26 +1491,26 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             public void setupHolder(final EntranceStruct entrance, EntrancePurchasedStruct purchased, int index, final int starCount, int openedCount, long qCount) {
 
 
-                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " + entrance.getEntranceOrgTitle() + " " +
+                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " +
                         FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
                 entranceSetTextView.setText(entrance.getEntranceSetTitle() + " (" + entrance.getEntranceGroupTitle() + ")");
 
                 try {
-                    JsonObject extraData = entrance.getEntranceExtraData().getAsJsonObject();
+//                    JsonObject extraData = entrance.getEntranceExtraData().getAsJsonObject();
+//
+//                    if (extraData != null) {
+//                        String extra = "";
+//                        ArrayList<String> extraArray = new ArrayList<>();
+//
+//                        for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
+//                            extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
+//                        }
+//
+//                        extra = TextUtils.join(" - ", extraArray);
 
-                    if (extraData != null) {
-                        String extra = "";
-                        ArrayList<String> extraArray = new ArrayList<>();
+                        entranceExtraDataTextView.setText(entrance.getEntranceOrgTitle());
 
-                        for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
-                            extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
-                        }
-
-                        extra = TextUtils.join(" - ", extraArray);
-
-                        entranceExtraDataTextView.setText(extra);
-
-                    }
+//                    }
                 } catch (Exception exc) {
                 }
 
@@ -1453,32 +1554,71 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
 
             private void downloadImage(final int imageId) {
-                MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, entranceSetImage, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (httpErrorType != HTTPErrorType.Success) {
-                                    Log.d(TAG, "run: ");
-                                    if (httpErrorType == HTTPErrorType.Refresh) {
-                                        downloadImage(imageId);
-                                    } else {
-                                        entranceSetImage.setImageResource(R.drawable.no_image);
-                                    }
-                                }
-                            }
-                        });
-                        Log.d(TAG, "invoke: " + jsonObject);
-                        return null;
-                    }
-                }, new Function1<NetworkErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final NetworkErrorType networkErrorType) {
-                        return null;
-                    }
-                });
+                byte[] data;
+                final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
 
+                File photo=new File(getApplicationContext().getFilesDir()+"/images/eset", String.valueOf(imageId));
+                if (photo.exists()) {
+                    data = convertFileToByteArray(photo);
+                    Log.d(TAG, "downloadImage: From File");
+                } else {
+                    data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+                }
+//
+//                final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+//                byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+                if (data != null) {
+
+                    Glide.with(FavoritesActivity.this)
+
+                            .load(data)
+
+                            //.crossFade()
+                            .dontAnimate()
+                            .into(entranceSetImage)
+                            .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+
+                } else {
+                    MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, entranceSetImage, new Function2<byte[], HTTPErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
+//                            runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
+                                    if (httpErrorType != HTTPErrorType.Success) {
+                                        Log.d(TAG, "run: ");
+                                        if (httpErrorType == HTTPErrorType.Refresh) {
+                                            downloadImage(imageId);
+                                        } else {
+                                            entranceSetImage.setImageResource(R.drawable.no_image);
+                                        }
+                                    } else {
+                                        if (url != null) {
+                                            MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+                                        }
+
+                                        Glide.with(FavoritesActivity.this)
+
+                                                .load(data)
+
+                                                //.crossFade()
+                                                .dontAnimate()
+                                                .into(entranceSetImage)
+                                                .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+                                    }
+//                                }
+//                            });
+                            return null;
+                        }
+                    }, new Function1<NetworkErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(NetworkErrorType networkErrorType) {
+                            return null;
+                        }
+                    });
+                }
             }
 
         }
@@ -1510,26 +1650,26 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
             public void setupHolder(final FavoriteItem favoriteItem, final int index) {
                 final EntranceStruct entrance = (EntranceStruct) favoriteItem.object;
-                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " + entrance.getEntranceOrgTitle() + " " +
+                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " +
                         FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
                 entranceSetTextView.setText(entrance.getEntranceSetTitle() + " (" + entrance.getEntranceGroupTitle() + ")");
 
                 try {
-                    JsonObject extraData = entrance.getEntranceExtraData().getAsJsonObject();
+//                    JsonObject extraData = entrance.getEntranceExtraData().getAsJsonObject();
+//
+//                    if (extraData != null) {
+//                        String extra = "";
+//                        ArrayList<String> extraArray = new ArrayList<>();
+//
+//                        for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
+//                            extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
+//                        }
 
-                    if (extraData != null) {
-                        String extra = "";
-                        ArrayList<String> extraArray = new ArrayList<>();
+//                        extra = TextUtils.join(" - ", extraArray);
 
-                        for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
-                            extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
-                        }
+                        entranceExtraDataTextView.setText(entrance.getEntranceOrgTitle());
 
-                        extra = TextUtils.join(" - ", extraArray);
-
-                        entranceExtraDataTextView.setText(extra);
-
-                    }
+//                    }
                 } catch (Exception exc) {
                 }
 
@@ -1570,36 +1710,97 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
 
             private void downloadImage(final int imageId) {
-                MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, entranceSetImage, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (httpErrorType != HTTPErrorType.Success) {
-                                    Log.d(TAG, "run: ");
-                                    if (httpErrorType == HTTPErrorType.Refresh) {
-                                        downloadImage(imageId);
-                                    } else {
-                                        entranceSetImage.setImageResource(R.drawable.no_image);
-                                    }
-                                }
-                            }
-                        });
-                        Log.d(TAG, "invoke: " + jsonObject);
-                        return null;
-                    }
-                }, new Function1<NetworkErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(NetworkErrorType networkErrorType) {
-                        return null;
-                    }
-                });
+                byte[] data;
+                final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
 
+                File photo=new File(getApplicationContext().getFilesDir()+"/images/eset", String.valueOf(imageId));
+                if (photo.exists()) {
+                    data = convertFileToByteArray(photo);
+                    Log.d(TAG, "downloadImage: From File");
+                } else {
+                    data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+                }
+
+                if (data != null) {
+
+                    Glide.with(FavoritesActivity.this)
+
+                            .load(data)
+
+                            //.crossFade()
+                            .dontAnimate()
+                            .into(entranceSetImage)
+                            .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+
+                } else {
+                    MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, entranceSetImage, new Function2<byte[], HTTPErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
+//                            runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
+                            if (httpErrorType != HTTPErrorType.Success) {
+                                Log.d(TAG, "run: ");
+                                if (httpErrorType == HTTPErrorType.Refresh) {
+                                    downloadImage(imageId);
+                                } else {
+                                    entranceSetImage.setImageResource(R.drawable.no_image);
+                                }
+                            } else {
+                                MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+
+                                Glide.with(FavoritesActivity.this)
+
+                                        .load(data)
+
+                                        //.crossFade()
+                                        .dontAnimate()
+                                        .into(entranceSetImage)
+                                        .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+                            }
+//                                }
+//                            });
+                            return null;
+                        }
+                    }, new Function1<NetworkErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(NetworkErrorType networkErrorType) {
+                            return null;
+                        }
+                    });
+                }
             }
 
 
         }
 
+
+
+    }
+
+    public static byte[] convertFileToByteArray(File f)
+    {
+        byte[] byteArray = null;
+        try
+        {
+            InputStream inputStream = new FileInputStream(f);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            byte[] b = new byte[1024*8];
+            int bytesRead =0;
+
+            while ((bytesRead = inputStream.read(b)) != -1)
+            {
+                bos.write(b, 0, bytesRead);
+            }
+
+            byteArray = bos.toByteArray();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        return byteArray;
     }
 }

@@ -64,6 +64,9 @@
     <string name="settingA_S_aboutUs_url">http://zhycan.com</string>
     <string name="settingA_S_changePassword">تغییر گذرواژه</string>
     <string name="settingA_S_inviteFriends">دعوت از دوستان</string>
+    <string name="settingA_S_lockDevice">قفل کردن دستگاه</string>
+    <string name="settingA_S_editInformations">ویرایش اطلاعات</string>
+    <string name="settingA_S_editInformationsEditing">اتمام ویرایش</string>
     <string name="settingA_S_clearCache">پاک کردن حافظه نهانی</string>
     <string name="settingA_S_bugReport">گزارش خطا</string>
     <string name="settingA_S_aboutUs">درباره ما</string>

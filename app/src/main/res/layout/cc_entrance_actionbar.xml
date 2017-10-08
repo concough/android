@@ -35,7 +35,8 @@
                 android:layout_gravity="bottom|clip_horizontal"
                 android:layout_weight="1"
                 android:src="@drawable/back_icon"
-                android:textAlignment="gravity" />
+                android:textAlignment="gravity"
+                android:visibility="visible" />
         </LinearLayout>
 
         <Button

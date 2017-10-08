@@ -19,22 +19,31 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.baoyz.widget.PullRefreshLayout;
+import com.bumptech.glide.Glide;
 import com.concough.android.general.AlertClass;
+import com.concough.android.models.EntranceModel;
+import com.concough.android.models.EntranceModelHandler;
+import com.concough.android.models.PurchasedModel;
+import com.concough.android.models.PurchasedModelHandler;
 import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.singletons.BasketSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
+import com.concough.android.singletons.MediaCacheSingleton;
+import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.EntranceStruct;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.realm.RealmResults;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
@@ -56,6 +65,7 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
     private BasketCheckoutActivity.BasketCheckoutAdapter basketCheckoutAdapter;
 
     private String contextFromWho = "";
+    private String username = "";
 
     public static Intent newIntent(Context packageContext, String who) {
         Intent i = new Intent(packageContext, BasketCheckoutActivity.class);
@@ -73,6 +83,9 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
         this.setMenuSelectedIndex(1);
         super.onCreate(savedInstanceState);
         this.contextFromWho = getIntent().getStringExtra(CONTEXT_WHO_KEY);
+
+        // get username
+        username = UserDefaultsSingleton.getInstance(BasketCheckoutActivity.this).getUsername();
 
         // Initialize controls
         checkoutButton = (Button) findViewById(R.id.basketCheckoutA_checkout);
@@ -130,7 +143,7 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
             }
 
             @Override
-            public void onCreateCompleted() {
+            public void onCreateCompleted(Integer position) {
 
             }
 
@@ -177,6 +190,9 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
                             }
                         }
                     });
+
+                    if(purchased.size()>0)
+                    purchasedIds(purchased);
                 }
             }
         });
@@ -184,6 +200,63 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
         updateTotalCost();
         actionBarSet();
     }
+
+    private void purchasedIds(HashMap<Integer, BasketSingleton.PurchasedItem> purchased) {
+        Integer[] purchasedIds = new Integer[purchased.size()];
+
+        int i = 0;
+        for (BasketSingleton.PurchasedItem purchase : purchased.values()) {
+            purchasedIds[i] = purchase.getPurchasedId();
+
+            i++;
+        }
+
+        RealmResults<PurchasedModel> purchasedIn = PurchasedModelHandler.getAllPurchasedIn(BasketCheckoutActivity.this, username, purchasedIds);
+        if (purchasedIn != null) {
+            for (PurchasedModel purchasedModel : purchasedIn) {
+                if (purchasedModel.productType.equals("Entrance")) {
+                    EntranceModel entranceModel = EntranceModelHandler.getByUsernameAndId(getApplicationContext(), username, purchasedModel.productUniqueId);
+                    if (entranceModel != null) {
+                        downloadImage(entranceModel.setId);
+                    }
+                }
+            }
+        }
+    }
+
+    private void downloadImage(final int imageId) {
+        final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+
+        if (url != null) {
+            byte[]  data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+            if (data != null) {
+
+                File folder = new File(getApplicationContext().getFilesDir(),"images");
+                File folder2 = new File(getApplicationContext().getFilesDir()+"/images","eset");
+                if (!folder.exists()) {
+                    folder.mkdir();
+                    folder2.mkdir();
+                }
+
+                File photo=new File(getApplicationContext().getFilesDir()+"/images/eset", String.valueOf(imageId));
+                if (photo.exists()) {
+                    photo.delete();
+                }
+
+                try {
+                    FileOutputStream fos=new FileOutputStream(photo.getPath());
+
+                    fos.write(data);
+                    fos.close();
+                }
+                catch (java.io.IOException e) {
+                    Log.e("PictureDemo", "Exception in photoCallback", e);
+                }
+            }
+        }
+
+    }
+
 
     private void actionBarSet() {
 
@@ -363,34 +436,60 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
                 });
             }
 
+
             private void downloadImage(final int imageId) {
-                MediaRestAPIClass.downloadEsetImage(BasketCheckoutActivity.this, imageId, esetImageView, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (httpErrorType != HTTPErrorType.Success) {
-                                    Log.d(TAG, "run: ");
-                                    if (httpErrorType == HTTPErrorType.Refresh) {
-                                        downloadImage(imageId);
+                final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+                byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+                if (data != null) {
+
+                    Glide.with(BasketCheckoutActivity.this)
+
+                            .load(data)
+                            //.crossFade()
+                            .dontAnimate()
+                            .into(esetImageView)
+                            .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+
+                } else {
+                    MediaRestAPIClass.downloadEsetImage(BasketCheckoutActivity.this, imageId, esetImageView, new Function2<byte[], HTTPErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (httpErrorType != HTTPErrorType.Success) {
+                                        Log.d(TAG, "run: ");
+                                        if (httpErrorType == HTTPErrorType.Refresh) {
+                                            downloadImage(imageId);
+                                        } else {
+                                            esetImageView.setImageResource(R.drawable.no_image);
+                                        }
                                     } else {
-                                        esetImageView.setImageResource(R.drawable.no_image);
+                                        MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+
+                                        Glide.with(BasketCheckoutActivity.this)
+
+                                                .load(data)
+                                                //.crossFade()
+                                                .dontAnimate()
+                                                .into(esetImageView)
+                                                .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
                                     }
                                 }
-                            }
-                        });
-                        Log.d(TAG, "invoke: " + jsonObject);
-                        return null;
-                    }
-                }, new Function1<NetworkErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final NetworkErrorType networkErrorType) {
-                        return null;
-                    }
-                });
-
+                            });
+                            return null;
+                        }
+                    }, new Function1<NetworkErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(NetworkErrorType networkErrorType) {
+                            return null;
+                        }
+                    });
+                }
             }
+
 
         }
 

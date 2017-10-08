@@ -339,7 +339,7 @@ class EntrancePackageDownloader : Service() {
                                             val hashStr = "$username:$SECRET_KEY"
                                             val hashKey = MD5Digester.digest(hashStr)
 
-                                            val originalTextBytes = AES256JNCryptor(1000).decryptData(decodedData, hashKey.toCharArray())
+                                            val originalTextBytes = AES256JNCryptor(1023).decryptData(decodedData, hashKey.toCharArray())
                                             val originalText = String(originalTextBytes)
 
                                             val content = JsonParser().parse(originalText)

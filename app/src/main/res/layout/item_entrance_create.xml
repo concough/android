@@ -23,7 +23,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/app_dropbox_icon" />
+        app:srcCompat="@drawable/no_image_placeholder" />
 
     <TextView
         android:id="@+id/itemEntranceCreateI_dateTopLeft"

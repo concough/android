@@ -3,18 +3,12 @@ package com.concough.android.rest
 import android.content.Context
 import android.util.Log
 import android.widget.ImageView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.drawable.GlideDrawable
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.target.Target
 import com.concough.android.singletons.TokenHandlerSingleton
 import com.concough.android.singletons.UrlMakerSingleton
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
-import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
 import okhttp3.ResponseBody
-import org.jetbrains.anko.runOnUiThread
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -32,7 +26,7 @@ class MediaRestAPIClass {
         }
 
         @JvmStatic
-        fun downloadEsetImage(context: Context, imageId: Int, imageHolder: ImageView, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+        fun downloadEsetImage(context: Context, imageId: Int, imageHolder: ImageView, completion: (data: ByteArray?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
             val fullPath = makeEsetImageUrl(imageId) ?: return
 
             TokenHandlerSingleton.getInstance(context).assureAuthorized(completion = { authenticated, error ->
@@ -58,51 +52,15 @@ class MediaRestAPIClass {
                                     try {
 //                                        val reader: BufferedReader = BufferedReader(InputStreamReader(res?.byteStream()))
                                         val sb: ByteArray = res?.bytes()!!
-
+                                        completion(sb, HTTPErrorType.Success)
 //                                        val line = reader.read()
 //                                        sb.append(line)
 
-                                        context.runOnUiThread {
-                                            if(imageHolder!=null) {
 
-                                            }
-                                            Glide.with(context)
-
-                                                    .load(sb)
-
-                                                    .listener(object : RequestListener<ByteArray, GlideDrawable> {
-                                                        override fun onException(e: Exception, model: ByteArray, target: Target<GlideDrawable>, isFirstResource: Boolean): Boolean {
-                                                            Log.d("GLIDE", "First Exeption : "+ e.toString())
-                                                            completion(null, HTTPErrorType.NotFound)
-                                                            return false
-                                                        }
-
-                                                        override fun onResourceReady(resource: GlideDrawable, model: ByteArray, target: Target<GlideDrawable>, isFromMemoryCache: Boolean, isFirstResource: Boolean): Boolean {
-                                                            Log.d("GLIDE", "onResourceReady")
-                                                            completion(null, HTTPErrorType.Success)
-                                                            return false
-                                                        }
-
-                                                    })
-                                                    .crossFade()
-//                                                .fitCenter()
-                                                    .into(imageHolder)
-
-                                        }
-
-
-                                    } catch (exc: JsonParseException) {
-                                        completion(null, HTTPErrorType.UnKnown)
-                                        Log.d("GLIDE", "JsonParseException")
 
                                     } catch (exc: Exception) {
                                         completion(null, HTTPErrorType.UnKnown)
                                         Log.d("GLIDE", "Exception")
-
-                                    } catch (exc: java.lang.Exception) {
-                                        completion(null, HTTPErrorType.UnKnown)
-                                        Log.d("GLIDE", "java.lang.Exception")
-
                                     }
 
 

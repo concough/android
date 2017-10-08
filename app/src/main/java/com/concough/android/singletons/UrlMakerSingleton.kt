@@ -5,7 +5,7 @@ import com.concough.android.settings.*
 /**
  * Created by abolfazl on 7/2/17.
  */
-class UrlMakerSingleton private constructor(){
+class UrlMakerSingleton private constructor() {
     private val _base_url: String = BASE_URL
     private val _api_version: String = API_VERSION
     private val _jwt_prefix: String = JWT_URL_PREFIX
@@ -21,18 +21,20 @@ class UrlMakerSingleton private constructor(){
     private val _entrance_class_name = ENTRANCE_CLASS_NAME
     private val _purchased_class_name = PURCHASED_CLASS_NAME
     private val _product_class_name = PRODUCT_CLASS_NAME
+    private val _device_class_name = DEVICE_CLASS_NAME
 
     companion object Factory {
-        private var sharedInstance : UrlMakerSingleton? = null
+        private var sharedInstance: UrlMakerSingleton? = null
 
         @JvmStatic
-        fun  getInstance(): UrlMakerSingleton {
+        fun getInstance(): UrlMakerSingleton {
             if (sharedInstance == null)
                 sharedInstance = UrlMakerSingleton()
 
             return sharedInstance!!
         }
     }
+
     fun checkUsernameUrl(): String? {
         var fullPath: String? = null
         val functionName = "check_username"
@@ -130,6 +132,17 @@ class UrlMakerSingleton private constructor(){
     fun editGradeProfileUrl(): String? {
         var fullPath: String? = null
         val functionName = "edit/grade"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._profile_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+
+    fun gradeListProfileUrl(): String? {
+        var fullPath: String? = null
+        val functionName = "grade/list"
 
         if (OAUTH_METHOD == "jwt") {
             fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._profile_class_name}/$functionName/"
@@ -322,4 +335,30 @@ class UrlMakerSingleton private constructor(){
         }
         return fullPath
     }
+
+    fun getDeviceUrl(functionName: String): String? {
+        var fullPath: String? = null
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._device_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
+    fun getDeviceCreateUrl(): String? {
+        val functionName = "create"
+        return this.getDeviceUrl(functionName)
+    }
+
+    fun getDeviceLockUrl(): String? {
+        val functionName = "lock"
+        return this.getDeviceUrl(functionName)
+    }
+
+    fun getDeviceAcqurieUrl(): String? {
+        val functionName = "acqurie"
+        return this.getDeviceUrl(functionName)
+    }
+
+
 }

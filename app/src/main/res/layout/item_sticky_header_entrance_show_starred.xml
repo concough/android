@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="8dp"
-            android:background="@drawable/concough_badge_green_style"
+            android:background="@drawable/concough_badge_dark_gray_style"
             android:gravity="center_vertical"
             android:paddingBottom="4dp"
             android:paddingEnd="12dp"

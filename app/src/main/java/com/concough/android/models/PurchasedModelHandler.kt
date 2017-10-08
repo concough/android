@@ -1,9 +1,7 @@
 package com.concough.android.models
 
 import android.content.Context
-import com.concough.android.singletons.BasketSingleton
 import com.concough.android.singletons.RealmSingleton
-import io.realm.RealmQuery
 import io.realm.RealmResults
 import io.realm.Sort
 import java.util.*
@@ -174,6 +172,13 @@ class PurchasedModelHandler {
             return RealmSingleton.getInstance(context).DefaultRealm.where(PurchasedModel::class.java)
                     .equalTo("username", username).beginGroup().not().`in`("id", ids).endGroup().findAllSorted("created", Sort.DESCENDING)
         }
+
+        @JvmStatic
+        fun getAllPurchasedIn(context: Context, username: String, ids: Array<Int>): RealmResults<PurchasedModel>? {
+            return RealmSingleton.getInstance(context).DefaultRealm.where(PurchasedModel::class.java)
+                    .equalTo("username", username).beginGroup().`in`("id", ids).endGroup().findAllSorted("created", Sort.DESCENDING)
+        }
+
 
         @JvmStatic
         fun getByProductId(context: Context, username: String, productType: String, productId: String): PurchasedModel? {

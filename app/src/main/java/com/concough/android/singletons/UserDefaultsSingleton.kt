@@ -22,10 +22,10 @@ class UserDefaultsSingleton {
         val TAG: String = "UserDefaultsSingleton"
         val FILENAME = "profile"
 
-        private var sharedInstance : UserDefaultsSingleton? = null
+        private var sharedInstance: UserDefaultsSingleton? = null
 
         @JvmStatic
-        fun  getInstance(context: Context): UserDefaultsSingleton {
+        fun getInstance(context: Context): UserDefaultsSingleton {
             if (sharedInstance == null)
                 sharedInstance = UserDefaultsSingleton(context)
 
@@ -62,10 +62,11 @@ class UserDefaultsSingleton {
         return false
     }
 
-    public fun createProfile(firstname: String, lastname: String, grade: String, gender: String, birthday: Date, modified: Date) {
+    public fun createProfile(firstname: String, lastname: String, grade: String, gradeString: String, gender: String, birthday: Date, modified: Date) {
         this.setValueAsString("Profile.Firstname", firstname)
         this.setValueAsString("Profile.Lastname", lastname)
         this.setValueAsString("Profile.Grade", grade)
+        this.setValueAsString("Profile.GradeString", gradeString)
         this.setValueAsString("Profile.Gender", gender)
         this.setValueAsString("Profile.Birthday", FormatterSingleton.getInstance().UTCDateFormatter.format(birthday))
         this.setValueAsString("Profile.Modified", FormatterSingleton.getInstance().UTCDateFormatter.format(modified))
@@ -77,8 +78,9 @@ class UserDefaultsSingleton {
         this.setValueAsString("Profile.Modified", FormatterSingleton.getInstance().UTCDateFormatter.format(modified))
     }
 
-    public fun updateGrade(grade: String, modified: Date) {
+    public fun updateGrade(grade: String, gradeString: String, modified: Date) {
         this.setValueAsString("Profile.Grade", grade)
+        this.setValueAsString("Profile.GradeString", gradeString)
         this.updateModified(modified)
     }
 
@@ -97,14 +99,16 @@ class UserDefaultsSingleton {
         val firstname = this.getValueAsString("Profile.Firstname")
         val lastname = this.getValueAsString("Profile.Lastname")
         val grade = this.getValueAsString("Profile.Grade")
+        val gradeString = this.getValueAsString("Profile.GradeString")
         val gender = this.getValueAsString("Profile.Gender")
         val birthday = this.getValueAsString("Profile.Birthday")
         val modified = this.getValueAsString("Profile.Modified")
 
         if (this.prefs.contains("Profile.Created") && this.getValueAsBoolean("Profile.Created")) {
             try {
-                return ProfileStruct(firstname!!, lastname!!, grade!!, gender!!, FormatterSingleton.getInstance().UTCDateFormatter.parse(birthday), FormatterSingleton.getInstance().UTCDateFormatter.parse(modified))
-            } catch (exc: Exception) {}
+                return ProfileStruct(firstname!!, lastname!!, grade!!, gradeString!!, gender!!, FormatterSingleton.getInstance().UTCDateFormatter.parse(birthday), FormatterSingleton.getInstance().UTCDateFormatter.parse(modified))
+            } catch (exc: Exception) {
+            }
         }
         return null
     }

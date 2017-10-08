@@ -355,6 +355,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                                 try {
                                                     String gender = profile.get("gender").getAsString();
                                                     String grade = profile.get("grade").getAsString();
+                                                    String gradeString = profile.get("grade_string").getAsString();
                                                     String birthday = profile.get("birthday").getAsString();
                                                     String modified = profile.get("modified").getAsString();
                                                     String firstname = profile.get("user").getAsJsonObject().get("first_name").getAsString();
@@ -365,7 +366,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                                     Date modifiedDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(modified);
 
                                                     if (!"".equals(firstname) && !"".equals(lastname) && !"".equals(gender) && !"".equals(grade)) {
-                                                        UserDefaultsSingleton.getInstance(getApplicationContext()).createProfile(firstname, lastname, grade, gender, birthdayDate, modifiedDate);
+                                                        UserDefaultsSingleton.getInstance(getApplicationContext()).createProfile(firstname, lastname, grade,gradeString, gender, birthdayDate, modifiedDate);
                                                     }
 
                                                     if (UserDefaultsSingleton.getInstance(getApplicationContext()).hasProfile()) {

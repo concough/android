@@ -13,7 +13,6 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.baoyz.widget.PullRefreshLayout;
+import com.bumptech.glide.Glide;
 import com.concough.android.downloader.EntrancePackageDownloader;
 import com.concough.android.general.AlertClass;
 import com.concough.android.models.EntranceModel;
@@ -40,6 +40,7 @@ import com.concough.android.singletons.BasketSingleton;
 import com.concough.android.singletons.DownloaderSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
+import com.concough.android.singletons.MediaCacheSingleton;
 import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.EntrancePurchasedStruct;
 import com.concough.android.structures.EntranceSaleStruct;
@@ -58,7 +59,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import kotlin.Unit;
@@ -215,7 +215,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             }
 
             @Override
-            public void onCreateCompleted() {
+            public void onCreateCompleted(Integer position) {
                 Integer id = BasketSingleton.getInstance().findSaleByTargetId(EntranceDetailActivity.this.entranceUniqueId, "Entrance");
                 if (id != null && id > 0) {
                     BasketSingleton.getInstance().removeSaleById(EntranceDetailActivity.this, id, 0);
@@ -1348,7 +1348,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
             public void setupHolder(EntranceStruct es) {
                 entranceSetTextView.setText(es.getEntranceSetTitle() + " (" + es.getEntranceGroupTitle() + ")");
-                entranceTypeTextView.setText(es.getEntranceTypeTitle() + " " + es.getEntranceOrgTitle());
+                entranceTypeTextView.setText(es.getEntranceTypeTitle());
 
                 if (es.getEntranceSetId() != null) {
                     downloadImage(es.getEntranceSetId());
@@ -1358,33 +1358,61 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
 
             private void downloadImage(final int imageId) {
-                MediaRestAPIClass.downloadEsetImage(EntranceDetailActivity.this, imageId, esetImageView, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (httpErrorType != HTTPErrorType.Success) {
-                                    Log.d(TAG, "run: ");
-                                    if (httpErrorType == HTTPErrorType.Refresh) {
-                                        downloadImage(imageId);
-                                    } else {
-                                        esetImageView.setImageResource(R.drawable.no_image);
-                                    }
-                                }
-                            }
-                        });
-                        Log.d(TAG, "invoke: " + jsonObject);
-                        return null;
-                    }
-                }, new Function1<NetworkErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(NetworkErrorType networkErrorType) {
-                        return null;
-                    }
-                });
+                final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+                byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+                if (data != null) {
 
+                    Glide.with(EntranceDetailActivity.this)
+
+                            .load(data)
+
+                            //.crossFade()
+                            .dontAnimate()
+                            .into(esetImageView)
+                            .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+
+                } else {
+                    MediaRestAPIClass.downloadEsetImage(EntranceDetailActivity.this, imageId, esetImageView, new Function2<byte[], HTTPErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
+//                            runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
+                                    if (httpErrorType != HTTPErrorType.Success) {
+                                        Log.d(TAG, "run: ");
+                                        if (httpErrorType == HTTPErrorType.Refresh) {
+                                            downloadImage(imageId);
+                                        } else {
+                                            esetImageView.setImageResource(R.drawable.no_image);
+                                        }
+                                    } else {
+                                        MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+
+                                        Glide.with(EntranceDetailActivity.this)
+
+                                                .load(data)
+                                                //.crossFade()
+                                                .dontAnimate()
+                                                .into(esetImageView)
+                                                .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+                                    }
+//                                }
+//                            });
+                            return null;
+                        }
+                    }, new Function1<NetworkErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(NetworkErrorType networkErrorType) {
+                            return null;
+                        }
+                    });
+                }
             }
+
+
+
 
 
         }
@@ -1408,21 +1436,21 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 entranceInfoTextView.setText("اطلاعات آزمون");
 
                 try {
-                    JsonObject extraData = es.getEntranceExtraData().getAsJsonObject();
+//                    JsonObject extraData = es.getEntranceExtraData().getAsJsonObject();
+//
+//                    if (extraData != null) {
+//                        String extra = "";
+//                        ArrayList<String> extraArray = new ArrayList<>();
+//
+//                        for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
+//                            extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
+//                        }
+//
+//                        extra = TextUtils.join(" - ", extraArray);
 
-                    if (extraData != null) {
-                        String extra = "";
-                        ArrayList<String> extraArray = new ArrayList<>();
+                        entranceExtraDataTextView.setText(es.getEntranceOrgTitle());
 
-                        for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
-                            extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
-                        }
-
-                        extra = TextUtils.join(" - ", extraArray);
-
-                        entranceExtraDataTextView.setText(extra);
-
-                    }
+//                    }
                 } catch (Exception exc) {
                 }
             }
@@ -1501,7 +1529,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     public void onClick(View v) {
 
                         if (BasketSingleton.getInstance().getBasketId() == null) {
-                            BasketSingleton.getInstance().createBasket(EntranceDetailActivity.this);
+                            BasketSingleton.getInstance().createBasket(EntranceDetailActivity.this,-1);
                         } else {
                             Integer id = BasketSingleton.getInstance().findSaleByTargetId(EntranceDetailActivity.this.entranceUniqueId, "Entrance");
                             if (id != null && id > 0) {
@@ -1562,6 +1590,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     }
 
                     entranceCheckoutSummeryTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(basketCount) + " قلم در سبد کالا موجود است.");
+
                 } catch (Exception exc) {
                     Log.d(TAG, "setupHolder: ");
                 }

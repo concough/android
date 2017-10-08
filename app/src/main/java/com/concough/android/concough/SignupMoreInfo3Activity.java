@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -29,6 +30,8 @@ import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.structures.SignupMoreInfoStruct;
 import com.concough.android.vendor.progressHUD.KProgressHUD;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
@@ -42,12 +45,19 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
     private static final String TAG = "SignupMoreInfo3Activity";
 
     private GradeType names[];
-    private GradeType selectedGradeType = null;
+    private String selectedGradeType = "";
+    private String selectedGradeStringType = "";
+    private ArrayList<Pair<String, String>> namesPair;
+
     private TextView infoTextView;
-    private Button nextButton;
-    private AlertDialog showedAlertDialog;
-    AlertDialog.Builder alertDialog;
     private TextView customAlertDialogTitle;
+    private Button nextButton;
+    private Button selectButton;
+
+    private AlertDialog showedAlertDialog;
+    private AlertDialog.Builder alertDialog;
+
+    AlertDialogCustomize adapter;
 
     private KProgressHUD loadingProgress;
 
@@ -64,6 +74,9 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
         setContentView(R.layout.activity_signup_more_info3);
 
         names = GradeType.values();
+        namesPair = new ArrayList<>();
+
+        getProfileGradeList();
 
         TextView infoTextView = (TextView) findViewById(R.id.signupInfo3A_infoTextViewLine1);
         infoTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
@@ -74,13 +87,14 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
         Button nextButton = (Button) findViewById(R.id.signupInfo3A_nextButton);
         nextButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
 
-        final Button selectButton = (Button) findViewById(R.id.signupInfo3A_selectStateButton);
+        selectButton = (Button) findViewById(R.id.signupInfo3A_selectStateButton);
         selectButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
         registerForContextMenu(selectButton);
 
         // alert dialog
         LayoutInflater inflater = getLayoutInflater();
-        View convertView = (View) inflater.inflate(R.layout.cc_alert_dialog_listview, null);
+        final View convertView = (View) inflater.inflate(R.layout.cc_alert_dialog_listview, null);
+        final ListView lv = (ListView) convertView.findViewById(R.id.lv);
 
         alertDialog = new AlertDialog.Builder(SignupMoreInfo3Activity.this);
         alertDialog.setView(convertView);
@@ -98,20 +112,27 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
 
         showedAlertDialog.setCustomTitle(customAlertDialogTitle);
 
-        ListView lv = (ListView) convertView.findViewById(R.id.lv);
-        AlertDialogCustomize adapter = new AlertDialogCustomize(this, R.layout.cc_alert_dialog_textview, names);
-        lv.setAdapter(adapter);
-        selectButton.setText(names[0].toString());
-        this.selectedGradeType = names[0];
-        SignupMoreInfo1Activity.signupInfo.setGrade(this.selectedGradeType.name());
-
 
         View.OnClickListener li = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                ArrayList<String> gradeArray = new ArrayList<String>();
+                for (Pair<String, String> pair : namesPair) {
+                    gradeArray.add(pair.second);
+                }
+                adapter = new AlertDialogCustomize(SignupMoreInfo3Activity.this, R.layout.cc_alert_dialog_textview, gradeArray);
+                lv.setAdapter(adapter);
+
+                selectedGradeType = namesPair.get(0).first;
+                selectedGradeStringType = namesPair.get(0).second;
+
+                SignupMoreInfo1Activity.signupInfo.setGrade(selectedGradeType);
+                SignupMoreInfo1Activity.signupInfo.setGradeString(selectedGradeStringType);
+
                 showedAlertDialog.show();
             }
         };
+
         selectButton.setOnClickListener(li);
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -121,17 +142,17 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
                 if (showedAlertDialog != null) {
                     showedAlertDialog.dismiss();
                     int intId = (int) id;
-                    selectButton.setText(SignupMoreInfo3Activity.this.names[intId].toString());
+                    selectButton.setText(namesPair.get(intId).second);
+                    selectedGradeType = namesPair.get(intId).first;
 
-                    SignupMoreInfo3Activity.this.selectedGradeType = SignupMoreInfo3Activity.this.names[intId];
-                    SignupMoreInfo1Activity.signupInfo.setGrade(SignupMoreInfo3Activity.this.selectedGradeType.name());
+                    SignupMoreInfo1Activity.signupInfo.setGrade(namesPair.get(intId).first);
+                    SignupMoreInfo1Activity.signupInfo.setGradeString(namesPair.get(intId).second);
                 }
 
             }
         });
 
         nextButton.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View v) {
                 new PostProfileTask().execute(SignupMoreInfo1Activity.signupInfo);
@@ -141,6 +162,7 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
 
         actionBarSet();
     }
+
 
     private void actionBarSet() {
         ArrayList<ButtonDetail> buttonDetailArrayList = new ArrayList<>();
@@ -162,11 +184,10 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
     }
 
 
+    private class AlertDialogCustomize extends ArrayAdapter<String> {
+        private ArrayList<String> objects;
 
-    private class AlertDialogCustomize extends ArrayAdapter<GradeType> {
-        private GradeType[] objects;
-
-        public AlertDialogCustomize(@NonNull Context context, @LayoutRes int resource, @NonNull GradeType[] objects) {
+        public AlertDialogCustomize(@NonNull Context context, @LayoutRes int resource, @NonNull ArrayList<String> objects) {
             super(context, resource, objects);
             this.objects = objects;
         }
@@ -181,7 +202,7 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
                 convertView = inflater.inflate(R.layout.cc_alert_dialog_textview, null);
             }
 
-            GradeType i = this.getItem(position);
+            String i = objects.get(position);
             if (i != null) {
                 TextView v = (TextView) convertView.findViewById(R.id.item1);
                 v.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
@@ -192,6 +213,102 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
             return convertView;
         }
 
+
+    }
+
+    private void getProfileGradeList() {
+        new GetProfileGradeListTask().execute();
+    }
+
+    private class GetProfileGradeListTask extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(final String... params) {
+
+            ProfileRestAPIClass.getProfileGradeList(getApplicationContext(), new Function2<JsonObject, HTTPErrorType, Unit>() {
+                @Override
+                public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
+                            if (httpErrorType == HTTPErrorType.Success) {
+                                if (jsonObject != null) {
+                                    String status = jsonObject.get("status").getAsString();
+                                    Date modifiedDate = null;
+
+                                    if (status.equals("OK")) {
+                                        JsonArray dataArray = jsonObject.get("record").getAsJsonArray();
+                                        Pair<String, String> tempPair;
+                                        JsonObject jo;
+                                        for (JsonElement je : dataArray) {
+                                            jo = je.getAsJsonObject();
+                                            tempPair = new Pair<String, String>(jo.get("code").getAsString(), jo.get("title").getAsString());
+                                            SignupMoreInfo3Activity.this.namesPair.add(tempPair);
+                                        }
+                                        selectButton.setText(namesPair.get(0).second);
+
+
+                                    } else if (status.equals("Error")) {
+                                        String errorType = jsonObject.get("error_type").getAsString();
+                                        switch (errorType) {
+                                            case "EmptyArray": {
+                                                break;
+                                            }
+                                            default:
+                                                break;
+                                        }
+                                    }
+                                }
+                            } else if (httpErrorType == HTTPErrorType.Refresh) {
+                                new GetProfileGradeListTask().execute(params);
+                            } else {
+                                AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                            }
+                        }
+                    });
+                    return null;
+                }
+            }, new Function1<NetworkErrorType, Unit>() {
+                @Override
+                public Unit invoke(final NetworkErrorType networkErrorType) {
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
+                            switch (networkErrorType) {
+                                case NoInternetAccess:
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                    break;
+                                }
+                                default: {
+                                    AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                    break;
+                                }
+
+                            }
+                        }
+                    });
+
+                    return null;
+                }
+            });
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            loadingProgress = AlertClass.showLoadingMessage(SignupMoreInfo3Activity.this);
+            loadingProgress.show();
+
+        }
 
     }
 
@@ -223,7 +340,7 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
                                                 }
                                             }
 
-                                            UserDefaultsSingleton.getInstance(getApplicationContext()).createProfile(params[0].getFirstname(), params[0].getLastname(), params[0].getGrade(),
+                                            UserDefaultsSingleton.getInstance(getApplicationContext()).createProfile(params[0].getFirstname(), params[0].getLastname(), params[0].getGrade(), params[0].getGradeString(),
                                                     params[0].getGender(), params[0].getBirthday(), modified);
 
                                             Intent i = HomeActivity.newIntent(SignupMoreInfo3Activity.this);

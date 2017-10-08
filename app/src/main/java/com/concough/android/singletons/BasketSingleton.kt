@@ -23,7 +23,7 @@ import kotlin.collections.HashMap
 class BasketSingleton : Handler.Callback {
     interface BasketSingletonListener {
         fun onLoadItemCompleted(count: Int)
-        fun onCreateCompleted()
+        fun onCreateCompleted(position: Int? = 0)
         fun onAddCompleted(count: Int)
         fun onRemoveCompleted(count: Int, position: Int)
         fun onCheckout(count: Int, purchased: HashMap<Int, PurchasedItem>)
@@ -180,11 +180,16 @@ class BasketSingleton : Handler.Callback {
         }
     }
 
-    fun createBasket(context: Context?) {
+    fun createBasket(context: Context?, position: Int = -1) {
         if (this.handler != null) {
             val msg = this.handler?.obtainMessage(CREATE_BASKET)
             msg?.target = Handler(context?.mainLooper)
             msg?.obj = context
+
+            val bundle = Bundle()
+            bundle.putInt("POSITION", position)
+            msg?.data = bundle
+
 
             this.handler?.sendMessage(msg)
         }
@@ -411,10 +416,14 @@ class BasketSingleton : Handler.Callback {
 
         val context: Context? = msg?.obj as Context?
 
-        if (context != null) {
-            loadingProgress = AlertClass.showLoadingMessage(context)
-            loadingProgress?.show()
-        }
+        val bundle = msg?.data ?: return
+
+        val position = bundle.getInt("POSITION")
+
+//        if (context != null) {
+//            loadingProgress = AlertClass.showLoadingMessage(context)
+//            loadingProgress?.show()
+//        }
 
         BasketRestAPIClass.createBasket(context?.applicationContext!!, { data, error ->
 
@@ -431,7 +440,7 @@ class BasketSingleton : Handler.Callback {
                                 } catch (exc: Exception) {
                                 }
                                 if (this@BasketSingleton.listener != null) {
-                                    this@BasketSingleton.listener?.onCreateCompleted()
+                                    this@BasketSingleton.listener?.onCreateCompleted(position)
                                 }
                             }
 
@@ -597,6 +606,7 @@ class BasketSingleton : Handler.Callback {
                                 val errorType = data.get("error_type").asString
                                 when (errorType) {
                                     "SaleNotExist" -> {
+                                        this@BasketSingleton.removeSaleById(saleId)
                                         AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "BasketResult", errorType, "error", null)
                                     }
                                     else -> {

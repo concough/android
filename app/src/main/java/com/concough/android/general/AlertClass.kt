@@ -211,7 +211,21 @@ class AlertClass {
                         else -> showMessage = false
                     }
                 }
+                "DeviceInfoError" -> {
+                    when (messageSubType) {
+                        "AnotherDevice" -> {
+                            title = "خطا"; message = "اکانت شما توسط دستگاه دیگری در حال استفاده می باشد"
+                        }
+                        "DeviceNotRegistered" -> {
+                            title = "خطا"; message = "دستگاه شما با این اکانت ثبت نشده است"
+                        }
+                        else -> showMessage = false
+                    }
+                }
+
                 else -> showMessage = false
+
+
             }
 
             return Message(title, message, showMessage)
@@ -274,6 +288,7 @@ class AlertClass {
                         .withButton1Text("متوجه شدم")
                         .withTypeface(FontCacheSingleton.getInstance(context.applicationContext!!).Regular)
                         .setMessageTypeface(FontCacheSingleton.getInstance(context.applicationContext!!).Light)
+                        .isCancelableOnTouchOutside(false)
                         .setButton1Click(View.OnClickListener {
                             dialogBuilder.dismiss()
                             if (completion != null) {
@@ -298,6 +313,7 @@ class AlertClass {
                     .withButton2Text(noButtonTitle)
                     .withTypeface(FontCacheSingleton.getInstance(context.applicationContext!!).Regular)
                     .setMessageTypeface(FontCacheSingleton.getInstance(context.applicationContext!!).Light)
+                    .isCancelableOnTouchOutside(false)
                     .setButton1Click(View.OnClickListener {
                         dialogBuilder.dismiss()
                         if (completion != null) {
