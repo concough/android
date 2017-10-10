@@ -64,7 +64,16 @@ class StartupActivity : AppCompatActivity() {
                     //Log.d(TAG, "Internet Connected")
                     if (this@StartupActivity.broadcastReceiver != null)
                         this@StartupActivity.unregisterReceiver(this@StartupActivity.broadcastReceiver)
-                    this@StartupActivity.navigateToHome()
+
+                    if (TokenHandlerSingleton.getInstance(applicationContext).isAuthorized() && TokenHandlerSingleton.getInstance(applicationContext).isAuthenticated()) {
+                        val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()
+                        val device = DeviceInformationModelHandler.findByUniqueId(applicationContext, username!!)
+                        if (device != null) {
+                            if (device.state) {
+                                this@StartupActivity.navigateToHome()
+                            }
+                        }
+                    }
                 }
 
             }
@@ -138,6 +147,11 @@ class StartupActivity : AppCompatActivity() {
         this.startup()
     }
 
+    override fun onPause() {
+        super.onPause()
+        introVideoView.pauseMe()
+    }
+
     private fun startup() {
 //        if (TokenHandlerSingleton.getInstance(applicationContext).isAuthorized()) {
 //            if (UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
@@ -152,12 +166,12 @@ class StartupActivity : AppCompatActivity() {
 //            }
 //        } else
         if (NetworkUtil.getConnectivityStatus(applicationContext) == NetworkUtil.NETWORK_STATUS_NOT_CONNECTED) {
+            this@StartupActivity.isOnline = false
             if (TokenHandlerSingleton.getInstance(applicationContext).isAuthorized() && TokenHandlerSingleton.getInstance(applicationContext).isAuthenticated()) {
                 val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()
                 val device = DeviceInformationModelHandler.findByUniqueId(applicationContext, username!!)
                 if (device != null) {
                     if (device.state) {
-                        this@StartupActivity.isOnline = false
                         this@StartupActivity.setupOffline()
                     } else {
                         this@StartupActivity.setupLocked()

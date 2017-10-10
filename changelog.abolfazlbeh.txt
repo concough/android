@@ -242,3 +242,8 @@ Adding Lock Mechanism (abolfazl.beh)
 10 - "SignupActivity" and "ForgotPasswordActivity" changed to include error types from server when requesting code
 11 - "SignupCodeActivity" changed to include new error messages when requesting new code and also timer to prevent fraud requesting
 12 - "EntranceShowActivity" changed to show question answer based on key return by server --> Convert it by Utils -> DataConvertors to appropriate answer
+
+------------------------------------------------------------------------------------------------
+Startup Offline Error fixed (abolfazl.beh)
+
+1 - IntroVideoView fixed on pause and resume
