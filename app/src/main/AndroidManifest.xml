@@ -18,13 +18,12 @@
         tools:replace="android:icon">
         <service android:name="com.concough.android.downloader.EntrancePackageDownloader" />
 
-        <receiver android:name=".StartupActivity$NetworkChangeReceiver" >
-            <intent-filter >
-                <action android:name="com.concough.android.concough.android.action.broadcast"/>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-                <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
-            </intent-filter>
-        </receiver>
+        <!--<receiver android:name=".StartupActivity$NetworkChangeReceiver" >-->
+            <!--<intent-filter >-->
+                <!--<action android:name="android.net.conn.CONNECTIVITY_CHANGE" />-->
+                <!--<action android:name="android.net.wifi.WIFI_STATE_CHANGED" />-->
+            <!--</intent-filter>-->
+        <!--</receiver>-->
         <activity
             android:name=".StartupActivity"
             android:screenOrientation="portrait"

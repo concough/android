@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -16,7 +17,9 @@ import android.widget.TextView;
 
 import com.concough.android.general.AlertClass;
 import com.concough.android.rest.AuthRestAPIClass;
+import com.concough.android.rest.DeviceRestAPIClass;
 import com.concough.android.rest.ProfileRestAPIClass;
+import com.concough.android.singletons.DeviceInformationSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.singletons.TokenHandlerSingleton;
@@ -24,6 +27,7 @@ import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.structures.SignupStruct;
+import com.concough.android.utils.KeyChainAccessProxy;
 import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonObject;
 
@@ -33,6 +37,9 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
+
+import static com.concough.android.settings.ConstantsKt.getPASSWORD_KEY;
+import static com.concough.android.settings.ConstantsKt.getUSERNAME_KEY;
 
 public class ResetPasswordActivity extends AppCompatActivity {
 
@@ -156,7 +163,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                 String pass1 = passwordEdit.getText().toString();
                 String pass2 = passwordEditConfirm.getText().toString();
 
-                if (pass1.equals("") && pass2.equals("")) {
+                if (!pass1.equals("") &&  !pass2.equals("")) {
                     if (pass1.equals(pass2)) {
                         ResetPasswordActivity.this.resetPassword(pass1, pass2);
                     } else {
@@ -176,42 +183,98 @@ public class ResetPasswordActivity extends AppCompatActivity {
 
     }
 
-    private void startUp() {
-        TokenHandlerSingleton.getInstance(getApplicationContext()).assureAuthorized(true,
-                new Function2<Boolean, HTTPErrorType, Unit>() {
+    private void startUp(final String username, final String password) {
+        TokenHandlerSingleton.getInstance(getApplicationContext()).authorize(new Function1<HTTPErrorType, Unit>() {
+            @Override
+            public Unit invoke(final HTTPErrorType httpErrorType) {
+                runOnUiThread(new Runnable() {
                     @Override
-                    public Unit invoke(final Boolean aBoolean, final HTTPErrorType httpErrorType) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (httpErrorType == HTTPErrorType.Success && aBoolean) {
-                                    getProfile();
-                                } else {
-                                    Intent i = LoginActivity.newIntent(ResetPasswordActivity.this);
-                                    ResetPasswordActivity.this.startActivity(i);
-                                    finish();
-                                }
-                            }
-                        });
+                    public void run() {
+                        if (httpErrorType == HTTPErrorType.Success) {
+                            KeyChainAccessProxy.getInstance(getApplicationContext()).setValueAsString(getUSERNAME_KEY(), username);
+                            KeyChainAccessProxy.getInstance(getApplicationContext()).setValueAsString(getPASSWORD_KEY(), password);
 
-                        return null;
-                    }
-                }, new Function1<NetworkErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final NetworkErrorType networkErrorType) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (networkErrorType != null) {
-                                    Intent i = LoginActivity.newIntent(ResetPasswordActivity.this);
-                                    ResetPasswordActivity.this.startActivity(i);
-                                    finish();
-                                }
+                            if (TokenHandlerSingleton.getInstance(getApplicationContext()).isAuthorized()) {
+                                ResetPasswordActivity.this.getLockStatus();
+                            } else if (TokenHandlerSingleton.getInstance(getApplicationContext()).isAuthenticated()) {
+                                TokenHandlerSingleton.getInstance(getApplicationContext()).assureAuthorized(true,
+                                        new Function2<Boolean, HTTPErrorType, Unit>() {
+                                            @Override
+                                            public Unit invoke(final Boolean aBoolean, final HTTPErrorType httpErrorType) {
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        if (httpErrorType == HTTPErrorType.Success && aBoolean) {
+                                                            ResetPasswordActivity.this.getLockStatus();
+                                                        } else {
+                                                            Intent i = LoginActivity.newIntent(ResetPasswordActivity.this);
+                                                            ResetPasswordActivity.this.startActivity(i);
+                                                            finish();
+                                                        }
+                                                    }
+                                                });
+
+                                                return null;
+                                            }
+                                        }, new Function1<NetworkErrorType, Unit>() {
+                                            @Override
+                                            public Unit invoke(final NetworkErrorType networkErrorType) {
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        if (networkErrorType != null) {
+                                                            Intent i = LoginActivity.newIntent(ResetPasswordActivity.this);
+                                                            ResetPasswordActivity.this.startActivity(i);
+                                                            finish();
+                                                        }
+                                                    }
+                                                });
+                                                return null;
+                                            }
+                                        });
+
+                            } else {
+                                Intent i = LoginActivity.newIntent(ResetPasswordActivity.this);
+                                ResetPasswordActivity.this.startActivity(i);
+                                finish();
                             }
-                        });
-                        return null;
+                        } else {
+                            AlertClass.hideLoadingMessage(loadingProgress);
+                            AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+
+                        }
                     }
                 });
+                return null;
+            }
+        }, new Function1<NetworkErrorType, Unit>() {
+            @Override
+            public Unit invoke(final NetworkErrorType networkErrorType) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AlertClass.hideLoadingMessage(loadingProgress);
+
+                        if (networkErrorType != null) {
+                            switch (networkErrorType) {
+                                case NoInternetAccess:
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                    break;
+                                }
+                                default: {
+                                    AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                    break;
+                                }
+                            }
+                        }
+
+                    }
+                });
+                return null;
+            }
+        });
+
     }
 
     private class ResetPasswordTask extends AsyncTask<String, Void, Void> {
@@ -235,8 +298,8 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                             switch (status) {
                                                 case "OK":
                                                     try {
-                                                        TokenHandlerSingleton.getInstance(getApplicationContext()).setUsernameAndPassword(infoStruct.getUsername(), infoStruct.getPassword());
-                                                        startUp();
+                                                        TokenHandlerSingleton.getInstance(getApplicationContext()).setUsernameAndPassword(infoStruct.getUsername(), params[0]);
+                                                        startUp(infoStruct.getUsername(), params[0]);
 
                                                     } catch (Exception exc) {
 
@@ -244,7 +307,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                                     break;
                                                 case "Error":
                                                     try {
-                                                        String error_type = jsonObject.get("error_type").toString();
+                                                        String error_type = jsonObject.get("error_type").getAsString();
                                                         switch (error_type) {
                                                             case "ExpiredCode": {
                                                                 AlertClass.showAlertMessage(ResetPasswordActivity.this, "ErrorResult", error_type, "error", new Function0<Unit>() {
@@ -327,14 +390,160 @@ public class ResetPasswordActivity extends AppCompatActivity {
     }
 
 
-    private class GetProfileTask extends AsyncTask<Void, Void, Void> {
+    private void getLockStatus() {
+        new LockStatusTask().execute();
+
+    }
+
+    private class LockStatusTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(final Void... params) {
 
+            DeviceRestAPIClass.deviceLock(ResetPasswordActivity.this, true, new Function2<JsonObject, HTTPErrorType, Unit>() {
+                @Override
+                public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            if (httpErrorType == HTTPErrorType.Success) {
+                                if (jsonObject != null) {
+                                    String status = jsonObject.get("status").getAsString();
+                                    switch (status) {
+                                        case "OK": {
+                                            String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+                                            if (username != null) {
+                                                String deviceUniqueId = jsonObject.get("data").getAsJsonObject().get("device_unique_id").getAsString();
+                                                Boolean deviceState = jsonObject.get("data").getAsJsonObject().get("state").getAsBoolean();
+                                                String deviceModel = Build.MANUFACTURER + " " + Build.MODEL;
+
+                                                if (deviceUniqueId != null) {
+                                                    String androidId = Settings.Secure.getString(getApplicationContext().getContentResolver(),
+                                                            Settings.Secure.ANDROID_ID);
+
+                                                    if (androidId.equals(deviceUniqueId)) {
+                                                        if (DeviceInformationSingleton.getInstance(getApplicationContext()).setDeviceState(username, "android", deviceModel, deviceState, true)) {
+                                                            if (deviceState) {
+                                                                getProfile();
+                                                                return;
+                                                            } else {
+
+                                                                Intent i = StartupActivity.newIntent(ResetPasswordActivity.this);
+                                                                startActivity(i);
+                                                                finish();
+                                                            }
+                                                        }
+                                                    }
+
+                                                }
+
+                                            }
+                                            AlertClass.hideLoadingMessage(loadingProgress);
+                                            break;
+                                        }
+                                        case "Error": {
+                                            AlertClass.hideLoadingMessage(loadingProgress);
+
+                                            String errorType = jsonObject.get("error_type").getAsString();
+                                            switch (errorType) {
+                                                case "AnotherDevice": {
+                                                    final String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+                                                    if (username != null) {
+                                                        AlertClass.showAlertMessage(ResetPasswordActivity.this, "DeviceInfoError", errorType, "error", new Function0<Unit>() {
+                                                            @Override
+                                                            public Unit invoke() {
+
+                                                                String deviceName = jsonObject.get("error_data").getAsJsonObject().get("device_name").getAsString();
+                                                                String deviceModel = jsonObject.get("error_data").getAsJsonObject().get("device_model").getAsString();
+
+                                                                if (DeviceInformationSingleton.getInstance(getApplicationContext()).setDeviceState(username, deviceName, deviceModel, false, false)) {
+                                                                    Intent i = StartupActivity.newIntent(ResetPasswordActivity.this);
+                                                                    startActivity(i);
+                                                                    finish();
+                                                                }
+                                                                return null;
+                                                            }
+                                                        });
+                                                    }
+                                                    break;
+                                                }
+                                                case "UserNotExist":
+                                                case "DeviceNotRegistered":
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                            break;
+                                        }
+                                    }
+
+                                }
+
+                            } else if (httpErrorType == HTTPErrorType.Refresh) {
+                                new ResetPasswordActivity.LockStatusTask().execute(params);
+                            } else {
+                                AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                            }
+                        }
+                    });
+
+                    return null;
+                }
+            }, new Function1<NetworkErrorType, Unit>() {
+                @Override
+                public Unit invoke(final NetworkErrorType networkErrorType) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
+                            if (networkErrorType != null) {
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
+                                }
+                            }
+
+                        }
+                    });
+                    return null;
+                }
+            });
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+//            loadingProgress = AlertClass.showLoadingMessage(LoginActivity.this);
+//            loadingProgress.show();
+
+        }
+
+    }
+
+
+    private class GetProfileTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
             loadingProgress = AlertClass.showLoadingMessage(ResetPasswordActivity.this);
             loadingProgress.show();
+        }
 
+        @Override
+        protected Void doInBackground(final Void... params) {
             ProfileRestAPIClass.getProfileData(ResetPasswordActivity.this, new Function2<JsonObject, HTTPErrorType, Unit>() {
                 @Override
                 public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
@@ -362,7 +571,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                                     String lastname = profile.get("user").getAsJsonObject().get("last_name").getAsString();
 
 
-                                                    Date birthdayDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(birthday);
+                                                    Date birthdayDate = FormatterSingleton.getInstance().getUTCShortDateFormatter().parse(birthday);
                                                     Date modifiedDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(modified);
 
                                                     if (!"".equals(firstname) && !"".equals(lastname) && !"".equals(gender) && !"".equals(grade)) {

@@ -61,8 +61,9 @@ class DeviceInformationSingleton {
     }
 
 
-    public fun clearAll(): Boolean {
+    public fun clearAll(username: String): Boolean {
         this.prefs.edit().clear().apply()
+        DeviceInformationModelHandler.removeDevicePerUser(context, username)
         return true
     }
 

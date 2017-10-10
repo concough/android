@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
@@ -30,7 +31,9 @@ import com.concough.android.models.EntrancePackageHandler;
 import com.concough.android.models.EntranceQuestionStarredModelHandler;
 import com.concough.android.models.PurchasedModel;
 import com.concough.android.models.PurchasedModelHandler;
+import com.concough.android.rest.DeviceRestAPIClass;
 import com.concough.android.rest.ProfileRestAPIClass;
+import com.concough.android.singletons.DeviceInformationSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.singletons.TokenHandlerSingleton;
@@ -67,9 +70,9 @@ public class SettingActivity extends BottomNavigationActivity {
 
     private KProgressHUD loadingProgress;
 
-    private GradeType gradeType = null;
+//    private GradeType gradeType = null;
+//    private GradeType[] names;
     private ArrayList<Pair<String, String>> namesPair;
-    private GradeType[] names;
 
     private boolean isEditing = false;
 
@@ -98,10 +101,7 @@ public class SettingActivity extends BottomNavigationActivity {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        getProfileGradeList();
-        names = GradeType.values();
-
-
+        //names = GradeType.values();
         actionBarSet();
 
     }
@@ -194,7 +194,11 @@ public class SettingActivity extends BottomNavigationActivity {
 
 
     private void getProfileGradeList() {
-        new GetProfileGradeListTask().execute();
+        if (SettingActivity.this.namesPair.size() > 0) {
+            SettingActivity.this.changeGradeButtonClicked();
+        } else {
+            new GetProfileGradeListTask().execute();
+        }
     }
 
     private class PostProfileGradeTask extends AsyncTask<String, Void, Void> {
@@ -317,6 +321,7 @@ public class SettingActivity extends BottomNavigationActivity {
                                             SettingActivity.this.namesPair.add(tempPair);
                                         }
 
+                                        SettingActivity.this.changeGradeButtonClicked();
 
                                     } else if (status.equals("Error")) {
                                         String errorType = jsonObject.get("error_type").getAsString();
@@ -380,6 +385,193 @@ public class SettingActivity extends BottomNavigationActivity {
 
     }
 
+    private void changeGradeButtonClicked() {
+
+        ArrayList<String> gradeArray = new ArrayList<String>();
+        for (Pair<String, String> pair : namesPair) {
+            gradeArray.add(pair.second);
+        }
+
+
+        LayoutInflater inflater = getLayoutInflater();
+        View convertView = (View) inflater.inflate(R.layout.cc_alert_dialog_listview, null);
+
+        alertDialog = new AlertDialog.Builder(SettingActivity.this);
+        alertDialog.setView(convertView);
+
+        showedAlertDialog = alertDialog.create();
+
+
+        TextView customAlertDialogTitle = new TextView(SettingActivity.this);
+        customAlertDialogTitle.setGravity(Gravity.CENTER);
+        customAlertDialogTitle.setTextColor(Color.BLACK);
+        customAlertDialogTitle.setPadding(0, 50, 0, 10);
+        customAlertDialogTitle.setText("لطفا یکی از گزینه های زیر را انتخاب نمایید");
+        customAlertDialogTitle.setTextSize(14);
+        customAlertDialogTitle.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray));
+        customAlertDialogTitle.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+
+
+        showedAlertDialog.setCustomTitle(customAlertDialogTitle);
+        showedAlertDialog.show();
+        showedAlertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                SettingActivity.this.recycleAdapter.notifyDataSetChanged();
+            }
+        });
+
+        ListView lv = (ListView) convertView.findViewById(R.id.lv);
+        final AlertDialogCustomize adapter = new AlertDialogCustomize(SettingActivity.this, R.layout.cc_alert_dialog_textview, gradeArray);
+        lv.setAdapter(adapter);
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                if (showedAlertDialog != null) {
+                    showedAlertDialog.dismiss();
+
+                    SettingActivity.this.postProfile(SettingActivity.this.namesPair.get(position).first,SettingActivity.this.namesPair.get(position).second);
+
+                }
+
+            }
+        });
+
+    }
+
+    private void acquireMe(Boolean isLogout) {
+        new AcquireTask().execute(isLogout);
+    }
+
+    private class AcquireTask extends AsyncTask<Boolean, Void, Void> {
+
+        @Override
+        protected Void doInBackground(final Boolean... params) {
+            DeviceRestAPIClass.deviceAcquire(getApplicationContext(), new Function2<JsonObject, HTTPErrorType, Unit>() {
+                @Override
+                public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
+                            if (httpErrorType == HTTPErrorType.Success) {
+                                if (jsonObject != null) {
+                                    String status = jsonObject.get("status").getAsString();
+
+                                    if (status.equals("OK")) {
+                                        String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+
+                                        String device_name = "android";
+                                        String device_model = Build.MANUFACTURER + " " + Build.MODEL;
+                                        Boolean is_me = true;
+
+                                        if (jsonObject.has("data")) {
+                                            device_name = jsonObject.get("data").getAsJsonObject().get("device_name").getAsString();
+                                            device_model = jsonObject.get("data").getAsJsonObject().get("device_model").getAsString();
+                                            is_me = false;
+                                        }
+
+                                        DeviceInformationSingleton.getInstance(getApplicationContext()).setDeviceState(username, device_name, device_model, false, is_me);
+
+                                        // navigate to startup
+                                        if (!params[0]) {
+                                            Intent intent = StartupActivity.newIntent(SettingActivity.this);
+                                            SettingActivity.this.startActivity(intent);
+                                            SettingActivity.this.finish();
+                                            return;
+                                        }
+
+                                    } else if (status.equals("Error")) {
+                                        String errorType = jsonObject.get("error_type").getAsString();
+                                        switch (errorType) {
+                                            case "DeviceNotRegistered":
+                                            case "UserNotExist": {
+                                                break;
+                                            }
+                                            default:
+                                                break;
+                                        }
+                                    }
+                                }
+
+                                if (params[0]) {
+                                    String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+                                    if (KeyChainAccessProxy.getInstance(getApplicationContext()).clearAllValue() && UserDefaultsSingleton.getInstance(getApplicationContext()).clearAll()) {
+                                        TokenHandlerSingleton.getInstance(getApplicationContext()).invalidateTokens();
+                                        DeviceInformationSingleton.getInstance(getApplicationContext()).clearAll(username);
+                                        Intent i = StartupActivity.newIntent(getApplicationContext());
+                                        startActivity(i);
+                                        finish();
+                                    }
+
+                                }
+                            } else if (httpErrorType == HTTPErrorType.Refresh) {
+                                new AcquireTask().execute(params);
+                            } else {
+                                AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                            }
+                        }
+                    });
+                    return null;
+                }
+            }, new Function1<NetworkErrorType, Unit>() {
+                @Override
+                public Unit invoke(final NetworkErrorType networkErrorType) {
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
+                            switch (networkErrorType) {
+                                case NoInternetAccess:
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                    break;
+                                }
+                                default: {
+                                    AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                    break;
+                                }
+
+                            }
+
+                            if (params[0]) {
+                                String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+                                if (KeyChainAccessProxy.getInstance(getApplicationContext()).clearAllValue() && UserDefaultsSingleton.getInstance(getApplicationContext()).clearAll()) {
+                                    TokenHandlerSingleton.getInstance(getApplicationContext()).invalidateTokens();
+                                    DeviceInformationSingleton.getInstance(getApplicationContext()).clearAll(username);
+                                    Intent i = StartupActivity.newIntent(getApplicationContext());
+                                    startActivity(i);
+                                    finish();
+                                }
+
+                            }
+
+                        }
+                    });
+
+                    return null;
+                }
+            });
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            loadingProgress = AlertClass.showLoadingMessage(SettingActivity.this);
+            loadingProgress.show();
+
+        }
+
+    }
 
     private enum SettingHolderType {
         USER_DETAIL(1),
@@ -499,7 +691,7 @@ public class SettingActivity extends BottomNavigationActivity {
                         holder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                // TODO : onclick On lock
+                                SettingActivity.this.acquireMe(false);
                             }
                         });
                         text = getResources().getString(R.string.settingA_S_lockDevice);
@@ -577,19 +769,14 @@ public class SettingActivity extends BottomNavigationActivity {
                         break;
 
 
-                    case 4:
+                    case 5:
                         holder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 AlertClass.showAlertMessageCustom(SettingActivity.this, "آیا مطمین هستید؟", "خروج موقت از سیستم!", "بله", "خیر", new Function0<Unit>() {
                                     @Override
                                     public Unit invoke() {
-                                        if (KeyChainAccessProxy.getInstance(getApplicationContext()).clearAllValue() && UserDefaultsSingleton.getInstance(getApplicationContext()).clearAll()) {
-                                            TokenHandlerSingleton.getInstance(getApplicationContext()).invalidateTokens();
-                                            Intent i = StartupActivity.newIntent(getApplicationContext());
-                                            startActivity(i);
-                                            finish();
-                                        }
+                                        SettingActivity.this.acquireMe(true);
 
                                         return null;
                                     }
@@ -605,11 +792,11 @@ public class SettingActivity extends BottomNavigationActivity {
                         ((LinksViewHolder) holder).setupHolder(text, image, linkColor, 5);
                         break;
 
-                    case 5:
+                    case 4:
                         holder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                // TODO : onclick On lock
+                                SettingActivity.this.acquireMe(false);
                             }
                         });
                         text = getResources().getString(R.string.settingA_S_lockDevice);
@@ -658,9 +845,9 @@ public class SettingActivity extends BottomNavigationActivity {
                         return SettingHolderType.CHANGE_PASSWORD.getValue();
                     case 3:
                         return SettingHolderType.DELETE_CACHE.getValue();
-                    case 4:
-                        return SettingHolderType.LOGOUT.getValue();
                     case 5:
+                        return SettingHolderType.LOGOUT.getValue();
+                    case 4:
                         return SettingHolderType.LOCK.getValue();
                 }
             }
@@ -753,6 +940,7 @@ public class SettingActivity extends BottomNavigationActivity {
 
                 ProfileStruct profile = UserDefaultsSingleton.getInstance(getApplicationContext()).getProfile();
 
+
                 if (profile != null) {
                     final String grade = profile.getGrade();
                     final String gradeString = profile.getGradeString();
@@ -767,6 +955,7 @@ public class SettingActivity extends BottomNavigationActivity {
                                 public Unit invoke() {
                                     if (KeyChainAccessProxy.getInstance(getApplicationContext()).clearAllValue() && UserDefaultsSingleton.getInstance(getApplicationContext()).clearAll()) {
                                         TokenHandlerSingleton.getInstance(getApplicationContext()).invalidateTokens();
+
                                         Intent i = StartupActivity.newIntent(getApplicationContext());
                                         startActivity(i);
                                         finish();
@@ -782,61 +971,8 @@ public class SettingActivity extends BottomNavigationActivity {
                 editTv.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-// alert dialog
-                        names = GradeType.values();
-                        ArrayList<String> gradeArray = new ArrayList<String>();
-                        for (Pair<String, String> pair : namesPair) {
-                            gradeArray.add(pair.second);
-                        }
 
-
-                        LayoutInflater inflater = getLayoutInflater();
-                        View convertView = (View) inflater.inflate(R.layout.cc_alert_dialog_listview, null);
-
-                        alertDialog = new AlertDialog.Builder(SettingActivity.this);
-                        alertDialog.setView(convertView);
-
-                        showedAlertDialog = alertDialog.create();
-
-
-                        TextView customAlertDialogTitle = new TextView(SettingActivity.this);
-                        customAlertDialogTitle.setGravity(Gravity.CENTER);
-                        customAlertDialogTitle.setTextColor(Color.BLACK);
-                        customAlertDialogTitle.setPadding(0, 50, 0, 10);
-                        customAlertDialogTitle.setText("لطفا یکی از گزینه های زیر را انتخاب نمایید");
-                        customAlertDialogTitle.setTextSize(14);
-                        customAlertDialogTitle.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray));
-                        customAlertDialogTitle.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-
-
-                        showedAlertDialog.setCustomTitle(customAlertDialogTitle);
-                        showedAlertDialog.show();
-                        showedAlertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                            @Override
-                            public void onDismiss(DialogInterface dialog) {
-                                SettingActivity.this.recycleAdapter.notifyDataSetChanged();
-                            }
-                        });
-
-                        ListView lv = (ListView) convertView.findViewById(R.id.lv);
-                        final AlertDialogCustomize adapter = new AlertDialogCustomize(SettingActivity.this, R.layout.cc_alert_dialog_textview, gradeArray);
-                        lv.setAdapter(adapter);
-
-                        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                                if (showedAlertDialog != null) {
-                                    showedAlertDialog.dismiss();
-
-                                    SettingActivity.this.postProfile(SettingActivity.this.namesPair.get(position).first,SettingActivity.this.namesPair.get(position).second);
-
-                                }
-
-                            }
-                        });
-
-
+                    SettingActivity.this.getProfileGradeList();
                     }
                 });
 
@@ -870,9 +1006,9 @@ public class SettingActivity extends BottomNavigationActivity {
                     textLink.setTextColor(ContextCompat.getColor(getApplicationContext(), textColor));
                 }
 
-                if (padding != null) {
-                    itemView.setPadding(itemView.getPaddingLeft(), itemView.getPaddingTop(), itemView.getPaddingRight(), padding);
-                }
+//                if (padding != null) {
+//                    itemView.setPadding(itemView.getPaddingLeft(), itemView.getPaddingTop(), itemView.getPaddingRight(), padding);
+//                }
             }
 
         }
@@ -900,9 +1036,9 @@ public class SettingActivity extends BottomNavigationActivity {
                     textLink.setTextColor(textColor);
                 }
 
-                if (padding != null) {
-                    itemView.setPadding(itemView.getPaddingLeft(), itemView.getPaddingTop(), itemView.getPaddingRight(), padding);
-                }
+//                if (padding != null) {
+//                    itemView.setPadding(itemView.getPaddingLeft(), itemView.getPaddingTop(), itemView.getPaddingRight(), padding);
+//                }
 
 
             }

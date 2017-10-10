@@ -188,7 +188,6 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     protected void onResume() {
         super.onResume();
         setupView();
-        BasketSingleton.getInstance().loadBasketItems(this);
         actionBarSet();
     }
 
@@ -205,6 +204,10 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
             }
         });
+
+        EntranceDetailActivity.this.recycleView.setAdapter(entranceDetailAdapter);
+        EntranceDetailActivity.this.resetView();
+        EntranceDetailActivity.this.stateMachine();
 
         BasketSingleton.getInstance().setListener(new BasketSingleton.BasketSingletonListener() {
             @Override

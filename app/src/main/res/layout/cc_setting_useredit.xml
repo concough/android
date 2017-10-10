@@ -6,7 +6,8 @@
     android:layout_height="wrap_content"
     android:layout_marginRight="32dp"
     android:background="@drawable/concough_setting_border_top_bottom"
-    android:paddingBottom="8dp">
+    android:paddingBottom="8dp"
+    android:layout_marginBottom="4dp">
 
     <TextView
         android:id="@+id/settingUserEditL_label"

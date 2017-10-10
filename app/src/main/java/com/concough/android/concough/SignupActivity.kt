@@ -2,8 +2,10 @@ package com.concough.android.concough
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
@@ -27,7 +29,15 @@ class SignupActivity : AppCompatActivity() {
     private var mainUsernameText: String = ""
     private var signupStruct: SignupStruct? = null
     private var loadingProgress: KProgressHUD? = null
-
+    private var send_type: String = "sms"
+        set(value) {
+            field = value
+            when (value) {
+                "call" -> signupA_sendCode.text = "ارسال کد از طریق تماس"
+                "sms" -> signupA_sendCode.text = "ارسال کد فعالسازی"
+                "" -> signupA_sendCode.text = "فردا سعی نمایید..."
+            }
+        }
 
     companion object {
         val TAG = "SignupActivity"
@@ -47,6 +57,8 @@ class SignupActivity : AppCompatActivity() {
 
         this.mainUsernameText = signupA_usernameCheckTextView.text.toString()
         this.signupStruct = SignupStruct()
+        signupA_sendCode.background = ActivityCompat.getDrawable(this, R.drawable.concough_border_outline_gray_style)
+        signupA_sendCode.isEnabled = false
 
         // Hiding Action Bar
         supportActionBar?.hide()
@@ -134,10 +146,15 @@ class SignupActivity : AppCompatActivity() {
                                                     isUsernameValid = true
                                                     signupA_usernameCheckTextView.text = "شماره همراه وارد شده صحیح است"
                                                     signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughGreen))
+                                                    signupA_sendCode.background = ActivityCompat.getDrawable(this@SignupActivity, R.drawable.concough_border_outline_style)
+                                                    signupA_sendCode.isEnabled = true
 
                                                 }
                                                 "Error" -> {
                                                     isUsernameValid = false
+                                                    signupA_sendCode.background = ActivityCompat.getDrawable(this@SignupActivity, R.drawable.concough_border_outline_gray_style)
+                                                    signupA_sendCode.isEnabled = false
+
                                                     val error_type = data?.get("error_type")?.asString
                                                     error_type.let {
                                                         when (error_type) {
@@ -220,7 +237,7 @@ class SignupActivity : AppCompatActivity() {
         loadingProgress?.show()
         doAsync {
 
-            AuthRestAPIClass.preSignup(username, { data, error ->
+            AuthRestAPIClass.preSignup(username, send_type, { data, error ->
                 uiThread {
                     AlertClass.hideLoadingMessage(loadingProgress)
                     if (error == HTTPErrorType.Success) {
@@ -242,6 +259,22 @@ class SignupActivity : AppCompatActivity() {
                                                 this@SignupActivity.signupA_usernameCheckTextView.text = "این شماره همراه قبلا رزرو شده است"
                                                 this@SignupActivity.signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughRedLight))
                                                 AlertClass.showAlertMessage(this@SignupActivity, "AuthProfile", errorType, "error", null)
+                                            }
+                                            "SMSSendError", "CallSendError" -> {
+                                                AlertClass.showAlertMessage(this@SignupActivity, "AuthProfile", errorType, "error", null)
+                                            }
+                                            "ExceedToday" -> {
+                                                AlertClass.showAlertMessage(this@SignupActivity, "AuthProfile", errorType, "error", {
+                                                    this@SignupActivity.send_type = "call"
+                                                })
+                                            }
+                                            "ExceedCallToday" -> {
+                                                AlertClass.showAlertMessage(this@SignupActivity, "AuthProfile", errorType, "error", {
+                                                    this@SignupActivity.send_type = ""
+                                                    signupA_sendCode.isEnabled = false
+                                                    signupA_sendCode.background = ActivityCompat.getDrawable(this@SignupActivity, R.drawable.concough_border_outline_gray_style)
+
+                                                })
                                             }
                                             else -> {
                                                 AlertClass.showAlertMessage(this@SignupActivity, "ErrorResult", errorType, "error", null)

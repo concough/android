@@ -236,7 +236,6 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
                             if (httpErrorType == HTTPErrorType.Success) {
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
-                                    Date modifiedDate = null;
 
                                     if (status.equals("OK")) {
                                         JsonArray dataArray = jsonObject.get("record").getAsJsonArray();

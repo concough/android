@@ -1,37 +1,52 @@
 package com.concough.android.concough
 
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.provider.Settings
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import com.concough.android.general.AlertClass
 import com.concough.android.models.DeviceInformationModel
 import com.concough.android.models.DeviceInformationModelHandler
+import com.concough.android.rest.DeviceRestAPIClass
 import com.concough.android.rest.ProfileRestAPIClass
+import com.concough.android.rest.SettingsRestAPIClass
+import com.concough.android.settings.APP_VERSION
 import com.concough.android.singletons.*
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
 import com.concough.android.utils.NetworkUtil
+import com.concough.android.vendor.progressHUD.KProgressHUD
 import kotlinx.android.synthetic.main.activity_startup.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
-
+import java.text.Format
 
 
 class StartupActivity : AppCompatActivity() {
+    private var broadcastReceiver: NetworkChangeReceiver? = null
+    private var isOnline: Boolean = true
+
+    private var loadingProgress: KProgressHUD? = null
+
     companion object {
         private val TAG = "StartupActivity"
+        private val IS_STARTUP_KEY = "IS_STARTUP"
         private val SPLASH_DISPLAY_LENGTH = 5000
 
         @JvmStatic
         fun newIntent(packageContext: Context): Intent {
             val i = Intent(packageContext, StartupActivity::class.java)
             i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            i.putExtra(IS_STARTUP_KEY, false)
             return i
         }
 
@@ -42,16 +57,14 @@ class StartupActivity : AppCompatActivity() {
         override fun onReceive(context: Context, intent: Intent) {
 
             val status = NetworkUtil.getConnectivityStatusString(context)
-            if ("android.net.conn.CONNECTIVITY_CHANGE" != intent.action) {
+            if ("android.net.conn.CONNECTIVITY_CHANGE" == intent.action || "android.net.conn.WIFI_STATE_CHANGED" == intent.action) {
                 if (status == NetworkUtil.NETWORK_STATUS_NOT_CONNECTED) {
-                    Log.d(TAG, "Internet Not Connected")
+                    //Log.d(TAG, "Internet Not Connected")
                 } else {
-                    Log.d(TAG, "Internet Connected")
-                    unregisterReceiver(NetworkChangeReceiver())
-                    this@StartupActivity.loadBasketItems()
-                    val homeIntent = HomeActivity.newIntent(this@StartupActivity)
-                    startActivity(homeIntent)
-                    finish()
+                    //Log.d(TAG, "Internet Connected")
+                    if (this@StartupActivity.broadcastReceiver != null)
+                        this@StartupActivity.unregisterReceiver(this@StartupActivity.broadcastReceiver)
+                    this@StartupActivity.navigateToHome()
                 }
 
             }
@@ -62,36 +75,62 @@ class StartupActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_startup)
 
+        deviceAlert.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Light
+        deviceName.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Bold
         ExitFromLockModeButton.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Bold
-        ResetPasswordButton.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Bold
+        ResetPasswordButton.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Light
 
+        welcomeMessage.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Light
         LoginButton.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Bold
         SignUpButton.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Bold
 
+        offlineMessage.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Light
+        offlineButton.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Bold
+
         supportActionBar?.hide()
-        StartupA_splash.visibility = View.VISIBLE
-        val handler = Handler()
-        handler.postDelayed(Runnable {
-            StartupA_splash.visibility = View.GONE
 
-        }, 4000)
+        val is_startup = intent.getBooleanExtra(IS_STARTUP_KEY, true)
+        if (is_startup) {
+            StartupA_splash.visibility = View.VISIBLE
+            val handler = Handler()
+            handler.postDelayed({
+                StartupA_splash.visibility = View.GONE
+
+            }, 4000)
+        } else {
+            StartupA_splash.visibility = View.VISIBLE
+            val handler = Handler()
+            handler.postDelayed({
+                StartupA_splash.visibility = View.GONE
+
+            }, 500)
+        }
 
 
-
-        LoginButton.setOnClickListener(View.OnClickListener {
+        LoginButton.setOnClickListener({
             val loginIntent = LoginActivity.newIntent(this@StartupActivity)
             startActivity(loginIntent)
-            finish()
         })
 
-        SignUpButton.setOnClickListener(View.OnClickListener {
+        SignUpButton.setOnClickListener({
             val loginIntent = SignupActivity.newIntent(this@StartupActivity)
             startActivity(loginIntent)
-            finish()
         })
 
 
+        ExitFromLockModeButton.setOnClickListener({
+            this.getLockedStatus()
+        })
 
+        ResetPasswordButton.setOnClickListener({
+            val intent = ForgotPasswordActivity.newIntent(this@StartupActivity)
+            startActivity(intent)
+        })
+
+        offlineButton.setOnClickListener({
+            this@StartupActivity.isOnline = false
+            this@StartupActivity.navigateToHome()
+        })
     }
 
     override fun onResume() {
@@ -113,47 +152,275 @@ class StartupActivity : AppCompatActivity() {
 //            }
 //        } else
         if (NetworkUtil.getConnectivityStatus(applicationContext) == NetworkUtil.NETWORK_STATUS_NOT_CONNECTED) {
-            setupOffline()
-            return
-        }
+            if (TokenHandlerSingleton.getInstance(applicationContext).isAuthorized() && TokenHandlerSingleton.getInstance(applicationContext).isAuthenticated()) {
+                val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()
+                val device = DeviceInformationModelHandler.findByUniqueId(applicationContext, username!!)
+                if (device != null) {
+                    if (device.state) {
+                        this@StartupActivity.isOnline = false
+                        this@StartupActivity.setupOffline()
+                    } else {
+                        this@StartupActivity.setupLocked()
+                    }
+                } else {
+                    this@StartupActivity.setupLocked()
+                }
+            } else {
+                this@StartupActivity.setupUnauthenticated()
+            }
+        } else {
 
-        if (TokenHandlerSingleton.getInstance(applicationContext).isAuthenticated()) {
-            doAsync {
-                TokenHandlerSingleton.getInstance(applicationContext).assureAuthorized(true, { authenticated, error ->
-                    if (authenticated) {
+            if (TokenHandlerSingleton.getInstance(applicationContext).isAuthenticated()) {
+                doAsync {
+                    TokenHandlerSingleton.getInstance(applicationContext).assureAuthorized(true, { authenticated, error ->
+                            uiThread {
+                                val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()!!
+                                val device = DeviceInformationModelHandler.findByUniqueId(applicationContext, username)
+                                if (device != null) {
+                                    if (device.state) {
+                                        if (authenticated) {
+                                            if (UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
+                                                this@StartupActivity.checkVersion()
+                                            } else {
+                                                this@StartupActivity.getProfile()
+                                            }
+                                        } else {
+                                            this@StartupActivity.setupUnauthenticated()
+                                        }
+                                    } else {
+                                        this@StartupActivity.setupLocked()
+                                    }
+                                } else {
+                                    this@StartupActivity.setupLocked()
+                                }
+//                                if (UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
+//
+//                                    this@StartupActivity.navigateToHome()
+//                                } else {
+//                                    this@StartupActivity.getProfile()
+//                                }
+                            }
+
+                    }, { error ->
                         uiThread {
-                            if (UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
-
-                                this@StartupActivity.loadBasketItems()
-                                val homeIntent = HomeActivity.newIntent(this@StartupActivity)
-                                startActivity(homeIntent)
-                                finish()
+                            if (TokenHandlerSingleton.getInstance(applicationContext).isAuthenticated() && TokenHandlerSingleton.getInstance(applicationContext).isAuthorized()) {
+                                val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()!!
+                                val device = DeviceInformationModelHandler.findByUniqueId(applicationContext, username)
+                                if (device != null) {
+                                    if (device.state) {
+                                        this@StartupActivity.isOnline = false
+                                        this@StartupActivity.setupOffline()
+                                    } else {
+                                        this@StartupActivity.setupLocked()
+                                    }
+                                } else {
+                                    this@StartupActivity.setupLocked()
+                                }
                             } else {
-                                this@StartupActivity.getProfile()
+                                this@StartupActivity.setupUnauthenticated()
                             }
                         }
+                    })
+
+                }
+
+            } else {
+                this@StartupActivity.setupUnauthenticated()
+            }
+        }
+    }
+
+    private fun checkVersion() {
+        doAsync {
+            SettingsRestAPIClass.appLastVersion(this@StartupActivity, { data, error ->
+                uiThread {
+                    if (error != HTTPErrorType.Success) {
+                        if (error == HTTPErrorType.Refresh) {
+                            this@StartupActivity.checkVersion()
+                        } else {
+                            this@StartupActivity.navigateToHome()
+                        }
                     } else {
-                        uiThread {
-                            val loginIntent = LoginActivity.newIntent(this@StartupActivity)
-                            startActivity(loginIntent)
-                            finish()
+                        if (data != null) {
+                            try {
+                                val status = data.get("status").asString
+                                when (status) {
+                                    "OK" -> {
+                                        val version = data.get("version").asInt
+                                        val released = data.get("released").asString
+                                        val link = data.get("link").asString
+
+                                        var showMsg = false
+
+                                        if (version > APP_VERSION) {
+                                            val existVer = DeviceInformationSingleton.getInstance(applicationContext).getLastAppVersion()
+                                            if (existVer > 0) {
+                                                if (version > existVer) {
+                                                    showMsg = true
+                                                } else {
+                                                    val count = DeviceInformationSingleton.getInstance(applicationContext).getLastAppVersionCount(version)
+                                                    if (count <=2)
+                                                        showMsg = true
+                                                }
+                                            } else {
+                                                showMsg = true
+                                            }
+
+                                            DeviceInformationSingleton.getInstance(applicationContext).putLastAppVersion(version)
+                                        }
+
+                                        if (showMsg) {
+                                            val msg = AlertClass.convertMessage("DeviceAction", "UpdateApp")
+                                            val date = FormatterSingleton.getInstance().UTCDateFormatter.parse(released)
+                                            val versionInPersian = FormatterSingleton.getInstance().NumberFormatter.format(version)
+                                            val dateInPersian = FormatterSingleton.getInstance().getPersianDateString(date)
+
+                                            val message = "نسخه $versionInPersian منتشر شده است\nتاریخ: $dateInPersian"
+                                            AlertClass.showSucceessMessageCustom(this@StartupActivity, msg.title, message, "دانلود", "بعدا", completion = {
+                                                val intentUri = Uri.parse(link)
+
+                                                val intent = Intent()
+                                                intent.action = Intent.ACTION_VIEW
+                                                intent.data = intentUri
+                                                this@StartupActivity.startActivity(intent)
+
+
+                                            }, noCompletion = {
+                                                this@StartupActivity.navigateToHome()
+                                            })
+                                        } else {
+                                            this@StartupActivity.navigateToHome()
+                                        }
+
+                                    }
+                                    "Error" -> {
+                                        val errorType = data.get("error_type").asString
+                                        when (errorType) {
+                                            "EmptyArray" -> { }
+                                            else -> { }
+                                        }
+
+                                        this@StartupActivity.navigateToHome()
+                                    }
+                                }
+                            } catch (exc: Exception) {
+
+                            }
+
                         }
                     }
-                }, { error ->
-                    uiThread {
-                        //this@StartupActivity.StartupA_centerView.visibility = View.VISIBLE
-                        val loginIntent = LoginActivity.newIntent(this@StartupActivity)
-                        startActivity(loginIntent)
-                        finish()
+                }
+            }, { error ->
+                uiThread {
+                    if (error != null) {
+                        when (error) {
+                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                            }
+                            else -> {
+                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+                            }
+                        }
+
                     }
-                })
 
-            }
+                    this@StartupActivity.navigateToHome()
+                }
+            })
 
-        } else {
-            val loginIntent = LoginActivity.newIntent(this@StartupActivity)
-            startActivity(loginIntent)
-            finish()
+        }
+    }
+
+    private fun getLockedStatus() {
+        this@StartupActivity.loadingProgress = AlertClass.showLoadingMessage(this@StartupActivity)
+        this@StartupActivity.loadingProgress?.show()
+
+        doAsync {
+            DeviceRestAPIClass.deviceLock(this@StartupActivity, false, { data, error ->
+                uiThread {
+                    AlertClass.hideLoadingMessage(this@StartupActivity.loadingProgress)
+
+                    if (error != HTTPErrorType.Success) {
+                        if (error == HTTPErrorType.Refresh) {
+                            this@StartupActivity.getLockedStatus()
+                        } else {
+                            AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                        }
+                    } else {
+                        if (data != null) {
+                            try {
+                                val status = data.get("status").asString
+                                when (status) {
+                                    "OK" -> {
+                                        val state = data.get("data").asJsonObject.get("state").asBoolean
+                                        val device_unique_id = data.get("data").asJsonObject.get("device_unique_id").asString
+
+                                        val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()
+                                        if (username != null) {
+                                            val androidId = Settings.Secure.getString(applicationContext.contentResolver,
+                                                    Settings.Secure.ANDROID_ID)
+                                            val deviceModel = Build.MANUFACTURER + " " + Build.MODEL
+
+                                            if (device_unique_id == androidId) {
+                                                if (DeviceInformationSingleton.getInstance(applicationContext).setDeviceState(username, "android", deviceModel, state, true)) {
+                                                    if (state) {
+                                                        this@StartupActivity.getProfile()
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    "Error" -> {
+                                        val errorType = data.get("error_type").asString
+                                        when (errorType) {
+                                            "AnotherDevice" -> {
+                                                val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()
+                                                if (username != null) {
+                                                    AlertClass.showAlertMessage(this@StartupActivity, "DeviceInfoError", errorType, "error", {
+                                                        val device_name = data.get("error_data").asJsonObject.get("device_name").asString
+                                                        val device_model = data.get("error_data").asJsonObject.get("device_model").asString
+
+                                                        if (DeviceInformationSingleton.getInstance(applicationContext).setDeviceState(username, device_name, device_model, false, false)) {
+                                                            deviceName.text = "دستگاه: $device_name $device_model"
+                                                        }
+                                                    })
+                                                }
+
+                                            }
+                                            "UserNotExist", "DeviceNotRegistered" -> {
+                                                val loginIntent = LoginActivity.newIntent(this@StartupActivity)
+                                                startActivity(loginIntent)
+                                            }
+                                            else -> { }
+                                        }
+
+                                    }
+                                }
+                            } catch (exc: Exception) {
+
+                            }
+
+                        }
+                    }
+                }
+            }, { error ->
+                uiThread {
+                    AlertClass.hideLoadingMessage(this@StartupActivity.loadingProgress)
+                    if (error != null) {
+                        when (error) {
+                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                            }
+                            else -> {
+                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+                            }
+                        }
+
+                    }
+                }
+
+            })
+
         }
     }
 
@@ -165,9 +432,7 @@ class StartupActivity : AppCompatActivity() {
                         if (error == HTTPErrorType.Refresh) {
                             this@StartupActivity.getProfile()
                         } else {
-                            val loginIntent = LoginActivity.newIntent(this@StartupActivity)
-                            startActivity(loginIntent)
-                            finish()
+                            this@StartupActivity.setupUnauthenticated()
                         }
                     } else {
                         if (data != null) {
@@ -186,7 +451,7 @@ class StartupActivity : AppCompatActivity() {
                                             val lastname = profile.get("user").asJsonObject.get("last_name").asString
 
 
-                                            val birthdayDate = FormatterSingleton.getInstance().UTCDateFormatter.parse(birthday)
+                                            val birthdayDate = FormatterSingleton.getInstance().UTCShortDateFormatter.parse(birthday)
                                             val modifiedDate = FormatterSingleton.getInstance().UTCDateFormatter.parse(modified)
 
                                             if ("" != firstname && "" != lastname && "" != gender && "" != grade) {
@@ -195,10 +460,12 @@ class StartupActivity : AppCompatActivity() {
 
                                             if (UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
 
-                                                this@StartupActivity.loadBasketItems()
-                                                val homeIntent = HomeActivity.newIntent(this@StartupActivity)
-                                                startActivity(homeIntent)
-                                                finish()
+                                                this@StartupActivity.checkVersion()
+
+//                                                this@StartupActivity.loadBasketItems()
+//                                                val homeIntent = HomeActivity.newIntent(this@StartupActivity)
+//                                                startActivity(homeIntent)
+//                                                finish()
 
                                             } else {
                                                 // Profile not created
@@ -237,6 +504,7 @@ class StartupActivity : AppCompatActivity() {
                         }
 
                     }
+                    this@StartupActivity.setupUnauthenticated()
 
                 }
 
@@ -245,17 +513,30 @@ class StartupActivity : AppCompatActivity() {
         }
     }
 
+    private fun navigateToHome() {
+        if (isOnline) {
+            this@StartupActivity.loadBasketItems()
+            val homeIntent = HomeActivity.newIntent(this@StartupActivity)
+            startActivity(homeIntent)
+            finish()
+        } else {
+            val intent = FavoritesActivity.newIntent(this@StartupActivity)
+            startActivity(intent)
+            finish()
+        }
+    }
+
     private fun loadBasketItems() {
         BasketSingleton.getInstance().loadBasketItems(this@StartupActivity)
     }
 
     private fun setupUnauthenticated() {
-        StartupA_splash.visibility = View.GONE
+        //StartupA_splash.visibility = View.GONE
         StartupA_introLogin.visibility = View.VISIBLE
     }
 
     private fun setupLocked() {
-        StartupA_splash.visibility = View.GONE
+        //StartupA_splash.visibility = View.GONE
         StartupA_intro.visibility = View.VISIBLE
 
         val username: String? = UserDefaultsSingleton.getInstance(applicationContext).getUsername()
@@ -265,7 +546,7 @@ class StartupActivity : AppCompatActivity() {
                 if (device.is_me) {
                     deviceName.text = "دستگاه فعلی"
                 } else {
-                    deviceName.text = "دستگاه ${device.device_name} ${device.device_model}"
+                    deviceName.text = "دستگاه: ${device.device_name} ${device.device_model}"
                 }
             } else {
                 // TODO: check it
@@ -275,10 +556,13 @@ class StartupActivity : AppCompatActivity() {
     }
 
     private fun setupOffline() {
-        StartupA_splash.visibility = View.GONE
-        // TODO: check for reachability
+        //StartupA_splash.visibility = View.GONE
+        StartupA_offline.visibility = View.VISIBLE
 
-        val i = IntentFilter("com.concough.android.concough.android.action.broadcast")
-        registerReceiver(NetworkChangeReceiver(), i)
+        val i = IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
+        i.addAction("android.net.wifi.WIFI_STATE_CHANGED")
+
+        this.broadcastReceiver = NetworkChangeReceiver()
+        this.registerReceiver(this.broadcastReceiver, i)
     }
 }

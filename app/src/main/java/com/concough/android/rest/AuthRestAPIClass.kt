@@ -65,10 +65,10 @@ class AuthRestAPIClass {
 
         // Pre Signup Phase API
         @JvmStatic
-        fun preSignup(username: String, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+        fun preSignup(username: String, send_type: String, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
             val fullPath = UrlMakerSingleton.getInstance().preSignupUrl() ?: return
 
-            val parameters: HashMap<String, Any> = hashMapOf("username" to username)
+            val parameters: HashMap<String, Any> = hashMapOf("username" to username, "type" to send_type)
             val headers = hashMapOf("Content-Type" to "application/json",
                     "Accept" to "application/json")
 
@@ -146,10 +146,10 @@ class AuthRestAPIClass {
 
         // Forgot Password Phase for UnAuthenticated User
         @JvmStatic
-        fun forgotPassword(username: String, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+        fun forgotPassword(username: String, send_type: String, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
             val fullPath = UrlMakerSingleton.getInstance().forgotPassword() ?: return
 
-            val parameters: HashMap<String, Any> = hashMapOf("username" to username)
+            val parameters: HashMap<String, Any> = hashMapOf("username" to username, "type" to send_type)
             val headers = hashMapOf("Content-Type" to "application/json",
                     "Accept" to "application/json")
 

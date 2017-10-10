@@ -355,10 +355,18 @@ class UrlMakerSingleton private constructor() {
         return this.getDeviceUrl(functionName)
     }
 
-    fun getDeviceAcqurieUrl(): String? {
-        val functionName = "acqurie"
+    fun getDeviceAcquireUrl(): String? {
+        val functionName = "acquire"
         return this.getDeviceUrl(functionName)
     }
 
+    fun getAppLastVersionUrl(device: String): String? {
+        var fullPath: String? = null
+        val functionName = "app_version/$device"
 
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/$functionName/"
+        }
+        return fullPath
+    }
 }

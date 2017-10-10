@@ -225,3 +225,20 @@ Favorite Activity (abolfazl.beh)
 Syncing And fix git bugs (abolfazl.beh)
 
 1 - Prepare SettingActivity to extend BottomNavigationActivity
+
+------------------------------------------------------------------------------------------------
+Adding Lock Mechanism (abolfazl.beh)
+
+1 - In "EntranceDetailActivity" --> loaditems of Basket Singleton called onResume --> It is not necessary now --> deleted
+2 - "LoginActivity" modified to include checking lock status from server
+3 - "SettingRestAPIClass" --> Add function to load last app version from server --> used in startup to show alert
+4 - "AlertClass" modified --> add another function to show custom success message with buttons
+5 - "StartupActivity" layout and class changed --> now check for lock, last app version, offline mode and other necessary functionality for better user experiences
+6 - "SettingsActivity" modified to include acquire functionality:
+    - Also some layout changed to better user experiences
+7 - "SettingActivity" check for logout process and delete all device information --> also acquire device
+8 - "SignupActivity" button enable and disabled by isValidUsername
+9 - Add "force" parameter to Lock device API --> used in reset password --> all other devices acquired
+10 - "SignupActivity" and "ForgotPasswordActivity" changed to include error types from server when requesting code
+11 - "SignupCodeActivity" changed to include new error messages when requesting new code and also timer to prevent fraud requesting
+12 - "EntranceShowActivity" changed to show question answer based on key return by server --> Convert it by Utils -> DataConvertors to appropriate answer

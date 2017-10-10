@@ -105,7 +105,7 @@ import kotlin.jvm.functions.Function2;
 import static com.bumptech.glide.request.target.Target.SIZE_ORIGINAL;
 import static com.concough.android.concough.R.id.headerShowStarred_countEntrance;
 import static com.concough.android.settings.ConstantsKt.getSECRET_KEY;
-
+import static com.concough.android.utils.DataConvertorsKt.questionAnswerToString;
 
 public class EntranceShowActivity extends AppCompatActivity implements Handler.Callback {
 
@@ -434,7 +434,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     }
 
-
     private void infoDialog() {
         dialogInfo = new Dialog(EntranceShowActivity.this);
         dialogInfo = new Dialog(EntranceShowActivity.this, android.R.style.Theme_DeviceDefault_Dialog);
@@ -612,7 +611,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     }
 
-
     private void downloadImage(final int imageId) {
         final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
         byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
@@ -667,7 +665,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         }
     }
 
-
     private ArrayList<View> getAllChildren(View v) {
 
         if (!(v instanceof ViewGroup)) {
@@ -691,7 +688,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         }
         return result;
     }
-
 
     private void createLog(String logType, JsonObject extraData) {
         if (username != null) {
@@ -717,7 +713,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             finish();
         }
     }
-
 
     private void loadBooklets() {
         bookletsDB = entranceDB.booklets;
@@ -826,7 +821,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     }
 
-
     private String buttonTextMaker(String txt, boolean doOpen) {
         int up = 0x25B2;
         int down = 0x25BC;
@@ -861,7 +855,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         entranceShowAdapter.loadImages(imageStr);
     }
 
-
     private void handleLoadStarredImage(Message msg) {
         Bundle bundle = msg.getData();
         if (bundle == null)
@@ -869,7 +862,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         final String imageStr = bundle.getString("IMAGES_STRING");
         starredAdapter.loadImages(imageStr);
     }
-
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
@@ -895,7 +887,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
         }
     }
-
 
     public class DialogAdapter extends BaseAdapter {
 
@@ -945,7 +936,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     }
 
-
     public class DialogInfoAdapter extends BaseAdapter {
 
         private Context mContext;
@@ -993,7 +983,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
 
     }
-
 
     private class EntranceShowAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -1225,7 +1214,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 answer.setVisibility(View.INVISIBLE);
 
                 questionNumber.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.number));
-                answer.setText("گزینه " + FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.answer) + " صحیح است");
+
+                answer.setText("گزینه " + questionAnswerToString(entranceQuestionModel.answer)  + " صحیح است");
+                //answer.setText("گزینه " + FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.answer) + " صحیح است");
 
                 mEntranceQuestionModel = entranceQuestionModel;
 
@@ -1523,7 +1514,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     }
 
-
     // Starred Adapter
     public class StarredShowAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements StickyHeaderInterface {
 
@@ -1710,7 +1700,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 //                imgPreLoad.setVisibility(View.VISIBLE);
 
                 questionNumber.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.number));
-                answer.setText("گزینه " + FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.answer) + " صحیح است");
+
+                answer.setText("گزینه " + questionAnswerToString(entranceQuestionModel.answer)  + " صحیح است");
+//                answer.setText("گزینه " + FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.answer) + " صحیح است");
 
                 mEntranceQuestionModel = entranceQuestionModel;
 
@@ -2184,7 +2176,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     }
 
-
     public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
 
 
@@ -2340,6 +2331,5 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
          */
         boolean isHeader(int itemPosition);
     }
-
 
 }

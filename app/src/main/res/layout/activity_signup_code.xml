@@ -107,6 +107,16 @@
                 </android.support.constraint.ConstraintLayout>
 
                 <TextView
+                    android:id="@+id/timerTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp"
+                    android:text="۰:۰"
+                    android:textAlignment="center"
+                    android:textColor="@color/colorConcoughBlueDark"
+                    android:textSize="32sp" />
+
+                <TextView
                     android:id="@+id/SignupCodeA_infoTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

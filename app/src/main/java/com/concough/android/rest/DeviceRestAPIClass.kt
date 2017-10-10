@@ -24,8 +24,7 @@ class DeviceRestAPIClass {
     companion object Factory {
         val TAG = "DeviceRestAPIClass"
 
-
-        // Add Product To Basket
+        // Create device API
         @JvmStatic
         fun deviceCreate(context: Context, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
             val fullPath = UrlMakerSingleton.getInstance().getDeviceCreateUrl() ?: return
@@ -89,9 +88,9 @@ class DeviceRestAPIClass {
 
 
 
-        // Add Product To Basket
+        // Lock device API
         @JvmStatic
-        fun deviceLock(context: Context, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+        fun deviceLock(context: Context, force: Boolean, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
             val fullPath = UrlMakerSingleton.getInstance().getDeviceLockUrl() ?: return
 
             TokenHandlerSingleton.getInstance(context).assureAuthorized(completion = { authenticated, error ->
@@ -100,8 +99,9 @@ class DeviceRestAPIClass {
 
                     val androidId = Settings.Secure.getString(context.applicationContext.contentResolver,
                             Settings.Secure.ANDROID_ID)
+                    val deviceModel = Build.MANUFACTURER + " " + Build.MODEL
 
-                    val parameters: HashMap<String, Any> = hashMapOf("device_name" to "android", "device_unique_id" to androidId)
+                    val parameters: HashMap<String, Any> = hashMapOf("device_name" to "android", "device_unique_id" to androidId, "force" to force, "device_model" to deviceModel)
 
                     val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
@@ -150,10 +150,10 @@ class DeviceRestAPIClass {
 
 
 
-        // Add Product To Basket
+        // Acquire device API
         @JvmStatic
         fun deviceAcquire(context: Context, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
-            val fullPath = UrlMakerSingleton.getInstance().getDeviceAcqurieUrl() ?: return
+            val fullPath = UrlMakerSingleton.getInstance().getDeviceAcquireUrl() ?: return
 
             TokenHandlerSingleton.getInstance(context).assureAuthorized(completion = { authenticated, error ->
                 if (authenticated && error == HTTPErrorType.Success) {

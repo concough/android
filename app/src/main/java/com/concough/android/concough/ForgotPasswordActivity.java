@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -24,6 +25,7 @@ import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonObject;
 
 import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
@@ -37,6 +39,23 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     private SignupStruct signupStruct;
     private KProgressHUD loadingProgress;
 
+    private String send_type = "sms";
+
+    public void setSend_type(String send_type) {
+        this.send_type = send_type;
+
+        switch (send_type) {
+            case "call":
+                sendCodeButton.setText("ارسال کد از طریق تماس");
+                break;
+            case "sms":
+                sendCodeButton.setText("ارسال کد");
+                break;
+            case "":
+                sendCodeButton.setText("فردا سعی نمایید...");
+                break;
+        }
+    }
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, ForgotPasswordActivity.class);
@@ -132,13 +151,15 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         new ForgotPasswordTask().execute(username);
     }
 
+
+
     private class ForgotPasswordTask extends AsyncTask<String, Void, Void> {
 
         @Override
         protected Void doInBackground(final String... params) {
 
 
-            AuthRestAPIClass.forgotPassword(params[0], new Function2<JsonObject, HTTPErrorType, Unit>() {
+            AuthRestAPIClass.forgotPassword(params[0], send_type, new Function2<JsonObject, HTTPErrorType, Unit>() {
                 @Override
                 public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
                     runOnUiThread(new Runnable() {
@@ -169,6 +190,33 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                                                     case "UserNotExist":
                                                         AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "AuthProfile", errorType, "error", null);
                                                         break;
+                                                    case "SMSSendError":
+                                                    case "CallSendError": {
+                                                        AlertClass.showAlertMessage(ForgotPasswordActivity.this, "AuthProfile", errorType, "error", null);
+                                                        break;
+                                                    }
+                                                    case "ExceedToday": {
+                                                        AlertClass.showAlertMessage(ForgotPasswordActivity.this, "AuthProfile", errorType, "error", new Function0<Unit>() {
+                                                            @Override
+                                                            public Unit invoke() {
+                                                                ForgotPasswordActivity.this.setSend_type("call");
+                                                                return null;
+                                                            }
+                                                        });
+                                                        break;
+                                                    }
+                                                    case "ExceedCallToday": {
+                                                        AlertClass.showAlertMessage(ForgotPasswordActivity.this, "AuthProfile", errorType, "error", new Function0<Unit>() {
+                                                            @Override
+                                                            public Unit invoke() {
+                                                                ForgotPasswordActivity.this.setSend_type("");
+                                                                sendCodeButton.setEnabled(false);
+                                                                sendCodeButton.setBackgroundColor(ActivityCompat.getColor(ForgotPasswordActivity.this, R.color.colorConcoughGray2));
+                                                                return null;
+                                                            }
+                                                });
+                                                        break;
+                                                    }
                                                     default:
                                                         break;
                                                 }

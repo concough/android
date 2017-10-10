@@ -211,7 +211,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void getLockedStatus() {
-
+        new LockStatusTask().execute();
     }
 
     private void getProfile() {
@@ -458,7 +458,7 @@ public class LoginActivity extends AppCompatActivity {
                                                             Settings.Secure.ANDROID_ID);
 
                                                     if (androidId.equals(deviceUniqueId)) {
-                                                        if (DeviceInformationSingleton.getInstance(getApplicationContext()).setDeviceState(username, "android", deviceModel, deviceState, false)) {
+                                                        if (DeviceInformationSingleton.getInstance(getApplicationContext()).setDeviceState(username, "android", deviceModel, deviceState, true)) {
                                                             if (deviceState) {
                                                                 getProfile();
                                                                 return;
@@ -492,7 +492,7 @@ public class LoginActivity extends AppCompatActivity {
                                                                 String deviceName = jsonObject.get("error_data").getAsJsonObject().get("device_name").getAsString();
                                                                 String deviceModel = jsonObject.get("error_data").getAsJsonObject().get("device_model").getAsString();
 
-                                                                if (DeviceInformationSingleton.getInstance(getApplicationContext()).setDeviceState(username, deviceName, deviceModel, false, true)) {
+                                                                if (DeviceInformationSingleton.getInstance(getApplicationContext()).setDeviceState(username, deviceName, deviceModel, false, false)) {
                                                                     Intent i = StartupActivity.newIntent(LoginActivity.this);
                                                                     startActivity(i);
                                                                     finish();
