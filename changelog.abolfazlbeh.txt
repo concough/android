@@ -247,3 +247,6 @@ Adding Lock Mechanism (abolfazl.beh)
 Startup Offline Error fixed (abolfazl.beh)
 
 1 - IntroVideoView fixed on pause and resume
+
+------------------------------------------------------------------------------------------------
+Alert Class New Messages Added (abolfazl.beh)

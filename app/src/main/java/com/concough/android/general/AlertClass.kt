@@ -166,6 +166,18 @@ class AlertClass {
                         "PassCannotChange" -> {
                             title = "خطا"; message = "امکان تغییر گذرواژه وجود ندارد"
                         }
+                        "SMSSendError" -> {
+                            title = "خطا"; message = "ارسال پیامک با خطا مواجه شد، مجددا سعی نمایید"
+                        }
+                        "CallSendError" -> {
+                            title = "خطا"; message = "تماس صوتی با خطا مواجه، مجددا سعی نمایید"
+                        }
+                        "ExceedToday" -> {
+                            title = "خطا"; message = "ظرفیت ارسال پیامک امروز شما به پایان رسید"
+                        }
+                        "ExceedCallToday" -> {
+                            title = "خطا"; message = "لطفا فردا سعی نمایید. ظرفیت امروز شما برای ارسال پیامک یا تماس تلفنی به پایان رسید."
+                        }
                         else -> showMessage = false
                     }
                 }
