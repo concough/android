@@ -179,8 +179,16 @@ Refactor 2 (faridM)
 
 ==================================================================================
 
+Video and Colors optimize (faridM)
+
+ 1 - solved movie pause problem
+ 2 - aded new video
+ 3 - change drawable layouts of startActivity buttons
+ 4 - changed color of black view on startup activity
+ 5 - changed font decoration of buttons
 
 
+==================================================================================
 
 
 

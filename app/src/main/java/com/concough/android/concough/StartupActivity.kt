@@ -1,6 +1,5 @@
 package com.concough.android.concough
 
-import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -28,7 +27,6 @@ import com.concough.android.vendor.progressHUD.KProgressHUD
 import kotlinx.android.synthetic.main.activity_startup.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
-import java.text.Format
 
 
 class StartupActivity : AppCompatActivity() {
@@ -70,6 +68,7 @@ class StartupActivity : AppCompatActivity() {
                         val device = DeviceInformationModelHandler.findByUniqueId(applicationContext, username!!)
                         if (device != null) {
                             if (device.state) {
+                                this@StartupActivity.isOnline = true
                                 this@StartupActivity.navigateToHome()
                             }
                         }
@@ -89,7 +88,7 @@ class StartupActivity : AppCompatActivity() {
         ExitFromLockModeButton.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Bold
         ResetPasswordButton.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Light
 
-        welcomeMessage.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Light
+        welcomeMessage.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Regular
         LoginButton.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Bold
         SignUpButton.typeface = FontCacheSingleton.getInstance(this@StartupActivity).Bold
 
@@ -149,7 +148,7 @@ class StartupActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        introVideoView.pauseMe()
+//        introVideoView.pauseMe()
     }
 
     private fun startup() {

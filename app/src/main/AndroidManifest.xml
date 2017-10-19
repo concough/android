@@ -19,10 +19,10 @@
         <service android:name="com.concough.android.downloader.EntrancePackageDownloader" />
 
         <!--<receiver android:name=".StartupActivity$NetworkChangeReceiver" >-->
-            <!--<intent-filter >-->
-                <!--<action android:name="android.net.conn.CONNECTIVITY_CHANGE" />-->
-                <!--<action android:name="android.net.wifi.WIFI_STATE_CHANGED" />-->
-            <!--</intent-filter>-->
+        <!--<intent-filter >-->
+        <!--<action android:name="android.net.conn.CONNECTIVITY_CHANGE" />-->
+        <!--<action android:name="android.net.wifi.WIFI_STATE_CHANGED" />-->
+        <!--</intent-filter>-->
         <!--</receiver>-->
         <activity
             android:name=".StartupActivity"
@@ -108,7 +108,26 @@
             android:theme="@style/AppThemeArchiveActionBar" />
         <activity
             android:name=".BasketCheckoutActivity"
-            android:screenOrientation="portrait" />
+            android:exported="true"
+            android:screenOrientation="portrait">
+            <!--<intent-filter>-->
+            <!--<data android:scheme="concough" />-->
+            <!--<action android:name="android.intent.action.VIEW" />-->
+            <!--</intent-filter>-->
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="concough.zhycan.com"
+                    android:scheme="concough" />
+
+            </intent-filter>
+
+        </activity>
         <activity
             android:name=".FavoritesActivity"
             android:screenOrientation="portrait" />

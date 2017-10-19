@@ -8,12 +8,10 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.ViewGroup;
 
 import com.concough.android.concough.R;
-import com.concough.android.general.AlertClass;
 
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 public class IntroVideoView extends SurfaceView implements
@@ -53,10 +51,11 @@ public class IntroVideoView extends SurfaceView implements
     }
 
     public void pauseMe() {
-        if (mp.isPlaying()) {
-            mp.pause();
-            isPaused = true;
-        }
+//        if(mp!=null)
+//        if (mp.isPlaying()) {
+//            mp.pause();
+//            isPaused = true;
+//        }
     }
 
     public void init() {
@@ -64,7 +63,7 @@ public class IntroVideoView extends SurfaceView implements
         mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                mp.release();
+               // mp.release();
             }
         });
         getHolder().addCallback(this);
@@ -96,14 +95,16 @@ public class IntroVideoView extends SurfaceView implements
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        mp.pause();
-        mp.stop();
-        mp.release();
+//        mp.pause();
+//        mp.stop();
+//        mp.release();
     }
 
     @Override
     public void onPrepared(MediaPlayer mp1) {
-        android.view.ViewGroup.LayoutParams lp = getLayoutParams();
+        ViewGroup.LayoutParams lp = getLayoutParams();
+
+
 
         int screenHeight = getHeight();
         int screenWidth = getWidth();

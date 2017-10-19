@@ -21,7 +21,7 @@
     <color name="colorConcoughGrayBackground">#f6f6f6</color>
     <color name="colorConcoughBorderWhite">#cccccc</color>
 
-    <color name="colorConcoughVideoIntro">#88000000</color>
+    <color name="colorConcoughVideoIntro">#99000000</color>
 
 
     <color name="colorConcoughHolder2Box">#DDFCFCFC</color>
@@ -29,6 +29,7 @@
 
 
     <color name="colorWhite">#fff</color>
+    <color name="colorWhiteAlpha">#aaffffff</color>
 
     <color name="kprogresshud_default_color">#b1000000</color>
     <color name="kprogresshud_grey_color">#449E9E9E</color>

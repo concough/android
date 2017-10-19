@@ -47,24 +47,24 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
             android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            android:layout_marginTop="4dp"
             android:layout_weight="1"
+
+
             android:autoLink="none"
+
             android:background="@null"
-
-
             android:elevation="0dp"
-
             android:foregroundGravity="center_vertical|center"
             android:text="Button"
-            android:textSize="16dp"
+            android:textSize="14sp"
+
+
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-
-
-            android:layout_marginTop="4dp"
-            android:layout_marginRight="0dp"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintHorizontal_bias="0.5" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <Button
             android:id="@+id/actionBarL_infoButton"

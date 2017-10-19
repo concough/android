@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -41,6 +42,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import io.realm.RealmResults;
@@ -199,6 +201,27 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
 
         updateTotalCost();
         actionBarSet();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Uri data = getIntent().getData();
+        String scheme = data.getScheme(); // "http"
+        String host = data.getHost(); // "twitter.com"
+        List<String> params = data.getPathSegments();
+        String first = params.get(0); // "status"
+        String second = params.get(1); // "1234"
+
+        Log.d(TAG, "External *** "+"F="+first+"-S="+second);
+        if(first.equals("pay")) {
+            if(second.equals("success")) {
+
+            } else {
+
+            }
+        }
     }
 
     private void purchasedIds(HashMap<Integer, BasketSingleton.PurchasedItem> purchased) {
