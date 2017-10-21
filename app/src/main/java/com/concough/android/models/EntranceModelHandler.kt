@@ -18,7 +18,8 @@ class EntranceModelHandler {
             val entrance = EntranceModel()
             entrance.bookletsCount = e.entranceBookletCounts!!
             entrance.duration = e.entranceDuration!!
-            entrance.extraData = e.entranceExtraData?.asJsonObject.toString()
+            if (e.entranceExtraData != null)
+                entrance.extraData = e.entranceExtraData?.asJsonObject.toString()
             entrance.group = e.entranceGroupTitle!!
             entrance.lastPublished = e.entranceLastPublished!!
             entrance.organization = e.entranceOrgTitle!!

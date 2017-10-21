@@ -31,6 +31,7 @@ import com.concough.android.singletons.BasketSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.singletons.MediaCacheSingleton;
+import com.concough.android.singletons.TokenHandlerSingleton;
 import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.EntranceStruct;
 import com.concough.android.structures.HTTPErrorType;
@@ -86,6 +87,9 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
         super.onCreate(savedInstanceState);
         this.contextFromWho = getIntent().getStringExtra(CONTEXT_WHO_KEY);
 
+        if (!TokenHandlerSingleton.getInstance(getApplicationContext()).isAuthenticated())
+            finish();
+
         // get username
         username = UserDefaultsSingleton.getInstance(BasketCheckoutActivity.this).getUsername();
 
@@ -129,6 +133,12 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
 
         // Listeners
         BasketSingleton.getInstance().setListener(new BasketSingleton.BasketSingletonListener() {
+            @Override
+            public void onCheckoutRedirect(String payUrl, String authority) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(payUrl));
+                startActivity(browserIntent);
+            }
+
             @Override
             public void onLoadItemCompleted(final int count) {
                 runOnUiThread(new Runnable() {
@@ -208,20 +218,29 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
         super.onResume();
 
         Uri data = getIntent().getData();
-        String scheme = data.getScheme(); // "http"
-        String host = data.getHost(); // "twitter.com"
-        List<String> params = data.getPathSegments();
-        String first = params.get(0); // "status"
-        String second = params.get(1); // "1234"
+        if (data != null) {
+            String scheme = data.getScheme(); // "http"
+            String host = data.getHost(); // "twitter.com"
+            List<String> params = data.getPathSegments();
+            String first = params.get(0); // "status"
+            String second = params.get(1); // "1234"
 
-        Log.d(TAG, "External *** "+"F="+first+"-S="+second);
-        if(first.equals("pay")) {
-            if(second.equals("success")) {
-
-            } else {
-
+            Log.d(TAG, "External *** " + "F=" + first + "-S=" + second);
+            if (first.equals("pay")) {
+                if (second.equals("success")) {
+                    BasketCheckoutActivity.this.checkToVerify();
+                } else {
+                    AlertClass.showAlertMessage(this, "BasketResult", "CheckoutError", "error", null);
+                }
             }
+        } else {
+            // check to verify
+            this.checkToVerify();
         }
+    }
+
+    private void checkToVerify() {
+        BasketSingleton.getInstance().verifyCheckout(BasketCheckoutActivity.this);
     }
 
     private void purchasedIds(HashMap<Integer, BasketSingleton.PurchasedItem> purchased) {
@@ -420,7 +439,7 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
 
             @SuppressLint("SetTextI18n")
             public void setupHolder(EntranceStruct entrance, int cost, final int position) {
-                orgTypeTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " + entrance.getEntranceOrgTitle() + " " +
+                orgTypeTextView.setText("آزمون " + entrance.getEntranceTypeTitle() +  " " +
                         FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
                 groupTextView.setText(entrance.getEntranceSetTitle() + " (" + entrance.getEntranceGroupTitle() + ")");
 
@@ -433,12 +452,12 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
 
                 ArrayList<String> extraArray = new ArrayList<>();
 
-                for (Map.Entry<String, JsonElement> entry : entrance.getEntranceExtraData().getAsJsonObject().entrySet()) {
-                    extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
-                }
-
-                String extra = TextUtils.join(" - ", extraArray);
-                extraDataTextView.setText(extra);
+//                for (Map.Entry<String, JsonElement> entry : entrance.getEntranceExtraData().getAsJsonObject().entrySet()) {
+//                    extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
+//                }
+//
+//                String extra = TextUtils.join(" - ", extraArray);
+                extraDataTextView.setText(entrance.getEntranceOrgTitle());
 
                 if (entrance.getEntranceSetId() != null) {
                     downloadImage(entrance.getEntranceSetId());

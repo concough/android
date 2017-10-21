@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.os.PowerManager;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.TabLayout;
@@ -114,13 +115,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         public String lessionTitle;
         public int count;
         public RealmList<EntranceQuestionModel> questions;
-
-
     }
-
-
     private final static String TAG = "EntranceShowActivity";
-
 
     private final static String ENTRANCE_UNIQUE_ID_KEY = "entranceUniqueId";
     private final static String SHOW_TYPE_KEY = "showType";
@@ -174,6 +170,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     private RecyclerView recyclerView;
     private RecyclerView recyclerViewStar;
     private KProgressHUD loading;
+    private PowerManager.WakeLock wakeLock;
 
     private ImageView esetImageView;
 
@@ -431,7 +428,23 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
         globalPairListInteger = starredIds.size();
 
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        PowerManager powerManager = (PowerManager)this.getSystemService(Context.POWER_SERVICE);
+        this.wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "My Lock");
+        wakeLock.acquire();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(this.wakeLock != null) {
+            this.wakeLock.release();
+        }
     }
 
     private void infoDialog() {
@@ -460,20 +473,20 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
 
         String entranceYear = FormatterSingleton.getInstance().getNumberFormatter().format(this.entranceDB.year);
-        tvEntranceTypeName.setText("آزمون " + this.entranceDB.type + " " + this.entranceDB.organization + " " + entranceYear);
+        tvEntranceTypeName.setText("آزمون " + this.entranceDB.type + " " + entranceYear);
         tvEntranceGroupName.setText(this.entranceDB.group + " (" + this.entranceDB.set + ")");
 
 
-        String extra = "";
-        ArrayList<String> extraArray = new ArrayList<>();
-        JsonObject extraData = new JsonParser().parse(this.entranceDB.extraData).getAsJsonObject();
-
-        for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
-            extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
-        }
-
-        extra = TextUtils.join(" - ", extraArray);
-        tvEntranceExtraData.setText(extra);
+//        String extra = "";
+//        ArrayList<String> extraArray = new ArrayList<>();
+//        JsonObject extraData = new JsonParser().parse(this.entranceDB.extraData).getAsJsonObject();
+//
+//        for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
+//            extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
+//        }
+//
+//        extra = TextUtils.join(" - ", extraArray);
+        tvEntranceExtraData.setText(this.entranceDB.organization);
 
 
         entranceSwitch.setHighlightColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGreen));

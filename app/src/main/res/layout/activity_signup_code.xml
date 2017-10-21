@@ -23,6 +23,20 @@
             android:fitsSystemWindows="true"
             android:isScrollContainer="true">
 
+            <Button
+                android:id="@+id/SignupCodeA_returnButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:background="@drawable/concough_border_radius_gray_style"
+                android:text="@string/SignupCodeA_S_returnTextView"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginTop="16dp"
+                android:layout_marginLeft="16dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:textSize="12sp"/>
+
             <ImageView
                 android:id="@+id/SignupCodeA_logoImageView"
                 android:layout_width="120dp"

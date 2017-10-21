@@ -114,15 +114,15 @@ public class SettingActivity extends BottomNavigationActivity {
                 switch (id) {
                     case R.drawable.help_icon: {
                         String url = getResources().getString(R.string.settingMenu_S_url);
-                        Intent i = SettingsWebViewActivity.newIntent(SettingActivity.this, url, "درباره ما");
+                        Intent i = SettingsWebViewActivity.newIntent(SettingActivity.this, url, "راهنمای استفاده");
                         startActivity(i);
                         break;
                     }
                     case R.drawable.share_icon: {
                         Intent share = new Intent(Intent.ACTION_SEND);
                         share.setType("image/*");
-                        share.putExtra(Intent.EXTRA_TEXT, "**HELLO BABY**  \nhttps://zhycan.com  ");
-                        share.putExtra(Intent.EXTRA_SUBJECT, "CONCOUGH SUBJECT");
+                        share.putExtra(Intent.EXTRA_TEXT, "دسترسی به تمام آزمونهای برگزار شده در کشور آنلاین و آفلاین و ده ها قابلیت دیگر  \nhttps://zhycan.com/concough/  ");
+                        share.putExtra(Intent.EXTRA_SUBJECT, "کنکوق");
 
                         Uri uri = Uri.parse("android.resource://com.concough.android.concough/raw/zhycan_logo");
                         share.putExtra(Intent.EXTRA_STREAM, uri);

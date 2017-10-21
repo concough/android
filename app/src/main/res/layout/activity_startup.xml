@@ -46,7 +46,7 @@
         android:id="@+id/StartupA_intro"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:visibility="visible"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -64,19 +64,18 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <com.concough.android.vendor.introVideo.IntroVideoView
-                android:id="@+id/introVideoView"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:background="@android:color/transparent" />
-
             <ImageView
                 android:id="@+id/imageView13"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="fitXY"
-                android:visibility="gone"
                 app:srcCompat="@drawable/video" />
+
+            <com.concough.android.vendor.introVideo.IntroVideoView
+                android:id="@+id/introVideoView"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent" />
 
             <FrameLayout
                 android:id="@+id/home_container_intro"
@@ -146,8 +145,7 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintLeft_toLeftOf="@+id/StartupA_intro"
             app:layout_constraintRight_toRightOf="@+id/StartupA_intro"
-            app:layout_constraintTop_toBottomOf="@id/deviceName"
-             />
+            app:layout_constraintTop_toBottomOf="@id/deviceName" />
 
         <Button
             android:id="@+id/ResetPasswordButton"
@@ -190,19 +188,19 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+            <ImageView
+                android:id="@+id/videoImageLogin"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/video" />
+
             <com.concough.android.vendor.introVideo.IntroVideoView
                 android:id="@+id/introVideoViewLogin"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@android:color/transparent" />
 
-            <ImageView
-                android:id="@+id/videoImageLogin"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="fitXY"
-                android:visibility="gone"
-                app:srcCompat="@drawable/video" />
 
             <FrameLayout
                 android:id="@+id/frameBlackLogin"
@@ -298,19 +296,19 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+            <ImageView
+                android:id="@+id/videoImageOffline"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/video" />
+
             <com.concough.android.vendor.introVideo.IntroVideoView
                 android:id="@+id/introVideoViewOffline"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@android:color/transparent" />
 
-            <ImageView
-                android:id="@+id/videoImageOffline"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="fitXY"
-                android:visibility="gone"
-                app:srcCompat="@drawable/video" />
 
             <FrameLayout
                 android:id="@+id/frameBlackOffline"

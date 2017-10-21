@@ -153,8 +153,13 @@ public class HomeActivity extends BottomNavigationActivity {
         new HomeActivityTask().execute(date);
 
         if (date == null) {
-            loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
-            loadingProgress.show();
+            if (loadingProgress == null) {
+                loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                loadingProgress.show();
+            } else if (!loadingProgress.isShowing()) {
+                loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                loadingProgress.show();
+            }
         }
 
     }
@@ -335,7 +340,7 @@ public class HomeActivity extends BottomNavigationActivity {
                 dateJalali = (TextView) itemView.findViewById(R.id.itemEntranceCreateI_dateJalali);
                 entranceLogo = (ImageView) itemView.findViewById(R.id.itemEntranceCreateI_entranceLogo);
 
-                concourText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                concourText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 entranceType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 entranceSetGroup.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 additionalData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());

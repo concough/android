@@ -285,7 +285,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
         badgeCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
         if (BasketSingleton.getInstance().getSalesCount() > 0) {
-            String basketCount = String.valueOf(BasketSingleton.getInstance().getSalesCount());
+            String basketCount = FormatterSingleton.getInstance().getNumberFormatter().format(BasketSingleton.getInstance().getSalesCount());
             badgeCount.setText(basketCount);
             badgeLinear.setVisibility(View.VISIBLE);
         } else {
@@ -362,7 +362,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                         @Override
                         public void run() {
 
-                            AlertClass.hideLoadingMessage(loadingProgress);
+                            //AlertClass.hideLoadingMessage(loadingProgress);
 
                             RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
                             try {
@@ -435,9 +435,6 @@ public class ArchiveActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
-                            AlertClass.hideLoadingMessage(loadingProgress);
-
                             RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
                             switch (networkErrorType) {
                                 case NoInternetAccess:
@@ -462,9 +459,8 @@ public class ArchiveActivity extends BottomNavigationActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-
-            loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
-            loadingProgress.show();
+//            loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
+//            loadingProgress.show();
         }
 
     }
@@ -489,7 +485,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                 @Override
                                 public void run() {
 
-                                    AlertClass.hideLoadingMessage(loadingProgress);
+                                    //AlertClass.hideLoadingMessage(loadingProgress);
 
                                     RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
 
@@ -534,7 +530,6 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                                     case "Error": {
                                                         String errorType = jsonObject.get("error_type").getAsString();
 
-
                                                         switch (errorType) {
                                                             case "EmptyArray": {
 
@@ -564,7 +559,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                         }
 
                                     } catch (Exception e) {
-                                        //    ArchiveActivity.this.tabLayout.getTabAt(0).select();
+                                            ArchiveActivity.this.tabLayout.getTabAt(0).select();
                                         Log.d(TAG, "run: " + e.getMessage());
 
                                     }
@@ -580,8 +575,6 @@ public class ArchiveActivity extends BottomNavigationActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-
-                                    AlertClass.hideLoadingMessage(loadingProgress);
 
                                     RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
                                     switch (networkErrorType) {
@@ -609,8 +602,8 @@ public class ArchiveActivity extends BottomNavigationActivity {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
-            loadingProgress.show();
+//            loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
+//            loadingProgress.show();
         }
 
 
@@ -622,7 +615,18 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
         @Override
         protected Void doInBackground(final Integer... params) {
-
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (loadingProgress == null) {
+                        loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
+                        loadingProgress.show();
+                    } else if (!loadingProgress.isShowing()) {
+                        loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
+                        loadingProgress.show();
+                    }
+                }
+            });
 
             if (params == null) {
                 firstIndexOfGroups = ArchiveActivity.this.dropDownJsonElement.get(0).getAsJsonObject().get("id").getAsInt();
@@ -640,7 +644,6 @@ public class ArchiveActivity extends BottomNavigationActivity {
                             AlertClass.hideLoadingMessage(loadingProgress);
 
                             RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
-
                             try {
                                 if (httpErrorType == HTTPErrorType.Success) {
                                     if (jsonObject != null) {
@@ -673,6 +676,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                             }
 
                                             case "Error": {
+                                                AlertClass.hideLoadingMessage(loadingProgress);
                                                 String errorType = jsonObject.get("error_type").getAsString();
 
                                                 switch (errorType) {
@@ -694,6 +698,8 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                 } else if (httpErrorType == HTTPErrorType.Refresh) {
                                     new GetSetsTask().execute(params[0]);
                                 } else {
+                                    AlertClass.hideLoadingMessage(loadingProgress);
+
                                     ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
                                     ArchiveActivity.this.adapterSet.notifyDataSetChanged();
 
@@ -701,6 +707,8 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                 }
 
                             } catch (Exception exc) {
+                                AlertClass.hideLoadingMessage(loadingProgress);
+
                                 ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
                                 ArchiveActivity.this.adapterSet.notifyDataSetChanged();
 
@@ -750,8 +758,6 @@ public class ArchiveActivity extends BottomNavigationActivity {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
-            loadingProgress.show();
         }
 
     }

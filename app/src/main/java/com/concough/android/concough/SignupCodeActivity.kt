@@ -1,5 +1,6 @@
 package com.concough.android.concough
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -98,7 +99,7 @@ class SignupCodeActivity : AppCompatActivity() {
         SignupCodeA_SubmitButton.typeface = FontCacheSingleton.getInstance(applicationContext).Regular
         SignupCodeA_ResendButton.typeface = FontCacheSingleton.getInstance(applicationContext).Regular
         SignupCodeA_infoTextView.typeface = FontCacheSingleton.getInstance(applicationContext).Light
-
+        SignupCodeA_returnButton.typeface = FontCacheSingleton.getInstance(applicationContext).Regular
         timerTextView.typeface = FontCacheSingleton.getInstance(applicationContext).Light
 
         SignupCodeA_codeEditText.addTextChangedListener(object : TextWatcher {
@@ -126,6 +127,8 @@ class SignupCodeActivity : AppCompatActivity() {
             }
         })
 
+        SignupCodeA_infoTextView.text = "ارسال شده به ${this.signupStruct?.username}\n${SignupCodeA_infoTextView.text}"
+
         SignupCodeA_ResendButton.setOnClickListener {
             when (this@SignupCodeActivity.fromWhichActivity) {
                 "SignupA" -> makePreSignup()
@@ -141,6 +144,10 @@ class SignupCodeActivity : AppCompatActivity() {
                 else -> return@setOnClickListener
             }
         }
+
+        SignupCodeA_returnButton.setOnClickListener({
+            finish()
+        })
     }
 
     override fun onResume() {

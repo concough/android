@@ -242,7 +242,7 @@ class BasketRestAPIClass {
 
         }
 
-        // Remove Product From Basket
+        // Checkout Basket
         @JvmStatic
         fun checkoutBasket(context: Context, basketId: String, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
             val fullPath = UrlMakerSingleton.getInstance().getCheckoutBasketUrl(basketId) ?: return
@@ -296,5 +296,63 @@ class BasketRestAPIClass {
 
         }
 
+        // Verify Checkout Basket
+        @JvmStatic
+        fun verifyCheckoutBasket(context: Context, basketId: String?, authority: String?, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+            val fullPath = UrlMakerSingleton.getInstance().getVerifyCheckoutBasketUrl() ?: return
+
+            TokenHandlerSingleton.getInstance(context).assureAuthorized(completion = { authenticated, error ->
+                if (authenticated && error == HTTPErrorType.Success) {
+                    val headers = TokenHandlerSingleton.getInstance(context).getHeader()
+
+                    val bid = basketId ?: ""
+                    val aid = authority ?: ""
+                    val parameters: HashMap<String, Any> = hashMapOf("basket_id" to bid,
+                            "authority_id" to aid)
+
+                    val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+                    val profile = Obj.create(RestAPIService::class.java)
+                    val request = profile.post(url = fullPath, body = parameters, headers = headers!!)
+
+                    request.enqueue(object: Callback<ResponseBody> {
+                        override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
+                            failure(NetworkErrorType.toType(t))
+                        }
+
+                        override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
+                            val resCode = HTTPErrorType.toType(response?.code()!!)
+//                          Log.d(TAG, resCode.toString())
+                            when (resCode) {
+                                HTTPErrorType.Success -> {
+                                    val res = response.body()!!.string()
+                                    try {
+                                        val jobj = Gson().fromJson(res, JsonObject::class.java)
+
+                                        completion(jobj, resCode)
+                                    } catch (exc: JsonParseException) {
+                                        completion(null, HTTPErrorType.UnKnown)
+                                    }
+                                }
+                                HTTPErrorType.UnAuthorized, HTTPErrorType.ForbiddenAccess -> {
+                                    TokenHandlerSingleton.getInstance(context).assureAuthorized(true, completion = { authenticated, error ->
+                                        if (authenticated && error == HTTPErrorType.Success) {
+                                            completion(null, HTTPErrorType.Refresh)
+                                        }
+                                    }, failure = { error ->
+                                        failure(error)
+                                    })
+                                }
+                                else -> completion(null, resCode)
+                            }
+                        }
+                    })
+                } else {
+                    completion(null, error)
+                }
+            }, failure = {error ->
+                failure(error)
+            })
+
+        }
     }
 }

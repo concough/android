@@ -9,6 +9,7 @@ import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -16,23 +17,40 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.concough.android.general.AlertClass;
+import com.concough.android.models.EntranceModel;
+import com.concough.android.models.EntranceModelHandler;
+import com.concough.android.models.EntranceOpenedCountModelHandler;
+import com.concough.android.models.EntranceQuestionStarredModelHandler;
+import com.concough.android.models.PurchasedModel;
+import com.concough.android.models.PurchasedModelHandler;
 import com.concough.android.rest.AuthRestAPIClass;
 import com.concough.android.rest.DeviceRestAPIClass;
+import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.rest.ProfileRestAPIClass;
+import com.concough.android.rest.PurchasedRestAPIClass;
 import com.concough.android.singletons.DeviceInformationSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
+import com.concough.android.singletons.MediaCacheSingleton;
 import com.concough.android.singletons.TokenHandlerSingleton;
 import com.concough.android.singletons.UserDefaultsSingleton;
+import com.concough.android.structures.EntranceStruct;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.structures.SignupStruct;
 import com.concough.android.utils.KeyChainAccessProxy;
 import com.concough.android.vendor.progressHUD.KProgressHUD;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.Date;
 
+import io.realm.RealmResults;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
@@ -42,7 +60,7 @@ import static com.concough.android.settings.ConstantsKt.getPASSWORD_KEY;
 import static com.concough.android.settings.ConstantsKt.getUSERNAME_KEY;
 
 public class ResetPasswordActivity extends AppCompatActivity {
-
+    private static final String TAG = "ResetPasswordActivity";
     private EditText passwordEdit;
     private EditText passwordEditConfirm;
     private Button saveButton;
@@ -290,8 +308,6 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                 @Override
                                 public void run() {
 
-                                    AlertClass.hideLoadingMessage(loadingProgress);
-
                                     if (httpErrorType == HTTPErrorType.Success) {
                                         if (jsonObject != null) {
                                             String status = jsonObject.get("status").getAsString();
@@ -328,6 +344,9 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                                                 startActivity(i);
                                                                 finish();
                                                                 break;
+                                                            case "MismatchPassword":
+                                                                AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "AuthProfile", error_type, "error", null);
+                                                                break;
                                                             default:
                                                                 break;
                                                         }
@@ -338,9 +357,12 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                             }
 
                                         }
+                                        AlertClass.hideLoadingMessage(loadingProgress);
+
                                     } else if (httpErrorType == HTTPErrorType.Refresh) {
                                         new ResetPasswordTask().execute(params);
                                     } else {
+                                        AlertClass.hideLoadingMessage(loadingProgress);
                                         AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                                     }
                                 }
@@ -425,6 +447,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                                     if (androidId.equals(deviceUniqueId)) {
                                                         if (DeviceInformationSingleton.getInstance(getApplicationContext()).setDeviceState(username, "android", deviceModel, deviceState, true)) {
                                                             if (deviceState) {
+                                                                syncWithServer();
                                                                 getProfile();
                                                                 return;
                                                             } else {
@@ -483,6 +506,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new ResetPasswordActivity.LockStatusTask().execute(params);
                             } else {
+                                AlertClass.hideLoadingMessage(loadingProgress);
                                 AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
                             }
                         }
@@ -532,14 +556,317 @@ public class ResetPasswordActivity extends AppCompatActivity {
 
     }
 
+    private void syncWithServer() {
+        new SyncWithServerTask().execute();
+    }
+
+    private class SyncWithServerTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    loadingProgress = AlertClass.showLoadingMessage(ResetPasswordActivity.this);
+//                    loadingProgress.show();
+//
+//                }
+//            });
+
+            PurchasedRestAPIClass.getPurchasedList(getApplicationContext(), new Function2<JsonElement, HTTPErrorType, Unit>() {
+                @Override
+                public Unit invoke(final JsonElement jsonElement, final HTTPErrorType httpErrorType) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //AlertClass.hideLoadingMessage(loadingProgress);
+
+                            if (httpErrorType != HTTPErrorType.Success) {
+                                if (httpErrorType == HTTPErrorType.Refresh) {
+                                    new SyncWithServerTask().execute();
+                                } else {
+                                    AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
+                            } else {
+                                if (jsonElement != null) {
+                                    String status = jsonElement.getAsJsonObject().get("status").getAsString();
+                                    switch (status) {
+                                        case "OK":
+                                            try {
+                                                ArrayList<Integer> purchasedId = new ArrayList<Integer>();
+                                                JsonArray records = jsonElement.getAsJsonObject().get("records").getAsJsonArray();
+                                                String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+                                                if (username != null) {
+                                                    for (JsonElement record : records) {
+                                                        int id = record.getAsJsonObject().get("id").getAsInt();
+                                                        int downloaded = record.getAsJsonObject().get("downloaded").getAsInt();
+                                                        String createdStr = record.getAsJsonObject().get("created").getAsString();
+                                                        Date created = FormatterSingleton.getInstance().getUTCDateFormatter().parse(createdStr);
+
+                                                        JsonElement target = record.getAsJsonObject().get("target");
+                                                        String targetType = target.getAsJsonObject().get("product_type").getAsString();
+
+                                                        if (PurchasedModelHandler.getByUsernameAndId(getApplicationContext(), username, id) != null) {
+                                                            PurchasedModelHandler.updateDownloadTimes(getApplicationContext(), username, id, downloaded);
+
+                                                            if ("Entrance".equals(targetType)) {
+                                                                String uniqueId = target.getAsJsonObject().get("unique_key").getAsString();
+                                                                if (EntranceModelHandler.getByUsernameAndId(getApplicationContext(), username, uniqueId) == null) {
+                                                                    String org = target.getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString();
+                                                                    String type = target.getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString();
+                                                                    String setName = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString();
+                                                                    String group = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString();
+                                                                    int setId = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
+                                                                    int bookletsCount = target.getAsJsonObject().get("booklets_count").getAsInt();
+                                                                    int duration = target.getAsJsonObject().get("duration").getAsInt();
+                                                                    int year = target.getAsJsonObject().get("year").getAsInt();
+
+                                                                    String extraStr = target.getAsJsonObject().get("extra_data").getAsString();
+                                                                    JsonElement extraData = null;
+                                                                    if (extraStr != null && !"".equals(extraStr)) {
+                                                                        try {
+                                                                            extraData = new JsonParser().parse(extraStr);
+                                                                        } catch (Exception exc) {
+                                                                            extraData = new JsonParser().parse("[]");
+                                                                        }
+                                                                    }
+
+                                                                    String lastPublishedStr = target.getAsJsonObject().get("last_published").getAsString();
+                                                                    Date lastPublished = FormatterSingleton.getInstance().getUTCDateFormatter().parse(lastPublishedStr);
+
+                                                                    EntranceStruct entrance = new EntranceStruct();
+                                                                    entrance.setEntranceSetId(setId);
+                                                                    entrance.setEntranceSetTitle(setName);
+                                                                    entrance.setEntranceOrgTitle(org);
+                                                                    entrance.setEntranceLastPublished(lastPublished);
+                                                                    entrance.setEntranceBookletCounts(bookletsCount);
+                                                                    entrance.setEntranceDuration(duration);
+                                                                    entrance.setEntranceExtraData(extraData);
+                                                                    entrance.setEntranceGroupTitle(group);
+                                                                    entrance.setEntranceTypeTitle(type);
+                                                                    entrance.setEntranceUniqueId(uniqueId);
+                                                                    entrance.setEntranceYear(year);
+
+                                                                    EntranceModelHandler.add(getApplicationContext(), username, entrance);
+
+                                                                }
+                                                            }
+                                                        } else {
+
+                                                            if ("Entrance".equals(targetType)) {
+                                                                String uniqueId = target.getAsJsonObject().get("unique_key").getAsString();
+
+                                                                if (PurchasedModelHandler.add(getApplicationContext(), id, username, false, downloaded, false, targetType, uniqueId, created)) {
+                                                                    String org = target.getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString();
+                                                                    String type = target.getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString();
+                                                                    String setName = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString();
+                                                                    String group = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString();
+                                                                    int setId = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
+                                                                    int bookletsCount = target.getAsJsonObject().get("booklets_count").getAsInt();
+                                                                    int duration = target.getAsJsonObject().get("duration").getAsInt();
+                                                                    int year = target.getAsJsonObject().get("year").getAsInt();
+
+                                                                    String extraStr = target.getAsJsonObject().get("extra_data").getAsString();
+                                                                    JsonElement extraData = null;
+                                                                    if (extraStr != null &&  !"".equals(extraStr)) {
+                                                                        try {
+                                                                            extraData = new JsonParser().parse(extraStr);
+                                                                        } catch (Exception exc) {
+                                                                            extraData = new JsonParser().parse("[]");
+                                                                        }
+                                                                    }
+
+                                                                    String lastPublishedStr = target.getAsJsonObject().get("last_published").getAsString();
+                                                                    Date lastPublished = FormatterSingleton.getInstance().getUTCDateFormatter().parse(lastPublishedStr);
+
+                                                                    if (EntranceModelHandler.getByUsernameAndId(getApplicationContext(), username, uniqueId) == null) {
+                                                                        EntranceStruct entrance = new EntranceStruct();
+                                                                        entrance.setEntranceSetId(setId);
+                                                                        entrance.setEntranceSetTitle(setName);
+                                                                        entrance.setEntranceOrgTitle(org);
+                                                                        entrance.setEntranceLastPublished(lastPublished);
+                                                                        entrance.setEntranceBookletCounts(bookletsCount);
+                                                                        entrance.setEntranceDuration(duration);
+                                                                        entrance.setEntranceExtraData(extraData);
+                                                                        entrance.setEntranceGroupTitle(group);
+                                                                        entrance.setEntranceTypeTitle(type);
+                                                                        entrance.setEntranceUniqueId(uniqueId);
+                                                                        entrance.setEntranceYear(year);
+
+                                                                        EntranceModelHandler.add(getApplicationContext(), username, entrance);
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+
+                                                        purchasedId.add(id);
+                                                    }
+
+                                                    Integer[] dat = new Integer[purchasedId.size()];
+                                                    for (int i = 0; i < purchasedId.size(); i++) {
+                                                        dat[i] = purchasedId.get(i);
+                                                    }
+
+                                                    RealmResults<PurchasedModel> deletedItems = PurchasedModelHandler.getAllPurchasedNotIn(getApplicationContext(), username, dat);
+                                                    if (deletedItems.size() > 0) {
+                                                        for (PurchasedModel pm : deletedItems) {
+                                                            ResetPasswordActivity.this.deletePurchaseData(pm.productUniqueId);
+
+                                                            if ("Entrance".equals(pm.productType)) {
+                                                                if (EntranceModelHandler.removeById(getApplicationContext(), username, pm.productUniqueId)) {
+                                                                    //EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
+                                                                    EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
+                                                                    PurchasedModelHandler.removeById(getApplicationContext(), username, pm.id);
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+
+                                                    //RealmResults<PurchasedModel> purchasedIn = PurchasedModelHandler.getAllPurchasedIn(BasketCheckoutActivity.this, username, purchasedIds);
+
+                                                    purchasedIds(dat);
+                                                }
+                                            } catch (Exception exc) {
+                                                Log.d(TAG, exc.getLocalizedMessage());
+                                            }
+                                            break;
+                                        case "Error":
+                                            String errorType = jsonElement.getAsJsonObject().get("error_type").getAsString();
+                                            switch (errorType) {
+                                                case "EmptyArray":
+                                                    String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+                                                    if (username != null) {
+                                                        RealmResults<PurchasedModel> items = PurchasedModelHandler.getAllPurchased(getApplicationContext(), username);
+
+                                                        for (PurchasedModel pm : items) {
+                                                            ResetPasswordActivity.this.deletePurchaseData(pm.productUniqueId);
+
+                                                            if ("Entrance".equals(pm.productType)) {
+                                                                if (EntranceModelHandler.removeById(getApplicationContext(), username, pm.productUniqueId)) {
+                                                                    EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
+                                                                    EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
+                                                                    PurchasedModelHandler.removeById(getApplicationContext(), username, pm.id);
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                            break;
+                                    }
+                                }
+                            }
+
+                        }
+                    });
+                    return null;
+                }
+            }, new Function1<NetworkErrorType, Unit>() {
+                @Override
+                public Unit invoke(final NetworkErrorType networkErrorType) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //AlertClass.hideLoadingMessage(loadingProgress);
+                            if (networkErrorType != null) {
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
+
+                                }
+                            }
+                        }
+                    });
+                    return null;
+                }
+            });
+
+            return null;
+        }
+    }
+
+
+    private void deletePurchaseData(String uniqueId) {
+        File f = new File(ResetPasswordActivity.this.getFilesDir(), uniqueId);
+        if (f.exists() && f.isDirectory()) {
+//                                String[] children = f.list();
+            for (File fc : f.listFiles()) {
+                fc.delete();
+            }
+            boolean rd = f.delete();
+        }
+
+    }
+
+    private void purchasedIds(Integer[] ids) {
+        String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+
+        RealmResults<PurchasedModel> purchasedIn = PurchasedModelHandler.getAllPurchasedIn(getApplicationContext(), username, ids);
+        if (purchasedIn != null) {
+            for (PurchasedModel purchasedModel : purchasedIn) {
+                if (purchasedModel.productType.equals("Entrance")) {
+                    EntranceModel entranceModel = EntranceModelHandler.getByUsernameAndId(getApplicationContext(), username, purchasedModel.productUniqueId);
+                    if (entranceModel != null) {
+                        downloadImage(entranceModel.setId);
+                    }
+                }
+            }
+        }
+    }
+
+
+
+    private void downloadImage(final int imageId) {
+        final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+
+        if (url != null) {
+            byte[]  data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+            if (data != null) {
+
+                File folder = new File(getApplicationContext().getFilesDir(),"images");
+                File folder2 = new File(getApplicationContext().getFilesDir()+"/images","eset");
+                if (!folder.exists()) {
+                    folder.mkdir();
+                    folder2.mkdir();
+                }
+
+                File photo=new File(getApplicationContext().getFilesDir()+"/images/eset", String.valueOf(imageId));
+                if (photo.exists()) {
+                    photo.delete();
+                }
+
+                try {
+                    FileOutputStream fos=new FileOutputStream(photo.getPath());
+
+                    fos.write(data);
+                    fos.close();
+                }
+                catch (java.io.IOException e) {
+                    Log.e("PictureDemo", "Exception in photoCallback", e);
+                }
+            }
+        }
+
+    }
 
     private class GetProfileTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            loadingProgress = AlertClass.showLoadingMessage(ResetPasswordActivity.this);
-            loadingProgress.show();
+//
+//            loadingProgress = AlertClass.showLoadingMessage(ResetPasswordActivity.this);
+//            loadingProgress.show();
         }
 
         @Override

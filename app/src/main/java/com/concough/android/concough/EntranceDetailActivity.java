@@ -211,6 +211,11 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
         BasketSingleton.getInstance().setListener(new BasketSingleton.BasketSingletonListener() {
             @Override
+            public void onCheckoutRedirect(String payUrl, String authority) {
+
+            }
+
+            @Override
             public void onLoadItemCompleted(int count) {
                 EntranceDetailActivity.this.recycleView.setAdapter(entranceDetailAdapter);
                 EntranceDetailActivity.this.resetView();
@@ -324,7 +329,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     username = UserDefaultsSingleton.getInstance(getApplicationContext())
                             .getUsername();
 
-                    if (username != null && EntranceModelHandler.existById(getApplicationContext(), EntranceDetailActivity.this.entranceUniqueId, username)) {
+                    if (username != null && EntranceModelHandler.existById(getApplicationContext(), username, EntranceDetailActivity.this.entranceUniqueId)) {
                         pullRefreshLayout.setRefreshing(false);
                         this.localEntrance();
                     } else {
@@ -483,9 +488,10 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         String username = UserDefaultsSingleton.getInstance(getApplicationContext())
                 .getUsername();
 
-        if (username != null && EntranceModelHandler.existById(getApplicationContext(), EntranceDetailActivity.this.entranceUniqueId, username)) {
-            EntranceModel localEntrance = EntranceModelHandler.getByUsernameAndId(EntranceDetailActivity.this, EntranceDetailActivity.this.entranceUniqueId, username);
+        if (username != null && EntranceModelHandler.existById(getApplicationContext(), username, EntranceDetailActivity.this.entranceUniqueId)) {
+            EntranceModel localEntrance = EntranceModelHandler.getByUsernameAndId(EntranceDetailActivity.this, username, EntranceDetailActivity.this.entranceUniqueId);
             if (localEntrance != null) {
+
                 String s = localEntrance.extraData;
                 JsonElement extraData = new JsonParser().parse(s);
 
@@ -512,13 +518,13 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     }
 
     private void refreshUserPurchaseData() {
-        uiHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
-                loadingProgress.show();
-            }
-        });
+//        uiHandler.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
+//                loadingProgress.show();
+//            }
+//        });
 
         PurchasedRestAPIClass.getEntrancePurchasedData(EntranceDetailActivity.this, EntranceDetailActivity.this.entranceUniqueId, new Function2<JsonElement, HTTPErrorType, Unit>() {
             @Override
@@ -526,8 +532,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        AlertClass.hideLoadingMessage(loadingProgress);
-                        EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
+//                        AlertClass.hideLoadingMessage(loadingProgress);
+//                        EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
 
                         if (httpErrorType != HTTPErrorType.Success) {
                             if (httpErrorType == HTTPErrorType.Refresh) {
@@ -601,8 +607,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        AlertClass.hideLoadingMessage(loadingProgress);
-                        EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
+//                        AlertClass.hideLoadingMessage(loadingProgress);
+//                        EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
                         if (networkErrorType != null) {
                             switch (networkErrorType) {
                                 case NoInternetAccess:
@@ -856,13 +862,13 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     }
 
     private void handleDownloadUserPurchaseData(@Nullable Message msg) {
-        uiHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
-                loadingProgress.show();
-            }
-        });
+//        uiHandler.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
+//                loadingProgress.show();
+//            }
+//        });
 
         PurchasedRestAPIClass.getEntrancePurchasedData(EntranceDetailActivity.this, EntranceDetailActivity.this.entranceUniqueId, new Function2<JsonElement, HTTPErrorType, Unit>() {
             @Override
@@ -870,8 +876,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        AlertClass.hideLoadingMessage(loadingProgress);
-                        EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
+//                        AlertClass.hideLoadingMessage(loadingProgress);
+//                        EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
 
                         if (httpErrorType != HTTPErrorType.Success) {
                             if (httpErrorType == HTTPErrorType.Refresh) {
@@ -966,8 +972,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        AlertClass.hideLoadingMessage(loadingProgress);
-                        EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
+//                        AlertClass.hideLoadingMessage(loadingProgress);
+//                        EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
                         if (networkErrorType != null) {
                             switch (networkErrorType) {
                                 case NoInternetAccess:
@@ -991,13 +997,13 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     }
 
     private void handleDownloadEntrance(@Nullable Message msg) {
-        uiHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
-                loadingProgress.show();
-            }
-        });
+//        uiHandler.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
+//                loadingProgress.show();
+//            }
+//        });
 
         EntranceRestAPIClass.getEntranceWithBuyInfo(EntranceDetailActivity.this, EntranceDetailActivity.this.entranceUniqueId, new Function2<JsonElement, HTTPErrorType, Unit>() {
             @Override
@@ -1005,7 +1011,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        AlertClass.hideLoadingMessage(loadingProgress);
+//                        AlertClass.hideLoadingMessage(loadingProgress);
                         EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
 
                         if (httpErrorType != HTTPErrorType.Success) {
@@ -1034,12 +1040,22 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                                 String entrance_set = record.get("entrance_set").getAsJsonObject().get("title").getAsString();
                                                 int entrance_set_id = record.get("entrance_set").getAsJsonObject().get("id").getAsInt();
                                                 String entrance_group = record.get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString();
-                                                JsonElement extraData = new JsonParser().parse(record.get("extra_data").getAsString());
+
                                                 int bookletCount = record.get("booklets_count").getAsInt();
                                                 int duration = record.get("duration").getAsInt();
                                                 int year = record.get("year").getAsInt();
                                                 String lastPublishedStr = record.get("last_published").getAsString();
                                                 Date lastPublished = FormatterSingleton.getInstance().getUTCDateFormatter().parse(lastPublishedStr);
+
+                                                String extraStr = jsonElement.getAsJsonObject().get("extra_data").getAsString();
+                                                JsonElement extraData = null;
+                                                if (extraStr != null && !"".equals(extraStr)) {
+                                                    try {
+                                                        extraData = new JsonParser().parse(extraStr);
+                                                    } catch (Exception exc) {
+                                                        extraData = new JsonParser().parse("[]");
+                                                    }
+                                                }
 
                                                 EntranceStruct myLocalEntrance = new EntranceStruct();
                                                 myLocalEntrance.setEntranceBookletCounts(bookletCount);
@@ -1096,7 +1112,9 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        AlertClass.hideLoadingMessage(loadingProgress);
+//                        AlertClass.hideLoadingMessage(loadingProgress);
+                        EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
+
                         if (networkErrorType != null) {
                             switch (networkErrorType) {
                                 case NoInternetAccess:
@@ -1119,13 +1137,13 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     }
 
     private void handleUpdateUserPurchaseData(@Nullable Message msg) {
-        uiHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
-                loadingProgress.show();
-            }
-        });
+//        uiHandler.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
+//                loadingProgress.show();
+//            }
+//        });
 
         PurchasedRestAPIClass.putEntrancePurchasedDownload(EntranceDetailActivity.this, EntranceDetailActivity.this.entranceUniqueId, new Function2<JsonElement, HTTPErrorType, Unit>() {
             @Override
@@ -1133,7 +1151,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                       AlertClass.hideLoadingMessage(loadingProgress);
+//                       AlertClass.hideLoadingMessage(loadingProgress);
 
                         EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
 
@@ -1202,7 +1220,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        AlertClass.hideLoadingMessage(loadingProgress);
+//                        AlertClass.hideLoadingMessage(loadingProgress);
                         if (networkErrorType != null) {
                             switch (networkErrorType) {
                                 case NoInternetAccess:

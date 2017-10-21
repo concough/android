@@ -36,6 +36,7 @@ import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
 import java.text.ParseException;
@@ -123,6 +124,11 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
 
         BasketSingleton.getInstance().setListener(new BasketSingleton.BasketSingletonListener() {
+            @Override
+            public void onCheckoutRedirect(String payUrl, String authority) {
+
+            }
+
             @Override
             public void onLoadItemCompleted(int count) {
 
@@ -370,7 +376,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
             }
 
             public void setupHolder() {
-                String t1 = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.typeTitle + " (" + ArchiveDetailActivity.this.mArchiveEsetDetailStruct.groupTitle + ")";
+                String t1 = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.title + " (" + ArchiveDetailActivity.this.mArchiveEsetDetailStruct.groupTitle + ")";
                 setName.setText(t1);
 
                 int codeInteger = Integer.valueOf(ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.code);
@@ -464,7 +470,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
 //            private ImageView logoImage;
 
-            private JsonObject extraData;
+            private JsonElement extraData;
             private JsonElement jsonElement;
 
             public ItemsHolder(View itemView) {
@@ -535,9 +541,24 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                     e.printStackTrace();
                 }
 
-                String s;
-                s = jsonElement.getAsJsonObject().get("extra_data").getAsString();
-                extraData = new JsonParser().parse(s).getAsJsonObject();
+//                String s;
+//                s = jsonElement.getAsJsonObject().get("extra_data").getAsString();
+//                try {
+//                    extraData = new JsonParser().parse(s).getAsJsonObject();
+//                } catch (Exception exc) {
+//
+//                }
+
+                String extraStr = jsonElement.getAsJsonObject().get("extra_data").getAsString();
+                extraData = null;
+                if (extraStr != null && !"".equals(extraStr)) {
+                    try {
+                        extraData = new JsonParser().parse(extraStr);
+                    } catch (Exception exc) {
+                        extraData = new JsonParser().parse("[]");
+                    }
+                }
+
 
 //                String extra = "";
 //                ArrayList<String> extraArray = new ArrayList<>();
@@ -575,7 +596,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                     public void onClick(View v) {
 
                         Integer statIndex = BasketSingleton.getInstance().findSaleByTargetId(uniqId, "Entrance");
-
+                        //removeButtonEvent();
                         if (BasketSingleton.getInstance().getBasketId() == null) {
                             BasketSingleton.getInstance().createBasket(getApplicationContext(), position);
                         } else {
@@ -587,6 +608,14 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                 Integer imageId = ArchiveDetailActivity.this.mArchiveEsetDetailStruct.esetStruct.id;
 
 //                downloadImage(imageId);
+            }
+
+            public void addButtonEvent() {
+                entranceBuyButton.setEnabled(true);
+            }
+
+            public void removeButtonEvent() {
+                entranceBuyButton.setEnabled(false);
             }
 
             public void addSaleToBasket() {
@@ -617,9 +646,9 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                 Integer id = BasketSingleton.getInstance().findSaleByTargetId(uniqId, "Entrance");
                 if (id != null && id > 0) {
                     BasketSingleton.getInstance().removeSaleById(ArchiveDetailActivity.this, id, 0);
-                    entranceBuyButton.setText("-  سبد خرید");
-                    entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_red_style));
-                    entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughRed));
+                    entranceBuyButton.setText("+  سبد خرید");
+                    entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_style));
+                    entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughBlue));
                 } else {
                     EntranceStruct myLocalEntrance = new EntranceStruct();
                     myLocalEntrance.setEntranceBookletCounts(bookletCount);
@@ -634,7 +663,9 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                     myLocalEntrance.setEntranceUniqueId(uniqId);
                     myLocalEntrance.setEntranceYear(entranceYear);
 
-                    entranceBuyButton.setText("+  سبد خرید");
+                    entranceBuyButton.setText("-  سبد خرید");
+                    entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_red_style));
+                    entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughRed));
 
                     BasketSingleton.getInstance().addSale(ArchiveDetailActivity.this, myLocalEntrance, "Entrance");
                 }

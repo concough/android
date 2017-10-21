@@ -370,11 +370,55 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                     String createdStr = record.getAsJsonObject().get("created").getAsString();
                                                     Date created = FormatterSingleton.getInstance().getUTCDateFormatter().parse(createdStr);
 
+                                                    JsonElement target = record.getAsJsonObject().get("target");
+                                                    String targetType = target.getAsJsonObject().get("product_type").getAsString();
+
                                                     if (PurchasedModelHandler.getByUsernameAndId(getApplicationContext(), username, id) != null) {
                                                         PurchasedModelHandler.updateDownloadTimes(getApplicationContext(), username, id, downloaded);
+
+                                                        if ("Entrance".equals(targetType)) {
+                                                            String uniqueId = target.getAsJsonObject().get("unique_key").getAsString();
+                                                            if (EntranceModelHandler.getByUsernameAndId(getApplicationContext(), username, uniqueId) == null) {
+                                                                String org = target.getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString();
+                                                                String type = target.getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString();
+                                                                String setName = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString();
+                                                                String group = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString();
+                                                                int setId = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
+                                                                int bookletsCount = target.getAsJsonObject().get("booklets_count").getAsInt();
+                                                                int duration = target.getAsJsonObject().get("duration").getAsInt();
+                                                                int year = target.getAsJsonObject().get("year").getAsInt();
+
+                                                                String extraStr = target.getAsJsonObject().get("extra_data").getAsString();
+                                                                JsonElement extraData = null;
+                                                                if (extraStr != null && !"".equals(extraStr)) {
+                                                                    try {
+                                                                        extraData = new JsonParser().parse(extraStr);
+                                                                    } catch (Exception exc) {
+                                                                        extraData = new JsonParser().parse("[]");
+                                                                    }
+                                                                }
+
+                                                                String lastPublishedStr = target.getAsJsonObject().get("last_published").getAsString();
+                                                                Date lastPublished = FormatterSingleton.getInstance().getUTCDateFormatter().parse(lastPublishedStr);
+
+                                                                    EntranceStruct entrance = new EntranceStruct();
+                                                                    entrance.setEntranceSetId(setId);
+                                                                    entrance.setEntranceSetTitle(setName);
+                                                                    entrance.setEntranceOrgTitle(org);
+                                                                    entrance.setEntranceLastPublished(lastPublished);
+                                                                    entrance.setEntranceBookletCounts(bookletsCount);
+                                                                    entrance.setEntranceDuration(duration);
+                                                                    entrance.setEntranceExtraData(extraData);
+                                                                    entrance.setEntranceGroupTitle(group);
+                                                                    entrance.setEntranceTypeTitle(type);
+                                                                    entrance.setEntranceUniqueId(uniqueId);
+                                                                    entrance.setEntranceYear(year);
+
+                                                                    EntranceModelHandler.add(getApplicationContext(), username, entrance);
+
+                                                            }
+                                                        }
                                                     } else {
-                                                        JsonElement target = record.getAsJsonObject().get("target");
-                                                        String targetType = target.getAsJsonObject().get("product_type").getAsString();
 
                                                         if ("Entrance".equals(targetType)) {
                                                             String uniqueId = target.getAsJsonObject().get("unique_key").getAsString();
@@ -388,7 +432,16 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                                 int bookletsCount = target.getAsJsonObject().get("booklets_count").getAsInt();
                                                                 int duration = target.getAsJsonObject().get("duration").getAsInt();
                                                                 int year = target.getAsJsonObject().get("year").getAsInt();
-                                                                JsonElement extraData = new JsonParser().parse(target.getAsJsonObject().get("extra_data").getAsString());
+
+                                                                String extraStr = target.getAsJsonObject().get("extra_data").getAsString();
+                                                                JsonElement extraData = null;
+                                                                if (extraStr != null &&  !"".equals(extraStr)) {
+                                                                    try {
+                                                                        extraData = new JsonParser().parse(extraStr);
+                                                                    } catch (Exception exc) {
+                                                                        extraData = new JsonParser().parse("[]");
+                                                                    }
+                                                                }
 
                                                                 String lastPublishedStr = target.getAsJsonObject().get("last_published").getAsString();
                                                                 Date lastPublished = FormatterSingleton.getInstance().getUTCDateFormatter().parse(lastPublishedStr);
@@ -514,7 +567,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
     private void purchasedIds(Integer[] ids) {
 
-        RealmResults<PurchasedModel> purchasedIn = PurchasedModelHandler.getAllPurchasedIn(FavoritesActivity.this, username, ids);
+        RealmResults<PurchasedModel> purchasedIn = PurchasedModelHandler.getAllPurchasedIn(getApplicationContext(), username, ids);
         if (purchasedIn != null) {
             for (PurchasedModel purchasedModel : purchasedIn) {
                 if (purchasedModel.productType.equals("Entrance")) {

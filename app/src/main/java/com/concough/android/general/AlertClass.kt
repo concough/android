@@ -146,6 +146,21 @@ class AlertClass {
                         "EmptyBasket" -> {
                             title = "خطا"; message = "سبد خرید شما خالی است"
                         }
+                        "PaymentProviderError" -> {
+                            title = "خطا"; message = "خطا در اتصال به بانک"
+                        }
+                        "NotPaymnetRecord" -> {
+                            title = "خطا"; message = "پرداختی ثبت نشده است"
+                        }
+                        "CheckoutPending" -> {
+                            title = "خطا"; message = "وضعیت سبد خرید قبلی شما در حالت معلق است، آن را نهایی نمایید"
+                        }
+                        "CheckoutError" -> {
+                            title = "خطا"; message = "پرداخت با خطا مواجه شده است"
+                        }
+                        "MustCheckoutLast" -> {
+                            title = "خطا"; message = "ابتدا پرداخت قبلی خود را نهایی نمایید"
+                        }
                         else -> showMessage = false
                     }
                 }
@@ -262,6 +277,9 @@ class AlertClass {
             hud.setLabel("حوصله نمایید ...", context.resources.getColor(android.R.color.black))
             hud.setLabelFont(FontCacheSingleton.getInstance(context.applicationContext!!).Light)
             hud.setBackgroundColor(context.resources.getColor(android.R.color.white))
+
+            if (!hud.isShowing)
+                hud.show()
             return hud
         }
 

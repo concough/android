@@ -81,6 +81,9 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
         TextView infoTextView = (TextView) findViewById(R.id.signupInfo3A_infoTextViewLine1);
         infoTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
+        TextView info2TextView = (TextView) findViewById(R.id.signupInfo3A_infoTextView);
+        infoTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+
         TextView stateTextView = (TextView) findViewById(R.id.signupInfo3A_stateTextView);
         stateTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
 

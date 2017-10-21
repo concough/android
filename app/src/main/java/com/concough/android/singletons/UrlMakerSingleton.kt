@@ -203,6 +203,12 @@ class UrlMakerSingleton private constructor() {
         return this.getBasketUrl(functionName)
     }
 
+    fun getVerifyCheckoutBasketUrl(): String? {
+        val functionName = "checkout/verify"
+        return this.getBasketUrl(functionName)
+    }
+
+
     fun archiveEntranceTypesUrl(): String? {
         var fullPath: String? = null
         val functionName = "entrance/types"

@@ -250,3 +250,18 @@ Startup Offline Error fixed (abolfazl.beh)
 
 ------------------------------------------------------------------------------------------------
 Alert Class New Messages Added (abolfazl.beh)
+
+------------------------------------------------------------------------------------------------
+Payment And Some Bugs Fixed (abolfazl.beh)
+
+1 - EntranceShowActivity wake up feature set (permission set in manifest)
+2 - All extraData storing and retrieving fixed.
+3 - FavoriteActivity Sync with server fixed
+4 - BasketSingleton add to basket functionality fixed --> duplicate preventing
+5 - SignupInfo 3 info TextView added to more understanding
+6 - Some urls for about, help, sharing fixed. Also share text changed
+7 - EntranceDetailActivity redundant show loading emitted.
+8 - "BasketSingleton" checkout functionality changed to be sensitive to "Redirect" status and trigger event on it.
+9 - Sync with server now added to "StartupActivity" & "ResetPasswordActivity" and "LoginActivity" --> always after lock check
+10 - "BasketCheckoutActivity" completed for payment
+11 - "EntranceDetailActivity" localEntrance bugs fixed

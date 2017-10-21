@@ -89,16 +89,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
-                android:layout_marginBottom="8dp"
                 android:layout_marginEnd="40dp"
-                android:layout_marginRight="40dp"
+                android:layout_marginRight="39dp"
                 android:layout_marginTop="8dp"
                 android:text="@string/signupInfo3A_S_stateTextView"
                 android:textSize="14sp"
-                app:layout_constraintBottom_toTopOf="@+id/signupInfo3A_linearLayoutLineEnd"
+                app:layout_constraintBaseline_toBaselineOf="@+id/signupInfo3A_selectStateButton"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/signupInfo3A_linearLayoutLine"
-                app:layout_constraintVertical_bias="0.516" />
+                app:layout_constraintTop_toBottomOf="@+id/signupInfo3A_linearLayoutLine" />
 
             <Button
                 android:id="@+id/signupInfo3A_selectStateButton"
@@ -119,16 +117,32 @@
                 app:layout_constraintRight_toLeftOf="@+id/signupInfo3A_stateTextView"
                 app:layout_constraintTop_toTopOf="@+id/signupInfo3A_linearLayoutLine" />
 
+            <TextView
+                android:id="@+id/signupInfo3A_infoTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/signupInfo3A_S_info"
+                android:textAlignment="center"
+                android:textColor="@color/colorConcoughGray"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="64dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="64dp"
+                android:layout_marginStart="8dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/signupInfo3A_selectStateButton"/>
+
             <LinearLayout
                 android:id="@+id/signupInfo3A_linearLayoutLineEnd"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="24dp"
                 android:orientation="vertical"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/signupInfo3A_selectStateButton">
+                app:layout_constraintTop_toBottomOf="@+id/signupInfo3A_infoTextView">
 
                 <View
                     android:id="@+id/signupInfo3A_viewLine2"
@@ -151,7 +165,7 @@
                 android:layout_marginLeft="40dp"
                 android:layout_marginRight="40dp"
                 android:layout_marginStart="40dp"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="16dp"
                 android:background="@drawable/concough_border_outline_style"
                 android:text="@string/signupInfo3A_S_nextButton"
                 android:textSize="14sp"

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
+import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -13,20 +14,23 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import com.concough.android.general.AlertClass
-import com.concough.android.models.DeviceInformationModel
-import com.concough.android.models.DeviceInformationModelHandler
-import com.concough.android.rest.DeviceRestAPIClass
-import com.concough.android.rest.ProfileRestAPIClass
-import com.concough.android.rest.SettingsRestAPIClass
+import com.concough.android.models.*
+import com.concough.android.rest.*
 import com.concough.android.settings.APP_VERSION
 import com.concough.android.singletons.*
+import com.concough.android.structures.EntranceStruct
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
 import com.concough.android.utils.NetworkUtil
 import com.concough.android.vendor.progressHUD.KProgressHUD
+import com.google.gson.JsonElement
+import com.google.gson.JsonParser
 import kotlinx.android.synthetic.main.activity_startup.*
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
+import java.io.File
+import java.io.FileOutputStream
+import java.util.ArrayList
 
 
 class StartupActivity : AppCompatActivity() {
@@ -186,33 +190,33 @@ class StartupActivity : AppCompatActivity() {
             if (TokenHandlerSingleton.getInstance(applicationContext).isAuthenticated()) {
                 doAsync {
                     TokenHandlerSingleton.getInstance(applicationContext).assureAuthorized(true, { authenticated, error ->
-                            uiThread {
-                                val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()!!
-                                val device = DeviceInformationModelHandler.findByUniqueId(applicationContext, username)
-                                if (device != null) {
-                                    if (device.state) {
-                                        if (authenticated) {
-                                            if (UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
-                                                this@StartupActivity.checkVersion()
-                                            } else {
-                                                this@StartupActivity.getProfile()
-                                            }
+                        uiThread {
+                            val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()!!
+                            val device = DeviceInformationModelHandler.findByUniqueId(applicationContext, username)
+                            if (device != null) {
+                                if (device.state) {
+                                    if (authenticated) {
+                                        if (UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
+                                            this@StartupActivity.checkVersion()
                                         } else {
-                                            this@StartupActivity.setupUnauthenticated()
+                                            this@StartupActivity.getProfile()
                                         }
                                     } else {
-                                        this@StartupActivity.setupLocked()
+                                        this@StartupActivity.setupUnauthenticated()
                                     }
                                 } else {
                                     this@StartupActivity.setupLocked()
                                 }
+                            } else {
+                                this@StartupActivity.setupLocked()
+                            }
 //                                if (UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
 //
 //                                    this@StartupActivity.navigateToHome()
 //                                } else {
 //                                    this@StartupActivity.getProfile()
 //                                }
-                            }
+                        }
 
                     }, { error ->
                         uiThread {
@@ -272,7 +276,7 @@ class StartupActivity : AppCompatActivity() {
                                                     showMsg = true
                                                 } else {
                                                     val count = DeviceInformationSingleton.getInstance(applicationContext).getLastAppVersionCount(version)
-                                                    if (count <=2)
+                                                    if (count <= 2)
                                                         showMsg = true
                                                 }
                                             } else {
@@ -309,8 +313,10 @@ class StartupActivity : AppCompatActivity() {
                                     "Error" -> {
                                         val errorType = data.get("error_type").asString
                                         when (errorType) {
-                                            "EmptyArray" -> { }
-                                            else -> { }
+                                            "EmptyArray" -> {
+                                            }
+                                            else -> {
+                                            }
                                         }
 
                                         this@StartupActivity.navigateToHome()
@@ -377,6 +383,7 @@ class StartupActivity : AppCompatActivity() {
                                             if (device_unique_id == androidId) {
                                                 if (DeviceInformationSingleton.getInstance(applicationContext).setDeviceState(username, "android", deviceModel, state, true)) {
                                                     if (state) {
+                                                        this@StartupActivity.syncWithServer()
                                                         this@StartupActivity.getProfile()
                                                     }
                                                 }
@@ -404,7 +411,8 @@ class StartupActivity : AppCompatActivity() {
                                                 val loginIntent = LoginActivity.newIntent(this@StartupActivity)
                                                 startActivity(loginIntent)
                                             }
-                                            else -> { }
+                                            else -> {
+                                            }
                                         }
 
                                     }
@@ -524,6 +532,286 @@ class StartupActivity : AppCompatActivity() {
             })
 
         }
+    }
+
+    private fun syncWithServer() {
+        SyncWithServerTask().execute()
+    }
+
+    private inner class SyncWithServerTask : AsyncTask<Void, Void, Void>() {
+
+        override fun doInBackground(vararg params: Void): Void? {
+//            runOnUiThread {
+//                loadingProgress = AlertClass.showLoadingMessage(this@StartupActivity)
+//                loadingProgress?.show()
+//            }
+
+            PurchasedRestAPIClass.getPurchasedList(applicationContext, { jsonElement, httpErrorType ->
+                runOnUiThread {
+                    //AlertClass.hideLoadingMessage(loadingProgress)
+
+                    if (httpErrorType !== HTTPErrorType.Success) {
+                        if (httpErrorType === HTTPErrorType.Refresh) {
+                            SyncWithServerTask().execute()
+                        } else {
+                            AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null)
+                        }
+                    } else {
+                        if (jsonElement != null) {
+                            val status = jsonElement!!.asJsonObject.get("status").asString
+                            when (status) {
+                                "OK" -> try {
+                                    val purchasedId = ArrayList<Int>()
+                                    val records = jsonElement!!.asJsonObject.get("records").asJsonArray
+                                    val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()
+                                    if (username != null) {
+                                        for (record in records) {
+                                            val id = record.asJsonObject.get("id").asInt
+                                            val downloaded = record.asJsonObject.get("downloaded").asInt
+                                            val createdStr = record.asJsonObject.get("created").asString
+                                            val created = FormatterSingleton.getInstance().UTCDateFormatter.parse(createdStr)
+
+                                            val target = record.asJsonObject.get("target")
+                                            val targetType = target.asJsonObject.get("product_type").asString
+
+                                            if (PurchasedModelHandler.getByUsernameAndId(applicationContext, username!!, id) != null) {
+                                                PurchasedModelHandler.updateDownloadTimes(applicationContext, username!!, id, downloaded)
+
+                                                if ("Entrance" == targetType) {
+                                                    val uniqueId = target.asJsonObject.get("unique_key").asString
+                                                    if (EntranceModelHandler.getByUsernameAndId(applicationContext, username!!, uniqueId) == null) {
+                                                        val org = target.asJsonObject.get("organization").asJsonObject.get("title").asString
+                                                        val type = target.asJsonObject.get("entrance_type").asJsonObject.get("title").asString
+                                                        val setName = target.asJsonObject.get("entrance_set").asJsonObject.get("title").asString
+                                                        val group = target.asJsonObject.get("entrance_set").asJsonObject.get("group").asJsonObject.get("title").asString
+                                                        val setId = target.asJsonObject.get("entrance_set").asJsonObject.get("id").asInt
+                                                        val bookletsCount = target.asJsonObject.get("booklets_count").asInt
+                                                        val duration = target.asJsonObject.get("duration").asInt
+                                                        val year = target.asJsonObject.get("year").asInt
+
+                                                        val extraStr = target.asJsonObject.get("extra_data").asString
+                                                        var extraData: JsonElement? = null
+                                                        if (extraStr != null && "" != extraStr) {
+                                                            try {
+                                                                extraData = JsonParser().parse(extraStr)
+                                                            } catch (exc: Exception) {
+                                                                extraData = JsonParser().parse("[]")
+                                                            }
+
+                                                        }
+
+                                                        val lastPublishedStr = target.asJsonObject.get("last_published").asString
+                                                        val lastPublished = FormatterSingleton.getInstance().UTCDateFormatter.parse(lastPublishedStr)
+
+                                                        val entrance = EntranceStruct()
+                                                        entrance.entranceSetId = setId
+                                                        entrance.entranceSetTitle = setName
+                                                        entrance.entranceOrgTitle = org
+                                                        entrance.entranceLastPublished = lastPublished
+                                                        entrance.entranceBookletCounts = bookletsCount
+                                                        entrance.entranceDuration = duration
+                                                        entrance.entranceExtraData = extraData
+                                                        entrance.entranceGroupTitle = group
+                                                        entrance.entranceTypeTitle = type
+                                                        entrance.entranceUniqueId = uniqueId
+                                                        entrance.entranceYear = year
+
+                                                        EntranceModelHandler.add(applicationContext, username!!, entrance)
+
+                                                    }
+                                                }
+                                            } else {
+
+                                                if ("Entrance" == targetType) {
+                                                    val uniqueId = target.asJsonObject.get("unique_key").asString
+
+                                                    if (PurchasedModelHandler.add(applicationContext, id, username!!, false, downloaded, false, targetType, uniqueId, created)) {
+                                                        val org = target.asJsonObject.get("organization").asJsonObject.get("title").asString
+                                                        val type = target.asJsonObject.get("entrance_type").asJsonObject.get("title").asString
+                                                        val setName = target.asJsonObject.get("entrance_set").asJsonObject.get("title").asString
+                                                        val group = target.asJsonObject.get("entrance_set").asJsonObject.get("group").asJsonObject.get("title").asString
+                                                        val setId = target.asJsonObject.get("entrance_set").asJsonObject.get("id").asInt
+                                                        val bookletsCount = target.asJsonObject.get("booklets_count").asInt
+                                                        val duration = target.asJsonObject.get("duration").asInt
+                                                        val year = target.asJsonObject.get("year").asInt
+
+                                                        val extraStr = target.asJsonObject.get("extra_data").asString
+                                                        var extraData: JsonElement? = null
+                                                        if (extraStr != null && "" != extraStr) {
+                                                            try {
+                                                                extraData = JsonParser().parse(extraStr)
+                                                            } catch (exc: Exception) {
+                                                                extraData = JsonParser().parse("[]")
+                                                            }
+
+                                                        }
+
+                                                        val lastPublishedStr = target.asJsonObject.get("last_published").asString
+                                                        val lastPublished = FormatterSingleton.getInstance().UTCDateFormatter.parse(lastPublishedStr)
+
+                                                        if (EntranceModelHandler.getByUsernameAndId(applicationContext, username!!, uniqueId) == null) {
+                                                            val entrance = EntranceStruct()
+                                                            entrance.entranceSetId = setId
+                                                            entrance.entranceSetTitle = setName
+                                                            entrance.entranceOrgTitle = org
+                                                            entrance.entranceLastPublished = lastPublished
+                                                            entrance.entranceBookletCounts = bookletsCount
+                                                            entrance.entranceDuration = duration
+                                                            entrance.entranceExtraData = extraData
+                                                            entrance.entranceGroupTitle = group
+                                                            entrance.entranceTypeTitle = type
+                                                            entrance.entranceUniqueId = uniqueId
+                                                            entrance.entranceYear = year
+
+                                                            EntranceModelHandler.add(applicationContext, username!!, entrance)
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            purchasedId.add(id)
+                                        }
+
+                                        val dat = arrayOf(purchasedId.size)
+                                        for (i in purchasedId.indices) {
+                                            dat[i] = purchasedId[i]
+                                        }
+
+                                        val deletedItems = PurchasedModelHandler.getAllPurchasedNotIn(applicationContext, username!!, dat)
+                                        if (deletedItems!!.size > 0) {
+                                            for (pm in deletedItems!!) {
+                                                this@StartupActivity.deletePurchaseData(pm.productUniqueId)
+
+                                                if ("Entrance" == pm.productType) {
+                                                    if (EntranceModelHandler.removeById(applicationContext, username!!, pm.productUniqueId)) {
+                                                        //EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
+                                                        EntranceQuestionStarredModelHandler.removeByEntranceId(applicationContext, username!!, pm.productUniqueId)
+                                                        PurchasedModelHandler.removeById(applicationContext, username!!, pm.id)
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        //RealmResults<PurchasedModel> purchasedIn = PurchasedModelHandler.getAllPurchasedIn(BasketCheckoutActivity.this, username, purchasedIds);
+
+                                        purchasedIds(dat)
+                                    }
+                                } catch (exc: Exception) {
+                                    Log.d(TAG, exc.localizedMessage)
+                                }
+
+                                "Error" -> {
+                                    val errorType = jsonElement!!.asJsonObject.get("error_type").asString
+                                    when (errorType) {
+                                        "EmptyArray" -> {
+                                            val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()
+                                            if (username != null) {
+                                                val items = PurchasedModelHandler.getAllPurchased(applicationContext, username!!)
+
+                                                for (pm in items!!) {
+                                                    this@StartupActivity.deletePurchaseData(pm.productUniqueId)
+
+                                                    if ("Entrance" == pm.productType) {
+                                                        if (EntranceModelHandler.removeById(applicationContext, username!!, pm.productUniqueId)) {
+                                                            EntranceOpenedCountModelHandler.removeByEntranceId(applicationContext, username!!, pm.productUniqueId)
+                                                            EntranceQuestionStarredModelHandler.removeByEntranceId(applicationContext, username!!, pm.productUniqueId)
+                                                            PurchasedModelHandler.removeById(applicationContext, username!!, pm.id)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        else -> {
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                return@getPurchasedList Unit
+            }, fun(networkErrorType: NetworkErrorType?): Unit {
+                runOnUiThread {
+                    //AlertClass.hideLoadingMessage(loadingProgress)
+                    if (networkErrorType != null) {
+                        when (networkErrorType) {
+                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", networkErrorType!!.name, "error", null)
+                            }
+                            else -> {
+                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", networkErrorType!!.name, "", null)
+                            }
+                        }
+                    }
+                }
+                return Unit
+            })
+
+            return null
+        }
+    }
+
+
+    private fun deletePurchaseData(uniqueId: String) {
+        val f = File(this@StartupActivity.getFilesDir(), uniqueId)
+        if (f.exists() && f.isDirectory()) {
+            //                                String[] children = f.list();
+            for (fc in f.listFiles()) {
+                fc.delete()
+            }
+            val rd = f.delete()
+        }
+
+    }
+
+    private fun purchasedIds(ids: Array<Int>) {
+        val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()
+
+        val purchasedIn = PurchasedModelHandler.getAllPurchasedIn(applicationContext, username!!, ids)
+        if (purchasedIn != null) {
+            for (purchasedModel in purchasedIn!!) {
+                if (purchasedModel.productType == "Entrance") {
+                    val entranceModel = EntranceModelHandler.getByUsernameAndId(applicationContext, username!!, purchasedModel.productUniqueId)
+                    if (entranceModel != null) {
+                        downloadImage(entranceModel!!.setId)
+                    }
+                }
+            }
+        }
+    }
+
+
+    private fun downloadImage(imageId: Int) {
+        val url = MediaRestAPIClass.makeEsetImageUrl(imageId)
+
+        if (url != null) {
+            val data = MediaCacheSingleton.getInstance(applicationContext)[url!!]
+            if (data != null) {
+
+                val folder = File(applicationContext.filesDir, "images")
+                val folder2 = File((getApplicationContext().getFilesDir()).toString() + "/images", "eset")
+                if (!folder.exists()) {
+                    folder.mkdir()
+                    folder2.mkdir()
+                }
+
+                val photo = File((getApplicationContext().getFilesDir()).toString() + "/images/eset", (imageId).toString())
+                if (photo.exists()) {
+                    photo.delete()
+                }
+
+                try {
+                    val fos = FileOutputStream(photo.getPath())
+
+                    fos.write(data!!)
+                    fos.close()
+                } catch (e: java.io.IOException) {
+                    Log.e("PictureDemo", "Exception in photoCallback", e)
+                }
+
+            }
+        }
+
     }
 
     private fun navigateToHome() {
