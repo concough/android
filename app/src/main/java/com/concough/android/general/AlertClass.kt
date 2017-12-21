@@ -15,6 +15,11 @@ import com.concough.android.vendor.progressHUD.KProgressHUD
 import com.concough.android.vendor.progressHUD.SpinView
 import com.concough.android.vendor.zhikanalertdialog.Effectstype
 import com.concough.android.vendor.zhikanalertdialog.ZhycanNiftyDialogBuilder
+import java.util.concurrent.locks.Lock
+import android.content.ComponentName
+import android.app.ActivityManager
+
+
 
 
 /**
@@ -26,6 +31,8 @@ class AlertClass {
     data class Message(var title: String, var message: String, var showMsg: Boolean)
 
     companion object {
+        var hideLoadingLock: Int = 9
+
         fun convertMessage(messageType: String, messageSubType: String): Message {
             var showMessage: Boolean = true
             var title: String = ""
@@ -156,7 +163,7 @@ class AlertClass {
                             title = "خطا"; message = "وضعیت سبد خرید قبلی شما در حالت معلق است، آن را نهایی نمایید"
                         }
                         "CheckoutError" -> {
-                            title = "خطا"; message = "پرداخت با خطا مواجه شده است"
+                            title = "خطا"; message = "پرداخت نا موفق بود! در که صورتی که مبلغ از حساب شما کسر شده است حداکثر تا یک روز کاری به حسابتان باز خواهد گشت"
                         }
                         "MustCheckoutLast" -> {
                             title = "خطا"; message = "ابتدا پرداخت قبلی خود را نهایی نمایید"
@@ -179,7 +186,7 @@ class AlertClass {
                             title = "خطا"; message = "هر دو فیلد گذرواژه باید یکی باشند"
                         }
                         "PassCannotChange" -> {
-                            title = "خطا"; message = "امکان تغییر گذرواژه وجود ندارد"
+                            title = "خطا"; message = "کلمه عبور مجاز شامل حداقل 6 کاراکتر است"
                         }
                         "SMSSendError" -> {
                             title = "خطا"; message = "ارسال پیامک با خطا مواجه شد، مجددا سعی نمایید"
@@ -241,7 +248,7 @@ class AlertClass {
                 "DeviceInfoError" -> {
                     when (messageSubType) {
                         "AnotherDevice" -> {
-                            title = "خطا"; message = "اکانت شما توسط دستگاه دیگری در حال استفاده می باشد"
+                            title = "خطا"; message = "اکانت شما توسط دستگاه دیگری در حال استفاده می باشد، در صورتی که به دستگاه فعال دسترسی دارید گزینه 'قفل دستگاه' در تنظیمات کنکوق را فشار دهید و در غیر اینصورت از دکمه بازیایی گذرواژه همین دستگاه استفاده نمایید"
                         }
                         "DeviceNotRegistered" -> {
                             title = "خطا"; message = "دستگاه شما با این اکانت ثبت نشده است"
@@ -268,19 +275,25 @@ class AlertClass {
 
         @JvmStatic
         fun showLoadingMessage(context: Context): KProgressHUD {
-            val v = SpinView(context, context.resources.getColor(R.color.colorConcoughBlue))
+//            val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+//            val cn = am.getRunningTasks(1)[0].topActivity
 
-            val hud = KProgressHUD.create(context)
-            hud.setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
-            hud.setDimAmount(0.35F)
-            hud.setCustomView(v)
-            hud.setLabel("حوصله نمایید ...", context.resources.getColor(android.R.color.black))
-            hud.setLabelFont(FontCacheSingleton.getInstance(context.applicationContext!!).Light)
-            hud.setBackgroundColor(context.resources.getColor(android.R.color.white))
 
-            if (!hud.isShowing)
-                hud.show()
-            return hud
+            synchronized(AlertClass.hideLoadingLock) {
+                val v = SpinView(context, context.resources.getColor(R.color.colorConcoughBlue))
+
+                val hud = KProgressHUD.create(context)
+                hud.setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
+                hud.setDimAmount(0.35F)
+                hud.setCustomView(v)
+                hud.setLabel("حوصله نمایید ...", context.resources.getColor(android.R.color.black))
+                hud.setLabelFont(FontCacheSingleton.getInstance(context.applicationContext!!).Light)
+                hud.setBackgroundColor(context.resources.getColor(android.R.color.white))
+
+//                if (!hud.isShowing)
+//                    hud.show()
+                return hud
+            }
         }
 
         @JvmStatic
@@ -305,9 +318,16 @@ class AlertClass {
 
         @JvmStatic
         fun hideLoadingMessage(progressHUD: KProgressHUD?) {
-            if (progressHUD != null) {
-                progressHUD.dismiss()
-            }
+//            synchronized(AlertClass.hideLoadingLock) {
+
+
+
+                if (progressHUD != null) {
+                    progressHUD.dismiss()
+                }
+
+
+//            }
         }
 
         @JvmStatic

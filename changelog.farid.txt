@@ -190,6 +190,24 @@ Video and Colors optimize (faridM)
 
 ==================================================================================
 
+Debug 1 (faridM)
+
+ 1- EntranceDetailActivity fix extra data entranceDownload
+ 2- fix change password setting string
+ 3- change notification icon to concough logo transparent
+ 4- create icon from logo for concough
+ 5- aded mobile number after name of user on setting activity
+ 6- change text of lock error - another device
+ 7- add loading dialog on Add and Remove basket
+ 8- aded isFinishing to all loadings
+ 9- change  "lock" to force from DeviceRestApi because of not refreshing after change password
+10- onClick for EntranceShow not loaded event load
+11- change password activity aded current password and related conditions
+12- new function  for hide loading and disable buttons on ResetPasswordActivity
+13-Change some texts on AlertClass
+14-okHttpClient fixed timeout time for send sms for avoid network error
+15-SignupCodeActivity / SignupActivity some changes on send code and other processes
+
 
 
 

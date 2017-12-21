@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Concough</string>
-    <string name="signupMoreInfo1A_app_name">کنکوق</string>
+    <string name="app_name">Concough (alpha)</string>
+    <string name="signupMoreInfo1A_app_name">کنکوق (آزمایشی)</string>
 
 
     <string name="planet_prompt">Test-Drop</string>
@@ -55,6 +55,15 @@
     <string name="signupInfo3A_S_info">در قسمت تنظیمات قابل تغییر می باشد</string>
     <string name="signupInfo3A_S_nextButton">ذخیره و تمام</string>
     <string name="StartupA_S_info">برای تلاش مجدد لمس نمایید</string>
+    <string name="StartupA_S_deviceAlert">در یک زمان تنها یک دستگاه اجازه استفاده از برنامه را دارد</string>
+    <string name="StartupA_S_deviceName">دستگاه</string>
+    <string name="StartupA_S_exitFromLockModeButton">خروج از حالت قفل</string>
+    <string name="StartupA_S_resetPasswordButton">بازیابی گذرواژه</string>
+    <string name="StartupA_S_welcomeMessage">به کنکوق خوش آمدید</string>
+    <string name="StartupA_S_loginButton">ورود به کنکوق</string>
+    <string name="StartupA_S_signUpButton">ثبت نام</string>
+    <string name="StartupA_S_offlineMessage">دسترسی به اینترنت وجود ندارد</string>
+    <string name="StartupA_S_offlineButton">ورود بصورت آفلاین</string>
     <string name="itemEntranceCreateI_S_concourText">آزمون</string>
     <string name="title_activity_bottom_navigation">BottomNavigationActivity</string>
     <string name="title_home">Home</string>
@@ -96,8 +105,9 @@
     <string name="favorite_entrance_delete_lable">پاک کردن داده ها</string>
 
 
-    <string name="settingChangePasswordA_S_passwordEdit">گذرواژه فعلی</string>
-    <string name="settingChangePasswordA_S_passwordEditConfirm">گذرواژه جدید</string>
+    <string name="settingChangePasswordA_S_passwordCurrent">گذرواژه فعلی</string>
+    <string name="settingChangePasswordA_S_passwordEdit">گذرواژه جدید</string>
+    <string name="settingChangePasswordA_S_passwordEditConfirm">تکرار گذرواژه جدید</string>
 
     <string name="settingCodeIsNotExist">وجود ندارد</string>
 

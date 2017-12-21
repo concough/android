@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -40,6 +41,8 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     private KProgressHUD loadingProgress;
 
     private String send_type = "sms";
+    private String oldNumber = "";
+    private String newNumber = "";
 
     public void setSend_type(String send_type) {
         this.send_type = send_type;
@@ -47,12 +50,16 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         switch (send_type) {
             case "call":
                 sendCodeButton.setText("ارسال کد از طریق تماس");
+                sendCodeButton.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.concough_border_outline_red_style));
+                sendCodeButton.setEnabled(true);
                 break;
             case "sms":
                 sendCodeButton.setText("ارسال کد");
+                sendCodeButton.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.concough_border_outline_style));
                 break;
             case "":
                 sendCodeButton.setText("فردا سعی نمایید...");
+                sendCodeButton.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.concough_border_outline_gray_style));
                 break;
         }
     }
@@ -115,7 +122,19 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
+                String username = usernameEdittext.getText().toString().trim();
+                if(isValidPhoneNumber(username)){
+                    if(username.startsWith("0"))
+                        username=username.substring(1);
 
+                    username = "98" + username;
+
+                    newNumber = username;
+                    if(!oldNumber.equals(newNumber)) {
+                        setSend_type("sms");
+                        oldNumber= newNumber;
+                    }
+                }
             }
         });
 
@@ -150,8 +169,6 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     private void forgotPassword(String username) {
         new ForgotPasswordTask().execute(username);
     }
-
-
 
     private class ForgotPasswordTask extends AsyncTask<String, Void, Void> {
 

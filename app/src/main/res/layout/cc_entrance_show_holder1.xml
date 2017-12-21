@@ -19,11 +19,11 @@
 
         <ImageView
             android:id="@+id/ccEntranceShowHolder1I_star"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
-            android:translationY="-3dp"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:translationX="-20dp"
+            android:translationY="-4dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/bookmark_empty" />
@@ -63,8 +63,8 @@
 
         <ImageView
             android:id="@+id/ccEntranceShowHolder1I_imgPreLoad"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:foregroundGravity="center_horizontal|center"
             android:scaleType="centerCrop"

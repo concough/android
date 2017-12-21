@@ -101,7 +101,7 @@ class DeviceRestAPIClass {
                             Settings.Secure.ANDROID_ID)
                     val deviceModel = Build.MANUFACTURER + " " + Build.MODEL
 
-                    val parameters: HashMap<String, Any> = hashMapOf("device_name" to "android", "device_unique_id" to androidId, "force" to force, "device_model" to deviceModel)
+                    val parameters: HashMap<String, Any> = hashMapOf("device_name" to "android", "device_unique_id" to androidId, "lock" to force, "device_model" to deviceModel)
 
                     val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)

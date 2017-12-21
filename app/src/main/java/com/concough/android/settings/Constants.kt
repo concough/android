@@ -10,7 +10,7 @@ val API_VERSION = "v1"
 val SECRET_KEY = "67mnnv^vs7&^v87YrV&hd8bw92bu9b%\$\$#b8728^%93y6==37yb&BBB6*njs*99__==ncdjncdujb"
 
 // Host Urls
-//val BASE_URL = "http://192.168.1.15:8000/api/"
+//val BASE_URL = "http://192.168.0.21:8000/api/"
 val BASE_URL = "https://concough.zhycan.com/api/"
 val MEDIA_CLASS_NAME = "media"
 val ACTIVITY_CLASS_NAME = "activities"

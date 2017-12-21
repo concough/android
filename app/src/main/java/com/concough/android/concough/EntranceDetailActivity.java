@@ -269,7 +269,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     protected void onDestroy() {
         stopHandler();
         super.onDestroy();
-        DownloaderSingleton.getInstance().unbind(EntranceDetailActivity.this,entranceUniqueId);
+        DownloaderSingleton.getInstance().unbind(EntranceDetailActivity.this, entranceUniqueId);
     }
 
     private void resetView() {
@@ -1014,7 +1014,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 //                        AlertClass.hideLoadingMessage(loadingProgress);
                         EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
 
-                        if (httpErrorType != HTTPErrorType.Success) {
+                            if (httpErrorType != HTTPErrorType.Success) {
                             if (httpErrorType == HTTPErrorType.Refresh) {
                                 if (EntranceDetailActivity.this.handler != null) {
                                     Message msg = EntranceDetailActivity.this.handler.obtainMessage(DOWNLOAD_ENTRANCE);
@@ -1047,7 +1047,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                                 String lastPublishedStr = record.get("last_published").getAsString();
                                                 Date lastPublished = FormatterSingleton.getInstance().getUTCDateFormatter().parse(lastPublishedStr);
 
-                                                String extraStr = jsonElement.getAsJsonObject().get("extra_data").getAsString();
+                                                String extraStr = record.get("extra_data").getAsString();
                                                 JsonElement extraData = null;
                                                 if (extraStr != null && !"".equals(extraStr)) {
                                                     try {
@@ -1400,25 +1400,25 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 //                            runOnUiThread(new Runnable() {
 //                                @Override
 //                                public void run() {
-                                    if (httpErrorType != HTTPErrorType.Success) {
-                                        Log.d(TAG, "run: ");
-                                        if (httpErrorType == HTTPErrorType.Refresh) {
-                                            downloadImage(imageId);
-                                        } else {
-                                            esetImageView.setImageResource(R.drawable.no_image);
-                                        }
-                                    } else {
-                                        MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+                            if (httpErrorType != HTTPErrorType.Success) {
+                                Log.d(TAG, "run: ");
+                                if (httpErrorType == HTTPErrorType.Refresh) {
+                                    downloadImage(imageId);
+                                } else {
+                                    esetImageView.setImageResource(R.drawable.no_image);
+                                }
+                            } else {
+                                MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
 
-                                        Glide.with(EntranceDetailActivity.this)
+                                Glide.with(EntranceDetailActivity.this)
 
-                                                .load(data)
-                                                //.crossFade()
-                                                .dontAnimate()
-                                                .into(esetImageView)
-                                                .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+                                        .load(data)
+                                        //.crossFade()
+                                        .dontAnimate()
+                                        .into(esetImageView)
+                                        .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
 
-                                    }
+                            }
 //                                }
 //                            });
                             return null;
@@ -1431,9 +1431,6 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     });
                 }
             }
-
-
-
 
 
         }
@@ -1469,7 +1466,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 //
 //                        extra = TextUtils.join(" - ", extraArray);
 
-                        entranceExtraDataTextView.setText(es.getEntranceOrgTitle());
+                    entranceExtraDataTextView.setText(es.getEntranceOrgTitle());
 
 //                    }
                 } catch (Exception exc) {
@@ -1550,7 +1547,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     public void onClick(View v) {
 
                         if (BasketSingleton.getInstance().getBasketId() == null) {
-                            BasketSingleton.getInstance().createBasket(EntranceDetailActivity.this,-1);
+                            BasketSingleton.getInstance().createBasket(EntranceDetailActivity.this, -1);
                         } else {
                             Integer id = BasketSingleton.getInstance().findSaleByTargetId(EntranceDetailActivity.this.entranceUniqueId, "Entrance");
                             if (id != null && id > 0) {

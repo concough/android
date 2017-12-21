@@ -19,6 +19,7 @@ import com.concough.android.rest.EntranceRestAPIClass
 import com.concough.android.rest.MediaRestAPIClass
 import com.concough.android.settings.SECRET_KEY
 import com.concough.android.singletons.DownloaderSingleton
+import com.concough.android.singletons.FormatterSingleton
 import com.concough.android.singletons.UserDefaultsSingleton
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
@@ -165,8 +166,10 @@ class EntrancePackageDownloader : Service() {
 
                         val entrance = EntranceModelHandler.getByUsernameAndId(context!!.applicationContext, username, entranceUniqueId)
                         if (entrance != null) {
-                            val message = "آزمون" + " ${entrance.type} سال ${entrance.year} " + "دانلود شد"
-                            val subMessage = "${entrance.set} (${entrance.group})"
+                            val year = FormatterSingleton.getInstance().NumberFormatter.format(entrance.year)
+                            val message= "دانلود آزمون به اتمام رسید"
+                            val subMessage =" ${entrance.type} سال ${year} " +"\n" +
+                            "${entrance.set} (${entrance.group})"
 
                             simpleNotification(message,subMessage)
                         }
@@ -451,7 +454,7 @@ class EntrancePackageDownloader : Service() {
                 .Builder(this)
                 .setContentTitle(message)
                 .setContentText(subMessage)
-                .setSmallIcon(R.drawable.hand_with_pen)
+                .setSmallIcon(R.drawable.logo_white_transparent_notification)
 
         sendNotification()
     }

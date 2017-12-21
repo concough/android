@@ -63,7 +63,7 @@ public class IntroVideoView extends SurfaceView implements
         mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-               // mp.release();
+//                mp.reset();
             }
         });
         getHolder().addCallback(this);
@@ -98,6 +98,8 @@ public class IntroVideoView extends SurfaceView implements
 //        mp.pause();
 //        mp.stop();
 //        mp.release();
+
+        mp.reset();
     }
 
     @Override

@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.UserHandle;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -70,7 +71,7 @@ public class SettingActivity extends BottomNavigationActivity {
 
     private KProgressHUD loadingProgress;
 
-//    private GradeType gradeType = null;
+    //    private GradeType gradeType = null;
 //    private GradeType[] names;
     private ArrayList<Pair<String, String>> namesPair;
 
@@ -124,7 +125,7 @@ public class SettingActivity extends BottomNavigationActivity {
                         share.putExtra(Intent.EXTRA_TEXT, "دسترسی به تمام آزمونهای برگزار شده در کشور آنلاین و آفلاین و ده ها قابلیت دیگر  \nhttps://zhycan.com/concough/  ");
                         share.putExtra(Intent.EXTRA_SUBJECT, "کنکوق");
 
-                        Uri uri = Uri.parse("android.resource://com.concough.android.concough/raw/zhycan_logo");
+                        Uri uri = Uri.parse("android.resource://com.concough.android.concough/raw/logo_black");
                         share.putExtra(Intent.EXTRA_STREAM, uri);
 
 
@@ -432,7 +433,7 @@ public class SettingActivity extends BottomNavigationActivity {
                 if (showedAlertDialog != null) {
                     showedAlertDialog.dismiss();
 
-                    SettingActivity.this.postProfile(SettingActivity.this.namesPair.get(position).first,SettingActivity.this.namesPair.get(position).second);
+                    SettingActivity.this.postProfile(SettingActivity.this.namesPair.get(position).first, SettingActivity.this.namesPair.get(position).second);
 
                 }
 
@@ -862,15 +863,18 @@ public class SettingActivity extends BottomNavigationActivity {
             private TextView userName;
             private TextView lastUpdate;
             private TextView editInformation;
+            private TextView mobileNumber;
 
             public UserInforViewHolder(View itemView) {
                 super(itemView);
 
                 userName = (TextView) itemView.findViewById(R.id.settingUserInfoL_userName);
+                mobileNumber = (TextView) itemView.findViewById(R.id.settingUsereInfoL_mobileNumber);
                 lastUpdate = (TextView) itemView.findViewById(R.id.settingUsereInfoL_lastUpdate);
                 editInformation = (TextView) itemView.findViewById(R.id.settingUserInfoL_editInformation);
 
                 userName.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                mobileNumber.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 lastUpdate.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 editInformation.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
             }
@@ -880,6 +884,11 @@ public class SettingActivity extends BottomNavigationActivity {
 
                 if (profile != null) {
                     userName.setText(profile.getFirstname() + " " + profile.getLastname());
+
+                    String usernameMobileNumber = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+                    mobileNumber.setText("(" + usernameMobileNumber + ")");
+
+
                     String persianDateString = "";
                     Date georgianDate;
 
@@ -972,7 +981,7 @@ public class SettingActivity extends BottomNavigationActivity {
                     @Override
                     public void onClick(View v) {
 
-                    SettingActivity.this.getProfileGradeList();
+                        SettingActivity.this.getProfileGradeList();
                     }
                 });
 

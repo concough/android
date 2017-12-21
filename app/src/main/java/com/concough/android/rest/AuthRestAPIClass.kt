@@ -9,12 +9,14 @@ import com.concough.android.structures.NetworkErrorType
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
+import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by abolfazl on 7/2/17.
@@ -32,6 +34,7 @@ class AuthRestAPIClass {
             val parameters: HashMap<String, Any> = hashMapOf("username" to username)
             val headers = hashMapOf("Content-Type" to "application/json",
                                     "Accept" to "application/json")
+
 
             val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
             val auth = Obj.create(RestAPIService::class.java)
@@ -72,7 +75,12 @@ class AuthRestAPIClass {
             val headers = hashMapOf("Content-Type" to "application/json",
                     "Accept" to "application/json")
 
-            val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+            val okHttpClient = OkHttpClient.Builder()
+                    .readTimeout(60,TimeUnit.SECONDS)
+                    .connectTimeout(60, TimeUnit.SECONDS)
+                    .build()
+
+            val Obj = Retrofit.Builder().client(okHttpClient).baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
             val auth = Obj.create(RestAPIService::class.java)
             val request = auth.post(fullPath, parameters, headers)
 
@@ -153,7 +161,12 @@ class AuthRestAPIClass {
             val headers = hashMapOf("Content-Type" to "application/json",
                     "Accept" to "application/json")
 
-            val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+            val okHttpClient = OkHttpClient.Builder()
+                    .readTimeout(60,TimeUnit.SECONDS)
+                    .connectTimeout(60, TimeUnit.SECONDS)
+                    .build()
+
+            val Obj = Retrofit.Builder().client(okHttpClient).baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
             val auth = Obj.create(RestAPIService::class.java)
             val request = auth.post(fullPath, parameters, headers)
 

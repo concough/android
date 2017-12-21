@@ -6,14 +6,17 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.PersistableBundle
 import android.provider.Settings
 import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.Gravity
 import android.view.View
+import com.concough.android.extensions.isValidPhoneNumber
 import com.concough.android.general.AlertClass
 import com.concough.android.rest.AuthRestAPIClass
 import com.concough.android.rest.DeviceRestAPIClass
@@ -37,17 +40,32 @@ class SignupCodeActivity : AppCompatActivity() {
     private var countdowntimer: CountDownTimer? = null
 
     private var send_type: String = "sms"
+    private var oldNumber: String = ""
+    private var newNumber: String = ""
         set(value) {
             field = value
             when (value) {
-                "call" -> SignupCodeA_ResendButton.text = "ارسال کد از طریق تماس"
-                "sms" -> SignupCodeA_ResendButton.text = "ارسال کد فعالسازی"
-                "" -> SignupCodeA_ResendButton.text = "فردا سعی نمایید..."
+                "call" -> {
+                    SignupCodeA_ResendButton.text = "ارسال کد از طریق تماس"
+                    SignupCodeA_ResendButton.background = ContextCompat.getDrawable(applicationContext, R.drawable.concough_border_outline_red_style)
+                    SignupCodeA_ResendButton.isEnabled = true
+
+                }
+                "sms" -> {
+                    SignupCodeA_ResendButton.text = "ارسال کد فعالسازی"
+                    SignupCodeA_ResendButton.background = ContextCompat.getDrawable(applicationContext, R.drawable.concough_border_outline_style)
+                    SignupCodeA_ResendButton.isEnabled = true
+                }
+                "" -> {
+                    SignupCodeA_ResendButton.text = "فردا سعی نمایید..."
+                    SignupCodeA_ResendButton.background = ContextCompat.getDrawable(applicationContext, R.drawable.concough_border_outline_gray_style)
+                    SignupCodeA_ResendButton.isEnabled = true
+                }
             }
         }
 
     private var timerCounter: Int = 120
-        set(value)  {
+        set(value) {
             field = value
             if (field > 0) {
                 timerTextView.visibility = View.VISIBLE
@@ -66,6 +84,7 @@ class SignupCodeActivity : AppCompatActivity() {
 
     companion object {
         private val TAG = "SignupCodeActivity"
+        private val X_COORDINATE = "BundleVariable"
         private val FROM_ACTIVITY_KEY = "FromA"
         private val SIGNUP_STRUCTURE_KEY = "SignupS"
 
@@ -88,6 +107,8 @@ class SignupCodeActivity : AppCompatActivity() {
         // Hiding Action Bar
         supportActionBar?.hide()
 
+        SignupCodeA_returnButton.visibility = View.GONE
+
         this.fromWhichActivity = intent.getStringExtra(FROM_ACTIVITY_KEY)
         this.signupStruct = intent.getSerializableExtra(SIGNUP_STRUCTURE_KEY) as SignupStruct?
 
@@ -103,7 +124,22 @@ class SignupCodeActivity : AppCompatActivity() {
         timerTextView.typeface = FontCacheSingleton.getInstance(applicationContext).Light
 
         SignupCodeA_codeEditText.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {}
+            override fun afterTextChanged(s: Editable?) {
+                var username = SignupCodeA_codeEditText.getText().toString().trim({ it <= ' ' })
+                if (username.isValidPhoneNumber) {
+                    if (username.startsWith("0"))
+                        username = username.substring(1)
+
+                    username = "98" + username
+
+                    newNumber = username
+                    if (oldNumber != newNumber) {
+                        send_type = "sms"
+                        oldNumber = newNumber
+                    }
+                }
+            }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -150,24 +186,49 @@ class SignupCodeActivity : AppCompatActivity() {
         })
     }
 
+    override fun onBackPressed() {
+        if (timerCounter < 30) {
+            super.onBackPressed()
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+    }
+
     override fun onResume() {
         super.onResume()
         changeResendButtonState(false)
-        startTimerWithInterval()
+        if (send_type == "") {
+            this@SignupCodeActivity.stopCounting()
+            this@SignupCodeActivity.changeResendButtonState(false)
+        } else {
+            startTimerWithInterval()
+        }
     }
 
     override fun onStop() {
         super.onStop()
         countdowntimer?.cancel()
+        intent.putExtra(X_COORDINATE, timerCounter)
     }
 
     private fun startTimerWithInterval() {
-        timerCounter = 120
+        val extras = intent.extras
+        if (extras == null) {
+            timerCounter = 120
+        } else {
+            if (extras.getInt(X_COORDINATE) > 0) {
+                timerCounter = extras.getInt(X_COORDINATE)
+            } else {
+                timerCounter = 120
+            }
+        }
         countdowntimer?.cancel()
         countdowntimer = object : CountDownTimer((timerCounter * 1000).toLong(), 1000) {
 
             override fun onTick(millisUntilFinished: Long) {
-                timerCounter-=1
+                timerCounter -= 1
             }
 
             override fun onFinish() {
@@ -206,7 +267,7 @@ class SignupCodeActivity : AppCompatActivity() {
 
             }
             if (intCode == null) {
-                AlertClass.showTopMessage(this@SignupCodeActivity,findViewById(R.id.container),"Form","CodeWrong","error",null)
+                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "Form", "CodeWrong", "error", null)
                 return
             }
 
@@ -269,7 +330,7 @@ class SignupCodeActivity : AppCompatActivity() {
 
 
         } else {
-            AlertClass.showTopMessage(this@SignupCodeActivity,findViewById(R.id.container),"Form","EmptyFields","error",null)
+            AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "Form", "EmptyFields", "error", null)
         }
     }
 
@@ -548,7 +609,8 @@ class SignupCodeActivity : AppCompatActivity() {
                                                 val loginIntent = LoginActivity.newIntent(this@SignupCodeActivity)
                                                 startActivity(loginIntent)
                                             }
-                                            else -> { }
+                                            else -> {
+                                            }
                                         }
 
                                     }
@@ -592,7 +654,7 @@ class SignupCodeActivity : AppCompatActivity() {
 
             }
             if (intCode == null) {
-                AlertClass.showTopMessage(this@SignupCodeActivity,findViewById(R.id.container),"Form","CodeWrong","error",null)
+                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "Form", "CodeWrong", "error", null)
                 return
             }
 
@@ -601,7 +663,7 @@ class SignupCodeActivity : AppCompatActivity() {
             val i = ResetPasswordActivity.newIntent(this@SignupCodeActivity, this@SignupCodeActivity.signupStruct, false)
             startActivity(i)
         } else {
-            AlertClass.showTopMessage(this@SignupCodeActivity,findViewById(R.id.container),"Form","EmptyFields","error",null)
+            AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "Form", "EmptyFields", "error", null)
         }
     }
 }

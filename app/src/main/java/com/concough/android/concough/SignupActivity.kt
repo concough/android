@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
@@ -29,13 +30,21 @@ class SignupActivity : AppCompatActivity() {
     private var mainUsernameText: String = ""
     private var signupStruct: SignupStruct? = null
     private var loadingProgress: KProgressHUD? = null
+
     private var send_type: String = "sms"
         set(value) {
             field = value
             when (value) {
-                "call" -> signupA_sendCode.text = "ارسال کد از طریق تماس"
-                "sms" -> signupA_sendCode.text = "ارسال کد فعالسازی"
-                "" -> signupA_sendCode.text = "فردا سعی نمایید..."
+                "call" -> {
+                    signupA_sendCode.text = "ارسال کد از طریق تماس"
+                    signupA_sendCode.background = ContextCompat.getDrawable(applicationContext, R.drawable.concough_border_outline_gray_style)
+                }
+                "sms" -> {
+                    signupA_sendCode.text = "ارسال کد فعالسازی"
+                }
+                "" -> {
+                    signupA_sendCode.text = "فردا سعی نمایید..."
+                }
             }
         }
 
@@ -128,8 +137,7 @@ class SignupActivity : AppCompatActivity() {
                         signupA_SignupAloading.visibility = View.VISIBLE
                         doAsync {
 
-                            AuthRestAPIClass.checkUsername(username, completion = {
-                                data, error ->
+                            AuthRestAPIClass.checkUsername(username, completion = { data, error ->
 
                                 uiThread {
                                     signupA_SignupAloading.visibility = View.GONE

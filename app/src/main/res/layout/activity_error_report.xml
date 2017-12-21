@@ -87,7 +87,7 @@
                         android:layout_height="40dp"
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
-                        app:srcCompat="@drawable/no_image_placeholder"
+                        app:srcCompat="@drawable/logo_white"
                         tools:layout_editor_absoluteX="0dp"
                         tools:layout_editor_absoluteY="81dp" />
                 </LinearLayout>

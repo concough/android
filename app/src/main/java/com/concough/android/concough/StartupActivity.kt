@@ -143,11 +143,19 @@ class StartupActivity : AppCompatActivity() {
             this@StartupActivity.isOnline = false
             this@StartupActivity.navigateToHome()
         })
+
+
     }
 
     override fun onResume() {
+
         super.onResume()
         this.startup()
+
+        introVideoView.init()
+        introVideoViewLogin.init()
+        introVideoViewOffline.init()
+
     }
 
     override fun onPause() {

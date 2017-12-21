@@ -2,10 +2,12 @@ package com.concough.android.concough;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -14,6 +16,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.concough.android.general.AlertClass;
@@ -65,6 +68,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private EditText passwordEditConfirm;
     private Button saveButton;
     private KProgressHUD loadingProgress;
+
 
 
     private final static String SIGNUP_STRUCTURE_KEY = "SignupS";
@@ -181,8 +185,9 @@ public class ResetPasswordActivity extends AppCompatActivity {
                 String pass1 = passwordEdit.getText().toString();
                 String pass2 = passwordEditConfirm.getText().toString();
 
-                if (!pass1.equals("") &&  !pass2.equals("")) {
+                if (!pass1.equals("") && !pass2.equals("")) {
                     if (pass1.equals(pass2)) {
+
                         ResetPasswordActivity.this.resetPassword(pass1, pass2);
                     } else {
                         AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "Form", "NotSameFields", "error", null);
@@ -197,8 +202,18 @@ public class ResetPasswordActivity extends AppCompatActivity {
     }
 
     private void resetPassword(String pass1, String pass2) {
+        loadingProgress = AlertClass.showLoadingMessage(ResetPasswordActivity.this);
+        saveButton.setEnabled(false);
+        saveButton.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.concough_border_outline_style));
+
         new ResetPasswordTask().execute(pass1, pass2);
 
+    }
+
+    private void hideLoading() {
+        AlertClass.hideLoadingMessage(loadingProgress);
+        saveButton.setEnabled(true);
+        saveButton.setBackground(ContextCompat.getDrawable(getApplicationContext(), R.drawable.concough_border_outline_style));
     }
 
     private void startUp(final String username, final String password) {
@@ -256,6 +271,8 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                 ResetPasswordActivity.this.startActivity(i);
                                 finish();
                             }
+                        } else if (httpErrorType == HTTPErrorType.BadRequest) {
+
                         } else {
                             AlertClass.hideLoadingMessage(loadingProgress);
                             AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
@@ -271,7 +288,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        AlertClass.hideLoadingMessage(loadingProgress);
+                        hideLoading();
 
                         if (networkErrorType != null) {
                             switch (networkErrorType) {
@@ -668,7 +685,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
 
                                                                     String extraStr = target.getAsJsonObject().get("extra_data").getAsString();
                                                                     JsonElement extraData = null;
-                                                                    if (extraStr != null &&  !"".equals(extraStr)) {
+                                                                    if (extraStr != null && !"".equals(extraStr)) {
                                                                         try {
                                                                             extraData = new JsonParser().parse(extraStr);
                                                                         } catch (Exception exc) {
@@ -825,33 +842,31 @@ public class ResetPasswordActivity extends AppCompatActivity {
     }
 
 
-
     private void downloadImage(final int imageId) {
         final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
 
         if (url != null) {
-            byte[]  data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+            byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
             if (data != null) {
 
-                File folder = new File(getApplicationContext().getFilesDir(),"images");
-                File folder2 = new File(getApplicationContext().getFilesDir()+"/images","eset");
+                File folder = new File(getApplicationContext().getFilesDir(), "images");
+                File folder2 = new File(getApplicationContext().getFilesDir() + "/images", "eset");
                 if (!folder.exists()) {
                     folder.mkdir();
                     folder2.mkdir();
                 }
 
-                File photo=new File(getApplicationContext().getFilesDir()+"/images/eset", String.valueOf(imageId));
+                File photo = new File(getApplicationContext().getFilesDir() + "/images/eset", String.valueOf(imageId));
                 if (photo.exists()) {
                     photo.delete();
                 }
 
                 try {
-                    FileOutputStream fos=new FileOutputStream(photo.getPath());
+                    FileOutputStream fos = new FileOutputStream(photo.getPath());
 
                     fos.write(data);
                     fos.close();
-                }
-                catch (java.io.IOException e) {
+                } catch (java.io.IOException e) {
                     Log.e("PictureDemo", "Exception in photoCallback", e);
                 }
             }
@@ -902,7 +917,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                                     Date modifiedDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(modified);
 
                                                     if (!"".equals(firstname) && !"".equals(lastname) && !"".equals(gender) && !"".equals(grade)) {
-                                                        UserDefaultsSingleton.getInstance(getApplicationContext()).createProfile(firstname, lastname, grade,gradeString, gender, birthdayDate, modifiedDate);
+                                                        UserDefaultsSingleton.getInstance(getApplicationContext()).createProfile(firstname, lastname, grade, gradeString, gender, birthdayDate, modifiedDate);
                                                     }
 
                                                     if (UserDefaultsSingleton.getInstance(getApplicationContext()).hasProfile()) {

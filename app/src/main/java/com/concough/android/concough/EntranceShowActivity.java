@@ -43,8 +43,10 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.QuickContactBadge;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
@@ -81,6 +83,7 @@ import com.orhanobut.dialogplus.OnCancelListener;
 import com.orhanobut.dialogplus.OnItemClickListener;
 
 import org.cryptonode.jncryptor.AES256JNCryptor;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -1255,6 +1258,14 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                     }
                 });
 
+                imgPreLoad.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(@NotNull View v) {
+                        setImages();
+//                        Toast.makeText(EntranceShowActivity.this,"Refresh Clicked", Toast.LENGTH_LONG).show();
+                    }
+                });
+
                 starImage.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -1265,6 +1276,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         globalPairListInteger = starredIds.size();
                     }
                 });
+
 
                 if (EntranceShowActivity.this.showAllAnswers) {
                     answer.setVisibility(View.VISIBLE);
@@ -1740,6 +1752,15 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         }
                     }
                 });
+
+                imgPreLoad.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(@NotNull View v) {
+                        setImages();
+//                        Toast.makeText(EntranceShowActivity.this,"Refresh Clicked", Toast.LENGTH_LONG).show();
+                    }
+                });
+
 
                 starImage.setOnClickListener(new View.OnClickListener() {
                     @Override

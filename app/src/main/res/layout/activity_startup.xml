@@ -32,13 +32,13 @@
 
         <ImageView
             android:id="@+id/imageView9"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:layout_marginTop="100dp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/no_image_placeholder" />
+            app:srcCompat="@drawable/logo_white" />
     </android.support.constraint.ConstraintLayout>
 
 
@@ -69,7 +69,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="fitXY"
-                app:srcCompat="@drawable/video" />
+                app:srcCompat="@drawable/logo_white" />
 
             <com.concough.android.vendor.introVideo.IntroVideoView
                 android:id="@+id/introVideoView"
@@ -89,13 +89,13 @@
 
         <ImageView
             android:id="@+id/imageView12"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:layout_marginTop="32dp"
             app:layout_constraintLeft_toLeftOf="@+id/home_container"
             app:layout_constraintRight_toRightOf="@+id/home_container"
             app:layout_constraintTop_toTopOf="@+id/home_container"
-            app:srcCompat="@drawable/app_dropbox_icon" />
+            app:srcCompat="@drawable/logo_white_transparent" />
 
         <TextView
             android:id="@+id/deviceAlert"
@@ -104,7 +104,7 @@
             android:layout_marginLeft="40dp"
             android:layout_marginRight="40dp"
             android:layout_marginTop="24dp"
-            android:text="در یک زمان تنها یک دستگاه اجازه استفاده از برنامه را دارد"
+            android:text="@string/StartupA_S_deviceAlert"
             android:textAlignment="center"
             android:textColor="@android:color/white"
             android:textSize="16sp"
@@ -120,7 +120,7 @@
             android:layout_marginLeft="40dp"
             android:layout_marginRight="40dp"
             android:layout_marginTop="16dp"
-            android:text="دستگاه"
+            android:text="@string/StartupA_S_deviceName"
             android:textAlignment="center"
             android:textColor="@color/colorConcoughGray4"
             android:textSize="14sp"
@@ -139,7 +139,7 @@
             android:layout_marginStart="40dp"
             android:layout_marginTop="48dp"
             android:background="@drawable/concough_outline_blue_rounded_full_style"
-            android:text="خروج از حالت قفل"
+            android:text="@string/StartupA_S_exitFromLockModeButton"
             android:textColor="@color/colorConcoughBlue"
             android:textSize="17sp"
             app:layout_constraintHorizontal_bias="0.0"
@@ -157,7 +157,7 @@
             android:layout_marginStart="40dp"
             android:layout_marginTop="24dp"
             android:background="@drawable/concough_outline_gray_rounded_full_style"
-            android:text="بازیابی رمز عبور"
+            android:text="@string/StartupA_S_resetPasswordButton"
             android:textColor="@color/colorConcoughGray"
             android:textSize="17sp"
             app:layout_constraintLeft_toLeftOf="@+id/StartupA_intro"
@@ -193,7 +193,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="fitXY"
-                app:srcCompat="@drawable/video" />
+                app:srcCompat="@drawable/logo_white" />
 
             <com.concough.android.vendor.introVideo.IntroVideoView
                 android:id="@+id/introVideoViewLogin"
@@ -213,13 +213,13 @@
 
         <ImageView
             android:id="@+id/logoLogin"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:layout_marginTop="32dp"
             app:layout_constraintLeft_toLeftOf="@+id/StartupA_introLogin"
             app:layout_constraintRight_toRightOf="@+id/StartupA_introLogin"
             app:layout_constraintTop_toTopOf="@+id/StartupA_introLogin"
-            app:srcCompat="@drawable/app_dropbox_icon" />
+            app:srcCompat="@drawable/logo_white_transparent" />
 
         <TextView
             android:id="@+id/welcomeMessage"
@@ -228,7 +228,7 @@
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginTop="56dp"
-            android:text="به کنکوق خوش آمدید"
+            android:text="@string/StartupA_S_welcomeMessage"
             android:textColor="@android:color/white"
             android:textSize="20sp"
             app:layout_constraintLeft_toLeftOf="@+id/StartupA_introLogin"
@@ -246,7 +246,7 @@
             android:layout_marginStart="40dp"
             android:layout_marginTop="48dp"
             android:background="@drawable/concough_outline_blue_rounded_full_style"
-            android:text="ورود به کنکوق"
+            android:text="@string/StartupA_S_loginButton"
             android:textColor="@color/colorConcoughBlue"
             android:textSize="17sp"
             app:layout_constraintHorizontal_bias="0.0"
@@ -264,7 +264,7 @@
             android:layout_marginStart="40dp"
             android:layout_marginTop="24dp"
             android:background="@drawable/concough_outline_green_rounded_full_style"
-            android:text="ثبت نام"
+            android:text="@string/StartupA_S_signUpButton"
             android:textColor="@color/colorConcoughGreen"
             android:textSize="17sp"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -301,7 +301,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="fitXY"
-                app:srcCompat="@drawable/video" />
+                app:srcCompat="@drawable/logo_white" />
 
             <com.concough.android.vendor.introVideo.IntroVideoView
                 android:id="@+id/introVideoViewOffline"
@@ -322,13 +322,13 @@
 
         <ImageView
             android:id="@+id/logoOffline"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:layout_marginTop="32dp"
             app:layout_constraintLeft_toLeftOf="@+id/StartupA_offline"
             app:layout_constraintRight_toRightOf="@+id/StartupA_offline"
             app:layout_constraintTop_toTopOf="@+id/StartupA_offline"
-            app:srcCompat="@drawable/app_dropbox_icon" />
+            app:srcCompat="@drawable/logo_white_transparent" />
 
         <TextView
             android:id="@+id/offlineMessage"
@@ -337,7 +337,7 @@
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginTop="56dp"
-            android:text="دسترسی به اینترنت وجود ندارد"
+            android:text="@string/StartupA_S_offlineMessage"
             android:textColor="@android:color/white"
             android:textSize="20sp"
             app:layout_constraintLeft_toLeftOf="@+id/StartupA_offline"
@@ -355,7 +355,7 @@
             android:layout_marginStart="40dp"
             android:layout_marginTop="48dp"
             android:background="@drawable/concough_outline_blue_rounded_full_style"
-            android:text="ورود بصورت آفلاین"
+            android:text="@string/StartupA_S_offlineButton"
             android:textColor="@color/colorConcoughBlue"
             android:textSize="17sp"
             app:layout_constraintHorizontal_bias="0.0"

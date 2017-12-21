@@ -265,6 +265,21 @@ public class ArchiveActivity extends BottomNavigationActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        AlertClass.hideLoadingMessage(ArchiveActivity.this.loadingProgress);
+        ArchiveActivity.this.loadingProgress=null;
+    }
+
+    @Override
+    protected void onStop() {
+        Log.d(TAG, "onStop: Archive");
+        AlertClass.hideLoadingMessage(loadingProgress);
+        loadingProgress = null;
+        super.onStop();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         actionBarSet();
@@ -618,12 +633,16 @@ public class ArchiveActivity extends BottomNavigationActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (loadingProgress == null) {
-                        loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
-                        loadingProgress.show();
-                    } else if (!loadingProgress.isShowing()) {
-                        loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
-                        loadingProgress.show();
+                    if (!isFinishing()) {
+                        if (loadingProgress == null) {
+                            loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
+                            loadingProgress.show();
+                        } else {
+                            if (!loadingProgress.isShowing()) {
+                                //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                                loadingProgress.show();
+                            }
+                        }
                     }
                 }
             });

@@ -118,6 +118,13 @@ public class HomeActivity extends BottomNavigationActivity {
     }
 
 
+    @Override
+    protected void onPause() {
+        AlertClass.hideLoadingMessage(loadingProgress);
+        loadingProgress = null;
+        super.onPause();
+    }
+
     private void actionBarSet() {
         ArrayList<ButtonDetail> buttonDetailArrayList = new ArrayList<>();
 
@@ -153,12 +160,16 @@ public class HomeActivity extends BottomNavigationActivity {
         new HomeActivityTask().execute(date);
 
         if (date == null) {
-            if (loadingProgress == null) {
-                loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
-                loadingProgress.show();
-            } else if (!loadingProgress.isShowing()) {
-                loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
-                loadingProgress.show();
+            if(!isFinishing()) {
+                if (loadingProgress == null) {
+                    loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                    loadingProgress.show();
+                } else {
+                    if (!loadingProgress.isShowing()) {
+                        //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                        loadingProgress.show();
+                    }
+                }
             }
         }
 

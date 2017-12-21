@@ -510,8 +510,13 @@ class BasketSingleton : Handler.Callback {
         val productType = bundle.getString("TYPE")
         val target: Any = bundle.getSerializable("TARGET")
 
+        var loadingProgress: KProgressHUD? = AlertClass.showLoadingMessage(context!!)
+        loadingProgress?.show()
 
         BasketRestAPIClass.addProductToBasket(context?.applicationContext!!, this.basketId!!, productId!!, productType!!, { data, error ->
+            AlertClass.hideLoadingMessage(loadingProgress)
+            loadingProgress = null
+
             if (error == HTTPErrorType.Success) {
                 if (data != null) {
                     try {
@@ -607,7 +612,13 @@ class BasketSingleton : Handler.Callback {
         val saleId = bundle.getInt("SALE_ID")
         val salePosition = bundle.getInt("SALE_POSITION")
 
+        var loadingProgress: KProgressHUD? = AlertClass.showLoadingMessage(context!!)
+        loadingProgress?.show()
+
         BasketRestAPIClass.removeSaleFromBasket(context?.applicationContext!!, this.basketId!!, saleId!!, { data, error ->
+            AlertClass.hideLoadingMessage(loadingProgress)
+            loadingProgress = null
+
             if (error == HTTPErrorType.Success) {
                 if (data != null) {
                     try {

@@ -27,6 +27,8 @@ import com.concough.android.utils.KeyChainAccessProxy;
 import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonObject;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.text.ParseException;
 import java.util.Date;
 
@@ -42,6 +44,7 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
 
 
     private Button saveButton;
+    private EditText passwordEditCurrent;
     private EditText passwordEdit;
     private EditText passwordEditConfirm;
     private TextView changePassLabel;
@@ -67,17 +70,53 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
 
         saveButton = (Button) findViewById(R.id.settingChangePasswordA_saveButton);
         changePassLabel = (TextView) findViewById(R.id.settingChangePasswordA_changePassLabel);
+        passwordEditCurrent = (EditText) findViewById(R.id.settingChangePasswordA_passwordEditCurrent);
         passwordEdit = (EditText) findViewById(R.id.settingChangePasswordA_passwordEdit);
         passwordEditConfirm = (EditText) findViewById(R.id.settingChangePasswordA_passwordEditConfirm);
 
 
         saveButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
         changePassLabel.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+        passwordEditCurrent.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
         passwordEdit.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
         passwordEditConfirm.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
 
 
+        passwordEditCurrent.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().length() > 0) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                        passwordEditCurrent.setTextDirection(View.TEXT_DIRECTION_LTR);
+                        passwordEditCurrent.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+                    } else {
+                        passwordEditCurrent.setGravity(Gravity.END);
+
+                    }
+                } else {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                        passwordEditCurrent.setTextDirection(View.TEXT_DIRECTION_RTL);
+                        passwordEditCurrent.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+                    } else {
+                        passwordEditCurrent.setGravity(Gravity.START);
+                    }
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+
         passwordEdit.addTextChangedListener(new TextWatcher() {
+
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -146,16 +185,28 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String passCurrent = passwordEditCurrent.getText().toString().trim();
                 String pass1 = passwordEdit.getText().toString().trim();
                 String pass2 = passwordEditConfirm.getText().toString().trim();
 
+                if (!passCurrent.equals("") && !pass1.equals("") && !pass2.equals("") ) {
 
-                if (pass1.equals("") && pass2.equals("") ) {
-                    SettingChangePasswordActivity.this.changePassword(pass1, pass2);
+                    if(pass1.equals(pass2)){
+                        if(pass2.length()>=6){
+                            SettingChangePasswordActivity.this.changePassword(passCurrent, pass2);
+
+                        } else {
+                            AlertClass.showTopMessage(SettingChangePasswordActivity.this,findViewById(R.id.container),"AuthProfile","PassCannotChange","error",null);
+
+                        }
+                    } else {
+                        AlertClass.showTopMessage(SettingChangePasswordActivity.this,findViewById(R.id.container),"Form","NotSameFields","error",null);
+
+                    }
                 } else {
                     AlertClass.showTopMessage(SettingChangePasswordActivity.this,findViewById(R.id.container),"Form","EmptyFields","error",null);
-                }
 
+                }
             }
         });
 
