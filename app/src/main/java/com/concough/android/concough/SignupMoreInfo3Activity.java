@@ -251,6 +251,8 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
                                         }
                                         selectButton.setText(namesPair.get(0).second);
 
+                                        SignupMoreInfo1Activity.signupInfo.setGrade(namesPair.get(0).first);
+                                        SignupMoreInfo1Activity.signupInfo.setGradeString(namesPair.get(0).second);
 
                                     } else if (status.equals("Error")) {
                                         String errorType = jsonObject.get("error_type").getAsString();

@@ -265,3 +265,12 @@ Payment And Some Bugs Fixed (abolfazl.beh)
 9 - Sync with server now added to "StartupActivity" & "ResetPasswordActivity" and "LoginActivity" --> always after lock check
 10 - "BasketCheckoutActivity" completed for payment
 11 - "EntranceDetailActivity" localEntrance bugs fixed
+
+------------------------------------------------------------------------------------------------
+Some Enhancement for Release v.1.0 (abolfazl.beh)
+
+1 - Picasso packeage removed from gradle.
+2 - Some files missing --> add them
+3 - Some Change on "LoginActivity" -> EditText ltr fixed.
+4 - "SignupMoreInfo3Activity" signup struct default set when grade list will be ready -> make error when you no choose from dialog and just submit.
+

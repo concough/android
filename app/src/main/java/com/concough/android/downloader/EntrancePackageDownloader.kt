@@ -454,7 +454,8 @@ class EntrancePackageDownloader : Service() {
                 .Builder(this)
                 .setContentTitle(message)
                 .setContentText(subMessage)
-                .setSmallIcon(R.drawable.logo_white_transparent_notification)
+//                .setSmallIcon(R.drawable.logo_white_transparent_notification)
+                .setSmallIcon(R.drawable.logo_white_transparent)
 
         sendNotification()
     }

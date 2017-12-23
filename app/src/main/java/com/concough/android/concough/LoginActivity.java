@@ -128,6 +128,15 @@ public class LoginActivity extends AppCompatActivity {
         loginButton.setOnClickListener(loginButtonListener);
 
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            usernameEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
+            //usernameEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
+            usernameEdit.setGravity(Gravity.END);
+        } else {
+            usernameEdit.setGravity(Gravity.START);
+        }
+
+
         usernameEdit.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -138,15 +147,17 @@ public class LoginActivity extends AppCompatActivity {
                 if (s.toString().length() > 0) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                         usernameEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
-                        usernameEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+//                        usernameEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+                        usernameEdit.setGravity(Gravity.START);
                     } else {
                         usernameEdit.setGravity(Gravity.END);
 
                     }
                 } else {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        usernameEdit.setTextDirection(View.TEXT_DIRECTION_RTL);
-                        usernameEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+                        usernameEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
+                        //usernameEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
+                        usernameEdit.setGravity(Gravity.END);
                     } else {
                         usernameEdit.setGravity(Gravity.START);
                     }
@@ -161,6 +172,15 @@ public class LoginActivity extends AppCompatActivity {
         });
 
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            //passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+            passwordEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
+            passwordEdit.setGravity(Gravity.END);
+        } else {
+            passwordEdit.setGravity(Gravity.START);
+        }
+
+
         passwordEdit.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -171,15 +191,17 @@ public class LoginActivity extends AppCompatActivity {
                 if (s.toString().length() > 0) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                         passwordEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
-                        passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+//                        passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+                        passwordEdit.setGravity(Gravity.START);
                     } else {
                         passwordEdit.setGravity(Gravity.END);
 
                     }
                 } else {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        passwordEdit.setTextDirection(View.TEXT_DIRECTION_RTL);
-                        passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+                        passwordEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
+                        //usernameEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
+                        passwordEdit.setGravity(Gravity.END);
                     } else {
                         passwordEdit.setGravity(Gravity.START);
                     }
