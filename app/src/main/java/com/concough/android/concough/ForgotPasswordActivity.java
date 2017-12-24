@@ -31,6 +31,7 @@ import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
 import static com.concough.android.extensions.ValidatorExtensionsKt.isValidPhoneNumber;
+import static com.concough.android.extensions.EditTextExtensionKt.DirectionFix;
 
 public class ForgotPasswordActivity extends AppCompatActivity {
 
@@ -92,6 +93,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         sendCodeButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
         loginButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
 
+        DirectionFix(usernameEdittext);
 
         usernameEdittext.addTextChangedListener(new TextWatcher() {
             @Override
@@ -101,23 +103,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().length() > 0) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-//                        usernameEdittext.setTextAlignment((View.LAYOUT_DIRECTION_LTR));
-                        usernameEdittext.setTextDirection(View.TEXT_DIRECTION_LTR);
-                        usernameEdittext.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-                    } else {
-                        usernameEdittext.setGravity(Gravity.END);
-
-                    }
-                } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        usernameEdittext.setTextDirection(View.TEXT_DIRECTION_RTL);
-                        usernameEdittext.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-                    } else {
-                        usernameEdittext.setGravity(Gravity.START);
-                    }
-                }
+              DirectionFix(usernameEdittext);
             }
 
             @Override

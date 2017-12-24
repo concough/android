@@ -25,7 +25,6 @@
             android:id="@+id/EDItem_purchased_section_devices"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginTop="8dp"
             android:gravity="center"
@@ -61,9 +60,9 @@
                 android:layout_weight="1"
                 android:gravity="right|end"
                 android:text="TextView"
-                android:textSize="13sp"
                 android:textAlignment="textEnd"
-                android:textColor="@color/colorConcoughBlueDark" />
+                android:textColor="@color/colorConcoughBlueDark"
+                android:textSize="13sp" />
 
             <ImageView
                 android:id="@+id/imageView2"
@@ -79,7 +78,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
@@ -94,9 +92,9 @@
                 android:layout_marginEnd="4dp"
                 android:layout_marginRight="4dp"
                 android:layout_weight="1"
-                android:textSize="13sp"
                 android:text="@string/entrance_detail_downloading_label"
-                android:textColor="@color/colorConcoughBlue" />
+                android:textColor="@color/colorConcoughBlue"
+                android:textSize="13sp" />
 
             <ProgressBar
                 android:id="@+id/EDItem_purchased_section_downloading_progress"

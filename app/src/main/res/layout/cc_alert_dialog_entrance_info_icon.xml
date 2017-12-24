@@ -13,8 +13,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingLeft="15dp"
-        android:paddingRight="15dp"
-        android:paddingStart="15dp">
+        android:paddingRight="15dp">
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
@@ -81,6 +80,7 @@
 
         <Switch
             android:id="@+id/entranceInfoIcon_switch"
+            style="@style/SwitchStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
@@ -90,9 +90,8 @@
             android:paddingTop="5dp"
             android:text="نمایش تمامی جواب ها"
             android:textColor="@color/colorConcoughGray2"
-            android:textColorLink="@color/colorConcoughGreen"
 
-            style="@style/SwitchStyle"
+            android:textColorLink="@color/colorConcoughGreen"
             android:textDirection="rtl"
             android:textSize="13sp" />
 

@@ -13,6 +13,7 @@ import android.text.TextWatcher
 import android.view.Gravity
 import android.view.View
 import android.widget.Toast
+import com.concough.android.extensions.DirectionFix
 import com.concough.android.extensions.isValidPhoneNumber
 import com.concough.android.general.AlertClass
 import com.concough.android.rest.AuthRestAPIClass
@@ -84,6 +85,7 @@ class SignupActivity : AppCompatActivity() {
 
         signupA_SignupAloading.visibility = View.GONE
 
+
         // -- Listeners
         signupA_sendCode.setOnClickListener {
             // request server to send code
@@ -109,6 +111,8 @@ class SignupActivity : AppCompatActivity() {
             finish()
         }
 
+        signupA_usernameEdit.DirectionFix()
+
         signupA_usernameEdit.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -116,14 +120,9 @@ class SignupActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 signupA_usernameCheckTextView.visibility = View.VISIBLE
 
-                if (s.toString().length > 0) {
+                signupA_usernameEdit.DirectionFix()
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        signupA_usernameEdit.textDirection = View.TEXT_DIRECTION_LTR
-                        signupA_usernameEdit.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
-                    } else {
-                        signupA_usernameEdit.gravity = Gravity.END
-                    }
+                if (s.toString().length > 0) {
 
                     var username = s.toString()
                     if (username.isValidPhoneNumber) {
@@ -228,12 +227,6 @@ class SignupActivity : AppCompatActivity() {
                     signupA_usernameCheckTextView.text = mainUsernameText
                     signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughGray))
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        signupA_usernameEdit.textDirection = View.TEXT_DIRECTION_RTL
-                        signupA_usernameEdit.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
-                    } else {
-                        signupA_usernameEdit.gravity = Gravity.START
-                    }
                 }
             }
 

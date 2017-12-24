@@ -125,11 +125,11 @@ public class SettingActivity extends BottomNavigationActivity {
                         share.putExtra(Intent.EXTRA_TEXT, "دسترسی به تمام آزمونهای برگزار شده در کشور آنلاین و آفلاین و ده ها قابلیت دیگر  \nhttps://zhycan.com/concough/  ");
                         share.putExtra(Intent.EXTRA_SUBJECT, "کنکوق");
 
-                        Uri uri = Uri.parse("android.resource://com.concough.android.concough/raw/logo_black");
+                        Uri uri = Uri.parse("android.resource://com.concough.android.concough/raw/logo_white_share_jpg");
                         share.putExtra(Intent.EXTRA_STREAM, uri);
 
 
-                        startActivity(Intent.createChooser(share, "لطفا به اشتراک بزار زودتر"));
+                        startActivity(Intent.createChooser(share, "کنکوق، آرشیو جامع آزمون های چهار گزینه ای"));
 
                         break;
                     }

@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -14,6 +15,7 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -88,6 +90,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -106,7 +109,10 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.bumptech.glide.request.target.Target.SIZE_ORIGINAL;
+import static com.concough.android.concough.FavoritesActivity.convertFileToByteArray;
 import static com.concough.android.concough.R.id.headerShowStarred_countEntrance;
 import static com.concough.android.settings.ConstantsKt.getSECRET_KEY;
 import static com.concough.android.utils.DataConvertorsKt.questionAnswerToString;
@@ -119,6 +125,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         public int count;
         public RealmList<EntranceQuestionModel> questions;
     }
+
     private final static String TAG = "EntranceShowActivity";
 
     private final static String ENTRANCE_UNIQUE_ID_KEY = "entranceUniqueId";
@@ -262,7 +269,11 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         tabLayout = (CustomTabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
-        tabLayout.setTabGravity(Gravity.RIGHT);
+
+        tabLayout.setTabGravity(Gravity.LEFT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            tabLayout.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        }
 
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -311,7 +322,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                             @Override
                             public void run() {
                                 loadLessions(position);
-                                tabLayout.scrollTo(0, 1);
+//                                tabLayout.scrollTo(0, 1);
                             }
                         });
 
@@ -335,6 +346,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             mActionBar.setElevation(2);
         }
 
+//        AppBarLayout appBarLayout = (AppBarLayout) findViewById(R.id.appbar);
         View mCustomView = LayoutInflater.from(this).inflate(R.layout.cc_entrance_actionbar, null);
 
         infoButton = (Button) mCustomView.findViewById(R.id.actionBarL_infoButton);
@@ -361,7 +373,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
 
         if (mActionBar != null) {
-            mActionBar.setCustomView(mCustomView);
+            mActionBar.setCustomView(mCustomView, new ActionBar.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
             mActionBar.setDisplayShowCustomEnabled(true);
         }
 
@@ -436,7 +448,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     @Override
     protected void onResume() {
         super.onResume();
-        PowerManager powerManager = (PowerManager)this.getSystemService(Context.POWER_SERVICE);
+        PowerManager powerManager = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
         this.wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "My Lock");
         wakeLock.acquire();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -445,7 +457,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     @Override
     protected void onPause() {
         super.onPause();
-        if(this.wakeLock != null) {
+        if (this.wakeLock != null) {
             this.wakeLock.release();
         }
     }
@@ -537,8 +549,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
 
                 if (tvStarredCount.getVisibility() == View.VISIBLE) { // if must show all questions
-                    backButton.setVisibility(View.GONE);
 
+                    backButton.setVisibility(View.VISIBLE);
 
                     showType = "Starred";
 
@@ -603,7 +615,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         @Override
                         public void run() {
                             loadLessions(0);
-                            tabLayout.scrollTo(0, 1);
+//                            tabLayout.scrollTo(0, 1);
                         }
                     });
 
@@ -627,15 +639,24 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     }
 
+
     private void downloadImage(final int imageId) {
+        byte[] data;
         final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
-        byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+
+        File photo = new File(getApplicationContext().getFilesDir() + "/images/eset", String.valueOf(imageId));
+        if (photo.exists()) {
+            data = convertFileToByteArray(photo);
+            Log.d(TAG, "downloadImage: From File");
+        } else {
+            data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+        }
+
         if (data != null) {
 
             Glide.with(EntranceShowActivity.this)
 
                     .load(data)
-
                     //.crossFade()
                     .dontAnimate()
                     .into(esetImageView)
@@ -646,9 +667,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             MediaRestAPIClass.downloadEsetImage(EntranceShowActivity.this, imageId, esetImageView, new Function2<byte[], HTTPErrorType, Unit>() {
                 @Override
                 public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
+//                            runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
                     if (httpErrorType != HTTPErrorType.Success) {
                         Log.d(TAG, "run: ");
                         if (httpErrorType == HTTPErrorType.Refresh) {
@@ -657,7 +678,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                             esetImageView.setImageResource(R.drawable.no_image);
                         }
                     } else {
-                        MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+                        if (url != null) {
+                            MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+                        }
 
                         Glide.with(EntranceShowActivity.this)
 
@@ -668,8 +691,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                                 .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
 
                     }
-//                        }
-//                    });
+//                                }
+//                            });
                     return null;
                 }
             }, new Function1<NetworkErrorType, Unit>() {
@@ -680,6 +703,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             });
         }
     }
+
 
     private ArrayList<View> getAllChildren(View v) {
 
@@ -750,7 +774,13 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     private void loadLessions(int index) {
         if (index >= 0) {
             lessonsDB = new RealmList<EntranceLessonModel>();
-            RealmResults<EntranceLessonModel> lessionModel = bookletsDB.get(index).lessons.sort("order", Sort.ASCENDING);
+            RealmResults<EntranceLessonModel> lessionModel;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                lessionModel = bookletsDB.get(index).lessons.sort("order", Sort.ASCENDING);
+            } else {
+                lessionModel = bookletsDB.get(index).lessons.sort("order", Sort.DESCENDING);
+            }
             lessonsDB.addAll(lessionModel.subList(0, lessionModel.size()));
 
             lessonAdapter.clear();
@@ -766,7 +796,14 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             tabLayout.setupWithViewPager(EntranceShowActivity.this.mViewPager);
 
             texButton.setText(buttonTextMaker(bookletAdapter.getItem(index).toString(), false));
-            EntranceShowActivity.this.tabLayout.getTabAt(0).select();
+
+            Handler h = new Handler();
+            h.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    EntranceShowActivity.this.tabLayout.getTabAt(0).select();
+                }
+            }, 1500);
 
 
         }
@@ -1231,7 +1268,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
                 questionNumber.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.number));
 
-                answer.setText("گزینه " + questionAnswerToString(entranceQuestionModel.answer)  + " صحیح است");
+                answer.setText("گزینه " + questionAnswerToString(entranceQuestionModel.answer) + " صحیح است");
                 //answer.setText("گزینه " + FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.answer) + " صحیح است");
 
                 mEntranceQuestionModel = entranceQuestionModel;
@@ -1426,7 +1463,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                                     @Override
                                     public boolean onResourceReady(GlideDrawable resource, byte[] model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
                                         imgPreLoad.setVisibility(View.GONE);
-                                        img1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                                        img1.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                                         img1.setScaleType(ImageView.ScaleType.FIT_CENTER);
                                         img1.setVisibility(View.VISIBLE);
                                         img1.setAdjustViewBounds(true);
@@ -1726,7 +1763,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
                 questionNumber.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.number));
 
-                answer.setText("گزینه " + questionAnswerToString(entranceQuestionModel.answer)  + " صحیح است");
+                answer.setText("گزینه " + questionAnswerToString(entranceQuestionModel.answer) + " صحیح است");
 //                answer.setText("گزینه " + FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.answer) + " صحیح است");
 
                 mEntranceQuestionModel = entranceQuestionModel;
@@ -1932,7 +1969,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                                     @Override
                                     public boolean onResourceReady(GlideDrawable resource, byte[] model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
                                         imgPreLoad.setVisibility(View.GONE);
-                                        img1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                                        img1.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                                         img1.setScaleType(ImageView.ScaleType.FIT_CENTER);
                                         img1.setVisibility(View.VISIBLE);
                                         img1.setAdjustViewBounds(true);

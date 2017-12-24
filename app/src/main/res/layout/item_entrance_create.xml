@@ -30,7 +30,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:background="@drawable/concough_border_radius_style"
         android:paddingLeft="6dp"
@@ -44,13 +43,12 @@
         android:id="@+id/itemEntranceCreateI_concourText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
         android:text="@string/itemEntranceCreateI_S_concourText"
+        android:textColor="@color/colorConcoughGray"
         android:textSize="15sp"
         app:layout_constraintRight_toRightOf="parent"
-        android:textColor="@color/colorConcoughGray"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -148,9 +146,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:gravity="center_vertical|center"
+            android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="3dp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -162,6 +159,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="4dp"
+                android:layout_weight="1"
                 android:text="TextView"
                 android:textColor="@color/colorConcoughGray"
                 android:textSize="12sp" />
@@ -170,7 +168,6 @@
                 android:id="@+id/itemEntranceCreateI_clock"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:layout_weight="1"
                 app:srcCompat="@drawable/clock_100" />
 
         </LinearLayout>
@@ -180,7 +177,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginTop="8dp"
             android:orientation="horizontal"

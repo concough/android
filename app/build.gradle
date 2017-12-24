@@ -18,6 +18,9 @@ android {
 //        }
     }
     buildTypes {
+        debug {
+            ext.alwaysUpdateBuildId = false
+        }
         release {
             minifyEnabled true
             shrinkResources true

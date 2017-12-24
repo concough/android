@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Concough (alpha)</string>
-    <string name="signupMoreInfo1A_app_name">کنکوق (آزمایشی)</string>
+    <string name="app_name">Concough</string>
+    <string name="signupMoreInfo1A_app_name">کنکوق</string>
 
 
     <string name="planet_prompt">Test-Drop</string>

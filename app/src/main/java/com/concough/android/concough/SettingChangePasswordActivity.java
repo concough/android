@@ -29,6 +29,9 @@ import com.google.gson.JsonObject;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.concough.android.extensions.EditTextExtensionKt;
+
+
 import java.text.ParseException;
 import java.util.Date;
 
@@ -40,7 +43,7 @@ import kotlin.jvm.functions.Function2;
 import static com.concough.android.settings.ConstantsKt.getPASSWORD_KEY;
 
 public class SettingChangePasswordActivity extends BottomNavigationActivity {
-    private static final String TAG="SettingChangePasswordActivity";
+    private static final String TAG = "SettingChangePasswordActivity";
 
 
     private Button saveButton;
@@ -82,6 +85,11 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
         passwordEditConfirm.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
 
 
+        EditTextExtensionKt.DirectionFix(passwordEditCurrent);
+        EditTextExtensionKt.DirectionFix(passwordEdit);
+        EditTextExtensionKt.DirectionFix(passwordEditConfirm);
+
+
         passwordEditCurrent.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -90,22 +98,7 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().length() > 0) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        passwordEditCurrent.setTextDirection(View.TEXT_DIRECTION_LTR);
-                        passwordEditCurrent.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-                    } else {
-                        passwordEditCurrent.setGravity(Gravity.END);
-
-                    }
-                } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        passwordEditCurrent.setTextDirection(View.TEXT_DIRECTION_RTL);
-                        passwordEditCurrent.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-                    } else {
-                        passwordEditCurrent.setGravity(Gravity.START);
-                    }
-                }
+                EditTextExtensionKt.DirectionFix(passwordEditCurrent);
             }
 
             @Override
@@ -124,22 +117,8 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().length() > 0) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        passwordEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
-                        passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-                    } else {
-                        passwordEdit.setGravity(Gravity.END);
+                EditTextExtensionKt.DirectionFix(passwordEdit);
 
-                    }
-                } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        passwordEdit.setTextDirection(View.TEXT_DIRECTION_RTL);
-                        passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-                    } else {
-                        passwordEdit.setGravity(Gravity.START);
-                    }
-                }
             }
 
             @Override
@@ -157,22 +136,8 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().length() > 0) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        passwordEditConfirm.setTextDirection(View.TEXT_DIRECTION_LTR);
-                        passwordEditConfirm.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-                    } else {
-                        passwordEditConfirm.setGravity(Gravity.END);
+                EditTextExtensionKt.DirectionFix(passwordEditConfirm);
 
-                    }
-                } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        passwordEditConfirm.setTextDirection(View.TEXT_DIRECTION_RTL);
-                        passwordEditConfirm.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-                    } else {
-                        passwordEditConfirm.setGravity(Gravity.START);
-                    }
-                }
             }
 
             @Override
@@ -189,22 +154,22 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
                 String pass1 = passwordEdit.getText().toString().trim();
                 String pass2 = passwordEditConfirm.getText().toString().trim();
 
-                if (!passCurrent.equals("") && !pass1.equals("") && !pass2.equals("") ) {
+                if (!passCurrent.equals("") && !pass1.equals("") && !pass2.equals("")) {
 
-                    if(pass1.equals(pass2)){
-                        if(pass2.length()>=6){
+                    if (pass1.equals(pass2)) {
+                        if (pass2.length() >= 6) {
                             SettingChangePasswordActivity.this.changePassword(passCurrent, pass2);
 
                         } else {
-                            AlertClass.showTopMessage(SettingChangePasswordActivity.this,findViewById(R.id.container),"AuthProfile","PassCannotChange","error",null);
+                            AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "AuthProfile", "PassCannotChange", "error", null);
 
                         }
                     } else {
-                        AlertClass.showTopMessage(SettingChangePasswordActivity.this,findViewById(R.id.container),"Form","NotSameFields","error",null);
+                        AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "Form", "NotSameFields", "error", null);
 
                     }
                 } else {
-                    AlertClass.showTopMessage(SettingChangePasswordActivity.this,findViewById(R.id.container),"Form","EmptyFields","error",null);
+                    AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "Form", "EmptyFields", "error", null);
 
                 }
             }
@@ -222,12 +187,10 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
         // Checks the orientation of the screen
         if (newConfig.keyboardHidden == Configuration.KEYBOARDHIDDEN_NO) {
             Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
-        } else if (newConfig.keyboardHidden == Configuration.KEYBOARDHIDDEN_YES){
+        } else if (newConfig.keyboardHidden == Configuration.KEYBOARDHIDDEN_YES) {
             Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
         }
     }
-
-
 
 
     private void actionBarSet() {
@@ -295,7 +258,7 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
                                                         String error_type = jsonObject.get("error_type").toString();
                                                         switch (error_type) {
                                                             case "PassCannotChange": {
-                                                                AlertClass.showTopMessage(SettingChangePasswordActivity.this,findViewById(R.id.container),"AuthProfile","ForgotPass","error",null);
+                                                                AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "AuthProfile", "ForgotPass", "error", null);
                                                                 break;
                                                             }
                                                             case "MultiRecord":

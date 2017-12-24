@@ -61,6 +61,8 @@ import kotlin.jvm.functions.Function2;
 
 import static com.concough.android.settings.ConstantsKt.getPASSWORD_KEY;
 import static com.concough.android.settings.ConstantsKt.getUSERNAME_KEY;
+import static com.concough.android.extensions.EditTextExtensionKt.DirectionFix;
+
 
 public class ResetPasswordActivity extends AppCompatActivity {
     private static final String TAG = "ResetPasswordActivity";
@@ -68,7 +70,6 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private EditText passwordEditConfirm;
     private Button saveButton;
     private KProgressHUD loadingProgress;
-
 
 
     private final static String SIGNUP_STRUCTURE_KEY = "SignupS";
@@ -114,6 +115,9 @@ public class ResetPasswordActivity extends AppCompatActivity {
 
         infoStruct = (SignupStruct) getIntent().getSerializableExtra(SIGNUP_STRUCTURE_KEY);
 
+        DirectionFix(passwordEdit);
+        DirectionFix(passwordEditConfirm);
+
         passwordEdit.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -122,22 +126,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().length() > 0) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        passwordEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
-                        passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-                    } else {
-                        passwordEdit.setGravity(Gravity.END);
-
-                    }
-                } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        passwordEdit.setTextDirection(View.TEXT_DIRECTION_RTL);
-                        passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-                    } else {
-                        passwordEdit.setGravity(Gravity.START);
-                    }
-                }
+                DirectionFix(passwordEdit);
             }
 
             @Override
@@ -155,22 +144,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().length() > 0) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        passwordEditConfirm.setTextDirection(View.TEXT_DIRECTION_LTR);
-                        passwordEditConfirm.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-                    } else {
-                        passwordEditConfirm.setGravity(Gravity.END);
-
-                    }
-                } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        passwordEditConfirm.setTextDirection(View.TEXT_DIRECTION_RTL);
-                        passwordEditConfirm.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-                    } else {
-                        passwordEditConfirm.setGravity(Gravity.START);
-                    }
-                }
+                DirectionFix(passwordEditConfirm);
             }
 
             @Override

@@ -4,7 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.annotation.RequiresApi;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -52,12 +56,16 @@ import com.orhanobut.dialogplus.OnItemClickListener;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
+
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 public class ArchiveActivity extends BottomNavigationActivity {
     private final String TAG = "ArchiveActivity";
@@ -88,6 +96,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
     private Boolean gettingSets = false;
 
     private CustomTabLayout tabLayout;
+    private AppBarLayout appBar;
 
     private JsonElement cacheTypes;
     private ArrayList<JsonElement> cacheGroups;
@@ -106,6 +115,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
     protected int getLayoutResourceId() {
         return R.layout.activity_archive;
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +139,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        appBar  = (AppBarLayout) findViewById(R.id.appbar);
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         mViewPager = (ViewPager) findViewById(R.id.containerView);
@@ -139,7 +150,8 @@ public class ArchiveActivity extends BottomNavigationActivity {
         tabLayout = (CustomTabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
-        tabLayout.setTabGravity(Gravity.RIGHT);
+
+//        tabLayout.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
 
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -202,13 +214,17 @@ public class ArchiveActivity extends BottomNavigationActivity {
         LayoutInflater mInflater = LayoutInflater.from(this);
         mCustomView = mInflater.inflate(R.layout.cc_archive_actionbar, null);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            appBar.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        }
+
         texButton = (Button) mCustomView
                 .findViewById(R.id.actionBarL_dropDown);
         texButton.setText("");
 
 
         if (mActionBar != null) {
-            mActionBar.setCustomView(mCustomView);
+            mActionBar.setCustomView(mCustomView,new ActionBar.LayoutParams(MATCH_PARENT,WRAP_CONTENT));
             mActionBar.setDisplayShowCustomEnabled(true);
         }
 
@@ -537,8 +553,20 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                                         ArchiveActivity.this.tabbarJsonElement.clear();
                                                         ArchiveActivity.this.tabbarJsonElement.addAll(localListJson);
 
+                                                        if (!(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)) {
+                                                            Collections.reverse(ArchiveActivity.this.tabbarJsonElement);
+                                                        }
+
                                                         ArchiveActivity.this.mSectionsPagerAdapter.notifyDataSetChanged();
                                                         tabLayout.setupWithViewPager(ArchiveActivity.this.mViewPager);
+
+                                                        Handler h = new Handler();
+                                                        h.postDelayed(new Runnable() {
+                                                            @Override
+                                                            public void run() {
+                                                                ArchiveActivity.this.tabLayout.getTabAt(0).select();
+                                                            }
+                                                        },200);
 
                                                         break;
                                                     }

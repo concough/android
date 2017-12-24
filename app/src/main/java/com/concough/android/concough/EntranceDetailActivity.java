@@ -429,13 +429,13 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                                 @Override
                                                 public Unit invoke(Object o, Integer integer) {
                                                     ((EntrancePackageDownloader) o).registerActivity(EntranceDetailActivity.this, "ED", 0);
-                                                    uiHandler.post(new Runnable() {
+                                                    uiHandler.postDelayed(new Runnable() {
                                                         @Override
                                                         public void run() {
                                                             EntranceDetailActivity.this.state = EntranceVCStateEnum.DownloadStarted;
                                                             EntranceDetailActivity.this.stateMachine();
                                                         }
-                                                    });
+                                                    }, 500);
 
                                                     return null;
                                                 }

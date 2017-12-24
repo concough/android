@@ -5,10 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.provider.Settings;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -19,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.concough.android.extensions.EditTextExtensionKt;
 import com.concough.android.extensions.ValidatorExtensionsKt;
 import com.concough.android.general.AlertClass;
 import com.concough.android.models.EntranceModel;
@@ -114,6 +112,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+
         registerButton.setOnClickListener(registerButtonListener);
 
 
@@ -127,14 +126,8 @@ public class LoginActivity extends AppCompatActivity {
         };
         loginButton.setOnClickListener(loginButtonListener);
 
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            usernameEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
-            //usernameEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
-            usernameEdit.setGravity(Gravity.END);
-        } else {
-            usernameEdit.setGravity(Gravity.START);
-        }
+        EditTextExtensionKt.DirectionFix(usernameEdit);
+        EditTextExtensionKt.DirectionFix(passwordEdit);
 
 
         usernameEdit.addTextChangedListener(new TextWatcher() {
@@ -144,24 +137,7 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().length() > 0) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        usernameEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
-//                        usernameEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-                        usernameEdit.setGravity(Gravity.START);
-                    } else {
-                        usernameEdit.setGravity(Gravity.END);
-
-                    }
-                } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        usernameEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
-                        //usernameEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
-                        usernameEdit.setGravity(Gravity.END);
-                    } else {
-                        usernameEdit.setGravity(Gravity.START);
-                    }
-                }
+                EditTextExtensionKt.DirectionFix(usernameEdit);
 
             }
 
@@ -172,15 +148,6 @@ public class LoginActivity extends AppCompatActivity {
         });
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            //passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-            passwordEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
-            passwordEdit.setGravity(Gravity.END);
-        } else {
-            passwordEdit.setGravity(Gravity.START);
-        }
-
-
         passwordEdit.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -188,24 +155,8 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().length() > 0) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        passwordEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
-//                        passwordEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-                        passwordEdit.setGravity(Gravity.START);
-                    } else {
-                        passwordEdit.setGravity(Gravity.END);
+                EditTextExtensionKt.DirectionFix(passwordEdit);
 
-                    }
-                } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        passwordEdit.setTextDirection(View.TEXT_DIRECTION_LTR);
-                        //usernameEdit.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
-                        passwordEdit.setGravity(Gravity.END);
-                    } else {
-                        passwordEdit.setGravity(Gravity.START);
-                    }
-                }
 
             }
 
