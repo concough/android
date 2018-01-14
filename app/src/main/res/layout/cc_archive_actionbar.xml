@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:layout_margin="0dp"
     android:background="@null"
+    android:layoutDirection="ltr"
     android:padding="0dp">
 
 
@@ -91,6 +92,7 @@
                     android:layout_marginTop="0dp"
                     android:background="@drawable/concough_badge_red_style"
                     android:gravity="center_vertical"
+                    android:layoutDirection="rtl"
                     android:paddingEnd="6dp"
                     android:paddingLeft="6dp"
                     android:paddingRight="6dp"

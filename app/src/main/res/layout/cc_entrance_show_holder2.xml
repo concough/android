@@ -8,6 +8,7 @@
     android:layout_marginRight="8dp"
     android:layout_marginTop="8dp"
     android:clipChildren="true"
+    android:layoutDirection="ltr"
     tools:context="com.concough.android.concough.ArchiveDetailActivity">
 
 
@@ -43,8 +44,6 @@
                     android:layout_width="70dp"
                     android:layout_height="70dp"
                     android:padding="4dp"
-                    app:layout_constraintLeft_toLeftOf="@+id/relativeLayout"
-                    app:layout_constraintRight_toRightOf="@+id/relativeLayout"
                     tools:layout_editor_absoluteX="44dp"
                     tools:layout_editor_absoluteY="206dp" />
 

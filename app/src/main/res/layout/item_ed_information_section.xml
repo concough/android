@@ -5,6 +5,7 @@
     android:id="@+id/EDItem_information_section_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layoutDirection="ltr"
     android:orientation="vertical">
 
     <android.support.constraint.ConstraintLayout

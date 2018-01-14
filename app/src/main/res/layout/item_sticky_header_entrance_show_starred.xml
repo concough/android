@@ -5,8 +5,9 @@
     android:id="@+id/headerShowStarred_linear"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_horizontal"
     android:background="@drawable/concough_bottom_line_gray3"
+    android:gravity="center_horizontal"
+    android:layoutDirection="ltr"
     android:orientation="horizontal">
 
     <android.support.constraint.ConstraintLayout

@@ -270,10 +270,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         tabLayout.setupWithViewPager(mViewPager);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
 
-        tabLayout.setTabGravity(Gravity.LEFT);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            tabLayout.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-        }
+
 
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -522,8 +519,17 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                     starredAdapter.notifyDataSetChanged();
                 }
             }
+        });
 
-
+        dialogInfo.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if (entranceSwitch.isChecked() != showAllAnswers) {
+                    showAllAnswers = entranceSwitch.isChecked();
+                    entranceShowAdapter.notifyDataSetChanged();
+                    starredAdapter.notifyDataSetChanged();
+                }
+            }
         });
 
 

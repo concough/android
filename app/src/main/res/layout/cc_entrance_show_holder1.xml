@@ -7,12 +7,14 @@
     android:layout_height="wrap_content"
     android:layout_margin="0dp"
     android:background="@drawable/concough_recycle_box_style"
+    android:layoutDirection="ltr"
     tools:context="com.concough.android.concough.ArchiveDetailActivity">
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/ccEntranceShowHolder1I_constrant"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:translationY="-1dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent">

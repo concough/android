@@ -5,6 +5,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
+    android:textDirection="ltr"
     android:background="@drawable/concough_border_radius_center_dialog_style"
     android:orientation="vertical">
 

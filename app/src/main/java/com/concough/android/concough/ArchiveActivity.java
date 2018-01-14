@@ -2,6 +2,8 @@ package com.concough.android.concough;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -19,6 +21,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.LayoutDirection;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -59,6 +62,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -88,6 +92,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
     private RecyclerView recycleView;
     private Button refreshButton;
     private View mCustomView;
+    private LinearLayout linearLayout;
 
     private KProgressHUD loadingProgress;
 
@@ -131,6 +136,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
         dropDownJsonElement = new ArrayList<JsonElement>();
         tabbarJsonElement = new ArrayList<JsonElement>();
         adapterTab = new ArrayAdapter<String>(this, R.layout.cc_archive_listitem_tabbar);
+        linearLayout = (LinearLayout) findViewById(R.id.container);
 
         recycleView = (RecyclerView) findViewById(R.id.archiveA_recycleDetail);
         adapterSet = new GetSetsAdapter(this, new ArrayList<JsonElement>());
@@ -139,19 +145,21 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        appBar  = (AppBarLayout) findViewById(R.id.appbar);
+        appBar = (AppBarLayout) findViewById(R.id.appbar);
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         mViewPager = (ViewPager) findViewById(R.id.containerView);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-
 
         //Tab
         tabLayout = (CustomTabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
 
-//        tabLayout.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        tabLayout.setTabGravity(Gravity.LEFT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            tabLayout.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        }
 
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -182,6 +190,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
         adapter = new DialogAdapter(ArchiveActivity.this, typeList);
         dialog = DialogPlus.newDialog(this)
                 .setAdapter(adapter)
+
                 .setOnItemClickListener(new OnItemClickListener() {
                     @Override
                     public void onItemClick(DialogPlus dialog, Object item, View view, int position) {
@@ -215,7 +224,9 @@ public class ArchiveActivity extends BottomNavigationActivity {
         mCustomView = mInflater.inflate(R.layout.cc_archive_actionbar, null);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+
             appBar.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+            tabLayout.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
         }
 
         texButton = (Button) mCustomView
@@ -224,7 +235,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
 
         if (mActionBar != null) {
-            mActionBar.setCustomView(mCustomView,new ActionBar.LayoutParams(MATCH_PARENT,WRAP_CONTENT));
+            mActionBar.setCustomView(mCustomView, new ActionBar.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
             mActionBar.setDisplayShowCustomEnabled(true);
         }
 
@@ -237,7 +248,6 @@ public class ArchiveActivity extends BottomNavigationActivity {
                     dialog.dismiss();
                 } else {
                     dialog.show();
-
                 }
 
             }
@@ -256,10 +266,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
 //                if (ArchiveActivity.this.adapter.mArrayList.size() == 0) { //avoid duplicate dropdown
                 getTypes();
 //                }
-
                 //   changeTypeIndex(0);
-
-
             }
         });
 
@@ -284,7 +291,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
     protected void onDestroy() {
         super.onDestroy();
         AlertClass.hideLoadingMessage(ArchiveActivity.this.loadingProgress);
-        ArchiveActivity.this.loadingProgress=null;
+        ArchiveActivity.this.loadingProgress = null;
     }
 
     @Override
@@ -340,32 +347,32 @@ public class ArchiveActivity extends BottomNavigationActivity {
     private void changeTypeIndex(int index) {
 
         ArchiveActivity.this.currentPositionDropDown = index;
-        ArchiveActivity.this.texButton.setText(buttonTextMaker((String) ArchiveActivity.this.adapter.getItem(index), false));
+        ArchiveActivity.this.texButton.setText(buttonTextMaker((String) ArchiveActivity.this.adapter.getItem(index).toString().trim(), false));
         int id = ArchiveActivity.this.dropDownJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
         getTab(id);
     }
 
     private void changeGroupIndex(final int index) {
-        Integer i = ArchiveActivity.this.tabbarJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
+        if (index >= 0) {
+            Integer i = ArchiveActivity.this.tabbarJsonElement.get(index).getAsJsonObject().get("id").getAsInt();
 //        ArchiveActivity.this.currentPositionDropDown = index;
-        getSets(i);
-        currentGroupSelected = i;
-        runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        ArchiveActivity.this.tabLayout.getTabAt(index).select();
-                    }
-                });
+            getSets(i);
+//            getSets(i);
+            runOnUiThread(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            ArchiveActivity.this.tabLayout.getTabAt(index).select();
+                        }
+                    });
+        }
     }
 
 
     // Asyncs
 
     private void getTypes() {
-
         new GetTypesTask().execute();
-
     }
 
     private void getTab(int typeId) {
@@ -423,11 +430,17 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                                 }
 
 
+
+
                                                 ArchiveActivity.this.adapter.setItems(localList);
                                                 ArchiveActivity.this.dropDownJsonElement.clear();
                                                 ArchiveActivity.this.dropDownJsonElement.addAll(localListJson);
                                                 ArchiveActivity.this.adapter.notifyDataSetChanged();
-                                                ArchiveActivity.this.changeTypeIndex(0);
+
+
+                                                    ArchiveActivity.this.changeTypeIndex(0);
+
+
                                                 break;
                                             }
                                             case "Error": {
@@ -553,9 +566,9 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                                         ArchiveActivity.this.tabbarJsonElement.clear();
                                                         ArchiveActivity.this.tabbarJsonElement.addAll(localListJson);
 
-                                                        if (!(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)) {
-                                                            Collections.reverse(ArchiveActivity.this.tabbarJsonElement);
-                                                        }
+//                                                        if (!(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)) {
+//                                                            Collections.reverse(ArchiveActivity.this.tabbarJsonElement);
+//                                                        }
 
                                                         ArchiveActivity.this.mSectionsPagerAdapter.notifyDataSetChanged();
                                                         tabLayout.setupWithViewPager(ArchiveActivity.this.mViewPager);
@@ -566,7 +579,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                                             public void run() {
                                                                 ArchiveActivity.this.tabLayout.getTabAt(0).select();
                                                             }
-                                                        },200);
+                                                        }, 200);
 
                                                         break;
                                                     }
@@ -602,7 +615,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                         }
 
                                     } catch (Exception e) {
-                                            ArchiveActivity.this.tabLayout.getTabAt(0).select();
+                                        ArchiveActivity.this.tabLayout.getTabAt(0).select();
                                         Log.d(TAG, "run: " + e.getMessage());
 
                                     }
@@ -852,7 +865,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
             public void setupHolder(final JsonElement jsonElement) {
 
-                String t1 = jsonElement.getAsJsonObject().get("title").getAsString();
+                String t1 = jsonElement.getAsJsonObject().get("title").getAsString().trim();
                 concourName.setText(t1);
 
                 String concourCodeInt = FormatterSingleton.getInstance().getNumberFormatter().format(jsonElement.getAsJsonObject().get("code").getAsInt());
@@ -862,6 +875,8 @@ public class ArchiveActivity extends BottomNavigationActivity {
                 } else {
                     t2 = "کد: " + concourCodeInt;
                 }
+
+                t2 = t2.trim();
 
                 concourCode.setText(t2);
 
@@ -934,24 +949,24 @@ public class ArchiveActivity extends BottomNavigationActivity {
 //                            runOnUiThread(new Runnable() {
 //                                @Override
 //                                public void run() {
-                                    if (httpErrorType != HTTPErrorType.Success) {
-                                        Log.d(TAG, "run: ");
-                                        if (httpErrorType == HTTPErrorType.Refresh) {
-                                            downloadImage(imageId);
-                                        } else {
-                                            entranceLogo.setImageResource(R.drawable.no_image);
-                                        }
-                                    } else {
-                                        MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+                            if (httpErrorType != HTTPErrorType.Success) {
+                                Log.d(TAG, "run: ");
+                                if (httpErrorType == HTTPErrorType.Refresh) {
+                                    downloadImage(imageId);
+                                } else {
+                                    entranceLogo.setImageResource(R.drawable.no_image);
+                                }
+                            } else {
+                                MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
 
-                                        Glide.with(ArchiveActivity.this)
+                                Glide.with(ArchiveActivity.this)
 
-                                                .load(data)
-                                                .crossFade()
-                                                .into(entranceLogo)
-                                                .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+                                        .load(data)
+                                        .crossFade()
+                                        .into(entranceLogo)
+                                        .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
 
-                                    }
+                            }
 //                                }
 //                            });
                             return null;
@@ -1103,7 +1118,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
             View v = LayoutInflater.from(ArchiveActivity.this.getApplicationContext()).inflate(R.layout.cc_archive_listitem_archive, null);
             TextView tv = (TextView) v.findViewById(R.id.text1);
             tv.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-            tv.setText(mArrayList.get(position));
+            tv.setText(mArrayList.get(position).trim());
 
             return v;
         }

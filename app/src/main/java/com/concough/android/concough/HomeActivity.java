@@ -385,7 +385,7 @@ public class HomeActivity extends BottomNavigationActivity {
                     e.printStackTrace();
                 }
 
-                dateJalali.setText(persianDateString);
+                dateJalali.setText(persianDateString.trim());
 
 
                 dateTopLeft.setText(FormatterSingleton.getInstance().getNumberFormatter().format(dateNumber));
@@ -402,8 +402,8 @@ public class HomeActivity extends BottomNavigationActivity {
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
 
-                entranceType.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString());
-                entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString() + ")");
+                entranceType.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString().trim());
+                entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString().trim() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString().trim() + ")");
 
                 int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
 
@@ -421,7 +421,7 @@ public class HomeActivity extends BottomNavigationActivity {
 //                }
 //
 //                extra = TextUtils.join(" - ", extraArray);
-                additionalData.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString());
+                additionalData.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString().trim());
             }
 
             private void downloadImage(final int imageId) {
@@ -530,7 +530,7 @@ public class HomeActivity extends BottomNavigationActivity {
                     e.printStackTrace();
                 }
 
-                dateJalali.setText(persianDateString);
+                dateJalali.setText(persianDateString.trim());
 
 
                 int dateNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("year").getAsInt();
@@ -547,8 +547,8 @@ public class HomeActivity extends BottomNavigationActivity {
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
 
-                entranceType.setText("آزمون " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString());
-                entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString() + ")");
+                entranceType.setText("آزمون " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString().trim());
+                entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString().trim() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString().trim() + ")");
 
                 int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
                 downloadImage(imageId);
@@ -565,7 +565,7 @@ public class HomeActivity extends BottomNavigationActivity {
 //                }
 //
 //                extra = TextUtils.join(" - ", extraArray);
-                additionalData.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString());
+                additionalData.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString().trim());
             }
 
             private void downloadImage(final int imageId) {

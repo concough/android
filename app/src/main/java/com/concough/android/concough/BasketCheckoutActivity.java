@@ -156,7 +156,6 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
 
             @Override
             public void onCreateCompleted(Integer position) {
-
             }
 
             @Override
@@ -178,6 +177,8 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
                         if (count == 0) {
                             BasketCheckoutActivity.this.checkoutButton.setVisibility(View.GONE);
                         }
+
+                        BasketCheckoutActivity.this.pullRefreshLayout.setRefreshing(false);
 
                     }
                 });
@@ -321,6 +322,8 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
 
     private void refreshBasket() {
         BasketSingleton.getInstance().loadBasketItems(BasketCheckoutActivity.this);
+        BasketCheckoutActivity.this.pullRefreshLayout.setRefreshing(false);
+
     }
 
     private void updateTotalCost() {

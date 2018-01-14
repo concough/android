@@ -7,5 +7,4 @@
     android:gravity="center_vertical"
     android:padding="10dp"
     android:textColor="@color/colorConcoughBlue"
-    android:textSize="16sp"
-    />
+    android:textSize="16sp" />

@@ -157,7 +157,7 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
                 if (!passCurrent.equals("") && !pass1.equals("") && !pass2.equals("")) {
 
                     if (pass1.equals(pass2)) {
-                        if (pass2.length() >= 6) {
+                        if (pass2.length() >= 4) {
                             SettingChangePasswordActivity.this.changePassword(passCurrent, pass2);
 
                         } else {

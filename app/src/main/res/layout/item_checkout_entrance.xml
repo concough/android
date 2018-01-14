@@ -6,6 +6,7 @@
     android:layout_height="wrap_content"
     android:layout_marginTop="8dp"
     android:paddingBottom="8dp"
+    android:layoutDirection="ltr"
     android:background="@android:color/white"
     android:orientation="vertical">
 

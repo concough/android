@@ -2,10 +2,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:id="@+id/container"
+    android:textDirection="ltr"
     tools:context="com.concough.android.concough.FavoritesActivity">
 
     <com.baoyz.widget.PullRefreshLayout
@@ -31,10 +32,10 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="@android:color/white"
-        app:itemTextColor="@drawable/concough_navigation_style"
+        android:layoutDirection="ltr"
         app:itemIconTint="@drawable/concough_navigation_style"
-        app:menu="@menu/navigation"
-        />
+        app:itemTextColor="@drawable/concough_navigation_style"
+        app:menu="@menu/navigation" />
 
 
 </LinearLayout>

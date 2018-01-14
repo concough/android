@@ -209,11 +209,25 @@ Debug 1 (faridM)
 15-SignupCodeActivity / SignupActivity some changes on send code and other processes
 
 
+==================================================================================
+
+Debug 2 (faridM)
+
+ 1- fix layout problems with other brands - remove all start and end margins
+ 2- fix direction of textfields
+ 3- fix download progress on back to Detail
 
 
+==================================================================================
 
 
+Debug 3 (faridM)
+
+ 1- remove reverse groups on archive-activity
+ 2- 2 time click on back exit on TopNavigationActivity
+ 3- refreshBasket() aded BasketCheckoutActivity  pull to refresh
+ 4- aded try catch for OnBackClicked() because of google play error report
+ 5- change minimum length of password to 4
 
 
-
-
+==================================================================================

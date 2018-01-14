@@ -176,7 +176,11 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
             @Override
             public void OnBackClicked() {
-                onBackPressed();
+                try {
+                    onBackPressed();
+                } catch (Exception e) {
+                    finish();
+                }
             }
         };
 
@@ -633,11 +637,20 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     }
 
     private void handleDownloadEntranceStat(@Nullable Message msg) {
-        uiHandler.post(new Runnable() {
+        runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
-                loadingProgress.show();
+                if (!isFinishing()) {
+                    if (loadingProgress == null) {
+                        loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
+                        loadingProgress.show();
+                    } else {
+                        if (!loadingProgress.isShowing()) {
+                            //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                            loadingProgress.show();
+                        }
+                    }
+                }
             }
         });
 
@@ -746,11 +759,20 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     }
 
     private void handleDownloadEntranceSale(@Nullable Message msg) {
-        uiHandler.post(new Runnable() {
+        runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
-                loadingProgress.show();
+                if (!isFinishing()) {
+                    if (loadingProgress == null) {
+                        loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
+                        loadingProgress.show();
+                    } else {
+                        if (!loadingProgress.isShowing()) {
+                            //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                            loadingProgress.show();
+                        }
+                    }
+                }
             }
         });
 
@@ -1014,7 +1036,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 //                        AlertClass.hideLoadingMessage(loadingProgress);
                         EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
 
-                            if (httpErrorType != HTTPErrorType.Success) {
+                        if (httpErrorType != HTTPErrorType.Success) {
                             if (httpErrorType == HTTPErrorType.Refresh) {
                                 if (EntranceDetailActivity.this.handler != null) {
                                     Message msg = EntranceDetailActivity.this.handler.obtainMessage(DOWNLOAD_ENTRANCE);

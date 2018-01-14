@@ -1,5 +1,7 @@
 package com.concough.android.settings
 
+import android.util.Log
+
 /**
  * Created by abolfazl on 7/2/17.
  */
@@ -7,7 +9,10 @@ package com.concough.android.settings
 // Application Version
 val APP_VERSION = 1
 val API_VERSION = "v1"
-val SECRET_KEY = "67mnnv^vs7&^v87YrV&hd8bw92bu9b%\$\$#b8728^%93y6==37yb&BBB6*njs*99__==ncdjncdujb"
+
+
+val ADD_CODE = "ncdjncdujb"
+val P_CODE = "67mnnv^vs7&^v87YrV&hd8bw92bu9b%\$\$#b8728^%93y6==37yb&BBB6*njs*99__=="
 
 // Host Urls
 //val BASE_URL = "http://192.168.0.21:8000/api/"
@@ -39,7 +44,7 @@ val OAUTH_TOKEN_TYPE_KEY = "oauthTokenType"
 val OAUTH_LAST_ACCESS_KEY = "oauthLastAccess"
 val OAUTH_EXPIRES_IN_KEY = "oauthExpiresIn"
 public val USERNAME_KEY: String = "authUsername"
-public val PASSWORD_KEY:String = "authPassword"
+public val PASSWORD_KEY: String = "authPassword"
 
 // Validator Regex
 val EMAIL_VALIDATOR_REGEX = "^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}$"
@@ -49,9 +54,18 @@ val PHONE_NUMBER_VALIDATOR_REGEX = "^(9|09)[0-9]{9}$"
 
 // UI Constants
 val BLUE_COLOR_HEX: Int = 0x1007AFF
-val RED_COLOR_HEX:Int = 0x960000
-val RED_COLOR_HEX_2:Int = 0xDD0000
-val GREEN_COLOR_HEX:Int = 0x1008000
+val RED_COLOR_HEX: Int = 0x960000
+val RED_COLOR_HEX_2: Int = 0xDD0000
+val GREEN_COLOR_HEX: Int = 0x1008000
 val GRAY_COLOR_HEX_1: Int = 0xB7B7B7
 
 val MEDIA_CACHE_SIZE = 1024 * 1024 * 10
+
+val SECRET_KEY: String
+    get() {
+        val codeArray = intArrayOf(31, 29, 23, 19, 17, 15, 13, 11, 7)
+        val codeArrayString = codeArray.joinToString("")
+        val finalString = P_CODE + codeArrayString + ADD_CODE
+        Log.d("rrr", finalString)
+        return finalString
+    }

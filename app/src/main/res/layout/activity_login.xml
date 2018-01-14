@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:id="@+id/container"
+    android:layoutDirection="ltr"
     android:layout_height="match_parent">
 
     <ScrollView
@@ -94,9 +95,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="8dp"
-                        android:layout_marginStart="8dp"
                         android:ems="10"
-
                         android:hint="@string/loginA_S_usernameEdit"
                         android:inputType="phone"
                         android:textSize="18sp"

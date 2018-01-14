@@ -1005,9 +1005,9 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 //                params.width = 0;
 //                FEntranceNotDownloadViewHolder.this.downloadProgress2Level.setLayoutParams(params);
 
-                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " +
-                        FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
-                entranceSetTextView.setText(entrance.getEntranceSetTitle() + " (" + entrance.getEntranceGroupTitle() + ")");
+                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle().trim() + " " +
+                        FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()).trim());
+                entranceSetTextView.setText(entrance.getEntranceSetTitle().trim() + " (" + entrance.getEntranceGroupTitle().trim() + ")");
 
                 try {
 //                    JsonObject extraData = entrance.getEntranceExtraData().getAsJsonObject();
@@ -1022,7 +1022,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 //
 //                        extra = TextUtils.join(" - ", extraArray);
 
-                        entranceExtraDataTextView.setText(entrance.getEntranceOrgTitle());
+                        entranceExtraDataTextView.setText(entrance.getEntranceOrgTitle().trim());
 
 //                    }
                 } catch (Exception exc) {
@@ -1544,9 +1544,9 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             public void setupHolder(final EntranceStruct entrance, EntrancePurchasedStruct purchased, int index, final int starCount, int openedCount, long qCount) {
 
 
-                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " +
+                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle().trim() + " " +
                         FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
-                entranceSetTextView.setText(entrance.getEntranceSetTitle() + " (" + entrance.getEntranceGroupTitle() + ")");
+                entranceSetTextView.setText(entrance.getEntranceSetTitle().trim() + " (" + entrance.getEntranceGroupTitle().trim() + ")");
 
                 try {
 //                    JsonObject extraData = entrance.getEntranceExtraData().getAsJsonObject();
@@ -1703,9 +1703,9 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
             public void setupHolder(final FavoriteItem favoriteItem, final int index) {
                 final EntranceStruct entrance = (EntranceStruct) favoriteItem.object;
-                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " +
+                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle().trim() + " " +
                         FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
-                entranceSetTextView.setText(entrance.getEntranceSetTitle() + " (" + entrance.getEntranceGroupTitle() + ")");
+                entranceSetTextView.setText(entrance.getEntranceSetTitle().trim() + " (" + entrance.getEntranceGroupTitle().trim() + ")");
 
                 try {
 //                    JsonObject extraData = entrance.getEntranceExtraData().getAsJsonObject();
@@ -1720,7 +1720,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
 //                        extra = TextUtils.join(" - ", extraArray);
 
-                        entranceExtraDataTextView.setText(entrance.getEntranceOrgTitle());
+                        entranceExtraDataTextView.setText(entrance.getEntranceOrgTitle().trim());
 
 //                    }
                 } catch (Exception exc) {

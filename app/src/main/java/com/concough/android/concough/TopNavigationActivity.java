@@ -8,11 +8,13 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
@@ -22,7 +24,27 @@ import java.util.ArrayList;
 public class TopNavigationActivity extends AppCompatActivity {
 
     protected OnClickEventInterface clickEventInterface = null;
+    private Boolean backPressed = false;
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+            if (backPressed == false) {
+                Toast.makeText(getApplicationContext(), "برای خروج دوباره دکمه بازگشت را لمس نمایید", Toast.LENGTH_LONG).show();
+                backPressed = true;
+                return false;
+            } else {
+                finish();
+            }
+        }
+        return super.onKeyDown(keyCode, event);
+
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

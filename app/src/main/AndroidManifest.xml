@@ -84,7 +84,9 @@
         <activity
             android:name=".ArchiveActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+
+            />
         <activity
             android:name=".ArchiveDetailActivity"
             android:screenOrientation="portrait"

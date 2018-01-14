@@ -5,9 +5,9 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layoutDirection="ltr"
     android:paddingLeft="@dimen/dialog_padding"
-    android:paddingRight="@dimen/dialog_padding"
-    >
+    android:paddingRight="@dimen/dialog_padding">
 
     <LinearLayout
 
@@ -16,47 +16,46 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:background="@drawable/dialog_bg"
-        android:orientation="vertical"
-        android:visibility="visible"
         android:clipChildren="true"
-        >
+        android:orientation="vertical"
+        android:visibility="visible">
 
         <LinearLayout
-            android:clipChildren="true"
-            tools:clipToPadding="true"
             android:id="@+id/topPanel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#ffffff"
-            android:orientation="vertical">
+            android:clipChildren="true"
+            android:orientation="vertical"
+            tools:clipToPadding="true">
 
             <RelativeLayout
-                android:clipChildren="true"
                 android:id="@+id/title_template"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginEnd="16dip"
-                android:layout_marginStart="16dip">
+                android:layout_marginStart="16dip"
+                android:clipChildren="true">
 
                 <ImageView
-                    android:clipChildren="true"
                     android:id="@+id/icon"
                     android:layout_width="32dp"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_margin="8dip"
+                    android:clipChildren="true"
                     android:scaleType="centerInside"
                     android:src="@null" />
 
                 <TextView
-                    android:clipChildren="true"
-
                     android:id="@+id/alertTitle"
+
                     style="@style/DialogWindowTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
                     android:layout_marginLeft="8dip"
+                    android:clipChildren="true"
                     android:ellipsize="end"
                     android:gravity="center"
                     android:singleLine="true" />
@@ -87,8 +86,8 @@
                 android:paddingEnd="16dip"
                 android:paddingStart="16dip"
                 android:paddingTop="16dip"
-                android:textColor="@color/msg_color"
                 android:textAlignment="center"
+                android:textColor="@color/msg_color"
                 android:textIsSelectable="true" />
         </LinearLayout>
 

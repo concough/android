@@ -186,7 +186,7 @@ class AlertClass {
                             title = "خطا"; message = "هر دو فیلد گذرواژه باید یکی باشند"
                         }
                         "PassCannotChange" -> {
-                            title = "خطا"; message = "کلمه عبور مجاز شامل حداقل 6 کاراکتر است"
+                            title = "خطا"; message = "امکان تغییر گذرواژه وجود ندارد"
                         }
                         "SMSSendError" -> {
                             title = "خطا"; message = "ارسال پیامک با خطا مواجه شد، مجددا سعی نمایید"

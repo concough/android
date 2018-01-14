@@ -2,6 +2,7 @@ package com.concough.android.singletons
 
 import android.content.Context
 import android.util.Log
+import com.concough.android.settings.SECRET_KEY
 import io.realm.Realm
 import io.realm.RealmConfiguration
 
@@ -29,7 +30,7 @@ class RealmSingleton {
 
     private constructor(context: Context) {
         Realm.init(context)
-        val config = RealmConfiguration.Builder().build()
+        val config = RealmConfiguration.Builder().encryptionKey(SECRET_KEY.toByteArray().copyOfRange(0,64)).build()
         try {
             this.realm = Realm.getInstance(config)
 

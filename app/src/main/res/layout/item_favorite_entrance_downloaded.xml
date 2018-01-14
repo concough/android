@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/concough_recycle_box_style"
+    android:layoutDirection="ltr"
     android:orientation="vertical">
 
     <android.support.constraint.ConstraintLayout
@@ -50,6 +51,7 @@
                     android:text="TextView"
                     android:textAlignment="gravity"
                     android:textColor="@android:color/black"
+                    android:textDirection="rtl"
                     android:textSize="13sp" />
 
                 <TextView
@@ -61,6 +63,7 @@
                     android:text="TextView"
                     android:textAlignment="gravity"
                     android:textColor="@android:color/black"
+                    android:textDirection="rtl"
                     android:textSize="12sp" />
 
                 <TextView
@@ -71,6 +74,7 @@
                     android:text="TextView"
                     android:textAlignment="gravity"
                     android:textColor="@color/colorConcoughGray2"
+                    android:textDirection="rtl"
                     android:textSize="12sp" />
             </LinearLayout>
 
@@ -133,7 +137,8 @@
                     android:layout_marginEnd="4dp"
                     android:layout_marginRight="4dp"
                     android:text="TextView"
-                    android:textColor="@android:color/black" />
+                    android:textColor="@android:color/black"
+                    android:textDirection="rtl" />
 
                 <ImageView
                     android:id="@+id/imageView51"
@@ -157,7 +162,8 @@
                     android:layout_marginEnd="4dp"
                     android:layout_marginRight="4dp"
                     android:text="TextView"
-                    android:textColor="@android:color/black" />
+                    android:textColor="@android:color/black"
+                    android:textDirection="rtl" />
 
                 <ImageView
                     android:id="@+id/imageView52"
@@ -180,7 +186,8 @@
                     android:layout_marginEnd="4dp"
                     android:layout_marginRight="4dp"
                     android:text="TextView"
-                    android:textColor="@android:color/black" />
+                    android:textColor="@android:color/black"
+                    android:textDirection="rtl" />
 
                 <ImageView
                     android:id="@+id/imageView5"
@@ -246,6 +253,7 @@
                     android:text="@string/favorite_entrance_open_normal"
                     android:textAlignment="gravity"
                     android:textColor="@color/colorConcoughBlue"
+                    android:textDirection="rtl"
                     android:textSize="13sp" />
 
                 <ImageView
@@ -272,6 +280,7 @@
                 android:text=""
                 android:textAlignment="center"
                 android:textColor="@android:color/white"
+                android:textDirection="rtl"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
         </android.support.constraint.ConstraintLayout>
@@ -333,6 +342,7 @@
                     android:text="@string/favorite_entrance_open_starred"
                     android:textAlignment="gravity"
                     android:textColor="@color/colorConcoughBlue"
+                    android:textDirection="rtl"
                     android:textSize="13sp" />
 
                 <ImageView
@@ -358,6 +368,7 @@
                 android:text=""
                 android:textAlignment="center"
                 android:textColor="@android:color/white"
+                android:textDirection="rtl"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
         </android.support.constraint.ConstraintLayout>

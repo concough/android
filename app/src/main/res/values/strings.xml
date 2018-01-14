@@ -71,7 +71,7 @@
     <string name="title_notifications">Notifications</string>
     <string name="settingMenu_S_url">https://zhycan.com/concough/help/</string>
 
-    <string name="settingA_S_aboutUs_url">http://zhycan.com/about/</string>
+    <string name="settingA_S_aboutUs_url">https://zhycan.com/concough/</string>
     <string name="settingA_S_changePassword">تغییر گذرواژه</string>
     <string name="settingA_S_inviteFriends">دعوت از دوستان</string>
     <string name="settingA_S_lockDevice">قفل کردن دستگاه</string>

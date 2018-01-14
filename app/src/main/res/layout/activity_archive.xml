@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/container"
     android:background="@android:color/white"
+    android:layoutDirection="ltr"
     android:orientation="vertical">
 
 
@@ -14,7 +15,6 @@
         android:layout_height="wrap_content"
         android:background="@color/colorConcoughGrayBackground"
         android:layoutDirection="ltr"
-
         android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.v7.widget.Toolbar
@@ -31,6 +31,8 @@
             android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:layoutDirection="ltr"
             app:tabIndicatorColor="@color/colorConcoughBlue" />
 
     </android.support.design.widget.AppBarLayout>
@@ -38,14 +40,15 @@
     <com.baoyz.widget.PullRefreshLayout
         android:id="@+id/homeA_swipeRefreshLayout"
         android:layout_width="match_parent"
-        android:layout_weight="1"
-        android:layout_height="0dp">
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/archiveA_recycleDetail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginTop="10dp" />
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/archiveA_recycleDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_weight="1" />
     </com.baoyz.widget.PullRefreshLayout>
 
     <android.support.v4.view.ViewPager
@@ -54,22 +57,23 @@
         android:layout_height="0dp"
         android:layout_marginTop="0dp"
         android:background="@android:color/white"
+        android:layoutDirection="rtl"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <!--<android.support.v7.widget.RecyclerView-->
-        <!--android:id="@+id/archiveA_recycle"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"/>-->
+    <!--android:id="@+id/archiveA_recycle"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"/>-->
     <android.support.design.widget.BottomNavigationView
         android:id="@+id/navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="@android:color/white"
-        app:itemTextColor="@drawable/concough_navigation_style"
+        android:layoutDirection="ltr"
         app:itemIconTint="@drawable/concough_navigation_style"
-        app:menu="@menu/navigation"
-        />
+        app:itemTextColor="@drawable/concough_navigation_style"
+        app:menu="@menu/navigation" />
 
 
 </LinearLayout>

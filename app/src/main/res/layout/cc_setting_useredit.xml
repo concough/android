@@ -6,6 +6,7 @@
     android:layout_height="wrap_content"
     android:layout_marginBottom="4dp"
     android:layout_marginRight="32dp"
+    android:layoutDirection="ltr"
     android:background="@drawable/concough_setting_border_top_bottom"
     android:paddingBottom="8dp">
 

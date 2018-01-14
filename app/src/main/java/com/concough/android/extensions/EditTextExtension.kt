@@ -1,6 +1,7 @@
 package com.concough.android.extensions
 
 import android.os.Build
+import android.util.LayoutDirection
 import android.view.Gravity
 import android.view.View
 import android.widget.EditText
@@ -17,9 +18,10 @@ fun EditText.DirectionFix(): Unit {
             localText.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START)
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                localText.setTextDirection(View.TEXT_DIRECTION_LTR)
                 localText.setGravity(Gravity.START)
             } else {
-                localText.setGravity(Gravity.END)
+                localText.setGravity(Gravity.START)
             }
         }
     } else {
@@ -28,9 +30,10 @@ fun EditText.DirectionFix(): Unit {
             localText.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START)
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                localText.setTextDirection(View.TEXT_DIRECTION_LTR)
                 localText.setGravity(Gravity.END)
             } else {
-                localText.setGravity(Gravity.START)
+                localText.setGravity(Gravity.END)
             }
         }
     }
