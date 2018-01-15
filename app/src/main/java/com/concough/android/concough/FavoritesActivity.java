@@ -920,7 +920,6 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             }
         }
 
-
         // MARK: ViewHolders
         private class FEntranceNotDownloadViewHolder extends RecyclerView.ViewHolder {
             private EntrancePackageDownloader downloader = null;
@@ -1031,6 +1030,9 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 entranceBookletCountTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceBookletCounts()) + " دفترچه");
                 entranceDurationTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceDuration()) + " دقیقه");
                 entranceDownloadCountTextView.setText("(" + FormatterSingleton.getInstance().getNumberFormatter().format(purchased.downloaded) + " بار دانلود شده است)");
+                if( purchased.isDataDownloaded) {
+                    downloadTextView.setText("ادامه دانلود");
+                }
 
                 downloadImage(entrance.getEntranceSetId());
                 checkForState(index);

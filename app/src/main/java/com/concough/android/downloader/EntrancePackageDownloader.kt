@@ -84,7 +84,8 @@ class EntrancePackageDownloader : Service() {
     private var currentNotificationID: Int = 0
 
     public var DownloadCount: Number = 0
-        get private set
+        get
+        private set
 
     fun onHandleIntent(intent: Intent?) {
     }
@@ -167,11 +168,11 @@ class EntrancePackageDownloader : Service() {
                         val entrance = EntranceModelHandler.getByUsernameAndId(context!!.applicationContext, username, entranceUniqueId)
                         if (entrance != null) {
                             val year = FormatterSingleton.getInstance().NumberFormatter.format(entrance.year)
-                            val message= "دانلود آزمون به اتمام رسید"
-                            val subMessage =" ${entrance.type} سال ${year} " +"\n" +
-                            "${entrance.set} (${entrance.group})"
+                            val message = "دانلود آزمون به اتمام رسید"
+                            val subMessage = " ${entrance.type} سال ${year} " + "\n" +
+                                    "${entrance.set} (${entrance.group})"
 
-                            simpleNotification(message,subMessage)
+                            simpleNotification(message, subMessage)
                         }
 
                         if (vcType == "ED") {
@@ -276,12 +277,12 @@ class EntrancePackageDownloader : Service() {
                     if (error != null) {
                         when (error) {
                             NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                                if(this@EntrancePackageDownloader.context!=null && this@EntrancePackageDownloader.context is Activity) {
+                                if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
                                     AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
                                 }
                             }
                             else -> {
-                                if(this@EntrancePackageDownloader.context!=null && this@EntrancePackageDownloader.context is Activity) {
+                                if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
                                     AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
                                 }
                             }
@@ -324,7 +325,7 @@ class EntrancePackageDownloader : Service() {
                         if (error == HTTPErrorType.Refresh) {
                             downloadInitialData(completion)
                         } else {
-                            if(this@EntrancePackageDownloader.context!=null && this@EntrancePackageDownloader.context is Activity) {
+                            if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
                                 AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
                             }
                         }
@@ -371,7 +372,7 @@ class EntrancePackageDownloader : Service() {
                                         val errorType = data.asJsonObject.get("error_type").asString
                                         when (errorType) {
                                             "PackageNotExist", "EntranceNotExist" -> {
-                                                if(this@EntrancePackageDownloader.context!=null && this@EntrancePackageDownloader.context is Activity) {
+                                                if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
                                                     AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "EntranceResult", "EntranceNotExist", "error", null)
                                                 }
 
@@ -400,12 +401,12 @@ class EntrancePackageDownloader : Service() {
                     if (error != null) {
                         when (error) {
                             NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                                if(this@EntrancePackageDownloader.context!=null && this@EntrancePackageDownloader.context is Activity) {
+                                if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
                                     AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
                                 }
                             }
                             else -> {
-                                if(this@EntrancePackageDownloader.context!=null && this@EntrancePackageDownloader.context is Activity) {
+                                if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
                                     AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
                                 }
                             }
@@ -421,11 +422,8 @@ class EntrancePackageDownloader : Service() {
                             listener?.onDownloadPausedForViewHolder(indexPath!!)
                         }
                     }
-
                 }
-
             })
-
         }
 
         completion(false, null)
@@ -449,8 +447,8 @@ class EntrancePackageDownloader : Service() {
         notificationManager?.notify(notificationId, notification)
     }
 
-    private fun simpleNotification(message:String, subMessage:String) {
-        notificationBuilder= NotificationCompat
+    private fun simpleNotification(message: String, subMessage: String) {
+        notificationBuilder = NotificationCompat
                 .Builder(this)
                 .setContentTitle(message)
                 .setContentText(subMessage)

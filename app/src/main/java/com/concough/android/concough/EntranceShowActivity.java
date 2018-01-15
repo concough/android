@@ -426,7 +426,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             recyclerView.setVisibility(View.GONE);
             recyclerViewStar.setVisibility(View.VISIBLE);
 
-            texButton.setText(String.format("سوالات نشان شده (%s)", FormatterSingleton.getInstance().getNumberFormatter().format(starredAdapter.getItemCount() - 1)));
+            texButton.setText(String.format("سوالات نشان شده (%s)", FormatterSingleton.getInstance().getNumberFormatter().format(starredIds.size()) )); //starredAdapter.getItemCount() - 1
 
             Handler h = new Handler();
             h.postDelayed(new Runnable() {

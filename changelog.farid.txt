@@ -231,3 +231,9 @@ Debug 3 (faridM)
 
 
 ==================================================================================
+
+Debug 4 (faridM) - 1/15/2018
+
+ 1- Fixed left to right of some texts direction
+ 2- Fixed number of Starred entrances when clicked from Favorite Activity
+ 3- Fixed Continue download in favorite activity
