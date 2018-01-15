@@ -32,6 +32,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 import kotlin.collections.LinkedHashMap
 
 
@@ -56,6 +57,7 @@ class EntrancePackageDownloader : Service() {
 
     companion object {
         private val TAG = "EPDService"
+        private val DOWNLOAD_IMAGE_COUNT = 20
 
         public fun newIntent(context: Context): Intent {
             return Intent(context, EntrancePackageDownloader::class.java)
@@ -142,7 +144,8 @@ class EntrancePackageDownloader : Service() {
     }
 
     public fun downloadPackageImages(saveDirectory: File) {
-        processNext(saveDirectory)
+//        processNext(saveDirectory)
+        processNextMulti(saveDirectory)
     }
 
     public fun getCurrentDate(): Date {
@@ -170,6 +173,66 @@ class EntrancePackageDownloader : Service() {
                             val message= "دانلود آزمون به اتمام رسید"
                             val subMessage =" ${entrance.type} سال ${year} " +"\n" +
                             "${entrance.set} (${entrance.group})"
+
+                            simpleNotification(message,subMessage)
+                        }
+
+                        if (vcType == "ED") {
+                            if (listener != null) {
+                                listener!!.onDownloadImagesFinished(true)
+                            }
+                        } else if (vcType == "F") {
+                            if (listener != null) {
+                                listener!!.onDownloadImagesFinishedForViewHolder(true, indexPath!!)
+                            }
+                        }
+                    } catch (exc: Exception) {
+                    }
+                } else {
+                    if (vcType == "ED") {
+                        if (listener != null) {
+                            listener!!.onDownloadImagesFinished(false)
+                        }
+                    } else if (vcType == "F") {
+                        if (listener != null) {
+                            listener!!.onDownloadImagesFinishedForViewHolder(false, indexPath!!)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun processNextMulti(saveDirectory: File) {
+        var ids: LinkedHashMap<String, String> = LinkedHashMap()
+        for(i in 1..DOWNLOAD_IMAGE_COUNT) {
+            if (imageList.count() > 0) {
+                val itemKey = imageList.keys.toList().get(0)
+                val itemValue = imageList.get(itemKey)
+                imageList.remove(itemKey)
+
+                ids[itemKey] = itemValue!!
+            } else {
+                break
+            }
+        }
+
+        if (ids.count() > 0) {
+            downloadMultiImage(saveDirectory, ids)
+        } else {
+            runOnUiThread {
+                if (verifyDownload()) {
+                    // ok --> downloaded successfully
+                    try {
+                        PurchasedModelHandler.setIsDownloadedTrue(context!!.applicationContext, username, entranceUniqueId, "Entrance")
+                        DownloaderSingleton.getInstance().setDownloaderFinished(entranceUniqueId)
+
+                        val entrance = EntranceModelHandler.getByUsernameAndId(context!!.applicationContext, username, entranceUniqueId)
+                        if (entrance != null) {
+                            val year = FormatterSingleton.getInstance().NumberFormatter.format(entrance.year)
+                            val message= "دانلود آزمون به اتمام رسید"
+                            val subMessage =" ${entrance.type} سال ${year} " +"\n" +
+                                    "${entrance.set} (${entrance.group})"
 
                             simpleNotification(message,subMessage)
                         }
@@ -269,6 +332,121 @@ class EntrancePackageDownloader : Service() {
                     }
 
                     processNext(saveDirectory)
+                }
+
+            }, failure = { error ->
+                runOnUiThread {
+                    if (error != null) {
+                        when (error) {
+                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                if(this@EntrancePackageDownloader.context!=null && this@EntrancePackageDownloader.context is Activity) {
+                                    AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                                }
+                            }
+                            else -> {
+                                if(this@EntrancePackageDownloader.context!=null && this@EntrancePackageDownloader.context is Activity) {
+                                    AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+                                }
+                            }
+                        }
+                    }
+
+                    if (vcType == "ED") {
+                        if (listener != null) {
+                            listener?.onDownloadPaused()
+                        }
+                    } else if (vcType == "F") {
+                        if (listener != null) {
+                            listener?.onDownloadPausedForViewHolder(indexPath!!)
+                        }
+                    }
+
+                }
+            })
+        }
+
+    }
+
+    public fun downloadMultiImage(saveDirectory: File, ids: HashMap<String, String>) {
+        doAsync {
+            MediaRestAPIClass.downloadEntranceQuestionBulkImages(applicationContext, entranceUniqueId, ids.keys.toTypedArray(), completion = { data, error ->
+                runOnUiThread {
+                    if (error != HTTPErrorType.Success) {
+                        if (error == HTTPErrorType.Refresh) {
+                            downloadMultiImage(saveDirectory, ids)
+                        }
+                    } else {
+                        if (data != null) {
+                            val qs_strings: String = data.contentToString()
+                            val qs = qs_strings.split("$$$$$$$#$$$$$$$$")
+                            for(q in qs) {
+                                val parts = q.split("@@@@@@@#@@@@@@@@")
+
+                                if (ids.keys.contains(parts[0])) {
+                                    val questionId = ids[parts[0]]!!
+
+                                    val filePath = "$saveDirectory/${parts[0]}"
+
+                                    try {
+                                        val file = File(saveDirectory, parts[0])
+                                        if (!file.exists()) {
+                                            var out = FileOutputStream(file)
+                                            out.write(parts[1].toByteArray(Charsets.UTF_8))
+                                            out.flush()
+                                            out.close()
+
+//                                    var stream: FileOutputStream = openFileOutput(filePath, Context.MODE_PRIVATE);
+//                                    stream.write(data);
+//                                    stream.close()
+//                                    file.writeBytes(data)
+                                        }
+
+                                        var index: Int? = null
+
+                                        for (item in questionsList.get(questionId)!!.iterator()) {
+                                            index = questionsList.get(questionId)!!.indexOfFirst { t ->
+                                                if (t.first == item.first) {
+                                                    return@indexOfFirst true
+                                                }
+                                                return@indexOfFirst false
+                                            }
+
+                                            if (index != null) {
+                                                val item1 = questionsList.get(questionId)!![index]
+                                                questionsList.get(questionId)!![index] = Pair(item1.first, true)
+                                            }
+                                        }
+
+                                        var downloadComplete = true
+                                        for (item in questionsList[questionId]!!) {
+                                            if (!item.second) {
+                                                downloadComplete = false
+                                            }
+                                        }
+
+                                        if (downloadComplete) {
+                                            EntranceQuestionModelHandler.changeDownloadedToTrue(applicationContext, username, questionId, entranceUniqueId)
+                                        }
+                                    } catch (exc: Exception) {
+                                        Log.d(TAG, exc.message)
+                                    }
+                                }
+                            }
+
+
+                                if (vcType == "ED") {
+                                    if (listener != null) {
+                                        listener!!.onDownloadProgress(imageList.count())
+                                    }
+                                } else if (vcType == "F") {
+                                    if (listener != null) {
+                                        listener!!.onDownloadprogressForViewHolder(imageList.count(), DownloadCount as Int, indexPath!!)
+                                    }
+                                }
+                        }
+                    }
+
+                    processNextMulti(saveDirectory)
                 }
 
             }, failure = { error ->

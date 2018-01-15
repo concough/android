@@ -206,5 +206,72 @@ class MediaRestAPIClass {
                 failure(error)
             })
         }
+
+        @JvmStatic
+        fun downloadEntranceQuestionBulkImages(context: Context, uniqueId: String, questionsId: Array<String>, completion: (data: ByteArray?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+            val fullPath = UrlMakerSingleton.getInstance().mediaForBulkQuestionUrl(uniqueId) ?: return
+
+            TokenHandlerSingleton.getInstance(context).assureAuthorized(completion = { authenticated, error ->
+                if (authenticated && error == HTTPErrorType.Success) {
+                    val headers = TokenHandlerSingleton.getInstance(context).getHeader()
+
+                    var parameters = HashMap<String, Any>()
+                    var query = ""
+                    for ((index, element) in questionsId.withIndex()) {
+                        if (index != questionsId.count() - 1) {
+                            query += "$element$"
+                        } else {
+                            query += element
+                        }
+                    }
+                    parameters.set("ids", query)
+
+                    val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+                    val profile = Obj.create(RestAPIService::class.java)
+                    val request = profile.getWithParams(fullPath, parameters, headers!!)
+
+                    request.enqueue(object : Callback<ResponseBody> {
+                        override fun onFailure(call: Call<ResponseBody>?, t: Throwable?) {
+                            failure(NetworkErrorType.toType(t))
+                        }
+
+                        override fun onResponse(call: Call<ResponseBody>?, response: Response<ResponseBody>?) {
+                            val resCode = HTTPErrorType.toType(response?.code()!!)
+//                          Log.d(TAG, resCode.toString())
+                            when (resCode) {
+                                HTTPErrorType.Success -> {
+                                    val res = response.body()
+                                    try {
+//                                        val reader: BufferedReader = BufferedReader(InputStreamReader(res?.byteStream()))
+                                        val sb: ByteArray = res?.bytes()!!
+
+//                                        val line = reader.read()
+//                                        sb.append(line)
+
+                                        completion(sb, resCode)
+                                    } catch (exc: JsonParseException) {
+                                        completion(null, HTTPErrorType.UnKnown)
+                                    }
+                                }
+                                HTTPErrorType.UnAuthorized, HTTPErrorType.ForbiddenAccess -> {
+                                    TokenHandlerSingleton.getInstance(context).assureAuthorized(true, completion = { authenticated, error ->
+                                        if (authenticated && error == HTTPErrorType.Success) {
+                                            completion(null, HTTPErrorType.Refresh)
+                                        }
+                                    }, failure = { error ->
+                                        failure(error)
+                                    })
+                                }
+                                else -> completion(null, resCode)
+                            }
+                        }
+                    })
+                } else {
+                    completion(null, error)
+                }
+            }, failure = { error ->
+                failure(error)
+            })
+        }
     }
 }
