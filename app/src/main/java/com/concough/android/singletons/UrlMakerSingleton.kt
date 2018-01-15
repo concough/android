@@ -269,6 +269,16 @@ class UrlMakerSingleton private constructor() {
         return fullPath
     }
 
+    fun mediaForBulkQuestionUrl(uniqueId: String): String? {
+        var fullPath: String? = null
+        val functionName = "entrance/$uniqueId/qs/bulk"
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._media_class_name}/$functionName/"
+        }
+        return fullPath
+    }
+
     fun getEntranceUrl(uniqueId: String): String? {
         var fullPath: String? = null
         val functionName = "$uniqueId"

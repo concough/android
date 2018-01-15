@@ -274,3 +274,8 @@ Some Enhancement for Release v.1.0 (abolfazl.beh)
 3 - Some Change on "LoginActivity" -> EditText ltr fixed.
 4 - "SignupMoreInfo3Activity" signup struct default set when grade list will be ready -> make error when you no choose from dialog and just submit.
 
+------------------------------------------------------------------------------------------------
+Upgrade EntrancePackageDownloader (abolfazl.beh) - 2018-01-15
+
+1 - "EntrancePackageDownloader" enhanced to support multi download of questions -> All related class modified
+2 - This features not tested by me
