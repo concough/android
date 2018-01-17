@@ -130,14 +130,14 @@ public class HomeActivity extends BottomNavigationActivity {
 
         ButtonDetail buttonDetail = new ButtonDetail();
 
-        buttonDetail.imageSource = R.drawable.archive_icon;
+        buttonDetail.imageSource = R.drawable.open_box_filled;
         buttonDetailArrayList.add(buttonDetail);
 
         super.clickEventInterface = new OnClickEventInterface() {
             @Override
             public void OnButtonClicked(int id) {
                 switch (id) {
-                    case R.drawable.archive_icon: {
+                    case R.drawable.open_box_filled: {
                         Intent i = ArchiveActivity.newIntent(HomeActivity.this);
                         startActivity(i);
                         break;

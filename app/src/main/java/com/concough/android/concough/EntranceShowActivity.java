@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -188,6 +189,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     private StarredShowAdapter starredAdapter;
     private HeaderItemDecoration itemDecoration;
 
+    private Configuration config;
+
 
     public static Intent newIntent(Context packageContext, String entranceUniqueId, String showType) {
         Intent i = new Intent(packageContext, EntranceShowActivity.class);
@@ -200,6 +203,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_entrance_show);
+
+        config = getResources().getConfiguration();
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,
                 WindowManager.LayoutParams.FLAG_SECURE);
@@ -267,10 +272,13 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
         //Tab
         tabLayout = (CustomTabLayout) findViewById(R.id.tabs);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            tabLayout.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        }
+
         tabLayout.setupWithViewPager(mViewPager);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
-
-
 
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -426,7 +434,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             recyclerView.setVisibility(View.GONE);
             recyclerViewStar.setVisibility(View.VISIBLE);
 
-            texButton.setText(String.format("سوالات نشان شده (%s)", FormatterSingleton.getInstance().getNumberFormatter().format(starredIds.size()) )); //starredAdapter.getItemCount() - 1
+            texButton.setText(String.format("سوالات نشان شده (%s)", FormatterSingleton.getInstance().getNumberFormatter().format(starredIds.size()))); //starredAdapter.getItemCount() - 1
 
             Handler h = new Handler();
             h.postDelayed(new Runnable() {
@@ -439,6 +447,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
 
         globalPairListInteger = starredIds.size();
+
 
     }
 
@@ -782,11 +791,14 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             lessonsDB = new RealmList<EntranceLessonModel>();
             RealmResults<EntranceLessonModel> lessionModel;
 
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 lessionModel = bookletsDB.get(index).lessons.sort("order", Sort.ASCENDING);
             } else {
                 lessionModel = bookletsDB.get(index).lessons.sort("order", Sort.DESCENDING);
             }
+
+
             lessonsDB.addAll(lessionModel.subList(0, lessionModel.size()));
 
             lessonAdapter.clear();
@@ -807,7 +819,13 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             h.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    EntranceShowActivity.this.tabLayout.getTabAt(0).select();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                        EntranceShowActivity.this.tabLayout.getTabAt(0).select();
+                    } else {
+                    EntranceShowActivity.this.tabLayout.getTabAt(mViewPager.getAdapter().getCount() - 1).select();
+
+                    }
+
                 }
             }, 1500);
 

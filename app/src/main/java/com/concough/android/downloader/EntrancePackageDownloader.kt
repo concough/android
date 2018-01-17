@@ -57,7 +57,7 @@ class EntrancePackageDownloader : Service() {
 
     companion object {
         private val TAG = "EPDService"
-        private val DOWNLOAD_IMAGE_COUNT = 20
+        private val DOWNLOAD_IMAGE_COUNT = 15
 
         public fun newIntent(context: Context): Intent {
             return Intent(context, EntrancePackageDownloader::class.java)
@@ -378,8 +378,8 @@ class EntrancePackageDownloader : Service() {
                         }
                     } else {
                         if (data != null) {
-                            val qs_strings: String = data.contentToString()
-                            val qs = qs_strings.split("$$$$$$$#$$$$$$$$")
+                            var qs_strings: String = String(data,Charsets.UTF_8)
+                            var qs = qs_strings.split("$$$$$$$#$$$$$$$$")
                             for(q in qs) {
                                 val parts = q.split("@@@@@@@#@@@@@@@@")
 
@@ -444,7 +444,11 @@ class EntrancePackageDownloader : Service() {
                                         listener!!.onDownloadprogressForViewHolder(imageList.count(), DownloadCount as Int, indexPath!!)
                                     }
                                 }
+                            qs_strings=""
+                            qs= emptyList()
+
                         }
+
                     }
 
                     processNextMulti(saveDirectory)

@@ -19,8 +19,8 @@ interface RestAPIService {
     fun get(@Url url: String, @HeaderMap headers: HashMap<String, String>): Call<ResponseBody>
 
     @GET()
-    @FormUrlEncoded
-    fun getWithParams(@Url url: String, @FieldMap params: HashMap<String, Any>?, @HeaderMap headers: HashMap<String, String>): Call<ResponseBody>
+//    @FormUrlEncoded
+    fun getWithParams(@Url url: String, @QueryMap params: HashMap<String, Any>?, @HeaderMap headers: HashMap<String, String>): Call<ResponseBody>
 
     @DELETE
     fun delete(@Url url: String, @HeaderMap headers: HashMap<String, String>): Call<ResponseBody>

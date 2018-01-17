@@ -190,7 +190,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                         buttonDetail.imageSource = R.drawable.checkmark;
                         buttonDetailArrayList.add(buttonDetail);
 
-                        FavoritesActivity.super.createActionBar("آرشیو", false, buttonDetailArrayList);
+                        FavoritesActivity.super.createActionBar("کتابخانه من", false, buttonDetailArrayList);
                         break;
                     }
 
@@ -915,8 +915,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
 
             public void setupHolder() {
-                emptyImage.setImageResource(R.drawable.refresh_empty);
-                emptyText.setText("داده ای موجود نیست");
+                emptyImage.setImageResource(R.drawable.book_shelf);
+                emptyText.setText(R.string.favorite_empty_recycle);
             }
         }
 

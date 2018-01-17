@@ -89,7 +89,7 @@
 
     <string name="navigation_bottom_home">خانه</string>
     <string name="navigation_bottom_archive">محصولات</string>
-    <string name="navigation_bottom_favorites">آرشیو</string>
+    <string name="navigation_bottom_favorites">کتابخانه من</string>
     <string name="navigation_bottom_settings">تنظیمات</string>
     <string name="checkout_button_label">پرداخت و تسویه حساب</string>
     <string name="total_cost_label">قیمت کل خرید</string>
@@ -103,6 +103,7 @@
     <string name="favorite_entrance_open_normal">مشاهده دفترچه</string>
     <string name="favorite_entrance_open_starred">سوالات نشان شده</string>
     <string name="favorite_entrance_delete_lable">پاک کردن داده ها</string>
+    <string name="favorite_empty_recycle">شما هنوز محصولی را خریداری نکرده اید.\n می توانید از طریق خانه و یا محصولات نسبت به خرید اقدام نمایید</string>
 
 
     <string name="settingChangePasswordA_S_passwordCurrent">گذرواژه فعلی</string>

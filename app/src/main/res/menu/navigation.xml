@@ -7,12 +7,12 @@
 
     <item
         android:id="@+id/navigation_favorites"
-        android:icon="@drawable/ic_zhycan_favorites"
+        android:icon="@drawable/book_shelf_filled"
         android:title="@string/navigation_bottom_favorites" />
 
     <item
         android:id="@+id/navigation_archive"
-        android:icon="@drawable/ic_zhycan_archive"
+        android:icon="@drawable/open_box_filled"
         android:title="@string/navigation_bottom_archive" />
 
     <item

@@ -19,6 +19,11 @@
         android:id="@+id/noItemL_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="32dp"
+        android:layout_marginRight="32dp"
+        android:layout_marginTop="4dp"
+        android:textDirection="rtl"
         android:text="TextView"
+        android:textAlignment="center"
         android:textSize="15sp" />
 </LinearLayout>

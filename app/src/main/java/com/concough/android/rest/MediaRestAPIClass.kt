@@ -215,7 +215,7 @@ class MediaRestAPIClass {
                 if (authenticated && error == HTTPErrorType.Success) {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
 
-                    var parameters = HashMap<String, Any>()
+//                    var parameters = HashMap<String, Any>()
                     var query = ""
                     for ((index, element) in questionsId.withIndex()) {
                         if (index != questionsId.count() - 1) {
@@ -224,7 +224,7 @@ class MediaRestAPIClass {
                             query += element
                         }
                     }
-                    parameters.set("ids", query)
+                    val parameters: HashMap<String, Any> = hashMapOf("ids" to query)
 
                     val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)

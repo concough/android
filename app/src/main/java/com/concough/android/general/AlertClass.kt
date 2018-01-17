@@ -79,7 +79,7 @@ class AlertClass {
                             title = "پیغام"; message = "دانلود با خطا مواجه گردید"
                         }
                         "PurchasedSuccess" -> {
-                            title = "پیغام"; message = "خرید با موفقیت انجام گردید"
+                            title = "پیغام"; message = "خرید با موفقیت انجام گردید. جهت دانلود به بخش کتابخانه من مراجعه نمایید"
                         }
                         "DownloadSuccess" -> {
                             title = "پیغام"; message = "دانلود با موفقیت انجام گردید"
