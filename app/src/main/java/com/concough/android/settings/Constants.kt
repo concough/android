@@ -31,6 +31,10 @@ val BASKET_CLASS_NAME = "basket"
 val DEVICE_CLASS_NAME = "device"
 val JWT_URL_PREFIX = "j"
 
+// Connection settings
+val CONNECT_TIMEOUT: Long = 30
+val READ_TIMEOUT: Long = 30
+
 // OAuth Settings
 val OAUTH_METHOD = "jwt"        // can be "jwt" or "oauth"
 val CLIENT_ID = "vKREqBOlXXVZNqWdAGTYio8W6Rhe4SpTAtCZb6Ra"

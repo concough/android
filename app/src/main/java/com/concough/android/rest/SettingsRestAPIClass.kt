@@ -3,6 +3,8 @@ package com.concough.android.rest
 import android.content.Context
 import com.concough.android.settings.API_VERSION
 import com.concough.android.settings.APP_VERSION
+import com.concough.android.settings.CONNECT_TIMEOUT
+import com.concough.android.settings.READ_TIMEOUT
 import com.concough.android.singletons.TokenHandlerSingleton
 import com.concough.android.singletons.UrlMakerSingleton
 import com.concough.android.structures.HTTPErrorType
@@ -10,12 +12,14 @@ import com.concough.android.structures.NetworkErrorType
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
+import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by Owner on 8/13/2017.
@@ -34,7 +38,12 @@ class SettingsRestAPIClass {
 
                     val parameters: HashMap<String, Any> = hashMapOf("description" to description, "app_version" to APP_VERSION, "api_version" to API_VERSION, "device_model" to deviceModel, "os_version" to osVersion)
 
-                    val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+                    val okHttpClient = OkHttpClient.Builder()
+                            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
+                            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
+                            .build()
+
+                    val Obj = Retrofit.Builder().client(okHttpClient).baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
                     val request = profile.post(url = fullPath, body = parameters, headers = headers!!)
 
@@ -88,7 +97,12 @@ class SettingsRestAPIClass {
                 if (authenticated && error == HTTPErrorType.Success) {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
 
-                    val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+                    val okHttpClient = OkHttpClient.Builder()
+                            .readTimeout(READ_TIMEOUT,TimeUnit.SECONDS)
+                            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
+                            .build()
+
+                    val Obj = Retrofit.Builder().client(okHttpClient).baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
                     val request = profile.get(url = fullPath, headers = headers!!)
 

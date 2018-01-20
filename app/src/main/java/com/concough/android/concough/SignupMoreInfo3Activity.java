@@ -36,6 +36,7 @@ import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Objects;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -158,8 +159,9 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new PostProfileTask().execute(SignupMoreInfo1Activity.signupInfo);
-
+                if (!"".equals(SignupMoreInfo1Activity.signupInfo.getGrade())) {
+                    new PostProfileTask().execute(SignupMoreInfo1Activity.signupInfo);
+                }
             }
         });
 
@@ -249,10 +251,13 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
                                             tempPair = new Pair<String, String>(jo.get("code").getAsString(), jo.get("title").getAsString());
                                             SignupMoreInfo3Activity.this.namesPair.add(tempPair);
                                         }
-                                        selectButton.setText(namesPair.get(0).second);
 
-                                        SignupMoreInfo1Activity.signupInfo.setGrade(namesPair.get(0).first);
-                                        SignupMoreInfo1Activity.signupInfo.setGradeString(namesPair.get(0).second);
+                                        if (namesPair.size() > 0) {
+                                            selectButton.setText(namesPair.get(0).second);
+
+                                            SignupMoreInfo1Activity.signupInfo.setGrade(namesPair.get(0).first);
+                                            SignupMoreInfo1Activity.signupInfo.setGradeString(namesPair.get(0).second);
+                                        }
 
                                     } else if (status.equals("Error")) {
                                         String errorType = jsonObject.get("error_type").getAsString();
