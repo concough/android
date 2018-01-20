@@ -279,3 +279,10 @@ Upgrade EntrancePackageDownloader (abolfazl.beh) - 2018-01-15
 
 1 - "EntrancePackageDownloader" enhanced to support multi download of questions -> All related class modified
 2 - This features not tested by me
+
+------------------------------------------------------------------------------------------------
+Modify All Rest Classes (abolfazl.beh) - 2018-01-20
+
+1 - All Rest API's functions changed to have connect timeout and read timeout in request.
+    - The values of timeout exist in Constants file
+2 - "SignupMoreInfo3Activity" more control before sending data
