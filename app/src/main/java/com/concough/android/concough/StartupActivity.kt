@@ -199,31 +199,11 @@ class StartupActivity : AppCompatActivity() {
                 doAsync {
                     TokenHandlerSingleton.getInstance(applicationContext).assureAuthorized(true, { authenticated, error ->
                         uiThread {
-                            val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()!!
-                            val device = DeviceInformationModelHandler.findByUniqueId(applicationContext, username)
-                            if (device != null) {
-                                if (device.state) {
-                                    if (authenticated) {
-                                        if (UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
-                                            this@StartupActivity.checkVersion()
-                                        } else {
-                                            this@StartupActivity.getProfile()
-                                        }
-                                    } else {
-                                        this@StartupActivity.setupUnauthenticated()
-                                    }
-                                } else {
-                                    this@StartupActivity.setupLocked()
-                                }
+                            if (authenticated) {
+                                this@StartupActivity.checkDeviceStateWithServer()
                             } else {
-                                this@StartupActivity.setupLocked()
+                                this@StartupActivity.setupUnauthenticated()
                             }
-//                                if (UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
-//
-//                                    this@StartupActivity.navigateToHome()
-//                                } else {
-//                                    this@StartupActivity.getProfile()
-//                                }
                         }
 
                     }, { error ->
@@ -253,6 +233,107 @@ class StartupActivity : AppCompatActivity() {
                 this@StartupActivity.setupUnauthenticated()
             }
         }
+    }
+
+    private fun checkDeviceStateWithServer() {
+        this@StartupActivity.loadingProgress = AlertClass.showLoadingMessage(this@StartupActivity)
+        this@StartupActivity.loadingProgress?.show()
+
+        doAsync {
+            DeviceRestAPIClass.deviceState(this@StartupActivity, {data, error ->
+                uiThread {
+                    AlertClass.hideLoadingMessage(this@StartupActivity.loadingProgress)
+
+                    if (error != HTTPErrorType.Success) {
+                        if (error == HTTPErrorType.Refresh) {
+                            this@StartupActivity.checkDeviceStateWithServer()
+                        } else {
+                            AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                        }
+                    } else {
+                        if (data != null) {
+                            try {
+                                val status = data.get("status").asString
+                                when (status) {
+                                    "OK" -> {
+                                        val state = data.get("data").asJsonObject.get("state").asBoolean
+                                        val device_unique_id = data.get("data").asJsonObject.get("device_unique_id").asString
+
+                                        val androidId = Settings.Secure.getString(applicationContext.contentResolver,
+                                                Settings.Secure.ANDROID_ID)
+                                        if (device_unique_id == androidId) {
+                                            if (state) {
+                                                if (UserDefaultsSingleton.getInstance(applicationContext).hasProfile()) {
+                                                    this@StartupActivity.checkVersion()
+                                                } else {
+                                                    this@StartupActivity.getProfile()
+                                                }
+                                            } else {
+                                                this@StartupActivity.setupLocked()
+                                            }
+                                        }
+
+                                    }
+                                    "Error" -> {
+                                        val errorType = data.get("error_type").asString
+                                        when (errorType) {
+                                            "AnotherDevice" -> {
+                                                val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()
+                                                if (username != null) {
+                                                    AlertClass.showAlertMessage(this@StartupActivity, "DeviceInfoError", errorType, "error", {
+                                                        val device_name = data.get("error_data").asJsonObject.get("device_name").asString
+                                                        val device_model = data.get("error_data").asJsonObject.get("device_model").asString
+
+                                                        if (DeviceInformationSingleton.getInstance(applicationContext).setDeviceState(username, device_name, device_model, false, false)) {
+                                                            deviceName.text = "دستگاه: $device_name $device_model"
+                                                        }
+                                                    })
+                                                }
+
+                                                this@StartupActivity.setupLocked()
+                                            }
+                                            "UserNotExist", "DeviceNotRegistered" -> {
+                                                val loginIntent = LoginActivity.newIntent(this@StartupActivity)
+                                                startActivity(loginIntent)
+                                            }
+                                            else -> {
+                                            }
+                                        }
+
+                                    }
+
+                                }
+                            } catch (exc: Exception) {
+
+                                }
+
+                            }
+                        }
+                    }
+
+            }, {error ->
+                uiThread {
+                    if (TokenHandlerSingleton.getInstance(applicationContext).isAuthenticated() && TokenHandlerSingleton.getInstance(applicationContext).isAuthorized()) {
+                        val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()!!
+                        val device = DeviceInformationModelHandler.findByUniqueId(applicationContext, username)
+                        if (device != null) {
+                            if (device.state) {
+                                this@StartupActivity.isOnline = false
+                                this@StartupActivity.setupOffline()
+                            } else {
+                                this@StartupActivity.setupLocked()
+                            }
+                        } else {
+                            this@StartupActivity.setupLocked()
+                        }
+                    } else {
+                        this@StartupActivity.setupUnauthenticated()
+                    }
+                }
+
+            })
+        }
+
     }
 
     private fun checkVersion() {

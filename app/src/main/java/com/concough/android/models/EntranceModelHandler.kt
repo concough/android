@@ -29,6 +29,7 @@ class EntranceModelHandler {
             entrance.uniqueId = e.entranceUniqueId!!
             entrance.year = e.entranceYear!!
             entrance.username = username
+            entrance.pUniqueId = "$username-${e.entranceUniqueId!!}"
 
             try {
                 RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {

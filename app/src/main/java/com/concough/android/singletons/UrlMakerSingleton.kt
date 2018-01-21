@@ -376,6 +376,11 @@ class UrlMakerSingleton private constructor() {
         return this.getDeviceUrl(functionName)
     }
 
+    fun getDeviceStateUrl(): String? {
+        val functionName = "state"
+        return this.getDeviceUrl(functionName)
+    }
+
     fun getAppLastVersionUrl(device: String): String? {
         var fullPath: String? = null
         val functionName = "app_version/$device"

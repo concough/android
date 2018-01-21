@@ -12,8 +12,9 @@ import io.realm.annotations.PrimaryKey;
 
 public class EntranceModel extends RealmObject {
     @PrimaryKey
-    public String uniqueId = "";
+    public String pUniqueId = "";
 
+    public String uniqueId = "";
     public String username = "";
     public String type = "";
     public String organization = "";

@@ -2,13 +2,20 @@ package com.concough.android.singletons
 
 import android.content.Context
 import android.util.Log
+import com.concough.android.models.ModelMigration
 import com.concough.android.settings.SECRET_KEY
-import io.realm.Realm
-import io.realm.RealmConfiguration
+import io.realm.*
+import io.realm.DynamicRealmObject
+import io.realm.RealmObjectSchema
+import io.realm.FieldAttribute
+
+
+
 
 /**
  * Created by abolfazl on 7/12/17.
  */
+
 class RealmSingleton {
     private var realm: Realm? = null
 
@@ -30,7 +37,8 @@ class RealmSingleton {
 
     private constructor(context: Context) {
         Realm.init(context)
-        val config = RealmConfiguration.Builder().encryptionKey(SECRET_KEY.toByteArray().copyOfRange(0,64)).build()
+        val config = RealmConfiguration.Builder().schemaVersion(2).migration(ModelMigration()).encryptionKey(SECRET_KEY.toByteArray().copyOfRange(0,64)).build()
+
         try {
             this.realm = Realm.getInstance(config)
 

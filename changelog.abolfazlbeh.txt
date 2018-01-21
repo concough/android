@@ -286,3 +286,12 @@ Modify All Rest Classes (abolfazl.beh) - 2018-01-20
 1 - All Rest API's functions changed to have connect timeout and read timeout in request.
     - The values of timeout exist in Constants file
 2 - "SignupMoreInfo3Activity" more control before sending data
+
+------------------------------------------------------------------------------------------------
+EntranceModel Unique Integrity and Startup Check Lock State (abolfazl.beh) - 2018-01-21
+
+1 - EntranceModel unique integrity fixed. Also it's create handler modified
+2 - RealmSingleton now upgraded to schema version 2 and compatibility support added
+3 - Add new rest function "deviceState" to check device state on startup -> because of avoidance of concurrency logged in user
+4 - StartupActivity startup process fixed with new functionality of device state.
+5 - All of this process not tested yet
