@@ -143,8 +143,6 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         entranceDetailAdapter = new EntranceDetailAdapter(this);
 
         recycleView.setLayoutManager(new LinearLayoutManager(this));
-
-
     }
 
 

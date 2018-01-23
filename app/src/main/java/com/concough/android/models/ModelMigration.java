@@ -19,13 +19,15 @@ public class ModelMigration implements RealmMigration {
         if (oldVersion == 0) {
             RealmObjectSchema sessionObjSchema = sessionSchema.get("EntranceModel");
             sessionObjSchema.removePrimaryKey();
-            sessionObjSchema.addField("pUniqueId", String.class, FieldAttribute.PRIMARY_KEY)
+            sessionObjSchema.addField("pUniqueId", String.class)
                     .transform(new RealmObjectSchema.Function() {
                         @Override
                         public void apply(DynamicRealmObject obj) {
-                            obj.set("pUinqueId", obj.getString("username") + "-" + obj.getString("uniqueId"));
+                            obj.set("pUniqueId", obj.getString("username") + "-" + obj.getString("uniqueId"));
+
                         }
                     });
+            sessionObjSchema.addPrimaryKey("pUniqueId");
 
             oldVersion++;
         }

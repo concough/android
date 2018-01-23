@@ -56,6 +56,8 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.concough.android.general.AlertClass;
+import com.concough.android.general.ImageMagnifier;
+import com.concough.android.general.TouchImageView;
 import com.concough.android.models.EntranceBookletModel;
 import com.concough.android.models.EntranceLessonModel;
 import com.concough.android.models.EntranceModel;
@@ -191,6 +193,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     private Configuration config;
 
+    private CustomGridLayoutManager recycleLinearLayout;
+
 
     public static Intent newIntent(Context packageContext, String entranceUniqueId, String showType) {
         Intent i = new Intent(packageContext, EntranceShowActivity.class);
@@ -198,6 +202,33 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         i.putExtra(SHOW_TYPE_KEY, showType);
         return i;
     }
+
+    public class CustomGridLayoutManager extends LinearLayoutManager {
+        private boolean isScrollEnabled = true;
+        private final Handler handler = new Handler();
+
+        public CustomGridLayoutManager(Context context) {
+            super(context);
+        }
+
+        public void setScrollEnabled(final boolean flag) {
+
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    CustomGridLayoutManager.this.isScrollEnabled = flag;
+                }
+            }, 100);
+
+        }
+
+        @Override
+        public boolean canScrollVertically() {
+            //Similarly you can customize "canScrollHorizontally()" for managing horizontal scroll
+            return isScrollEnabled && super.canScrollVertically();
+        }
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -242,10 +273,13 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         recyclerView = (RecyclerView) findViewById(R.id.entranceShowA_recycleEntranceShow);
         recyclerViewStar = (RecyclerView) findViewById(R.id.entranceShowA_recycleEntranceShowFav);
 
+        recycleLinearLayout = new CustomGridLayoutManager(EntranceShowActivity.this);
+        recycleLinearLayout.setScrollEnabled(true);
+
         recyclerViewStar.setVisibility(View.GONE);
 
         entranceShowAdapter = new EntranceShowAdapter(this);
-        recyclerView.setLayoutManager(new LinearLayoutManager(EntranceShowActivity.this));
+        recyclerView.setLayoutManager(recycleLinearLayout);
         recyclerView.setAdapter(entranceShowAdapter);
 
 
@@ -1239,9 +1273,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             private ImageView starImage;
             private ImageView imgPreLoad;
             private ConstraintLayout mainConstraint;
-            private ImageView img1;
-            private ImageView img2;
-            private ImageView img3;
+            private ImageMagnifier img1;
+            private ImageMagnifier img2;
+            private ImageMagnifier img3;
             private LinearLayout linearShowAnswer;
             private TextView answerLabel;
             private ImageView answerLabelCheckbox;
@@ -1261,10 +1295,35 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 starImage = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_star);
 
                 imgPreLoad = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_imgPreLoad);
-                img1 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img1);
-                img2 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img2);
-                img3 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img3);
+                img1 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img1);
+                img2 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img2);
+                img3 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img3);
 
+
+//                        Canvas child = getLayoutInflater().inflate(R.layout.activity_entrance_show, null);
+
+                LinearLayout item = (LinearLayout) findViewById(R.id.container);
+
+
+
+
+
+//                img1.configurer();
+
+
+
+                img1.touchEventInterface= new ImageMagnifier.OnTouchListener() {
+                    @Override
+                    public void OnTouch() {
+                        recycleLinearLayout.setScrollEnabled(false);
+
+                    }
+
+                    @Override
+                    public void OnRelease() {
+                        recycleLinearLayout.setScrollEnabled(true);
+                    }
+                };
 
                 mainConstraint = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_mainConstrant);
 
@@ -1351,6 +1410,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
                     }
                 }
+
+                mainConstraint.canScrollVertically(0);
 
                 setImages();
             }
@@ -1758,9 +1819,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 starImage = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_star);
 
                 imgPreLoad = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_imgPreLoad);
-                img1 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img1);
-                img2 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img2);
-                img3 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img3);
+                img1 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img1);
+                img2 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img2);
+                img3 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img3);
 
 
                 mainConstraint = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_mainConstrant);

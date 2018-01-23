@@ -15,8 +15,8 @@ val ADD_CODE = "ncdjncdujb"
 val P_CODE = "67mnnv^vs7&^v87YrV&hd8bw92bu9b%\$\$#b8728^%93y6==37yb&BBB6*njs*99__=="
 
 // Host Urls
-//val BASE_URL = "http://192.168.0.21:8000/api/"
-val BASE_URL = "https://concough.zhycan.com/api/"
+val BASE_URL = "http://192.168.0.21:8000/api/"
+//val BASE_URL = "https://concough.zhycan.com/api/"
 val MEDIA_CLASS_NAME = "media"
 val ACTIVITY_CLASS_NAME = "activities"
 val ARCHIVE_CLASS_NAME = "archive"
@@ -32,8 +32,8 @@ val DEVICE_CLASS_NAME = "device"
 val JWT_URL_PREFIX = "j"
 
 // Connection settings
-val CONNECT_TIMEOUT: Long = 30
-val READ_TIMEOUT: Long = 30
+val CONNECT_TIMEOUT: Long = 60
+val READ_TIMEOUT: Long = 120
 
 // OAuth Settings
 val OAUTH_METHOD = "jwt"        // can be "jwt" or "oauth"
