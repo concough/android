@@ -51,6 +51,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="TextView"
+                        android:textDirection="rtl"
                         android:textColor="@color/colorConcoughBlue"
                         android:textSize="14sp" />
 

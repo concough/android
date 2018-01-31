@@ -236,8 +236,16 @@ class StartupActivity : AppCompatActivity() {
     }
 
     private fun checkDeviceStateWithServer() {
-        this@StartupActivity.loadingProgress = AlertClass.showLoadingMessage(this@StartupActivity)
-        this@StartupActivity.loadingProgress?.show()
+
+        if (loadingProgress == null) {
+            loadingProgress = AlertClass.showLoadingMessage(this@StartupActivity)
+            loadingProgress?.show()
+        } else {
+            if (!loadingProgress!!.isShowing()) {
+                //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                loadingProgress?.show()
+            }
+        }
 
         doAsync {
             DeviceRestAPIClass.deviceState(this@StartupActivity, {data, error ->
@@ -874,34 +882,90 @@ class StartupActivity : AppCompatActivity() {
         val url = MediaRestAPIClass.makeEsetImageUrl(imageId)
 
         if (url != null) {
-            val data = MediaCacheSingleton.getInstance(applicationContext)[url!!]
+            val data = MediaCacheSingleton.getInstance(applicationContext)[url]
             if (data != null) {
+                saveToFile(data, imageId)
+            } else {
+                MediaRestAPIClass.downloadEsetImage(this@StartupActivity, imageId, { data1, httpErrorType ->
+                    runOnUiThread {
+                        if (httpErrorType !== HTTPErrorType.Success) {
+                            Log.d(TAG, "run: ")
+                            if (httpErrorType === HTTPErrorType.Refresh) {
+                                downloadImage(imageId)
+                            }
+                        } else {
+                            MediaCacheSingleton.getInstance(applicationContext)[url] = data1!!
+                            saveToFile(data1!!, imageId)
+                        }
+                    }
 
-                val folder = File(applicationContext.filesDir, "images")
-                val folder2 = File((getApplicationContext().getFilesDir()).toString() + "/images", "eset")
-                if (!folder.exists()) {
-                    folder.mkdir()
-                    folder2.mkdir()
-                }
+                }){ error ->
 
-                val photo = File((getApplicationContext().getFilesDir()).toString() + "/images/eset", (imageId).toString())
-                if (photo.exists()) {
-                    photo.delete()
-                }
 
-                try {
-                    val fos = FileOutputStream(photo.getPath())
-
-                    fos.write(data!!)
-                    fos.close()
-                } catch (e: java.io.IOException) {
-                    Log.e("PictureDemo", "Exception in photoCallback", e)
                 }
 
             }
         }
 
     }
+
+    private fun saveToFile(data: ByteArray, imageId: Int) {
+        val folder = File(applicationContext.filesDir, "images")
+        val folder2 = File(applicationContext.filesDir.toString() + "/images", "eset")
+        if (!folder.exists()) {
+            folder.mkdir()
+            folder2.mkdir()
+        }
+
+        val photo = File(applicationContext.filesDir.toString() + "/images/eset", imageId.toString())
+        if (photo.exists()) {
+            photo.delete()
+        }
+
+        try {
+            val fos = FileOutputStream(photo.path)
+
+            fos.write(data)
+            fos.close()
+        } catch (e: java.io.IOException) {
+            Log.e("PictureDemo", "Exception in photoCallback", e)
+        }
+
+    }
+
+
+//    private fun downloadImage(imageId: Int) {
+//        val url = MediaRestAPIClass.makeEsetImageUrl(imageId)
+//
+//        if (url != null) {
+//            val data = MediaCacheSingleton.getInstance(applicationContext)[url!!]
+//            if (data != null) {
+//
+//                val folder = File(applicationContext.filesDir, "images")
+//                val folder2 = File((getApplicationContext().getFilesDir()).toString() + "/images", "eset")
+//                if (!folder.exists()) {
+//                    folder.mkdir()
+//                    folder2.mkdir()
+//                }
+//
+//                val photo = File((getApplicationContext().getFilesDir()).toString() + "/images/eset", (imageId).toString())
+//                if (photo.exists()) {
+//                    photo.delete()
+//                }
+//
+//                try {
+//                    val fos = FileOutputStream(photo.getPath())
+//
+//                    fos.write(data!!)
+//                    fos.close()
+//                } catch (e: java.io.IOException) {
+//                    Log.e("PictureDemo", "Exception in photoCallback", e)
+//                }
+//
+//            }
+//        }
+//
+//    }
 
     private fun navigateToHome() {
         if (isOnline) {

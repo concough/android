@@ -392,8 +392,17 @@ public class ResetPasswordActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            loadingProgress = AlertClass.showLoadingMessage(ResetPasswordActivity.this);
-            loadingProgress.show();
+            if (!isFinishing()) {
+                if (loadingProgress == null) {
+                    loadingProgress = AlertClass.showLoadingMessage(ResetPasswordActivity.this);
+                    loadingProgress.show();
+                } else {
+                    if (!loadingProgress.isShowing()) {
+                        //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                        loadingProgress.show();
+                    }
+                }
+            }
         }
 
     }

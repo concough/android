@@ -322,8 +322,17 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            loadingProgress = AlertClass.showLoadingMessage(SettingChangePasswordActivity.this);
-            loadingProgress.show();
+            if (!isFinishing()) {
+                if (loadingProgress == null) {
+                    loadingProgress = AlertClass.showLoadingMessage(SettingChangePasswordActivity.this);
+                    loadingProgress.show();
+                } else {
+                    if (!loadingProgress.isShowing()) {
+                        //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                        loadingProgress.show();
+                    }
+                }
+            }
 
         }
 

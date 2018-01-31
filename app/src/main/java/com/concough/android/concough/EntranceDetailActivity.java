@@ -1414,7 +1414,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
 
                 } else {
-                    MediaRestAPIClass.downloadEsetImage(EntranceDetailActivity.this, imageId, esetImageView, new Function2<byte[], HTTPErrorType, Unit>() {
+                    MediaRestAPIClass.downloadEsetImage(EntranceDetailActivity.this, imageId, new Function2<byte[], HTTPErrorType, Unit>() {
                         @Override
                         public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
 //                            runOnUiThread(new Runnable() {
@@ -1507,8 +1507,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 entranceBookletCountsTextView = (TextView) itemView.findViewById(R.id.EDItem_information_section_booklet_counts);
                 entranceYearTextView = (TextView) itemView.findViewById(R.id.EDItem_information_section_year);
 
-                entranceDurationTextView.setTypeface(FontCacheSingleton.getInstance(context.getApplicationContext()).getRegular());
-                entranceBookletCountsTextView.setTypeface(FontCacheSingleton.getInstance(context.getApplicationContext()).getRegular());
+                entranceDurationTextView.setTypeface(FontCacheSingleton.getInstance(context.getApplicationContext()).getLight());
+                entranceBookletCountsTextView.setTypeface(FontCacheSingleton.getInstance(context.getApplicationContext()).getLight());
                 entranceYearTextView.setTypeface(FontCacheSingleton.getInstance(context.getApplicationContext()).getRegular());
             }
 

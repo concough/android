@@ -324,8 +324,17 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            loadingProgress = AlertClass.showLoadingMessage(ArchiveDetailActivity.this);
-            loadingProgress.show();
+            if (!isFinishing()) {
+                if (loadingProgress == null) {
+                    loadingProgress = AlertClass.showLoadingMessage(ArchiveDetailActivity.this);
+                    loadingProgress.show();
+                } else {
+                    if (!loadingProgress.isShowing()) {
+                        //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                        loadingProgress.show();
+                    }
+                }
+            }
         }
     }
 
@@ -370,7 +379,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                 logoImage = (ImageView) itemView.findViewById(R.id.settingUserInfoL_userImage);
 
                 setName.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
-                code.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                code.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 count.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
 
             }
@@ -415,7 +424,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
 
                 } else {
-                    MediaRestAPIClass.downloadEsetImage(ArchiveDetailActivity.this, imageId, logoImage, new Function2<byte[], HTTPErrorType, Unit>() {
+                    MediaRestAPIClass.downloadEsetImage(ArchiveDetailActivity.this, imageId, new Function2<byte[], HTTPErrorType, Unit>() {
                         @Override
                         public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
 //                            runOnUiThread(new Runnable() {

@@ -53,6 +53,8 @@
                     android:layout_height="match_parent"
                     android:gravity="right|start"
                     android:text="TextView"
+                    android:maxLines="2"
+                    android:lines="1"
                     android:textColor="@android:color/black"
                     android:textDirection="rtl" />
 

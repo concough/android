@@ -7,6 +7,7 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -25,17 +26,29 @@ public class TopNavigationActivity extends AppCompatActivity {
 
     protected OnClickEventInterface clickEventInterface = null;
     private Boolean backPressed = false;
+    private static String TAG = "TopNavigationActivity";
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if ((keyCode == KeyEvent.KEYCODE_BACK)) {
-            if (backPressed == false) {
-                Toast.makeText(getApplicationContext(), "برای خروج دوباره دکمه بازگشت را لمس نمایید", Toast.LENGTH_LONG).show();
-                backPressed = true;
-                return false;
+
+            String a = this.getClass().getSimpleName();
+
+            if (a.equals("HomeActivity") ||
+                    a.equals("FavoritesActivity") ||
+                    a.equals("ArchiveActivity") ||
+                    a.equals("SettingActivity")) {
+                if (backPressed == false) {
+                    Toast.makeText(getApplicationContext(), "برای خروج دوباره دکمه بازگشت را لمس نمایید", Toast.LENGTH_LONG).show();
+                    backPressed = true;
+                    return false;
+                } else {
+                    finish();
+                }
             } else {
-                finish();
+                onBackPressed();
             }
+
         }
         return super.onKeyDown(keyCode, event);
 

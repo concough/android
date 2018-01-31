@@ -273,30 +273,60 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
         if (url != null) {
             byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
             if (data != null) {
+                saveToFile(data, imageId);
+            } else {
+                MediaRestAPIClass.downloadEsetImage(BasketCheckoutActivity.this, imageId, new Function2<byte[], HTTPErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (httpErrorType != HTTPErrorType.Success) {
+                                    Log.d(TAG, "run: ");
+                                    if (httpErrorType == HTTPErrorType.Refresh) {
+                                        downloadImage(imageId);
+                                    }
+                                } else {
+                                    MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+                                    saveToFile(data, imageId);
+                                }
+                            }
+                        });
+                        return null;
+                    }
+                }, new Function1<NetworkErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(NetworkErrorType networkErrorType) {
+                        return null;
+                    }
+                });
 
-                File folder = new File(getApplicationContext().getFilesDir(), "images");
-                File folder2 = new File(getApplicationContext().getFilesDir() + "/images", "eset");
-                if (!folder.exists()) {
-                    folder.mkdir();
-                    folder2.mkdir();
-                }
-
-                File photo = new File(getApplicationContext().getFilesDir() + "/images/eset", String.valueOf(imageId));
-                if (photo.exists()) {
-                    photo.delete();
-                }
-
-                try {
-                    FileOutputStream fos = new FileOutputStream(photo.getPath());
-
-                    fos.write(data);
-                    fos.close();
-                } catch (java.io.IOException e) {
-                    Log.e("PictureDemo", "Exception in photoCallback", e);
-                }
             }
         }
 
+    }
+
+    private void saveToFile(byte[] data, int imageId) {
+        File folder = new File(getApplicationContext().getFilesDir(), "images");
+        File folder2 = new File(getApplicationContext().getFilesDir() + "/images", "eset");
+        if (!folder.exists()) {
+            folder.mkdir();
+            folder2.mkdir();
+        }
+
+        File photo = new File(getApplicationContext().getFilesDir() + "/images/eset", String.valueOf(imageId));
+        if (photo.exists()) {
+            photo.delete();
+        }
+
+        try {
+            FileOutputStream fos = new FileOutputStream(photo.getPath());
+
+            fos.write(data);
+            fos.close();
+        } catch (java.io.IOException e) {
+            Log.e("PictureDemo", "Exception in photoCallback", e);
+        }
     }
 
 
@@ -472,12 +502,16 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
                         BasketSingleton.SaleItem sale = BasketSingleton.getInstance().getSaleByIndex(position);
 
                         if (sale != null) {
-                            if (loadingProgress == null) {
-                                loadingProgress = AlertClass.showLoadingMessage(BasketCheckoutActivity.this);
-                                loadingProgress.show();
-                            } else if (!loadingProgress.isShowing()) {
-                                loadingProgress = AlertClass.showLoadingMessage(BasketCheckoutActivity.this);
-                                loadingProgress.show();
+                            if (!isFinishing()) {
+                                if (loadingProgress == null) {
+                                    loadingProgress = AlertClass.showLoadingMessage(BasketCheckoutActivity.this);
+                                    loadingProgress.show();
+                                } else {
+                                    if (!loadingProgress.isShowing()) {
+                                        //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                                        loadingProgress.show();
+                                    }
+                                }
                             }
 
                             BasketSingleton.getInstance().removeSaleById(BasketCheckoutActivity.this, sale.getId(), position);
@@ -502,7 +536,7 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
 
 
                 } else {
-                    MediaRestAPIClass.downloadEsetImage(BasketCheckoutActivity.this, imageId, esetImageView, new Function2<byte[], HTTPErrorType, Unit>() {
+                    MediaRestAPIClass.downloadEsetImage(BasketCheckoutActivity.this, imageId, new Function2<byte[], HTTPErrorType, Unit>() {
                         @Override
                         public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
                             runOnUiThread(new Runnable() {

@@ -350,7 +350,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_weight="1"
-                    app:srcCompat="@drawable/star_filled" />
+                    app:srcCompat="@drawable/bookmark_filled" />
             </LinearLayout>
 
             <TextView

@@ -713,7 +713,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
 
         } else {
-            MediaRestAPIClass.downloadEsetImage(EntranceShowActivity.this, imageId, esetImageView, new Function2<byte[], HTTPErrorType, Unit>() {
+            MediaRestAPIClass.downloadEsetImage(EntranceShowActivity.this, imageId, new Function2<byte[], HTTPErrorType, Unit>() {
                 @Override
                 public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
 //                            runOnUiThread(new Runnable() {
@@ -856,7 +856,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                         EntranceShowActivity.this.tabLayout.getTabAt(0).select();
                     } else {
-                    EntranceShowActivity.this.tabLayout.getTabAt(mViewPager.getAdapter().getCount() - 1).select();
+                        EntranceShowActivity.this.tabLayout.getTabAt(mViewPager.getAdapter().getCount() - 1).select();
 
                     }
 
@@ -1273,9 +1273,13 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             private ImageView starImage;
             private ImageView imgPreLoad;
             private ConstraintLayout mainConstraint;
-            private ImageMagnifier img1;
-            private ImageMagnifier img2;
-            private ImageMagnifier img3;
+            // ImageMagnifier ready feature
+//            private ImageMagnifier img1;
+//            private ImageMagnifier img2;
+//            private ImageMagnifier img3;
+            private ImageView img1;
+            private ImageView img2;
+            private ImageView img3;
             private LinearLayout linearShowAnswer;
             private TextView answerLabel;
             private ImageView answerLabelCheckbox;
@@ -1295,35 +1299,33 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 starImage = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_star);
 
                 imgPreLoad = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_imgPreLoad);
-                img1 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img1);
-                img2 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img2);
-                img3 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img3);
+                // ImageMagnifier ready feature
+//                img1 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img1);
+//                img2 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img2);
+//                img3 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img3);
 
+                img1 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img1);
+                img2 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img2);
+                img3 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img3);
 
 //                        Canvas child = getLayoutInflater().inflate(R.layout.activity_entrance_show, null);
 
                 LinearLayout item = (LinearLayout) findViewById(R.id.container);
 
 
-
-
-
-//                img1.configurer();
-
-
-
-                img1.touchEventInterface= new ImageMagnifier.OnTouchListener() {
-                    @Override
-                    public void OnTouch() {
-                        recycleLinearLayout.setScrollEnabled(false);
-
-                    }
-
-                    @Override
-                    public void OnRelease() {
-                        recycleLinearLayout.setScrollEnabled(true);
-                    }
-                };
+                // ImageMagnifier ready feature
+//                img1.touchEventInterface= new ImageMagnifier.OnTouchListener() {
+//                    @Override
+//                    public void OnTouch() {
+//                        recycleLinearLayout.setScrollEnabled(false);
+//
+//                    }
+//
+//                    @Override
+//                    public void OnRelease() {
+//                        recycleLinearLayout.setScrollEnabled(true);
+//                    }
+//                };
 
                 mainConstraint = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_mainConstrant);
 
@@ -1819,9 +1821,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 starImage = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_star);
 
                 imgPreLoad = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_imgPreLoad);
-                img1 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img1);
-                img2 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img2);
-                img3 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img3);
+                img1 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img1);
+                img2 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img2);
+                img3 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img3);
 
 
                 mainConstraint = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_mainConstrant);

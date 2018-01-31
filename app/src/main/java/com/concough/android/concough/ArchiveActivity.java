@@ -430,15 +430,13 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                                 }
 
 
-
-
                                                 ArchiveActivity.this.adapter.setItems(localList);
                                                 ArchiveActivity.this.dropDownJsonElement.clear();
                                                 ArchiveActivity.this.dropDownJsonElement.addAll(localListJson);
                                                 ArchiveActivity.this.adapter.notifyDataSetChanged();
 
 
-                                                    ArchiveActivity.this.changeTypeIndex(0);
+                                                ArchiveActivity.this.changeTypeIndex(0);
 
 
                                                 break;
@@ -665,7 +663,6 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
     }
 
-
     private class GetSetsTask extends AsyncTask<Integer, Void, Void> {
         private Integer firstIndexOfGroups;
 
@@ -844,6 +841,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
             private TextView concourCode;
             private TextView concourCount;
             private View constraint;
+            private ArchiveEsetStructs archiveEsetStructs;
 
             private JsonObject extraData;
 
@@ -858,12 +856,13 @@ public class ArchiveActivity extends BottomNavigationActivity {
                 constraint = itemView.findViewById(R.id.container);
 
                 concourName.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-                concourCode.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-                concourCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                concourCode.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                concourCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
             }
 
 
             public void setupHolder(final JsonElement jsonElement) {
+                entranceLogo.setImageResource(R.drawable.no_image);
 
                 String t1 = jsonElement.getAsJsonObject().get("title").getAsString().trim();
                 concourName.setText(t1);
@@ -897,11 +896,12 @@ public class ArchiveActivity extends BottomNavigationActivity {
                 ViewGroup.LayoutParams entranceLogoLP = entranceLogo.getLayoutParams();
                 int imageId = jsonElement.getAsJsonObject().get("id").getAsInt();
 
-                ArchiveActivity.this.mArchiveEsetStructs.updated = jsonElement.getAsJsonObject().get("updated").getAsString();
-                ArchiveActivity.this.mArchiveEsetStructs.code = jsonElement.getAsJsonObject().get("code").getAsString();
-                ArchiveActivity.this.mArchiveEsetStructs.entrance_count = jsonElement.getAsJsonObject().get("entrance_count").getAsInt();
-                ArchiveActivity.this.mArchiveEsetStructs.title = jsonElement.getAsJsonObject().get("title").getAsString();
-                ArchiveActivity.this.mArchiveEsetStructs.id = jsonElement.getAsJsonObject().get("id").getAsInt();
+                archiveEsetStructs = new ArchiveEsetStructs();
+                archiveEsetStructs.updated = jsonElement.getAsJsonObject().get("updated").getAsString();
+                archiveEsetStructs.code = jsonElement.getAsJsonObject().get("code").getAsString();
+                archiveEsetStructs.entrance_count = jsonElement.getAsJsonObject().get("entrance_count").getAsInt();
+                archiveEsetStructs.title = jsonElement.getAsJsonObject().get("title").getAsString();
+                archiveEsetStructs.id = jsonElement.getAsJsonObject().get("id").getAsInt();
 
 
                 entranceLogo.setLayoutParams(entranceLogoLP);
@@ -909,7 +909,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                 constraint.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        ArchiveActivity.this.mArchiveEsetDetailStruct.esetStruct = ArchiveActivity.this.mArchiveEsetStructs;
+                        ArchiveActivity.this.mArchiveEsetDetailStruct.esetStruct = archiveEsetStructs;
                         ArchiveActivity.this.mArchiveEsetDetailStruct.groupTitle = ArchiveActivity.this.tabbarJsonElement.get(ArchiveActivity.this.tabLayout.getSelectedTabPosition()).getAsJsonObject().get("title").getAsString();
 
                         Integer dropdownPosition = ArchiveActivity.this.currentPositionDropDown;
@@ -943,7 +943,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
 
                 } else {
-                    MediaRestAPIClass.downloadEsetImage(ArchiveActivity.this, imageId, entranceLogo, new Function2<byte[], HTTPErrorType, Unit>() {
+                    MediaRestAPIClass.downloadEsetImage(ArchiveActivity.this, imageId, new Function2<byte[], HTTPErrorType, Unit>() {
                         @Override
                         public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
 //                            runOnUiThread(new Runnable() {
@@ -963,6 +963,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
                                         .load(data)
                                         .crossFade()
+                                        .dontAnimate()
                                         .into(entranceLogo)
                                         .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
 

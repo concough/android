@@ -30,7 +30,7 @@ class MediaRestAPIClass {
         }
 
         @JvmStatic
-        fun downloadEsetImage(context: Context, imageId: Int, imageHolder: ImageView, completion: (data: ByteArray?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+        fun downloadEsetImage(context: Context, imageId: Int, completion: (data: ByteArray?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
             val fullPath = makeEsetImageUrl(imageId) ?: return
 
             TokenHandlerSingleton.getInstance(context).assureAuthorized(completion = { authenticated, error ->
@@ -63,7 +63,6 @@ class MediaRestAPIClass {
                                         completion(sb, HTTPErrorType.Success)
 //                                        val line = reader.read()
 //                                        sb.append(line)
-
 
 
                                     } catch (exc: Exception) {
@@ -168,7 +167,7 @@ class MediaRestAPIClass {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
 
                     val okHttpClient = OkHttpClient.Builder()
-                            .readTimeout(READ_TIMEOUT,TimeUnit.SECONDS)
+                            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
                             .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
                             .build()
 
@@ -240,7 +239,7 @@ class MediaRestAPIClass {
                     val parameters: HashMap<String, Any> = hashMapOf("ids" to query)
 
                     val okHttpClient = OkHttpClient.Builder()
-                            .readTimeout(READ_TIMEOUT,TimeUnit.SECONDS)
+                            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
                             .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
                             .build()
 

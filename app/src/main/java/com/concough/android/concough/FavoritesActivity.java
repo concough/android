@@ -174,7 +174,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
         buttonDetail.imageSource = R.drawable.download_cloud;
         buttonDetailArrayList.add(buttonDetail);
 
-        super.createActionBar("آرشیو", false, buttonDetailArrayList);
+        super.createActionBar("کتابخانه من", false, buttonDetailArrayList);
 
 
         super.clickEventInterface = new OnClickEventInterface() {
@@ -293,6 +293,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                 entranceS.setEntranceOrgTitle(entrance.organization);
                                 entranceS.setEntranceSetTitle(entrance.set);
 
+                                Log.d(TAG, "loadData: "+entrance.pUniqueId);
+
                                 int starCount = EntranceQuestionStarredModelHandler.countByEntranceId(getApplicationContext(), username, item.productUniqueId);
                                 int openedCount = EntranceOpenedCountModelHandler.countByEntranceId(getApplicationContext(), username, item.productUniqueId);
                                 long qCount = EntranceQuestionModelHandler.countQuestions(getApplicationContext(), username, item.productUniqueId);
@@ -330,8 +332,17 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
-                loadingProgress = AlertClass.showLoadingMessage(FavoritesActivity.this);
-                loadingProgress.show();
+                if (!isFinishing()) {
+                    if (loadingProgress == null) {
+                        loadingProgress = AlertClass.showLoadingMessage(FavoritesActivity.this);
+                        loadingProgress.show();
+                    } else {
+                        if (!loadingProgress.isShowing()) {
+                            //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                            loadingProgress.show();
+                        }
+                    }
+                }
             }
         });
 
@@ -581,39 +592,101 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
     }
 
 
-
     private void downloadImage(final int imageId) {
         final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
 
         if (url != null) {
-            byte[]  data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+            byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
             if (data != null) {
+                saveToFile(data, imageId);
+            } else {
+                MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, new Function2<byte[], HTTPErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (httpErrorType != HTTPErrorType.Success) {
+                                    Log.d(TAG, "run: ");
+                                    if (httpErrorType == HTTPErrorType.Refresh) {
+                                        downloadImage(imageId);
+                                    }
+                                } else {
+                                    MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+                                    saveToFile(data, imageId);
+                                }
+                            }
+                        });
+                        return null;
+                    }
+                }, new Function1<NetworkErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(NetworkErrorType networkErrorType) {
+                        return null;
+                    }
+                });
 
-                File folder = new File(getApplicationContext().getFilesDir(),"images");
-                File folder2 = new File(getApplicationContext().getFilesDir()+"/images","eset");
-                if (!folder.exists()) {
-                    folder.mkdir();
-                    folder2.mkdir();
-                }
-
-                File photo=new File(getApplicationContext().getFilesDir()+"/images/eset", String.valueOf(imageId));
-                if (photo.exists()) {
-                    photo.delete();
-                }
-
-                try {
-                    FileOutputStream fos=new FileOutputStream(photo.getPath());
-
-                    fos.write(data);
-                    fos.close();
-                }
-                catch (java.io.IOException e) {
-                    Log.e("PictureDemo", "Exception in photoCallback", e);
-                }
             }
         }
 
     }
+
+    private void saveToFile(byte[] data, int imageId) {
+        File folder = new File(getApplicationContext().getFilesDir(), "images");
+        File folder2 = new File(getApplicationContext().getFilesDir() + "/images", "eset");
+        if (!folder.exists()) {
+            folder.mkdir();
+            folder2.mkdir();
+        }
+
+        File photo = new File(getApplicationContext().getFilesDir() + "/images/eset", String.valueOf(imageId));
+        if (photo.exists()) {
+            photo.delete();
+        }
+
+        try {
+            FileOutputStream fos = new FileOutputStream(photo.getPath());
+
+            fos.write(data);
+            fos.close();
+        } catch (java.io.IOException e) {
+            Log.e("PictureDemo", "Exception in photoCallback", e);
+        }
+    }
+
+
+//    private void downloadImage(final int imageId) {
+//        final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+//
+//        if (url != null) {
+//            byte[]  data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+//            if (data != null) {
+//
+//                File folder = new File(getApplicationContext().getFilesDir(),"images");
+//                File folder2 = new File(getApplicationContext().getFilesDir()+"/images","eset");
+//                if (!folder.exists()) {
+//                    folder.mkdir();
+//                    folder2.mkdir();
+//                }
+//
+//                File photo=new File(getApplicationContext().getFilesDir()+"/images/eset", String.valueOf(imageId));
+//                if (photo.exists()) {
+//                    photo.delete();
+//                }
+//
+//                try {
+//                    FileOutputStream fos=new FileOutputStream(photo.getPath());
+//
+//                    fos.write(data);
+//                    fos.close();
+//                }
+//                catch (java.io.IOException e) {
+//                    Log.e("PictureDemo", "Exception in photoCallback", e);
+//                }
+//            }
+//        }
+//
+//    }
 
 
 
@@ -677,8 +750,17 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
         uiHandler.post(new Runnable() {
             @Override
             public void run() {
-                loadingProgress = AlertClass.showLoadingMessage(FavoritesActivity.this);
-                loadingProgress.show();
+                if (!isFinishing()) {
+                    if (loadingProgress == null) {
+                        loadingProgress = AlertClass.showLoadingMessage(FavoritesActivity.this);
+                        loadingProgress.show();
+                    } else {
+                        if (!loadingProgress.isShowing()) {
+                            //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                            loadingProgress.show();
+                        }
+                    }
+                }
             }
         });
 
@@ -968,7 +1050,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 line = (LinearLayout) itemView.findViewById(R.id.FItem_entrance_line_gray);
 
                 entranceOrgTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-                entranceSetTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                entranceSetTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 entranceExtraDataTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 entranceBookletCountTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 entranceDurationTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
@@ -1412,7 +1494,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
 
                 } else {
-                    MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, entranceSetImage, new Function2<byte[], HTTPErrorType, Unit>() {
+                    MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, new Function2<byte[], HTTPErrorType, Unit>() {
                         @Override
                         public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
 //                            runOnUiThread(new Runnable() {
@@ -1635,7 +1717,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
 
                 } else {
-                    MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, entranceSetImage, new Function2<byte[], HTTPErrorType, Unit>() {
+                    MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, new Function2<byte[], HTTPErrorType, Unit>() {
                         @Override
                         public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
 //                            runOnUiThread(new Runnable() {
@@ -1789,7 +1871,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
 
                 } else {
-                    MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, entranceSetImage, new Function2<byte[], HTTPErrorType, Unit>() {
+                    MediaRestAPIClass.downloadEsetImage(FavoritesActivity.this, imageId, new Function2<byte[], HTTPErrorType, Unit>() {
                         @Override
                         public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
 //                            runOnUiThread(new Runnable() {

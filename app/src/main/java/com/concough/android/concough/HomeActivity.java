@@ -82,6 +82,39 @@ public class HomeActivity extends BottomNavigationActivity {
         mLayoutManager = new LinearLayoutManager(this);
         recycleView.setLayoutManager(mLayoutManager);
 
+
+        recycleView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
+            @Override
+            public void onChildViewAttachedToWindow(View view) {
+                Log.d(TAG, "onChildViewAttachedToWindow: " + view);
+                RecyclerView.ViewHolder v = recycleView.findContainingViewHolder(view);
+                if (v.getClass() == HomeActivityAdapter.ItemHolder.class) {
+                    ((HomeActivityAdapter.ItemHolder) v).downloadImageHandler();
+                    if (((HomeActivityAdapter.ItemHolder) v).getAdapterPosition() >= homeActivityAdapter.getItemCount() - 4) {
+                        if (HomeActivity.this.moreFeedExist) {
+                            if (!loading) {
+                                HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
+                                counter++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onChildViewDetachedFromWindow(View view) {
+//                Log.d(TAG, "onChildViewDetachedFromWindow: "+view);
+//              RecyclerView.ViewHolder v =  recycleView.findContainingViewHolder(view);
+//              if (v.getClass() == HomeActivityAdapter.ItemHolder.class) {
+//                ImageView  img = (ImageView) v.itemView.findViewById(R.id.itemEntranceCreateI_entranceLogo);
+//                  Glide.clear(img);
+//                  img.setImageResource(R.drawable.no_image);
+//
+//
+//              }
+            }
+        });
+
         HomeActivity.this.isRefresh = false;
 
         homeActivity(null);
@@ -104,12 +137,12 @@ public class HomeActivity extends BottomNavigationActivity {
         recycleView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                if (HomeActivity.this.moreFeedExist) {
-                    if (!loading) {
-                        HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
-                        counter++;
-                    }
-                }
+//                if (HomeActivity.this.moreFeedExist) {
+//                    if (!loading) {
+//                        HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
+//                        counter++;
+//                    }
+//                }
             }
         });
 
@@ -160,7 +193,7 @@ public class HomeActivity extends BottomNavigationActivity {
         new HomeActivityTask().execute(date);
 
         if (date == null) {
-            if(!isFinishing()) {
+            if (!isFinishing()) {
                 if (loadingProgress == null) {
                     loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
                     loadingProgress.show();
@@ -224,7 +257,8 @@ public class HomeActivity extends BottomNavigationActivity {
                                             HomeActivity.this.lastCreatedStr = lastIndexCreatedStr;
 
 
-                                            homeActivityAdapter.notifyDataSetChanged();
+//                                            homeActivityAdapter.notifyDataSetChanged();
+                                            homeActivityAdapter.notifyItemRangeChanged(homeActivityAdapter.getItemCount()-10,10);
                                             HomeActivity.this.loading = false;
 
                                         } else {
@@ -326,7 +360,7 @@ public class HomeActivity extends BottomNavigationActivity {
             this.concoughActivityStructList.addAll(concoughActivityStructList);
         }
 
-        private class ItemHolder extends RecyclerView.ViewHolder {
+        public class ItemHolder extends RecyclerView.ViewHolder {
             private ImageView entranceLogo;
             private TextView dateTopLeft;
             private TextView concourText;
@@ -337,6 +371,7 @@ public class HomeActivity extends BottomNavigationActivity {
             private TextView dateJalali;
 
             private JsonObject extraData;
+            ConcoughActivityStruct concoughActivityStructLocal;
 
 
             public ItemHolder(View itemView) {
@@ -351,7 +386,7 @@ public class HomeActivity extends BottomNavigationActivity {
                 dateJalali = (TextView) itemView.findViewById(R.id.itemEntranceCreateI_dateJalali);
                 entranceLogo = (ImageView) itemView.findViewById(R.id.itemEntranceCreateI_entranceLogo);
 
-                concourText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                concourText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 entranceType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 entranceSetGroup.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 additionalData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
@@ -361,6 +396,9 @@ public class HomeActivity extends BottomNavigationActivity {
             }
 
             public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
+
+                concoughActivityStructLocal = concoughActivityStruct;
+
                 int dateNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("year").getAsInt();
 
 
@@ -405,9 +443,10 @@ public class HomeActivity extends BottomNavigationActivity {
                 entranceType.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString().trim());
                 entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString().trim() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString().trim() + ")");
 
-                int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
 
-                downloadImage(imageId);
+//                entranceLogo.setImageResource(R.drawable.no_image);
+
+
 //
 //                String s;
 //                s = concoughActivityStruct.getTarget().getAsJsonObject().get("extra_data").getAsString();
@@ -424,6 +463,16 @@ public class HomeActivity extends BottomNavigationActivity {
                 additionalData.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString().trim());
             }
 
+            public void removeImageHandler() {
+                entranceLogo.setImageResource(R.drawable.no_image);
+
+            }
+
+            public void downloadImageHandler() {
+                int imageId = concoughActivityStructLocal.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
+                downloadImage(imageId);
+            }
+
             private void downloadImage(final int imageId) {
                 final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
                 byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
@@ -438,7 +487,7 @@ public class HomeActivity extends BottomNavigationActivity {
 
 
                 } else {
-                    MediaRestAPIClass.downloadEsetImage(HomeActivity.this, imageId, entranceLogo, new Function2<byte[], HTTPErrorType, Unit>() {
+                    MediaRestAPIClass.downloadEsetImage(HomeActivity.this, imageId, new Function2<byte[], HTTPErrorType, Unit>() {
                         @Override
                         public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
 //                            runOnUiThread(new Runnable() {
@@ -449,7 +498,7 @@ public class HomeActivity extends BottomNavigationActivity {
                                 if (httpErrorType == HTTPErrorType.Refresh) {
                                     downloadImage(imageId);
                                 } else {
-                                    entranceLogo.setImageResource(R.drawable.no_image);
+//                                    entranceLogo.setImageResource(R.drawable.no_image);
                                 }
                             } else {
                                 MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
@@ -589,7 +638,7 @@ public class HomeActivity extends BottomNavigationActivity {
 
 
                 } else {
-                    MediaRestAPIClass.downloadEsetImage(HomeActivity.this, imageId, entranceLogo, new Function2<byte[], HTTPErrorType, Unit>() {
+                    MediaRestAPIClass.downloadEsetImage(HomeActivity.this, imageId, new Function2<byte[], HTTPErrorType, Unit>() {
                         @Override
                         public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
 //                            runOnUiThread(new Runnable() {
@@ -628,6 +677,7 @@ public class HomeActivity extends BottomNavigationActivity {
             }
 
         }
+
 
         private class ItemEmptyHolder extends RecyclerView.ViewHolder {
 
@@ -695,6 +745,10 @@ public class HomeActivity extends BottomNavigationActivity {
                     }
                     default: {
                         ItemHolder itemHolder2 = (ItemHolder) holder;
+
+                        ImageView img = (ImageView) itemHolder2.itemView.findViewById(R.id.itemEntranceCreateI_entranceLogo);
+                        img.setImageResource(R.drawable.no_image);
+
                         itemHolder2.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {

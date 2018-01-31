@@ -276,8 +276,17 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            loadingProgress = AlertClass.showLoadingMessage(ForgotPasswordActivity.this);
-            loadingProgress.show();
+            if (!isFinishing()) {
+                if (loadingProgress == null) {
+                    loadingProgress = AlertClass.showLoadingMessage(ForgotPasswordActivity.this);
+                    loadingProgress.show();
+                } else {
+                    if (!loadingProgress.isShowing()) {
+                        //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                        loadingProgress.show();
+                    }
+                }
+            }
         }
 
     }

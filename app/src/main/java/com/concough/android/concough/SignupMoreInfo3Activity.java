@@ -314,8 +314,17 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            loadingProgress = AlertClass.showLoadingMessage(SignupMoreInfo3Activity.this);
-            loadingProgress.show();
+            if (!isFinishing()) {
+                if (loadingProgress == null) {
+                    loadingProgress = AlertClass.showLoadingMessage(SignupMoreInfo3Activity.this);
+                    loadingProgress.show();
+                } else {
+                    if (!loadingProgress.isShowing()) {
+                        //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                        loadingProgress.show();
+                    }
+                }
+            }
 
         }
 
@@ -420,8 +429,17 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            loadingProgress = AlertClass.showLoadingMessage(SignupMoreInfo3Activity.this);
-            loadingProgress.show();
+            if (!isFinishing()) {
+                if (loadingProgress == null) {
+                    loadingProgress = AlertClass.showLoadingMessage(SignupMoreInfo3Activity.this);
+                    loadingProgress.show();
+                } else {
+                    if (!loadingProgress.isShowing()) {
+                        //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                        loadingProgress.show();
+                    }
+                }
+            }
 
         }
 

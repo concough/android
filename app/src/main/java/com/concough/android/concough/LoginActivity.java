@@ -338,8 +338,17 @@ public class LoginActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            loadingProgress = AlertClass.showLoadingMessage(LoginActivity.this);
-            loadingProgress.show();
+            if (!isFinishing()) {
+                if (loadingProgress == null) {
+                    loadingProgress = AlertClass.showLoadingMessage(LoginActivity.this);
+                    loadingProgress.show();
+                } else {
+                    if (!loadingProgress.isShowing()) {
+                        //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                        loadingProgress.show();
+                    }
+                }
+            }
             //
 
         }
@@ -419,8 +428,17 @@ public class LoginActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            loadingProgress = AlertClass.showLoadingMessage(LoginActivity.this);
-            loadingProgress.show();
+            if (!isFinishing()) {
+                if (loadingProgress == null) {
+                    loadingProgress = AlertClass.showLoadingMessage(LoginActivity.this);
+                    loadingProgress.show();
+                } else {
+                    if (!loadingProgress.isShowing()) {
+                        //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                        loadingProgress.show();
+                    }
+                }
+            }
         }
     }
 
@@ -574,8 +592,17 @@ public class LoginActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    loadingProgress = AlertClass.showLoadingMessage(LoginActivity.this);
-                    loadingProgress.show();
+                    if (!isFinishing()) {
+                        if (loadingProgress == null) {
+                            loadingProgress = AlertClass.showLoadingMessage(LoginActivity.this);
+                            loadingProgress.show();
+                        } else {
+                            if (!loadingProgress.isShowing()) {
+                                //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                                loadingProgress.show();
+                            }
+                        }
+                    }
 
                 }
             });

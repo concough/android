@@ -73,7 +73,7 @@
             android:src="@drawable/loading_glass"
             android:visibility="gone" />
 
-        <com.concough.android.general.ImageMagnifier
+        <ImageView
             android:id="@+id/ccEntranceShowHolder1I_img1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -81,7 +81,7 @@
             android:adjustViewBounds="true"
             android:scaleType="fitCenter" />
 
-        <com.concough.android.general.ImageMagnifier
+        <ImageView
             android:id="@+id/ccEntranceShowHolder1I_img2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -89,7 +89,7 @@
             android:adjustViewBounds="true"
             android:scaleType="fitCenter" />
 
-        <com.concough.android.general.ImageMagnifier
+        <ImageView
             android:id="@+id/ccEntranceShowHolder1I_img3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
