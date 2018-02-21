@@ -48,6 +48,7 @@ import com.concough.android.structures.EntranceStruct;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.LogTypeEnum;
 import com.concough.android.structures.NetworkErrorType;
+import com.concough.android.utils.MemoryUtilities;
 import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -1376,6 +1377,10 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 FEntranceNotDownloadViewHolder.this.entranceDownloadLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        if (MemoryUtilities.getMemorySize() <= 30) {
+                            AlertClass.showAlertMessage(FavoritesActivity.this, "SystemError", "LowMemory", "warning", null);
+                            return;
+                        }
 
                         if (DownloaderSingleton.getInstance().getIsInDownloadProgress()) {
                             AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "DownloadError", "DownloadInProgress", "warning", null);

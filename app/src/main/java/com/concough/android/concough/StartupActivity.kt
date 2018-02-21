@@ -21,6 +21,7 @@ import com.concough.android.singletons.*
 import com.concough.android.structures.EntranceStruct
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
+import com.concough.android.utils.MemoryUtilities
 import com.concough.android.utils.NetworkUtil
 import com.concough.android.vendor.progressHUD.KProgressHUD
 import com.google.gson.JsonElement
@@ -236,21 +237,21 @@ class StartupActivity : AppCompatActivity() {
     }
 
     private fun checkDeviceStateWithServer() {
-
-        if (loadingProgress == null) {
-            loadingProgress = AlertClass.showLoadingMessage(this@StartupActivity)
-            loadingProgress?.show()
-        } else {
-            if (!loadingProgress!!.isShowing()) {
-                //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
-                loadingProgress?.show()
-            }
-        }
+//
+//        if (loadingProgress == null) {
+//            loadingProgress = AlertClass.showLoadingMessage(this@StartupActivity)
+//            loadingProgress?.show()
+//        } else {
+//            if (!loadingProgress!!.isShowing()) {
+//                //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+//                loadingProgress?.show()
+//            }
+//        }
 
         doAsync {
             DeviceRestAPIClass.deviceState(this@StartupActivity, {data, error ->
                 uiThread {
-                    AlertClass.hideLoadingMessage(this@StartupActivity.loadingProgress)
+//                    AlertClass.hideLoadingMessage(this@StartupActivity.loadingProgress)
 
                     if (error != HTTPErrorType.Success) {
                         if (error == HTTPErrorType.Refresh) {

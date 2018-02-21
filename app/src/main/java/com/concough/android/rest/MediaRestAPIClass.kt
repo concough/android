@@ -239,8 +239,8 @@ class MediaRestAPIClass {
                     val parameters: HashMap<String, Any> = hashMapOf("ids" to query)
 
                     val okHttpClient = OkHttpClient.Builder()
-                            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
-                            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
+                            .readTimeout(READ_TIMEOUT+30, TimeUnit.SECONDS)
+                            .connectTimeout(CONNECT_TIMEOUT+30, TimeUnit.SECONDS)
                             .build()
 
                     val Obj = Retrofit.Builder().client(okHttpClient).baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
@@ -257,8 +257,8 @@ class MediaRestAPIClass {
 //                          Log.d(TAG, resCode.toString())
                             when (resCode) {
                                 HTTPErrorType.Success -> {
-                                    val res = response.body()
                                     try {
+                                        val res = response.body()
 //                                        val reader: BufferedReader = BufferedReader(InputStreamReader(res?.byteStream()))
                                         val sb: ByteArray = res?.bytes()!!
 

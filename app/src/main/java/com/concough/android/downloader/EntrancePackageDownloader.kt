@@ -386,15 +386,17 @@ class EntrancePackageDownloader : Service() {
                                 if (ids.keys.contains(parts[0])) {
                                     val questionId = ids[parts[0]]!!
 
-                                    val filePath = "$saveDirectory/${parts[0]}"
+//                                    val filePath = "$saveDirectory/${parts[0]}"
 
                                     try {
                                         val file = File(saveDirectory, parts[0])
                                         if (!file.exists()) {
                                             var out = FileOutputStream(file)
-                                            out.write(parts[1].toByteArray(Charsets.UTF_8))
-                                            out.flush()
-                                            out.close()
+                                            if(out!=null){
+                                                out.write(parts[1].toByteArray(Charsets.UTF_8))
+                                                out.flush()
+                                                out.close()
+                                            }
 
 //                                    var stream: FileOutputStream = openFileOutput(filePath, Context.MODE_PRIVATE);
 //                                    stream.write(data);

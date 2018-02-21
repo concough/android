@@ -16,8 +16,8 @@ android {
         applicationId "com.concough.android.concough"
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode 6
-        versionName "1.4"
+        versionCode 7
+        versionName "1.5"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 //        jackOptions {
 //            enabled true
@@ -87,7 +87,9 @@ dependencies {
     compile 'com.github.bumptech.glide:glide:3.5.2'
     //    compile 'com.github.tgio:rncryptor-native:0.0.9'
     testCompile 'junit:junit:4.12'
-}
+    compile 'com.xenione.widgets:loupe:1.0.0'
+
+ }
 repositories {
     mavenCentral()
     maven { url "https://jitpack.io" }

@@ -239,3 +239,16 @@ Debug 4 (faridM) - 1/15/2018
  3- Fixed Continue download in favorite activity
 
 
+==================================================================================
+
+Debug 5 (faridM) 31-1-2018
+
+ 1- Fix all Loading Show
+ 2- Change Some labels
+
+==================================================================================
+
+Debug 6 (faridM) 21-2-2018
+
+ 1- Fix all problems with HudProgress
+ 2- Add MemoryUtilities checked

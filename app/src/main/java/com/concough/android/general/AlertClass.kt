@@ -20,8 +20,6 @@ import android.content.ComponentName
 import android.app.ActivityManager
 
 
-
-
 /**
  * Created by abolfazl on 7/3/17.
  */
@@ -39,6 +37,14 @@ class AlertClass {
             var message: String = ""
 
             when (messageType) {
+                "SystemError" -> {
+                    when (messageSubType) {
+                        "LowMemory" -> {
+                            title = "خطای دانلود"; message = "حافظه دستگاه شما پر می باشد"
+                        }
+                        else -> showMessage = false
+                    }
+                }
                 "Contacts" -> {
                     when (messageSubType) {
                         "Denied" -> {
@@ -321,10 +327,9 @@ class AlertClass {
 //            synchronized(AlertClass.hideLoadingLock) {
 
 
-
-                if (progressHUD != null) {
-                    progressHUD.dismiss()
-                }
+            if (progressHUD != null) {
+                progressHUD.dismiss()
+            }
 
 
 //            }

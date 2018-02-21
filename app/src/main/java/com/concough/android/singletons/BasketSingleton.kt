@@ -415,7 +415,7 @@ class BasketSingleton : Handler.Callback {
             }
 
         }, { error ->
-            AlertClass.hideLoadingMessage(loadingProgress)
+//            AlertClass.hideLoadingMessage(loadingProgress)
             if (error != null) {
                 when (error) {
                     NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
@@ -445,7 +445,7 @@ class BasketSingleton : Handler.Callback {
 
         BasketRestAPIClass.createBasket(context?.applicationContext!!, { data, error ->
 
-            AlertClass.hideLoadingMessage(loadingProgress)
+//            AlertClass.hideLoadingMessage(loadingProgress)
 
             if (error == HTTPErrorType.Success) {
                 if (data != null) {
@@ -485,7 +485,7 @@ class BasketSingleton : Handler.Callback {
 
         }, { error ->
 
-            AlertClass.hideLoadingMessage(loadingProgress)
+//            AlertClass.hideLoadingMessage(loadingProgress)
 
             if (error != null) {
                 when (error) {
@@ -510,12 +510,12 @@ class BasketSingleton : Handler.Callback {
         val productType = bundle.getString("TYPE")
         val target: Any = bundle.getSerializable("TARGET")
 
-        var loadingProgress: KProgressHUD? = AlertClass.showLoadingMessage(context!!)
-        loadingProgress?.show()
+//        var loadingProgress: KProgressHUD? = AlertClass.showLoadingMessage(context!!)
+//        loadingProgress?.show()
 
         BasketRestAPIClass.addProductToBasket(context?.applicationContext!!, this.basketId!!, productId!!, productType!!, { data, error ->
-            AlertClass.hideLoadingMessage(loadingProgress)
-            loadingProgress = null
+//            AlertClass.hideLoadingMessage(loadingProgress)
+//            loadingProgress = null
 
             if (error == HTTPErrorType.Success) {
                 if (data != null) {
@@ -612,12 +612,12 @@ class BasketSingleton : Handler.Callback {
         val saleId = bundle.getInt("SALE_ID")
         val salePosition = bundle.getInt("SALE_POSITION")
 
-        var loadingProgress: KProgressHUD? = AlertClass.showLoadingMessage(context!!)
-        loadingProgress?.show()
+//        var loadingProgress: KProgressHUD? = AlertClass.showLoadingMessage(context!!)
+//        loadingProgress?.show()
 
         BasketRestAPIClass.removeSaleFromBasket(context?.applicationContext!!, this.basketId!!, saleId!!, { data, error ->
-            AlertClass.hideLoadingMessage(loadingProgress)
-            loadingProgress = null
+//            AlertClass.hideLoadingMessage(loadingProgress)
+//            loadingProgress = null
 
             if (error == HTTPErrorType.Success) {
                 if (data != null) {

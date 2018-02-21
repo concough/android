@@ -50,6 +50,7 @@ import com.concough.android.structures.EntranceVCStateEnum;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.LogTypeEnum;
 import com.concough.android.structures.NetworkErrorType;
+import com.concough.android.utils.MemoryUtilities;
 import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -1799,6 +1800,10 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 downloadButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        if (MemoryUtilities.getMemorySize() <= 30) {
+                            AlertClass.showAlertMessage(EntranceDetailActivity.this, "SystemError", "LowMemory", "warning", null);
+                            return;
+                        }
                         downloadButton.setVisibility(View.INVISIBLE);
                         preDownloadProgressBar.setVisibility(View.VISIBLE);
 
