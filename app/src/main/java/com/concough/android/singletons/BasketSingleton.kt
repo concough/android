@@ -24,8 +24,11 @@ class BasketSingleton : Handler.Callback {
     interface BasketSingletonListener {
         fun onLoadItemCompleted(count: Int)
         fun onCreateCompleted(position: Int? = 0)
-        fun onAddCompleted(count: Int)
+        fun onCreateFailed(position: Int? = 0)
+        fun onAddCompleted(count: Int, position: Int)
+        fun onAddFailed(position: Int)
         fun onRemoveCompleted(count: Int, position: Int)
+        fun onRemoveFailed(position: Int)
         fun onCheckout(count: Int, purchased: HashMap<Int, PurchasedItem>)
         fun onCheckoutRedirect(payUrl: String, authority: String)
     }
@@ -198,7 +201,7 @@ class BasketSingleton : Handler.Callback {
         }
     }
 
-    fun addSale(context: Context?, target: Serializable, type: String) {
+    fun addSale(context: Context?, target: Serializable, type: String, position: Int) {
         var productId: String? = null
         synchronized(this.sales) {
             if (type == "Entrance") {
@@ -223,6 +226,7 @@ class BasketSingleton : Handler.Callback {
             val bundle = Bundle()
             bundle.putString("PRODUCT_ID", productId!!)
             bundle.putString("TYPE", type)
+            bundle.putInt("POSITION", position)
             bundle.putSerializable("TARGET", target)
             msg?.data = bundle
 
@@ -455,18 +459,17 @@ class BasketSingleton : Handler.Callback {
                             "OK" -> {
                                 try {
                                     this@BasketSingleton.basketId = data.get("basket_uid").asString
+                                    if (this@BasketSingleton.listener != null) {
+                                        this@BasketSingleton.listener?.onCreateCompleted(position)
+                                    }
                                 } catch (exc: Exception) {
-                                }
-                                if (this@BasketSingleton.listener != null) {
-                                    this@BasketSingleton.listener?.onCreateCompleted(position)
                                 }
                             }
 
                             "Error" -> {
                                 val errorType = data.get("error_type").asString
-                                when (errorType) {
-                                    else -> {
-                                    }
+                                if (this@BasketSingleton.listener != null) {
+                                    this@BasketSingleton.listener?.onCreateFailed(position)
                                 }
                             }
                         }
@@ -480,6 +483,9 @@ class BasketSingleton : Handler.Callback {
                     this@BasketSingleton.handleCreateBasket(msg)
                 } else {
                     AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                    if (this@BasketSingleton.listener != null) {
+                        this@BasketSingleton.listener?.onCreateFailed(position)
+                    }
                 }
             }
 
@@ -497,7 +503,9 @@ class BasketSingleton : Handler.Callback {
                     }
                 }
             }
-
+            if (this@BasketSingleton.listener != null) {
+                this@BasketSingleton.listener?.onCreateFailed(position)
+            }
         })
     }
 
@@ -509,6 +517,7 @@ class BasketSingleton : Handler.Callback {
         val productId = bundle.getString("PRODUCT_ID")
         val productType = bundle.getString("TYPE")
         val target: Any = bundle.getSerializable("TARGET")
+        val position: Int = bundle.getInt("POSITION")
 
 //        var loadingProgress: KProgressHUD? = AlertClass.showLoadingMessage(context!!)
 //        loadingProgress?.show()
@@ -548,7 +557,11 @@ class BasketSingleton : Handler.Callback {
                                                 }
 
                                                 if (this@BasketSingleton.listener != null) {
-                                                    this@BasketSingleton.listener?.onAddCompleted(this@BasketSingleton.sales.count())
+                                                    this@BasketSingleton.listener?.onAddCompleted(this@BasketSingleton.sales.count(), position)
+                                                }
+                                            } else {
+                                                if (this@BasketSingleton.listener != null) {
+                                                    this@BasketSingleton.listener?.onAddFailed(position)
                                                 }
                                             }
                                         }
@@ -563,15 +576,25 @@ class BasketSingleton : Handler.Callback {
                                 when (errorType) {
                                     "DuplicateSale", "MustCheckoutLast" -> {
                                         AlertClass.showAlertMessage(context, "BasketResult", errorType, "error", {
-                                            // TODO : refresh sales
+                                            if (this@BasketSingleton.listener != null) {
+                                                this@BasketSingleton.listener?.onAddFailed(position)
+                                            }
                                         })
                                     }
                                     "EntranceNotExist" -> {
-                                        AlertClass.showAlertMessage(context, "EntranceResult", errorType, "error", null)
+                                        AlertClass.showAlertMessage(context, "EntranceResult", errorType, "error", {
+                                            if (this@BasketSingleton.listener != null) {
+                                                this@BasketSingleton.listener?.onAddFailed(position)
+                                            }
+                                        })
                                     }
 
                                     else -> {
-                                        AlertClass.showAlertMessage(context, "ErrorResult", errorType, "error", null)
+                                        AlertClass.showAlertMessage(context, "ErrorResult", errorType, "error", {
+                                            if (this@BasketSingleton.listener != null) {
+                                                this@BasketSingleton.listener?.onAddFailed(position)
+                                            }
+                                        })
                                     }
                                 }
                             }
@@ -586,6 +609,9 @@ class BasketSingleton : Handler.Callback {
                     this@BasketSingleton.handleAddSale(msg)
                 } else {
                     AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                    if (this@BasketSingleton.listener != null) {
+                        this@BasketSingleton.listener?.onAddFailed(position)
+                    }
                 }
             }
 
@@ -601,6 +627,9 @@ class BasketSingleton : Handler.Callback {
                 }
             }
 
+            if (this@BasketSingleton.listener != null) {
+                this@BasketSingleton.listener?.onAddFailed(position)
+            }
         })
     }
 
@@ -641,13 +670,23 @@ class BasketSingleton : Handler.Callback {
                                 val errorType = data.get("error_type").asString
                                 when (errorType) {
                                     "MustCheckoutLast" -> {
-                                        AlertClass.showAlertMessage(context, "BasketResult", errorType, "error", null)
+                                        AlertClass.showAlertMessage(context, "BasketResult", errorType, "error", {
+                                            if (this@BasketSingleton.listener != null) {
+                                                this@BasketSingleton.listener?.onRemoveFailed(salePosition)
+                                            }
+                                        })
                                     }
                                     "SaleNotExist" -> {
                                         this@BasketSingleton.removeSaleById(saleId)
                                         AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "BasketResult", errorType, "error", null)
+                                        if (this@BasketSingleton.listener != null) {
+                                            this@BasketSingleton.listener?.onRemoveFailed(salePosition)
+                                        }
                                     }
                                     else -> {
+                                        if (this@BasketSingleton.listener != null) {
+                                            this@BasketSingleton.listener?.onRemoveFailed(salePosition)
+                                        }
                                     }
                                 }
                             }
@@ -662,6 +701,9 @@ class BasketSingleton : Handler.Callback {
                     this@BasketSingleton.handleRemoveFromBasket(msg)
                 } else {
                     AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                    if (this@BasketSingleton.listener != null) {
+                        this@BasketSingleton.listener?.onRemoveFailed(salePosition)
+                    }
                 }
             }
 
@@ -676,7 +718,9 @@ class BasketSingleton : Handler.Callback {
                     }
                 }
             }
-
+            if (this@BasketSingleton.listener != null) {
+                this@BasketSingleton.listener?.onRemoveFailed(salePosition)
+            }
         })
     }
 

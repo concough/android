@@ -39,6 +39,8 @@ import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonElement;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -134,6 +136,26 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
         // Listeners
         BasketSingleton.getInstance().setListener(new BasketSingleton.BasketSingletonListener() {
             @Override
+            public void onRemoveFailed(int position) {
+
+            }
+
+            @Override
+            public void onAddFailed(int position) {
+
+            }
+
+            @Override
+            public void onAddCompleted(int count, int position) {
+
+            }
+
+            @Override
+            public void onCreateFailed(@Nullable Integer position) {
+
+            }
+
+            @Override
             public void onCheckoutRedirect(String payUrl, String authority) {
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(payUrl));
                 startActivity(browserIntent);
@@ -156,11 +178,6 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
 
             @Override
             public void onCreateCompleted(Integer position) {
-            }
-
-            @Override
-            public void onAddCompleted(int count) {
-
             }
 
             @Override

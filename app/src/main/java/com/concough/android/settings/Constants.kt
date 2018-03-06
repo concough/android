@@ -74,3 +74,7 @@ val SECRET_KEY: String
         Log.d("rrr", finalString)
         return finalString
     }
+
+// Downloader Settings
+val DOWNLOAD_IMAGE_COUNT = 15
+val CONNECTION_MAX_RETRY = 5

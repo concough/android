@@ -214,6 +214,42 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
         BasketSingleton.getInstance().setListener(new BasketSingleton.BasketSingletonListener() {
             @Override
+            public void onRemoveFailed(int position) {
+                RecyclerView.ViewHolder holder = EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
+                if (holder.getClass() == EntranceDetailAdapter.EDSaleSectionViewHolder.class) {
+                    ((EntranceDetailAdapter.EDSaleSectionViewHolder)holder).changeBuyState(EntranceDetailActivity.this.selfBasketAdd);
+                    EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
+                }
+            }
+
+            @Override
+            public void onAddFailed(int position) {
+                RecyclerView.ViewHolder holder = EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
+                if (holder.getClass() == EntranceDetailAdapter.EDSaleSectionViewHolder.class) {
+                    ((EntranceDetailAdapter.EDSaleSectionViewHolder)holder).changeBuyState(EntranceDetailActivity.this.selfBasketAdd);
+                    EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
+                }
+            }
+
+            @Override
+            public void onAddCompleted(int count, int position) {
+                EntranceDetailActivity.this.selfBasketAdd = !EntranceDetailActivity.this.selfBasketAdd;
+                EntranceDetailActivity.this.updateBasketBadge(count);
+
+                EntranceDetailActivity.this.entranceDetailAdapter.notifyDataSetChanged();
+                EntranceDetailActivity.this.recycleView.smoothScrollToPosition(EntranceDetailActivity.this.entranceDetailAdapter.getItemCount());
+            }
+
+            @Override
+            public void onCreateFailed(@org.jetbrains.annotations.Nullable Integer position) {
+                RecyclerView.ViewHolder holder = EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
+                if (holder.getClass() == EntranceDetailAdapter.EDSaleSectionViewHolder.class) {
+                    ((EntranceDetailAdapter.EDSaleSectionViewHolder)holder).changeBuyState(EntranceDetailActivity.this.selfBasketAdd);
+                    EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
+                }
+            }
+
+            @Override
             public void onCheckoutRedirect(String payUrl, String authority) {
 
             }
@@ -231,18 +267,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 if (id != null && id > 0) {
                     BasketSingleton.getInstance().removeSaleById(EntranceDetailActivity.this, id, 0);
                 } else {
-                    BasketSingleton.getInstance().addSale(EntranceDetailActivity.this, EntranceDetailActivity.this.entrance, "Entrance");
+                    BasketSingleton.getInstance().addSale(EntranceDetailActivity.this, EntranceDetailActivity.this.entrance, "Entrance", position);
                 }
-            }
-
-            @Override
-            public void onAddCompleted(int count) {
-                EntranceDetailActivity.this.selfBasketAdd = !EntranceDetailActivity.this.selfBasketAdd;
-                EntranceDetailActivity.this.updateBasketBadge(count);
-
-                EntranceDetailActivity.this.entranceDetailAdapter.notifyDataSetChanged();
-                EntranceDetailActivity.this.recycleView.smoothScrollToPosition(EntranceDetailActivity.this.entranceDetailAdapter.getItemCount());
-//                actionBarSet();
             }
 
             @Override
@@ -1566,7 +1592,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 entranceBuyButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        disableBuyButton();
                         if (BasketSingleton.getInstance().getBasketId() == null) {
                             BasketSingleton.getInstance().createBasket(EntranceDetailActivity.this, -1);
                         } else {
@@ -1574,7 +1600,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                             if (id != null && id > 0) {
                                 BasketSingleton.getInstance().removeSaleById(EntranceDetailActivity.this, id, 0);
                             } else {
-                                BasketSingleton.getInstance().addSale(EntranceDetailActivity.this, EntranceDetailActivity.this.entrance, "Entrance");
+                                BasketSingleton.getInstance().addSale(EntranceDetailActivity.this, EntranceDetailActivity.this.entrance, "Entrance", 0);
                             }
                         }
                     }
@@ -1614,24 +1640,35 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                         entranceCostTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(saleStruct.cost) + " تومان");
                     }
 
-
-                    if (buttonState) {
-                        entranceBuyButton.setText("-  سبد خرید");
-                        entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_red_style));
-                        entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughRed));
-                        checkoutSection.setVisibility(View.VISIBLE);
-
-                    } else {
-                        entranceBuyButton.setText("+  سبد خرید");
-                        entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_style));
-                        entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughBlue));
-                        checkoutSection.setVisibility(View.GONE);
-                    }
+                    this.changeBuyState(buttonState);
 
                     entranceCheckoutSummeryTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(basketCount) + " قلم در سبد کالا موجود است.");
 
                 } catch (Exception exc) {
                     Log.d(TAG, "setupHolder: ");
+                }
+            }
+
+            public void disableBuyButton() {
+                entranceBuyButton.setEnabled(false);
+                entranceBuyButton.setText("●●●");
+                entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_lightgray_style));
+                entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughGray));
+            }
+
+            public void changeBuyState(boolean state) {
+                entranceBuyButton.setEnabled(true);
+                if (state) {
+                    entranceBuyButton.setText("-  سبد خرید");
+                    entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_red_style));
+                    entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughRed));
+                    checkoutSection.setVisibility(View.VISIBLE);
+
+                } else {
+                    entranceBuyButton.setText("+  سبد خرید");
+                    entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_style));
+                    entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughBlue));
+                    checkoutSection.setVisibility(View.GONE);
                 }
             }
         }

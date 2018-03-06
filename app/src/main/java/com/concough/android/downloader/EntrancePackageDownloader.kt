@@ -17,6 +17,8 @@ import com.concough.android.models.EntranceQuestionModelHandler
 import com.concough.android.models.PurchasedModelHandler
 import com.concough.android.rest.EntranceRestAPIClass
 import com.concough.android.rest.MediaRestAPIClass
+import com.concough.android.settings.CONNECTION_MAX_RETRY
+import com.concough.android.settings.DOWNLOAD_IMAGE_COUNT
 import com.concough.android.settings.SECRET_KEY
 import com.concough.android.singletons.DownloaderSingleton
 import com.concough.android.singletons.FormatterSingleton
@@ -57,7 +59,6 @@ class EntrancePackageDownloader : Service() {
 
     companion object {
         private val TAG = "EPDService"
-        private val DOWNLOAD_IMAGE_COUNT = 15
 
         public fun newIntent(context: Context): Intent {
             return Intent(context, EntrancePackageDownloader::class.java)
@@ -80,6 +81,7 @@ class EntrancePackageDownloader : Service() {
     private var vcType: String = ""
     private var username: String = ""
     private var indexPath: Int? = null
+    private var retryCounter: Int = 0
 
     private var notificationBuilder: NotificationCompat.Builder? = null
     private var notificationManager: NotificationManager? = null
@@ -375,8 +377,24 @@ class EntrancePackageDownloader : Service() {
                     if (error != HTTPErrorType.Success) {
                         if (error == HTTPErrorType.Refresh) {
                             downloadMultiImage(saveDirectory, ids)
+                        } else {
+                            if (this@EntrancePackageDownloader.retryCounter < CONNECTION_MAX_RETRY) {
+                                this@EntrancePackageDownloader.retryCounter += 1
+                                downloadMultiImage(saveDirectory, ids)
+                            } else {
+                                if (vcType == "ED") {
+                                    if (listener != null) {
+                                        listener?.onDownloadPaused()
+                                    }
+                                } else if (vcType == "F") {
+                                    if (listener != null) {
+                                        listener?.onDownloadPausedForViewHolder(indexPath!!)
+                                    }
+                                }
+                            }
                         }
                     } else {
+                        this@EntrancePackageDownloader.retryCounter = 0
                         if (data != null) {
                             var qs_strings: String = String(data,Charsets.UTF_8)
                             var qs = qs_strings.split("$$$$$$$#$$$$$$$$")
@@ -458,31 +476,36 @@ class EntrancePackageDownloader : Service() {
 
             }, failure = { error ->
                 runOnUiThread {
-                    if (error != null) {
-                        when (error) {
-                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                                if(this@EntrancePackageDownloader.context!=null && this@EntrancePackageDownloader.context is Activity) {
-                                    AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                    if (this@EntrancePackageDownloader.retryCounter < CONNECTION_MAX_RETRY) {
+                        this@EntrancePackageDownloader.retryCounter += 1
+                        downloadMultiImage(saveDirectory, ids)
+                    } else {
+
+                        if (error != null) {
+                            when (error) {
+                                NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                    if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
+                                        AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                                    }
+                                }
+                                else -> {
+                                    if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
+                                        AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+                                    }
                                 }
                             }
-                            else -> {
-                                if(this@EntrancePackageDownloader.context!=null && this@EntrancePackageDownloader.context is Activity) {
-                                    AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
-                                }
+                        }
+
+                        if (vcType == "ED") {
+                            if (listener != null) {
+                                listener?.onDownloadPaused()
+                            }
+                        } else if (vcType == "F") {
+                            if (listener != null) {
+                                listener?.onDownloadPausedForViewHolder(indexPath!!)
                             }
                         }
                     }
-
-                    if (vcType == "ED") {
-                        if (listener != null) {
-                            listener?.onDownloadPaused()
-                        }
-                    } else if (vcType == "F") {
-                        if (listener != null) {
-                            listener?.onDownloadPausedForViewHolder(indexPath!!)
-                        }
-                    }
-
                 }
             })
         }
@@ -509,11 +532,17 @@ class EntrancePackageDownloader : Service() {
                         if (error == HTTPErrorType.Refresh) {
                             downloadInitialData(completion)
                         } else {
-                            if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
-                                AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                            if (this@EntrancePackageDownloader.retryCounter < CONNECTION_MAX_RETRY) {
+                                this@EntrancePackageDownloader.retryCounter += 1
+                                downloadInitialData(completion)
+                            } else {
+                                if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
+                                    AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                                }
                             }
                         }
                     } else {
+                        this@EntrancePackageDownloader.retryCounter = 0
                         if (data != null) {
                             try {
                                 val status = data.asJsonObject.get("status").asString
@@ -582,28 +611,34 @@ class EntrancePackageDownloader : Service() {
 
             }, failure = { error ->
                 runOnUiThread {
-                    if (error != null) {
-                        when (error) {
-                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                                if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
-                                    AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
-                                }
-                            }
-                            else -> {
-                                if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
-                                    AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
-                                }
-                            }
-                        }
-                    }
+                    if (this@EntrancePackageDownloader.retryCounter < CONNECTION_MAX_RETRY) {
+                        this@EntrancePackageDownloader.retryCounter += 1
+                        downloadInitialData(completion)
+                    } else {
+                        if (error != null) {
 
-                    if (vcType == "ED") {
-                        if (listener != null) {
-                            listener?.onDownloadPaused()
+                            when (error) {
+                                NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                    if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
+                                        AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                                    }
+                                }
+                                else -> {
+                                    if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
+                                        AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+                                    }
+                                }
+                            }
                         }
-                    } else if (vcType == "F") {
-                        if (listener != null) {
-                            listener?.onDownloadPausedForViewHolder(indexPath!!)
+
+                        if (vcType == "ED") {
+                            if (listener != null) {
+                                listener?.onDownloadPaused()
+                            }
+                        } else if (vcType == "F") {
+                            if (listener != null) {
+                                listener?.onDownloadPausedForViewHolder(indexPath!!)
+                            }
                         }
                     }
                 }

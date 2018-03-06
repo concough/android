@@ -125,6 +125,50 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
         BasketSingleton.getInstance().setListener(new BasketSingleton.BasketSingletonListener() {
             @Override
+            public void onRemoveFailed(int position) {
+                RecyclerView.ViewHolder holder = ArchiveDetailActivity.this.recyclerView.findViewHolderForAdapterPosition(position);
+                if (holder.getClass() == GetEntranceAdapter.ItemsHolder.class) {
+                    ((GetEntranceAdapter.ItemsHolder)holder).changedBuyState();
+                    ArchiveDetailActivity.this.adapter.notifyItemChanged(position);
+                }
+
+            }
+
+            @Override
+            public void onAddFailed(int position) {
+                RecyclerView.ViewHolder holder = ArchiveDetailActivity.this.recyclerView.findViewHolderForAdapterPosition(position);
+                if (holder.getClass() == GetEntranceAdapter.ItemsHolder.class) {
+                    ((GetEntranceAdapter.ItemsHolder)holder).changedBuyState();
+                    ArchiveDetailActivity.this.adapter.notifyItemChanged(position);
+                }
+            }
+
+            @Override
+            public void onAddCompleted(final int count, final int position) {
+                if (count == 1) {
+                    ArchiveDetailActivity.this.actionBarSet();
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ArchiveDetailActivity.this.adapter.notifyItemChanged(position);
+                        ArchiveDetailActivity.super.updateBadge(0, count);
+
+                    }
+                });
+
+            }
+
+            @Override
+            public void onCreateFailed(@org.jetbrains.annotations.Nullable Integer position) {
+                RecyclerView.ViewHolder holder = ArchiveDetailActivity.this.recyclerView.findViewHolderForAdapterPosition(position);
+                if (holder.getClass() == GetEntranceAdapter.ItemsHolder.class) {
+                    ((GetEntranceAdapter.ItemsHolder)holder).changedBuyState();
+                    ArchiveDetailActivity.this.adapter.notifyItemChanged(position);
+                }
+            }
+
+            @Override
             public void onCheckoutRedirect(String payUrl, String authority) {
 
             }
@@ -136,31 +180,15 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
             @Override
             public void onCreateCompleted(Integer position) {
-                ((GetEntranceAdapter.ItemsHolder) ArchiveDetailActivity.this.recyclerView.findViewHolderForLayoutPosition(position)).addSaleToBasket();
+                ((GetEntranceAdapter.ItemsHolder) ArchiveDetailActivity.this.recyclerView.findViewHolderForLayoutPosition(position)).addSaleToBasket(position);
             }
 
             @Override
-            public void onAddCompleted(final int count) {
-                if (count == 1) {
-                    ArchiveDetailActivity.this.actionBarSet();
-                }
+            public void onRemoveCompleted(final int count, final int position) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        ArchiveDetailActivity.this.adapter.notifyDataSetChanged();
-                        ArchiveDetailActivity.super.updateBadge(0, count);
-
-                    }
-                });
-
-            }
-
-            @Override
-            public void onRemoveCompleted(final int count, int position) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        ArchiveDetailActivity.this.adapter.notifyDataSetChanged();
+                        ArchiveDetailActivity.this.adapter.notifyItemChanged(position);
                         ArchiveDetailActivity.super.updateBadge(0, count);
 
                     }
@@ -582,34 +610,25 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
                 final String uniqId = jsonElement.getAsJsonObject().get("unique_key").getAsString();
 
-                final Integer statIndex = BasketSingleton.getInstance().findSaleByTargetId(uniqId, "Entrance");
+                //final Integer statIndex = BasketSingleton.getInstance().findSaleByTargetId(uniqId, "Entrance");
 
                 if (EntranceModelHandler.existById(ArchiveDetailActivity.this, username, uniqId)) {
                     doubleCheck.setVisibility(View.VISIBLE);
 
                 } else {
                     entranceBuyButton.setVisibility(View.VISIBLE);
-                    if (statIndex != null && statIndex >= 0) {
-                        entranceBuyButton.setText("-  سبد خرید");
-                        entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_red_style));
-                        entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughRed));
-
-                    } else {
-                        entranceBuyButton.setText("+  سبد خرید");
-                        entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_style));
-                        entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughBlue));
-                    }
+                    changedBuyState();
                 }
                 entranceBuyButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
-                        Integer statIndex = BasketSingleton.getInstance().findSaleByTargetId(uniqId, "Entrance");
+                        disableBuyButton();
+//                        Integer statIndex = BasketSingleton.getInstance().findSaleByTargetId(uniqId, "Entrance");
                         //removeButtonEvent();
                         if (BasketSingleton.getInstance().getBasketId() == null) {
                             BasketSingleton.getInstance().createBasket(getApplicationContext(), position);
                         } else {
-                            addSaleToBasket();
+                            addSaleToBasket(position);
                         }
                     }
                 });
@@ -627,7 +646,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                 entranceBuyButton.setEnabled(false);
             }
 
-            public void addSaleToBasket() {
+            public void addSaleToBasket(int position) {
 
                 final String sorganizationTitle;
                 sorganizationTitle = jsonElement.getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString();
@@ -654,10 +673,10 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
                 Integer id = BasketSingleton.getInstance().findSaleByTargetId(uniqId, "Entrance");
                 if (id != null && id > 0) {
-                    BasketSingleton.getInstance().removeSaleById(ArchiveDetailActivity.this, id, 0);
-                    entranceBuyButton.setText("+  سبد خرید");
-                    entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_style));
-                    entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughBlue));
+                    BasketSingleton.getInstance().removeSaleById(ArchiveDetailActivity.this, id, position);
+//                    entranceBuyButton.setText("+  سبد خرید");
+//                    entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_style));
+//                    entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughBlue));
                 } else {
                     EntranceStruct myLocalEntrance = new EntranceStruct();
                     myLocalEntrance.setEntranceBookletCounts(bookletCount);
@@ -672,13 +691,36 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                     myLocalEntrance.setEntranceUniqueId(uniqId);
                     myLocalEntrance.setEntranceYear(entranceYear);
 
+//                    entranceBuyButton.setText("-  سبد خرید");
+//                    entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_red_style));
+//                    entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughRed));
+
+                    BasketSingleton.getInstance().addSale(ArchiveDetailActivity.this, myLocalEntrance, "Entrance", position);
+                }
+
+            }
+
+            public void disableBuyButton() {
+                entranceBuyButton.setEnabled(false);
+                entranceBuyButton.setText("●●●");
+                entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_lightgray_style));
+                entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughGray));
+            }
+
+            public void changedBuyState() {
+                final String uniqueId = jsonElement.getAsJsonObject().get("unique_key").getAsString();
+                entranceBuyButton.setEnabled(true);
+                final Integer statIndex = BasketSingleton.getInstance().findSaleByTargetId(uniqueId, "Entrance");
+                if (statIndex != null && statIndex >= 0) {
                     entranceBuyButton.setText("-  سبد خرید");
                     entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_red_style));
                     entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughRed));
 
-                    BasketSingleton.getInstance().addSale(ArchiveDetailActivity.this, myLocalEntrance, "Entrance");
+                } else {
+                    entranceBuyButton.setText("+  سبد خرید");
+                    entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_style));
+                    entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughBlue));
                 }
-
             }
 
 //            private void downloadImage(final int imageId) {
