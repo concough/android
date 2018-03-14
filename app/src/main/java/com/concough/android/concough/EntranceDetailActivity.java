@@ -103,7 +103,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     private EntranceDetailAdapter entranceDetailAdapter;
 
     private KProgressHUD loadingProgress;
-    private RequestManager mRequestManager;
+//    private RequestManager mRequestManager;
 
     public static Intent newIntent(Context packageContext, String entranceUniqueId, String who) {
         Intent i = new Intent(packageContext, EntranceDetailActivity.class);
@@ -129,7 +129,6 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             this.setMenuSelectedIndex(1);
         }
         super.onCreate(savedInstanceState);
-        mRequestManager = Glide.with(this);
 
 
         this.handlerThread = new HandlerThread(HANDLE_THREAD_NAME);
@@ -145,7 +144,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         this.uiHandler = new Handler();
 
         recycleView = (RecyclerView) findViewById(R.id.entranceDetaiA_recycle);
-        entranceDetailAdapter = new EntranceDetailAdapter(this);
+        entranceDetailAdapter = new EntranceDetailAdapter(this, Glide.with(this));
 
         recycleView.setLayoutManager(new LinearLayoutManager(this));
     }
@@ -240,7 +239,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 EntranceDetailActivity.this.selfBasketAdd = !EntranceDetailActivity.this.selfBasketAdd;
                 EntranceDetailActivity.this.updateBasketBadge(count);
 
-                EntranceDetailActivity.this.entranceDetailAdapter.notifyDataSetChanged();
+                EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
                 EntranceDetailActivity.this.recycleView.smoothScrollToPosition(EntranceDetailActivity.this.entranceDetailAdapter.getItemCount());
             }
 
@@ -280,7 +279,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 EntranceDetailActivity.this.selfBasketAdd = !EntranceDetailActivity.this.selfBasketAdd;
                 EntranceDetailActivity.this.updateBasketBadge(count);
 
-                EntranceDetailActivity.this.entranceDetailAdapter.notifyDataSetChanged();
+                EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
                 EntranceDetailActivity.this.recycleView.smoothScrollToPosition(EntranceDetailActivity.this.entranceDetailAdapter.getItemCount());
 //                actionBarSet();
             }
@@ -301,7 +300,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     @Override
     protected void onDestroy() {
         stopHandler();
-        mRequestManager = null;
+//        mRequestManager = null;
+        recycleView.setAdapter(null);
         super.onDestroy();
         DownloaderSingleton.getInstance().unbind(EntranceDetailActivity.this, entranceUniqueId);
     }
@@ -427,7 +427,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     }
                     break;
                 case Purchased:
-                    EntranceDetailActivity.this.entranceDetailAdapter.notifyDataSetChanged();
+                    EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
 
                     username = UserDefaultsSingleton.getInstance(getApplicationContext())
                             .getUsername();
@@ -484,7 +484,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     break;
 
                 case ShowSaleInfo:
-                    EntranceDetailActivity.this.entranceDetailAdapter.notifyDataSetChanged();
+                    EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
                     break;
 
                 case DownloadStarted:
@@ -499,7 +499,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     break;
 
                 case Downloaded:
-                    EntranceDetailActivity.this.entranceDetailAdapter.notifyDataSetChanged();
+                    EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
                     break;
             }
         }
@@ -1317,9 +1317,11 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     private class EntranceDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         private Context context;
+        private final RequestManager myGlide;
 
-        public EntranceDetailAdapter(Context context) {
+        public EntranceDetailAdapter(Context context, RequestManager g) {
             this.context = context;
+            this.myGlide = g;
         }
 
         @Override
@@ -1435,7 +1437,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
                 if (data != null) {
 
-                    mRequestManager
+                    myGlide
                             .load(data)
 
                             //.crossFade()
@@ -1461,7 +1463,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                             } else {
                                 MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
 
-                                mRequestManager.load(data)
+                                myGlide.load(data)
                                         //.crossFade()
                                         .dontAnimate()
                                         .into(esetImageView)

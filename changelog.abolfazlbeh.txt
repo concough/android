@@ -295,3 +295,16 @@ EntranceModel Unique Integrity and Startup Check Lock State (abolfazl.beh) - 201
 3 - Add new rest function "deviceState" to check device state on startup -> because of avoidance of concurrency logged in user
 4 - StartupActivity startup process fixed with new functionality of device state.
 5 - All of this process not tested yet
+
+------------------------------------------------------------------------------------------------
+Buy Button Disable and Downloader Enhance (abolfazl.beh) - 2018-03-06
+
+1 - Download retry on fail capability added to "EntrancePackageDownloader"
+2 - "EntrancePackageDownloader" class constants value refactored to "Constants"
+3 - "EntranceDetailActivity" and "ArchiveDetailActivity" modified >>> disable buy button functionality added.
+4 - "border_radius_lightgray_style" added to drawable
+
+------------------------------------------------------------------------------------------------
+Some Bugs Fixed (abolfazl.beh) - 2018-03-14
+
+1 - "EntranceDetailActivity" bugs fixed.
