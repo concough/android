@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import com.baoyz.widget.PullRefreshLayout;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.concough.android.downloader.EntrancePackageDownloader;
 import com.concough.android.general.AlertClass;
 import com.concough.android.models.EntranceModel;
@@ -102,6 +103,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     private EntranceDetailAdapter entranceDetailAdapter;
 
     private KProgressHUD loadingProgress;
+    private RequestManager mRequestManager;
 
     public static Intent newIntent(Context packageContext, String entranceUniqueId, String who) {
         Intent i = new Intent(packageContext, EntranceDetailActivity.class);
@@ -120,12 +122,14 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         this.entranceUniqueId = getIntent().getStringExtra(ENTRANCE_UNIQUE_ID_KEY);
 
 
+
         if ("Home".equals(this.contextFromWho)) {
             this.setMenuSelectedIndex(0);
         } else if ("Archive".equals(this.contextFromWho)) {
             this.setMenuSelectedIndex(1);
         }
         super.onCreate(savedInstanceState);
+        mRequestManager = Glide.with(this);
 
 
         this.handlerThread = new HandlerThread(HANDLE_THREAD_NAME);
@@ -217,7 +221,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             public void onRemoveFailed(int position) {
                 RecyclerView.ViewHolder holder = EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
                 if (holder.getClass() == EntranceDetailAdapter.EDSaleSectionViewHolder.class) {
-                    ((EntranceDetailAdapter.EDSaleSectionViewHolder)holder).changeBuyState(EntranceDetailActivity.this.selfBasketAdd);
+                    ((EntranceDetailAdapter.EDSaleSectionViewHolder) holder).changeBuyState(EntranceDetailActivity.this.selfBasketAdd);
                     EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
                 }
             }
@@ -226,7 +230,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             public void onAddFailed(int position) {
                 RecyclerView.ViewHolder holder = EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
                 if (holder.getClass() == EntranceDetailAdapter.EDSaleSectionViewHolder.class) {
-                    ((EntranceDetailAdapter.EDSaleSectionViewHolder)holder).changeBuyState(EntranceDetailActivity.this.selfBasketAdd);
+                    ((EntranceDetailAdapter.EDSaleSectionViewHolder) holder).changeBuyState(EntranceDetailActivity.this.selfBasketAdd);
                     EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
                 }
             }
@@ -244,7 +248,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             public void onCreateFailed(@org.jetbrains.annotations.Nullable Integer position) {
                 RecyclerView.ViewHolder holder = EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
                 if (holder.getClass() == EntranceDetailAdapter.EDSaleSectionViewHolder.class) {
-                    ((EntranceDetailAdapter.EDSaleSectionViewHolder)holder).changeBuyState(EntranceDetailActivity.this.selfBasketAdd);
+                    ((EntranceDetailAdapter.EDSaleSectionViewHolder) holder).changeBuyState(EntranceDetailActivity.this.selfBasketAdd);
                     EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
                 }
             }
@@ -297,6 +301,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     @Override
     protected void onDestroy() {
         stopHandler();
+        mRequestManager = null;
         super.onDestroy();
         DownloaderSingleton.getInstance().unbind(EntranceDetailActivity.this, entranceUniqueId);
     }
@@ -1430,8 +1435,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
                 if (data != null) {
 
-                    Glide.with(EntranceDetailActivity.this)
-
+                    mRequestManager
                             .load(data)
 
                             //.crossFade()
@@ -1457,9 +1461,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                             } else {
                                 MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
 
-                                Glide.with(EntranceDetailActivity.this)
-
-                                        .load(data)
+                                mRequestManager.load(data)
                                         //.crossFade()
                                         .dontAnimate()
                                         .into(esetImageView)
