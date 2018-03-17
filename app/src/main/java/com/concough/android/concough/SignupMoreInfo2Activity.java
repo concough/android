@@ -66,24 +66,25 @@ public class SignupMoreInfo2Activity extends TopNavigationActivity {
         View.OnClickListener nextListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                selectedYear = Integer.valueOf(numberPicker.getValue());
 
-                Calendar gDate = PersianCalendar.getGregorainCalendar(selectedYear, 1, 1, 1, 1, 1);
                 try {
+                    selectedYear = numberPicker.getValue();
+                    Calendar gDate = PersianCalendar.getGregorainCalendar(selectedYear, 1, 1, 1, 1, 1);
+
                     String s = FormatterSingleton.getInstance().getUTCDateFormatter().format(gDate.getTime());
                     SignupMoreInfo1Activity.signupInfo.setBirthday(FormatterSingleton.getInstance().getUTCShortDateFormatter().parse(s));
+
+                    Intent i = SignupMoreInfo3Activity.newIntent(SignupMoreInfo2Activity.this);
+                    startActivity(i);
                 } catch (ParseException e) {
 
-                }
+            }
 
-                Intent i = SignupMoreInfo3Activity.newIntent(SignupMoreInfo2Activity.this);
-                startActivity(i);
 
                 //Toast.makeText(getApplicationContext(), "Date Picked: " + String.valueOf(selectedYear), Toast.LENGTH_LONG).show();
             }
 
         };
-
 
         nextButton = (Button) findViewById(R.id.signupInfo2A_nextButton);
         nextButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());

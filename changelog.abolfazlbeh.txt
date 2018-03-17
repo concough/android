@@ -308,3 +308,10 @@ Buy Button Disable and Downloader Enhance (abolfazl.beh) - 2018-03-06
 Some Bugs Fixed (abolfazl.beh) - 2018-03-14
 
 1 - "EntranceDetailActivity" bugs fixed.
+
+------------------------------------------------------------------------------------------------
+Some Bugs Fixed (abolfazl.beh) - 2018-03-17
+
+1 - SignupMoreInfo bugs fixed.
+2 - "EntrancePackageDownloader" downloadMultiImage function try/catch changed
+3 - progressHUD in some activity onDestroy Added

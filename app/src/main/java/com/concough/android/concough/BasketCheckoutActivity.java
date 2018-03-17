@@ -257,6 +257,14 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        if (loadingProgress != null && loadingProgress.isShowing()) {
+            AlertClass.hideLoadingMessage(loadingProgress);
+        }
+        super.onDestroy();
+    }
+
     private void checkToVerify() {
         BasketSingleton.getInstance().verifyCheckout(BasketCheckoutActivity.this);
     }

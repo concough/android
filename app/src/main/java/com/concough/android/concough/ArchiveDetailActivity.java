@@ -202,6 +202,14 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
         });
     }
 
+    @Override
+    protected void onDestroy() {
+        if (loadingProgress != null && loadingProgress.isShowing()) {
+            AlertClass.hideLoadingMessage(loadingProgress);
+        }
+        super.onDestroy();
+    }
+
     private void actionBarSet() {
 
         final ArrayList<ButtonDetail> buttonDetailArrayList = new ArrayList<>();

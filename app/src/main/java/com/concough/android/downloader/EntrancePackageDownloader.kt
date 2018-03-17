@@ -396,6 +396,7 @@ class EntrancePackageDownloader : Service() {
                     } else {
                         this@EntrancePackageDownloader.retryCounter = 0
                         if (data != null) {
+                            try {
                             var qs_strings: String = String(data,Charsets.UTF_8)
                             var qs = qs_strings.split("$$$$$$$#$$$$$$$$")
                             for(q in qs) {
@@ -406,7 +407,6 @@ class EntrancePackageDownloader : Service() {
 
 //                                    val filePath = "$saveDirectory/${parts[0]}"
 
-                                    try {
                                         val file = File(saveDirectory, parts[0])
                                         if (!file.exists()) {
                                             var out = FileOutputStream(file)
@@ -448,9 +448,6 @@ class EntrancePackageDownloader : Service() {
                                         if (downloadComplete) {
                                             EntranceQuestionModelHandler.changeDownloadedToTrue(applicationContext, username, questionId, entranceUniqueId)
                                         }
-                                    } catch (exc: Exception) {
-                                        Log.d(TAG, exc.message)
-                                    }
                                 }
                             }
 
@@ -467,10 +464,12 @@ class EntrancePackageDownloader : Service() {
                             qs_strings=""
                             qs= emptyList()
 
+                            } catch (exc: Exception) {
+//                                Log.d(TAG, exc.message)
+                            }
+
                         }
-
                     }
-
                     processNextMulti(saveDirectory)
                 }
 

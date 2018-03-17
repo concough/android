@@ -301,6 +301,10 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     protected void onDestroy() {
         stopHandler();
 //        mRequestManager = null;
+
+        if (loadingProgress != null && loadingProgress.isShowing()) {
+            AlertClass.hideLoadingMessage(loadingProgress);
+        }
         recycleView.setAdapter(null);
         super.onDestroy();
         DownloaderSingleton.getInstance().unbind(EntranceDetailActivity.this, entranceUniqueId);

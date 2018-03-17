@@ -120,27 +120,30 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
         View.OnClickListener li = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ArrayList<String> gradeArray = new ArrayList<String>();
-                for (Pair<String, String> pair : namesPair) {
-                    gradeArray.add(pair.second);
+                if (namesPair.size() > 0) {
+                    ArrayList<String> gradeArray = new ArrayList<String>();
+                    for (Pair<String, String> pair : namesPair) {
+                        gradeArray.add(pair.second);
+                    }
+                    adapter = new AlertDialogCustomize(SignupMoreInfo3Activity.this, R.layout.cc_alert_dialog_textview, gradeArray);
+                    lv.setAdapter(adapter);
+
+                    selectedGradeType = namesPair.get(0).first;
+                    selectedGradeStringType = namesPair.get(0).second;
+
+                    SignupMoreInfo1Activity.signupInfo.setGrade(selectedGradeType);
+                    SignupMoreInfo1Activity.signupInfo.setGradeString(selectedGradeStringType);
+
+                    showedAlertDialog.show();
+                } else {
+                    getProfileGradeList();
                 }
-                adapter = new AlertDialogCustomize(SignupMoreInfo3Activity.this, R.layout.cc_alert_dialog_textview, gradeArray);
-                lv.setAdapter(adapter);
-
-                selectedGradeType = namesPair.get(0).first;
-                selectedGradeStringType = namesPair.get(0).second;
-
-                SignupMoreInfo1Activity.signupInfo.setGrade(selectedGradeType);
-                SignupMoreInfo1Activity.signupInfo.setGradeString(selectedGradeStringType);
-
-                showedAlertDialog.show();
             }
         };
 
         selectButton.setOnClickListener(li);
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 if (showedAlertDialog != null) {
@@ -156,6 +159,7 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
             }
         });
 
+        nextButton.setEnabled(false);
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -257,6 +261,8 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
 
                                             SignupMoreInfo1Activity.signupInfo.setGrade(namesPair.get(0).first);
                                             SignupMoreInfo1Activity.signupInfo.setGradeString(namesPair.get(0).second);
+
+                                            nextButton.setEnabled(true);
                                         }
 
                                     } else if (status.equals("Error")) {
