@@ -77,8 +77,6 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
         names = GradeType.values();
         namesPair = new ArrayList<>();
 
-        getProfileGradeList();
-
         TextView infoTextView = (TextView) findViewById(R.id.signupInfo3A_infoTextViewLine1);
         infoTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
@@ -88,12 +86,14 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
         TextView stateTextView = (TextView) findViewById(R.id.signupInfo3A_stateTextView);
         stateTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
 
-        Button nextButton = (Button) findViewById(R.id.signupInfo3A_nextButton);
+        nextButton = (Button) findViewById(R.id.signupInfo3A_nextButton);
         nextButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
 
         selectButton = (Button) findViewById(R.id.signupInfo3A_selectStateButton);
         selectButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
         registerForContextMenu(selectButton);
+
+        getProfileGradeList();
 
         // alert dialog
         LayoutInflater inflater = getLayoutInflater();
