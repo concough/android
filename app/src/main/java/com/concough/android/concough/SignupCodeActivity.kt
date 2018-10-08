@@ -82,6 +82,8 @@ class SignupCodeActivity : AppCompatActivity() {
         }
         get() = field
 
+    private var retryCounter = 0
+
     companion object {
         private val TAG = "SignupCodeActivity"
         private val X_COORDINATE = "BundleVariable"
@@ -279,6 +281,8 @@ class SignupCodeActivity : AppCompatActivity() {
                     uiThread {
                         AlertClass.hideLoadingMessage(loadingProgress)
                         if (error == HTTPErrorType.Success) {
+                            this@SignupCodeActivity.retryCounter = 0
+
                             if (data != null) {
                                 try {
                                     val status = data.get("status").asString
@@ -307,23 +311,36 @@ class SignupCodeActivity : AppCompatActivity() {
                                 }
                             }
                         } else {
-                            AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                            if (this@SignupCodeActivity.retryCounter <com.concough.android.settings.CONNECTION_MAX_RETRY ) {
+                                this@SignupCodeActivity.retryCounter += 1
+                                this@SignupCodeActivity.sendPreSignupCode()
+                            } else {
+                                this@SignupCodeActivity.retryCounter = 0
+
+                                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                            }
                         }
                     }
                 }, { error ->
                     uiThread {
                         AlertClass.hideLoadingMessage(loadingProgress)
-                        if (error != null) {
-                            when (error) {
-                                NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                                    AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
-                                }
-                                else -> {
-                                    AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+
+                        if (this@SignupCodeActivity.retryCounter <com.concough.android.settings.CONNECTION_MAX_RETRY ) {
+                            this@SignupCodeActivity.retryCounter += 1
+                            this@SignupCodeActivity.sendPreSignupCode()
+                        } else {
+                            this@SignupCodeActivity.retryCounter = 0
+                            if (error != null) {
+                                when (error) {
+                                    NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                        AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                                    }
+                                    else -> {
+                                        AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+                                    }
                                 }
                             }
                         }
-
                     }
                 })
             }
@@ -344,6 +361,8 @@ class SignupCodeActivity : AppCompatActivity() {
                 uiThread {
                     AlertClass.hideLoadingMessage(loadingProgress)
                     if (error == HTTPErrorType.Success) {
+                        this@SignupCodeActivity.retryCounter = 0
+
                         if (data != null) {
                             try {
                                 val status = data.get("status").asString
@@ -392,19 +411,32 @@ class SignupCodeActivity : AppCompatActivity() {
                             }
                         }
                     } else {
-                        AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                        if (this@SignupCodeActivity.retryCounter <com.concough.android.settings.CONNECTION_MAX_RETRY ) {
+                            this@SignupCodeActivity.retryCounter += 1
+                            this@SignupCodeActivity.makePreSignup()
+                        } else {
+                            this@SignupCodeActivity.retryCounter = 0
+                            AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                        }
                     }
                 }
             }, { error ->
                 uiThread {
                     AlertClass.hideLoadingMessage(loadingProgress)
-                    if (error != null) {
-                        when (error) {
-                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
-                            }
-                            else -> {
-                                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+
+                    if (this@SignupCodeActivity.retryCounter <com.concough.android.settings.CONNECTION_MAX_RETRY ) {
+                        this@SignupCodeActivity.retryCounter += 1
+                        this@SignupCodeActivity.makePreSignup()
+                    } else {
+                        this@SignupCodeActivity.retryCounter = 0
+                        if (error != null) {
+                            when (error) {
+                                NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                    AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                                }
+                                else -> {
+                                    AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+                                }
                             }
                         }
                     }
@@ -423,6 +455,8 @@ class SignupCodeActivity : AppCompatActivity() {
                 uiThread {
                     AlertClass.hideLoadingMessage(loadingProgress)
                     if (error == HTTPErrorType.Success) {
+                        this@SignupCodeActivity.retryCounter = 0
+
                         if (data != null) {
                             try {
                                 val status = data.get("status").asString
@@ -472,23 +506,36 @@ class SignupCodeActivity : AppCompatActivity() {
                             }
                         }
                     } else {
-                        AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                        if (this@SignupCodeActivity.retryCounter <com.concough.android.settings.CONNECTION_MAX_RETRY ) {
+                            this@SignupCodeActivity.retryCounter += 1
+                            this@SignupCodeActivity.makeForgotPass()
+                        } else {
+                            this@SignupCodeActivity.retryCounter = 0
+                            AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                        }
                     }
                 }
             }, { error ->
                 uiThread {
                     AlertClass.hideLoadingMessage(loadingProgress)
-                    if (error != null) {
-                        when (error) {
-                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
-                            }
-                            else -> {
-                                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+
+                    if (this@SignupCodeActivity.retryCounter <com.concough.android.settings.CONNECTION_MAX_RETRY ) {
+                        this@SignupCodeActivity.retryCounter += 1
+                        this@SignupCodeActivity.makeForgotPass()
+                    } else {
+                        this@SignupCodeActivity.retryCounter = 0
+
+                        if (error != null) {
+                            when (error) {
+                                NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                    AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                                }
+                                else -> {
+                                    AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+                                }
                             }
                         }
                     }
-
                 }
             })
         }
@@ -505,6 +552,8 @@ class SignupCodeActivity : AppCompatActivity() {
                 uiThread {
                     AlertClass.hideLoadingMessage(loadingProgress)
                     if (error == HTTPErrorType.Success) {
+                        this@SignupCodeActivity.retryCounter = 0
+
                         if (TokenHandlerSingleton.getInstance(applicationContext).isAuthorized()) {
                             KeyChainAccessProxy.getInstance(applicationContext).setValueAsString(USERNAME_KEY, this@SignupCodeActivity.signupStruct?.username!!)
                             KeyChainAccessProxy.getInstance(applicationContext).setValueAsString(PASSWORD_KEY, this@SignupCodeActivity.signupStruct?.password!!)
@@ -517,23 +566,34 @@ class SignupCodeActivity : AppCompatActivity() {
                             startActivity(i)
                         }
                     } else {
-                        AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                        if (this@SignupCodeActivity.retryCounter <com.concough.android.settings.CONNECTION_MAX_RETRY ) {
+                            this@SignupCodeActivity.retryCounter += 1
+                            this@SignupCodeActivity.login()
+                        } else {
+                            this@SignupCodeActivity.retryCounter = 0
+                            AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                        }
                     }
                 }
             }, { error ->
                 uiThread {
                     AlertClass.hideLoadingMessage(loadingProgress)
-                    if (error != null) {
-                        when (error) {
-                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
-                            }
-                            else -> {
-                                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+                    if (this@SignupCodeActivity.retryCounter <com.concough.android.settings.CONNECTION_MAX_RETRY ) {
+                        this@SignupCodeActivity.retryCounter += 1
+                        this@SignupCodeActivity.login()
+                    } else {
+                        this@SignupCodeActivity.retryCounter = 0
+                        if (error != null) {
+                            when (error) {
+                                NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                    AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                                }
+                                else -> {
+                                    AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+                                }
                             }
                         }
                     }
-
                 }
             })
         }
@@ -552,9 +612,17 @@ class SignupCodeActivity : AppCompatActivity() {
                         if (error == HTTPErrorType.Refresh) {
                             this@SignupCodeActivity.getLockedStatus()
                         } else {
-                            AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                            if (this@SignupCodeActivity.retryCounter <com.concough.android.settings.CONNECTION_MAX_RETRY ) {
+                                this@SignupCodeActivity.retryCounter += 1
+                                this@SignupCodeActivity.getLockedStatus()
+                            } else {
+                                this@SignupCodeActivity.retryCounter = 0
+                                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                            }
                         }
                     } else {
+                        this@SignupCodeActivity.retryCounter = 0
+
                         if (data != null) {
                             try {
                                 val status = data.get("status").asString
@@ -625,19 +693,24 @@ class SignupCodeActivity : AppCompatActivity() {
             }, { error ->
                 uiThread {
                     AlertClass.hideLoadingMessage(this@SignupCodeActivity.loadingProgress)
-                    if (error != null) {
-                        when (error) {
-                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
-                            }
-                            else -> {
-                                AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+                    if (this@SignupCodeActivity.retryCounter <com.concough.android.settings.CONNECTION_MAX_RETRY ) {
+                        this@SignupCodeActivity.retryCounter += 1
+                        this@SignupCodeActivity.getLockedStatus()
+                    } else {
+                        this@SignupCodeActivity.retryCounter = 0
+
+                        if (error != null) {
+                            when (error) {
+                                NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                    AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                                }
+                                else -> {
+                                    AlertClass.showTopMessage(this@SignupCodeActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+                                }
                             }
                         }
-
                     }
                 }
-
             })
 
         }

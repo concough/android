@@ -32,6 +32,7 @@ import kotlin.jvm.functions.Function2;
 
 import static com.concough.android.extensions.ValidatorExtensionsKt.isValidPhoneNumber;
 import static com.concough.android.extensions.EditTextExtensionKt.DirectionFix;
+import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
 
 public class ForgotPasswordActivity extends AppCompatActivity {
 
@@ -44,6 +45,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     private String send_type = "sms";
     private String oldNumber = "";
     private String newNumber = "";
+    private Integer retryCounter = 0;
 
     public void setSend_type(String send_type) {
         this.send_type = send_type;
@@ -172,6 +174,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                             AlertClass.hideLoadingMessage(loadingProgress);
 
                             if (httpErrorType == HTTPErrorType.Success) {
+                                ForgotPasswordActivity.this.retryCounter = 0;
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
                                     switch (status) {
@@ -232,7 +235,14 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new ForgotPasswordTask().execute(params);
                             } else {
-                                AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                if (ForgotPasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    ForgotPasswordActivity.this.retryCounter += 1;
+
+                                    new ForgotPasswordTask().execute(params);
+                                } else {
+                                    ForgotPasswordActivity.this.retryCounter = 0;
+                                    AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
                             }
                         }
                     });
@@ -248,21 +258,26 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
                             AlertClass.hideLoadingMessage(loadingProgress);
 
-                            if (networkErrorType != null) {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
-                                    }
-                                    default: {
-                                        AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
+                            if (ForgotPasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                ForgotPasswordActivity.this.retryCounter += 1;
+
+                                new ForgotPasswordTask().execute(params);
+                            } else {
+                                ForgotPasswordActivity.this.retryCounter = 0;
+                                if (networkErrorType != null) {
+                                    switch (networkErrorType) {
+                                        case NoInternetAccess:
+                                        case HostUnreachable: {
+                                            AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                            break;
+                                        }
+                                        default: {
+                                            AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                            break;
+                                        }
                                     }
                                 }
                             }
-
-
                         }
                     });
                     return null;

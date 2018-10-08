@@ -40,12 +40,12 @@ import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 import kotlin.jvm.functions.Function3;
 
+import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
+
 public class HomeActivity extends BottomNavigationActivity {
 
     public static final String TAG = "HomeActivity";
-
     private static int counter = 0;
-
 
     private ArrayList<ConcoughActivityStruct> concoughActivityStructs;
     private boolean moreFeedExist = true;
@@ -57,6 +57,8 @@ public class HomeActivity extends BottomNavigationActivity {
     private boolean isRefresh;
     int homaActivityCheck = 0;
     String lastCreatedStr = "";
+
+    private Integer retryCounter = 0;
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, HomeActivity.class);
@@ -218,11 +220,12 @@ public class HomeActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             AlertClass.hideLoadingMessage(loadingProgress);
 
                             try {
                                 if (httpErrorType == HTTPErrorType.Success) {
+                                    HomeActivity.this.retryCounter = 0;
+
                                     if (jsonObject != null) {
 
                                         JsonArray jsonArray = jsonObject.getAsJsonArray();
@@ -269,7 +272,12 @@ public class HomeActivity extends BottomNavigationActivity {
                                 } else if (httpErrorType == HTTPErrorType.Refresh) {
                                     new HomeActivityTask().execute(params);
                                 } else {
-
+                                    if (HomeActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                        HomeActivity.this.retryCounter += 1;
+                                        new HomeActivityTask().execute(params);
+                                    } else {
+                                        HomeActivity.this.retryCounter = 0;
+                                    }
                                 }
 
 
@@ -287,24 +295,29 @@ public class HomeActivity extends BottomNavigationActivity {
             {
                 @Override
                 public Unit invoke(final NetworkErrorType networkErrorType) {
-                    HomeActivity.this.loading = false;
-
-                    AlertClass.hideLoadingMessage(loadingProgress);
 
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            switch (networkErrorType) {
-                                case NoInternetAccess:
-                                case HostUnreachable: {
-                                    AlertClass.showTopMessage(HomeActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                    break;
-                                }
-                                default: {
-                                    AlertClass.showTopMessage(HomeActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                    break;
-                                }
+                            HomeActivity.this.loading = false;
+                            AlertClass.hideLoadingMessage(loadingProgress);
 
+                            if (HomeActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                HomeActivity.this.retryCounter += 1;
+                                new HomeActivityTask().execute(params);
+                            } else {
+                                HomeActivity.this.retryCounter = 0;
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(HomeActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(HomeActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
+                                }
                             }
                         }
                     });

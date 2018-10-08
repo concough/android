@@ -60,6 +60,8 @@ import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
+import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
+
 public class SettingActivity extends BottomNavigationActivity {
     private final String TAG = "SettingActivity";
 
@@ -70,12 +72,12 @@ public class SettingActivity extends BottomNavigationActivity {
     AlertDialog.Builder alertDialog;
 
     private KProgressHUD loadingProgress;
-
     //    private GradeType gradeType = null;
 //    private GradeType[] names;
     private ArrayList<Pair<String, String>> namesPair;
 
     private boolean isEditing = false;
+    private Integer retryCounter = 0;
 
     @Override
     protected int getLayoutResourceId() {
@@ -212,10 +214,11 @@ public class SettingActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             AlertClass.hideLoadingMessage(loadingProgress);
 
                             if (httpErrorType == HTTPErrorType.Success) {
+                                SettingActivity.this.retryCounter = 0;
+
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
                                     Date modifiedDate = null;
@@ -246,7 +249,13 @@ public class SettingActivity extends BottomNavigationActivity {
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new PostProfileGradeTask().execute(params);
                             } else {
-                                AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                if (SettingActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    SettingActivity.this.retryCounter += 1;
+                                    new PostProfileGradeTask().execute(params);
+                                } else {
+                                    SettingActivity.this.retryCounter = 0;
+                                    AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
                             }
                         }
                     });
@@ -259,20 +268,24 @@ public class SettingActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             AlertClass.hideLoadingMessage(loadingProgress);
 
-                            switch (networkErrorType) {
-                                case NoInternetAccess:
-                                case HostUnreachable: {
-                                    AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                    break;
+                            if (SettingActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                SettingActivity.this.retryCounter += 1;
+                                new PostProfileGradeTask().execute(params);
+                            } else {
+                                SettingActivity.this.retryCounter = 0;
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
                                 }
-                                default: {
-                                    AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                    break;
-                                }
-
                             }
                         }
                     });
@@ -317,6 +330,8 @@ public class SettingActivity extends BottomNavigationActivity {
                             AlertClass.hideLoadingMessage(loadingProgress);
 
                             if (httpErrorType == HTTPErrorType.Success) {
+                                SettingActivity.this.retryCounter = 0;
+
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
                                     Date modifiedDate = null;
@@ -347,7 +362,13 @@ public class SettingActivity extends BottomNavigationActivity {
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new GetProfileGradeListTask().execute(params);
                             } else {
-                                AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                if (SettingActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    SettingActivity.this.retryCounter += 1;
+                                    new GetProfileGradeListTask().execute(params);
+                                } else {
+                                    SettingActivity.this.retryCounter = 0;
+                                    AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
                             }
                         }
                     });
@@ -360,20 +381,25 @@ public class SettingActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             AlertClass.hideLoadingMessage(loadingProgress);
 
-                            switch (networkErrorType) {
-                                case NoInternetAccess:
-                                case HostUnreachable: {
-                                    AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                    break;
-                                }
-                                default: {
-                                    AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                    break;
-                                }
+                            if (SettingActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                SettingActivity.this.retryCounter += 1;
+                                new GetProfileGradeListTask().execute(params);
+                            } else {
+                                SettingActivity.this.retryCounter = 0;
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
 
+                                }
                             }
                         }
                     });
@@ -474,10 +500,11 @@ public class SettingActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             AlertClass.hideLoadingMessage(loadingProgress);
 
                             if (httpErrorType == HTTPErrorType.Success) {
+                                SettingActivity.this.retryCounter = 0;
+
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
 
@@ -531,7 +558,13 @@ public class SettingActivity extends BottomNavigationActivity {
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new AcquireTask().execute(params);
                             } else {
-                                AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                if (SettingActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    SettingActivity.this.retryCounter += 1;
+                                    new AcquireTask().execute(params);
+                                } else {
+                                    SettingActivity.this.retryCounter = 0;
+                                    AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
                             }
                         }
                     });
@@ -544,34 +577,38 @@ public class SettingActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             AlertClass.hideLoadingMessage(loadingProgress);
 
-                            switch (networkErrorType) {
-                                case NoInternetAccess:
-                                case HostUnreachable: {
-                                    AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                    break;
-                                }
-                                default: {
-                                    AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                    break;
+                            if (SettingActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                SettingActivity.this.retryCounter += 1;
+                                new AcquireTask().execute(params);
+                            } else {
+                                SettingActivity.this.retryCounter = 0;
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(SettingActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
+
                                 }
 
+                                if (params[0]) {
+                                    String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+                                    if (KeyChainAccessProxy.getInstance(getApplicationContext()).clearAllValue() && UserDefaultsSingleton.getInstance(getApplicationContext()).clearAll()) {
+                                        TokenHandlerSingleton.getInstance(getApplicationContext()).invalidateTokens();
+                                        DeviceInformationSingleton.getInstance(getApplicationContext()).clearAll(username);
+                                        Intent i = StartupActivity.newIntent(getApplicationContext());
+                                        startActivity(i);
+                                        finish();
+                                    }
+
+                                }
                             }
-
-                            if (params[0]) {
-                                String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
-                                if (KeyChainAccessProxy.getInstance(getApplicationContext()).clearAllValue() && UserDefaultsSingleton.getInstance(getApplicationContext()).clearAll()) {
-                                    TokenHandlerSingleton.getInstance(getApplicationContext()).invalidateTokens();
-                                    DeviceInformationSingleton.getInstance(getApplicationContext()).clearAll(username);
-                                    Intent i = StartupActivity.newIntent(getApplicationContext());
-                                    startActivity(i);
-                                    finish();
-                                }
-
-                            }
-
                         }
                     });
 

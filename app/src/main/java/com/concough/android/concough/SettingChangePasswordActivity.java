@@ -40,6 +40,7 @@ import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
+import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
 import static com.concough.android.settings.ConstantsKt.getPASSWORD_KEY;
 
 public class SettingChangePasswordActivity extends BottomNavigationActivity {
@@ -53,7 +54,7 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
     private TextView changePassLabel;
 
     private KProgressHUD loadingProgress;
-
+    private Integer retryCounter = 0;
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, SettingChangePasswordActivity.class);
@@ -226,10 +227,11 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-
                                     AlertClass.hideLoadingMessage(loadingProgress);
 
                                     if (httpErrorType == HTTPErrorType.Success) {
+                                        SettingChangePasswordActivity.this.retryCounter = 0;
+
                                         if (jsonObject != null) {
                                             String status = jsonObject.get("status").getAsString();
 
@@ -278,7 +280,13 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
                                     } else if (httpErrorType == HTTPErrorType.Refresh) {
                                         new SettingChangePasswordTask().execute(params);
                                     } else {
-                                        AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                        if (SettingChangePasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                            SettingChangePasswordActivity.this.retryCounter += 1;
+                                            new SettingChangePasswordTask().execute(params);
+                                        } else {
+                                            SettingChangePasswordActivity.this.retryCounter = 0;
+                                            AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                        }
                                     }
                                 }
                             });
@@ -294,21 +302,26 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
 
                                     AlertClass.hideLoadingMessage(loadingProgress);
 
-                                    if (networkErrorType != null) {
-                                        switch (networkErrorType) {
-                                            case NoInternetAccess:
-                                            case HostUnreachable: {
-                                                AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                                break;
-                                            }
-                                            default: {
-                                                AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                                break;
-                                            }
+                                    if (SettingChangePasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                        SettingChangePasswordActivity.this.retryCounter += 1;
+                                        new SettingChangePasswordTask().execute(params);
+                                    } else {
+                                        SettingChangePasswordActivity.this.retryCounter = 0;
+                                        if (networkErrorType != null) {
+                                            switch (networkErrorType) {
+                                                case NoInternetAccess:
+                                                case HostUnreachable: {
+                                                    AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                                    break;
+                                                }
+                                                default: {
+                                                    AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                                    break;
+                                                }
 
+                                            }
                                         }
                                     }
-
                                 }
                             });
                             return null;
@@ -339,7 +352,7 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
     }
 
 
-    private void changeSetting(String pass, Date modified) {
+    private void changeSetting(final String pass, final Date modified) {
         String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
         if (username != null) {
             TokenHandlerSingleton.getInstance(getApplicationContext()).setUsernameAndPassword(username, pass);
@@ -353,9 +366,16 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
                         @Override
                         public void run() {
                             if (httpErrorType == HTTPErrorType.Success) {
+                                SettingChangePasswordActivity.this.retryCounter = 0;
                                 SettingChangePasswordActivity.this.finish();
                             } else {
-                                AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                if (SettingChangePasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    SettingChangePasswordActivity.this.retryCounter += 1;
+                                    SettingChangePasswordActivity.this.changeSetting(pass, modified);
+                                } else {
+                                    SettingChangePasswordActivity.this.retryCounter = 0;
+                                    AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
                             }
                         }
                     });
@@ -367,21 +387,27 @@ public class SettingChangePasswordActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (networkErrorType != null) {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
-                                    }
-                                    default: {
-                                        AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
-                                    }
+                            if (SettingChangePasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                SettingChangePasswordActivity.this.retryCounter += 1;
+                                SettingChangePasswordActivity.this.changeSetting(pass, modified);
+                            } else {
+                                SettingChangePasswordActivity.this.retryCounter = 0;
 
+                                if (networkErrorType != null) {
+                                    switch (networkErrorType) {
+                                        case NoInternetAccess:
+                                        case HostUnreachable: {
+                                            AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                            break;
+                                        }
+                                        default: {
+                                            AlertClass.showTopMessage(SettingChangePasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                            break;
+                                        }
+
+                                    }
                                 }
                             }
-
                         }
                     });
                     return null;

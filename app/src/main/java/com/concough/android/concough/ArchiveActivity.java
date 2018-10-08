@@ -70,6 +70,7 @@ import kotlin.jvm.functions.Function2;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
 
 public class ArchiveActivity extends BottomNavigationActivity {
     private final String TAG = "ArchiveActivity";
@@ -109,6 +110,8 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
     private ArchiveEsetDetailStruct mArchiveEsetDetailStruct;
     private ArchiveEsetStructs mArchiveEsetStructs;
+
+    private Integer retryCounter = 0;
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, ArchiveActivity.class);
@@ -405,6 +408,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                             RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
                             try {
                                 if (httpErrorType == HTTPErrorType.Success) {
+                                    ArchiveActivity.this.retryCounter = 0;
                                     if (jsonObject != null) {
 
                                         String status = jsonObject.get("status").getAsString();
@@ -459,7 +463,13 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                 } else if (httpErrorType == HTTPErrorType.Refresh) {
                                     new GetTypesTask().execute(params);
                                 } else {
-                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                    if (ArchiveActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                        ArchiveActivity.this.retryCounter += 1;
+                                        new GetTypesTask().execute(params);
+                                    } else {
+                                        ArchiveActivity.this.retryCounter = 0;
+                                        AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                    }
                                 }
 
                             } catch (Exception e) {
@@ -478,17 +488,24 @@ public class ArchiveActivity extends BottomNavigationActivity {
                         @Override
                         public void run() {
                             RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
-                            switch (networkErrorType) {
-                                case NoInternetAccess:
-                                case HostUnreachable: {
-                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                    break;
-                                }
-                                default: {
-                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                    break;
-                                }
 
+                            if (ArchiveActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                ArchiveActivity.this.retryCounter += 1;
+                                new GetTypesTask().execute(params);
+                            } else {
+                                ArchiveActivity.this.retryCounter = 0;
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
+
+                                }
                             }
                         }
                     });
@@ -533,6 +550,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
                                     try {
                                         if (httpErrorType == HTTPErrorType.Success) {
+                                            ArchiveActivity.this.retryCounter = 0;
                                             if (jsonObject != null) {
 
                                                 String status = jsonObject.get("status").getAsString();
@@ -609,7 +627,13 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                         } else if (httpErrorType == HTTPErrorType.Refresh) {
                                             new GetGroupsTask().execute(firstIndexOfTypes);
                                         } else {
-                                            AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                            if (ArchiveActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                                ArchiveActivity.this.retryCounter += 1;
+                                                new GetGroupsTask().execute(firstIndexOfTypes);
+                                            } else{
+                                                ArchiveActivity.this.retryCounter = 0;
+                                                AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                            }
                                         }
 
                                     } catch (Exception e) {
@@ -629,19 +653,24 @@ public class ArchiveActivity extends BottomNavigationActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    if (ArchiveActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                        ArchiveActivity.this.retryCounter += 1;
+                                        new GetGroupsTask().execute(firstIndexOfTypes);
+                                    } else {
+                                        ArchiveActivity.this.retryCounter = 0;
+                                        RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
+                                        switch (networkErrorType) {
+                                            case NoInternetAccess:
+                                            case HostUnreachable: {
+                                                AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                                break;
+                                            }
+                                            default: {
+                                                AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                                break;
+                                            }
 
-                                    RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
-                                    switch (networkErrorType) {
-                                        case NoInternetAccess:
-                                        case HostUnreachable: {
-                                            AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                            break;
                                         }
-                                        default: {
-                                            AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                            break;
-                                        }
-
                                     }
                                 }
                             });
@@ -703,6 +732,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                             RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
                             try {
                                 if (httpErrorType == HTTPErrorType.Success) {
+                                    ArchiveActivity.this.retryCounter = 0;
                                     if (jsonObject != null) {
                                         String status = jsonObject.get("status").getAsString();
 
@@ -753,14 +783,21 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                         }
                                     }
                                 } else if (httpErrorType == HTTPErrorType.Refresh) {
-                                    new GetSetsTask().execute(params[0]);
+                                    new GetSetsTask().execute(params);
                                 } else {
-                                    AlertClass.hideLoadingMessage(loadingProgress);
+                                    if (ArchiveActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                        ArchiveActivity.this.retryCounter += 1;
+                                        new GetSetsTask().execute(params);
+                                    } else {
+                                        ArchiveActivity.this.retryCounter = 0;
 
-                                    ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
-                                    ArchiveActivity.this.adapterSet.notifyDataSetChanged();
+                                        AlertClass.hideLoadingMessage(loadingProgress);
 
-                                    AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                        ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
+                                        ArchiveActivity.this.adapterSet.notifyDataSetChanged();
+
+                                        AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                    }
                                 }
 
                             } catch (Exception exc) {
@@ -785,22 +822,27 @@ public class ArchiveActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            if (ArchiveActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                ArchiveActivity.this.retryCounter += 1;
+                                new GetSetsTask().execute(params);
+                            } else {
+                                ArchiveActivity.this.retryCounter = 0;
+                                AlertClass.hideLoadingMessage(loadingProgress);
 
-                            AlertClass.hideLoadingMessage(loadingProgress);
+                                RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
+                                if (networkErrorType != null) {
+                                    switch (networkErrorType) {
+                                        case NoInternetAccess:
+                                        case HostUnreachable: {
+                                            AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                            break;
+                                        }
+                                        default: {
+                                            AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                            break;
+                                        }
 
-                            RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
-                            if (networkErrorType != null) {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
                                     }
-                                    default: {
-                                        AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
-                                    }
-
                                 }
                             }
                         }

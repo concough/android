@@ -382,6 +382,7 @@ class EntrancePackageDownloader : Service() {
                                 this@EntrancePackageDownloader.retryCounter += 1
                                 downloadMultiImage(saveDirectory, ids)
                             } else {
+                                this@EntrancePackageDownloader.retryCounter = 0
                                 if (vcType == "ED") {
                                     if (listener != null) {
                                         listener?.onDownloadPaused()
@@ -479,7 +480,7 @@ class EntrancePackageDownloader : Service() {
                         this@EntrancePackageDownloader.retryCounter += 1
                         downloadMultiImage(saveDirectory, ids)
                     } else {
-
+                        this@EntrancePackageDownloader.retryCounter = 0
                         if (error != null) {
                             when (error) {
                                 NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
@@ -535,6 +536,7 @@ class EntrancePackageDownloader : Service() {
                                 this@EntrancePackageDownloader.retryCounter += 1
                                 downloadInitialData(completion)
                             } else {
+                                this@EntrancePackageDownloader.retryCounter = 0
                                 if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
                                     AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
                                 }
@@ -614,6 +616,8 @@ class EntrancePackageDownloader : Service() {
                         this@EntrancePackageDownloader.retryCounter += 1
                         downloadInitialData(completion)
                     } else {
+                        this@EntrancePackageDownloader.retryCounter = 0
+
                         if (error != null) {
 
                             when (error) {

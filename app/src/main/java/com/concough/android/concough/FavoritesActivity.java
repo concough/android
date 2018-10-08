@@ -71,6 +71,8 @@ import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
+import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
+
 public class FavoritesActivity extends BottomNavigationActivity implements Handler.Callback {
     private class FavoriteItem {
         public String uniqueId;
@@ -100,7 +102,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
     private String selectedShowType = "Show";
     private String entranceUniqueId = "";
     private String username;
-
+    private Integer retryCounter = 0;
 
     private KProgressHUD loadingProgress;
 
@@ -364,9 +366,22 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                     FavoritesActivity.this.handler.sendMessage(msg);
                                 }
                             } else {
-                                AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                if (FavoritesActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    FavoritesActivity.this.retryCounter += 1;
+
+                                    if (FavoritesActivity.this.handler != null) {
+                                        Message msg = FavoritesActivity.this.handler.obtainMessage(SYNC_WITH_SERVER);
+                                        msg.setTarget(new Handler(FavoritesActivity.this.getMainLooper()));
+
+                                        FavoritesActivity.this.handler.sendMessage(msg);
+                                    }
+                                } else {
+                                    FavoritesActivity.this.retryCounter = 0;
+                                    AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
                             }
                         } else {
+                            FavoritesActivity.this.retryCounter = 0;
                             if (jsonElement != null) {
                                 String status = jsonElement.getAsJsonObject().get("status").getAsString();
                                 switch (status) {
@@ -555,21 +570,33 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                     @Override
                     public void run() {
                         AlertClass.hideLoadingMessage(loadingProgress);
-                        if (networkErrorType != null) {
-                            switch (networkErrorType) {
-                                case NoInternetAccess:
-                                case HostUnreachable: {
-                                    AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                    break;
-                                }
-                                default: {
-                                    AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                    break;
-                                }
 
+                        if (FavoritesActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                            FavoritesActivity.this.retryCounter += 1;
+
+                            if (FavoritesActivity.this.handler != null) {
+                                Message msg = FavoritesActivity.this.handler.obtainMessage(SYNC_WITH_SERVER);
+                                msg.setTarget(new Handler(FavoritesActivity.this.getMainLooper()));
+
+                                FavoritesActivity.this.handler.sendMessage(msg);
+                            }
+                        } else {
+                            FavoritesActivity.this.retryCounter = 0;
+                            if (networkErrorType != null) {
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
+
+                                }
                             }
                         }
-
                     }
                 });
                 return null;
@@ -793,9 +820,27 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                         FavoritesActivity.this.handler.sendMessage(msg);
                                     }
                                 } else {
-                                    AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                    if (FavoritesActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                        FavoritesActivity.this.retryCounter += 1;
+
+                                        if (FavoritesActivity.this.handler != null) {
+                                            Message msg = FavoritesActivity.this.handler.obtainMessage(UPDATE_USER_PURCHASE_DATA);
+                                            msg.setTarget(new Handler(FavoritesActivity.this.getMainLooper()));
+
+                                            Bundle bundle = new Bundle();
+                                            bundle.putString("PRODUCT_ID", productId);
+                                            bundle.putString("PRODUCT_TYPE", productType);
+                                            msg.setData(bundle);
+
+                                            FavoritesActivity.this.handler.sendMessage(msg);
+                                        }
+                                    } else {
+                                        FavoritesActivity.this.retryCounter = 0;
+                                        AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                    }
                                 }
                             } else {
+                                FavoritesActivity.this.retryCounter = 0;
                                 if (jsonElement != null) {
                                     String status = jsonElement.getAsJsonObject().get("status").getAsString();
                                     switch (status) {
@@ -843,18 +888,36 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                         @Override
                         public void run() {
                             AlertClass.hideLoadingMessage(loadingProgress);
-                            if (networkErrorType != null) {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
-                                    }
-                                    default: {
-                                        AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
-                                    }
 
+                            if (FavoritesActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                FavoritesActivity.this.retryCounter += 1;
+
+                                if (FavoritesActivity.this.handler != null) {
+                                    Message msg = FavoritesActivity.this.handler.obtainMessage(UPDATE_USER_PURCHASE_DATA);
+                                    msg.setTarget(new Handler(FavoritesActivity.this.getMainLooper()));
+
+                                    Bundle bundle = new Bundle();
+                                    bundle.putString("PRODUCT_ID", productId);
+                                    bundle.putString("PRODUCT_TYPE", productType);
+                                    msg.setData(bundle);
+
+                                    FavoritesActivity.this.handler.sendMessage(msg);
+                                }
+                            } else {
+                                FavoritesActivity.this.retryCounter = 0;
+                                if (networkErrorType != null) {
+                                    switch (networkErrorType) {
+                                        case NoInternetAccess:
+                                        case HostUnreachable: {
+                                            AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                            break;
+                                        }
+                                        default: {
+                                            AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                            break;
+                                        }
+
+                                    }
                                 }
                             }
                         }

@@ -56,6 +56,7 @@ import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
 import static com.concough.android.rest.ProfileRestAPIClass.getProfileData;
+import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
 import static com.concough.android.settings.ConstantsKt.getPASSWORD_KEY;
 import static com.concough.android.settings.ConstantsKt.getUSERNAME_KEY;
 
@@ -71,14 +72,13 @@ public class LoginActivity extends AppCompatActivity {
     private Button registerButton;
     private Button rememberButton;
     private KProgressHUD loadingProgress;
-
+    private Integer retryCounter = 0;
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, LoginActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         return i;
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -222,10 +222,11 @@ public class LoginActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             AlertClass.hideLoadingMessage(loadingProgress);
 
                             if (httpErrorType == HTTPErrorType.Success) {
+                                LoginActivity.this.retryCounter = 0;
+
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
                                     switch (status) {
@@ -295,7 +296,13 @@ public class LoginActivity extends AppCompatActivity {
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new GetProfileTask().execute(params);
                             } else {
-                                AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                if (LoginActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    LoginActivity.this.retryCounter += 1;
+                                    new GetProfileTask().execute(params);
+                                } else {
+                                    LoginActivity.this.retryCounter = 0;
+                                    AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
                             }
                         }
                     });
@@ -308,23 +315,27 @@ public class LoginActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             AlertClass.hideLoadingMessage(loadingProgress);
 
-                            if (networkErrorType != null) {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
-                                    }
-                                    default: {
-                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
+                            if (LoginActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                LoginActivity.this.retryCounter += 1;
+                                new GetProfileTask().execute(params);
+                            } else {
+                                LoginActivity.this.retryCounter = 0;
+                                if (networkErrorType != null) {
+                                    switch (networkErrorType) {
+                                        case NoInternetAccess:
+                                        case HostUnreachable: {
+                                            AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                            break;
+                                        }
+                                        default: {
+                                            AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                            break;
+                                        }
                                     }
                                 }
                             }
-
                         }
                     });
                     return null;
@@ -359,8 +370,6 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(final Object... params) {
-
-
             TokenHandlerSingleton.getInstance(getApplicationContext()).authorize(new Function1<HTTPErrorType, Unit>() {
 
                 String username = (String) params[0];
@@ -373,6 +382,8 @@ public class LoginActivity extends AppCompatActivity {
                         public void run() {
 
                             if (httpErrorType == HTTPErrorType.Success) {
+                                LoginActivity.this.retryCounter = 0;
+
                                 if (TokenHandlerSingleton.getInstance(getApplicationContext()).isAuthorized()) {
                                     KeyChainAccessProxy.getInstance(getApplicationContext()).setValueAsString(getUSERNAME_KEY(), username);
                                     KeyChainAccessProxy.getInstance(getApplicationContext()).setValueAsString(getPASSWORD_KEY(), password);
@@ -383,8 +394,15 @@ public class LoginActivity extends AppCompatActivity {
 
 
                             } else {
-                                AlertClass.hideLoadingMessage(loadingProgress);
-                                AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                if (LoginActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    LoginActivity.this.retryCounter += 1;
+                                    new LoginTask().execute(username, password);
+                                } else {
+                                    LoginActivity.this.retryCounter = 0;
+
+                                    AlertClass.hideLoadingMessage(loadingProgress);
+                                    AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
                             }
 
                         }
@@ -398,22 +416,27 @@ public class LoginActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            AlertClass.hideLoadingMessage(loadingProgress);
+                            if (LoginActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                LoginActivity.this.retryCounter += 1;
+                                new LoginTask().execute(params);
+                            } else {
+                                LoginActivity.this.retryCounter = 0;
+                                AlertClass.hideLoadingMessage(loadingProgress);
 
-                            if (networkErrorType != null) {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
-                                    }
-                                    default: {
-                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
+                                if (networkErrorType != null) {
+                                    switch (networkErrorType) {
+                                        case NoInternetAccess:
+                                        case HostUnreachable: {
+                                            AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                            break;
+                                        }
+                                        default: {
+                                            AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                            break;
+                                        }
                                     }
                                 }
                             }
-
                         }
                     });
 
@@ -456,6 +479,8 @@ public class LoginActivity extends AppCompatActivity {
                         public void run() {
 
                             if (httpErrorType == HTTPErrorType.Success) {
+                                LoginActivity.this.retryCounter = 0;
+
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
                                     switch (status) {
@@ -531,7 +556,13 @@ public class LoginActivity extends AppCompatActivity {
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new LockStatusTask().execute(params);
                             } else {
-                                AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                if (LoginActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    LoginActivity.this.retryCounter += 1;
+                                    new LockStatusTask().execute(params);
+                                } else {
+                                    LoginActivity.this.retryCounter = 0;
+                                    AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
                             }
                         }
                     });
@@ -544,23 +575,27 @@ public class LoginActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             AlertClass.hideLoadingMessage(loadingProgress);
 
-                            if (networkErrorType != null) {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
-                                    }
-                                    default: {
-                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
+                            if (LoginActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                LoginActivity.this.retryCounter += 1;
+                                new LockStatusTask().execute(params);
+                            } else {
+                                LoginActivity.this.retryCounter = 0;
+                                if (networkErrorType != null) {
+                                    switch (networkErrorType) {
+                                        case NoInternetAccess:
+                                        case HostUnreachable: {
+                                            AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                            break;
+                                        }
+                                        default: {
+                                            AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                            break;
+                                        }
                                     }
                                 }
                             }
-
                         }
                     });
                     return null;
@@ -619,9 +654,16 @@ public class LoginActivity extends AppCompatActivity {
                                 if (httpErrorType == HTTPErrorType.Refresh) {
                                     new SyncWithServerTask().execute();
                                 } else {
-                                    AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                    if (LoginActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                        LoginActivity.this.retryCounter += 1;
+                                        new SyncWithServerTask().execute();
+                                    } else {
+                                        LoginActivity.this.retryCounter = 0;
+                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                    }
                                 }
                             } else {
+                                LoginActivity.this.retryCounter = 0;
                                 if (jsonElement != null) {
                                     String status = jsonElement.getAsJsonObject().get("status").getAsString();
                                     switch (status) {
@@ -809,23 +851,31 @@ public class LoginActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             AlertClass.hideLoadingMessage(loadingProgress);
-                            if (networkErrorType != null) {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
-                                    }
-                                    default: {
-                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
-                                    }
 
+                            if (LoginActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                LoginActivity.this.retryCounter += 1;
+                                new SyncWithServerTask().execute();
+                            } else {
+                                LoginActivity.this.retryCounter = 0;
+
+                                if (networkErrorType != null) {
+                                    switch (networkErrorType) {
+                                        case NoInternetAccess:
+                                        case HostUnreachable: {
+                                            AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                            break;
+                                        }
+                                        default: {
+                                            AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                            break;
+                                        }
+
+                                    }
                                 }
+                                Intent homeIntent = HomeActivity.newIntent(LoginActivity.this);
+                                startActivity(homeIntent);
+                                finish();
                             }
-                            Intent homeIntent = HomeActivity.newIntent(LoginActivity.this);
-                            startActivity(homeIntent);
-                            finish();
                         }
                     });
                     return null;

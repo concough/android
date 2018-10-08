@@ -17,6 +17,7 @@ import com.concough.android.general.AlertClass
 import com.concough.android.models.*
 import com.concough.android.rest.*
 import com.concough.android.settings.APP_VERSION
+import com.concough.android.settings.CONNECTION_MAX_RETRY
 import com.concough.android.singletons.*
 import com.concough.android.structures.EntranceStruct
 import com.concough.android.structures.HTTPErrorType
@@ -37,6 +38,7 @@ import java.util.ArrayList
 class StartupActivity : AppCompatActivity() {
     private var broadcastReceiver: NetworkChangeReceiver? = null
     private var isOnline: Boolean = true
+    private var retryCounter: Int = 0
 
     private var loadingProgress: KProgressHUD? = null
 
@@ -257,9 +259,16 @@ class StartupActivity : AppCompatActivity() {
                         if (error == HTTPErrorType.Refresh) {
                             this@StartupActivity.checkDeviceStateWithServer()
                         } else {
-                            AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                            if (this@StartupActivity.retryCounter < CONNECTION_MAX_RETRY) {
+                                this@StartupActivity.retryCounter += 1
+                                this@StartupActivity.checkDeviceStateWithServer()
+                            } else {
+                                this@StartupActivity.retryCounter = 0
+                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                            }
                         }
                     } else {
+                        this@StartupActivity.retryCounter = 0
                         if (data != null) {
                             try {
                                 val status = data.get("status").asString
@@ -322,24 +331,30 @@ class StartupActivity : AppCompatActivity() {
 
             }, {error ->
                 uiThread {
-                    if (TokenHandlerSingleton.getInstance(applicationContext).isAuthenticated() && TokenHandlerSingleton.getInstance(applicationContext).isAuthorized()) {
-                        val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()!!
-                        val device = DeviceInformationModelHandler.findByUniqueId(applicationContext, username)
-                        if (device != null) {
-                            if (device.state) {
-                                this@StartupActivity.isOnline = false
-                                this@StartupActivity.setupOffline()
+                    if (this@StartupActivity.retryCounter < CONNECTION_MAX_RETRY) {
+                        this@StartupActivity.retryCounter += 1
+                        this@StartupActivity.checkDeviceStateWithServer()
+                    } else {
+                        this@StartupActivity.retryCounter = 0
+
+                        if (TokenHandlerSingleton.getInstance(applicationContext).isAuthenticated() && TokenHandlerSingleton.getInstance(applicationContext).isAuthorized()) {
+                            val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()!!
+                            val device = DeviceInformationModelHandler.findByUniqueId(applicationContext, username)
+                            if (device != null) {
+                                if (device.state) {
+                                    this@StartupActivity.isOnline = false
+                                    this@StartupActivity.setupOffline()
+                                } else {
+                                    this@StartupActivity.setupLocked()
+                                }
                             } else {
                                 this@StartupActivity.setupLocked()
                             }
                         } else {
-                            this@StartupActivity.setupLocked()
+                            this@StartupActivity.setupUnauthenticated()
                         }
-                    } else {
-                        this@StartupActivity.setupUnauthenticated()
                     }
                 }
-
             })
         }
 
@@ -353,9 +368,16 @@ class StartupActivity : AppCompatActivity() {
                         if (error == HTTPErrorType.Refresh) {
                             this@StartupActivity.checkVersion()
                         } else {
-                            this@StartupActivity.navigateToHome()
+                            if (this@StartupActivity.retryCounter < CONNECTION_MAX_RETRY) {
+                                this@StartupActivity.retryCounter += 1
+                                this@StartupActivity.checkVersion()
+                            } else {
+                                this@StartupActivity.retryCounter = 0
+                                this@StartupActivity.navigateToHome()
+                            }
                         }
                     } else {
+                        this@StartupActivity.retryCounter = 0
                         if (data != null) {
                             try {
                                 val status = data.get("status").asString
@@ -429,22 +451,28 @@ class StartupActivity : AppCompatActivity() {
                 }
             }, { error ->
                 uiThread {
-                    if (error != null) {
-                        when (error) {
-                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                    if (this@StartupActivity.retryCounter < CONNECTION_MAX_RETRY) {
+                        this@StartupActivity.retryCounter += 1
+                        this@StartupActivity.checkVersion()
+                    } else {
+                        this@StartupActivity.retryCounter = 0
+
+                        if (error != null) {
+                            when (error) {
+                                NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                    AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                                }
+                                else -> {
+                                    AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+                                }
                             }
-                            else -> {
-                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
-                            }
+
                         }
 
+                        this@StartupActivity.navigateToHome()
                     }
-
-                    this@StartupActivity.navigateToHome()
                 }
             })
-
         }
     }
 
@@ -461,9 +489,16 @@ class StartupActivity : AppCompatActivity() {
                         if (error == HTTPErrorType.Refresh) {
                             this@StartupActivity.getLockedStatus()
                         } else {
-                            AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                            if (this@StartupActivity.retryCounter < CONNECTION_MAX_RETRY) {
+                                this@StartupActivity.retryCounter += 1
+                                this@StartupActivity.getLockedStatus()
+                            } else {
+                                this@StartupActivity.retryCounter = 0
+                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                            }
                         }
                     } else {
+                        this@StartupActivity.retryCounter = 0
                         if (data != null) {
                             try {
                                 val status = data.get("status").asString
@@ -525,21 +560,26 @@ class StartupActivity : AppCompatActivity() {
             }, { error ->
                 uiThread {
                     AlertClass.hideLoadingMessage(this@StartupActivity.loadingProgress)
-                    if (error != null) {
-                        when (error) {
-                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
-                            }
-                            else -> {
-                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
-                            }
-                        }
 
+                    if (this@StartupActivity.retryCounter < CONNECTION_MAX_RETRY) {
+                        this@StartupActivity.retryCounter += 1
+                        this@StartupActivity.getLockedStatus()
+                    } else {
+                        this@StartupActivity.retryCounter = 0
+                        if (error != null) {
+                            when (error) {
+                                NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                    AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                                }
+                                else -> {
+                                    AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+                                }
+                            }
+
+                        }
                     }
                 }
-
             })
-
         }
     }
 
@@ -551,9 +591,16 @@ class StartupActivity : AppCompatActivity() {
                         if (error == HTTPErrorType.Refresh) {
                             this@StartupActivity.getProfile()
                         } else {
-                            this@StartupActivity.setupUnauthenticated()
+                            if (this@StartupActivity.retryCounter < CONNECTION_MAX_RETRY) {
+                                this@StartupActivity.retryCounter += 1
+                                this@StartupActivity.getProfile()
+                            } else {
+                                this@StartupActivity.retryCounter = 0
+                                this@StartupActivity.setupUnauthenticated()
+                            }
                         }
                     } else {
+                        this@StartupActivity.retryCounter = 0
                         if (data != null) {
                             try {
                                 val status = data.get("status").asString
@@ -612,19 +659,25 @@ class StartupActivity : AppCompatActivity() {
                 }
             }, { error ->
                 uiThread {
-                    if (error != null) {
-                        when (error) {
-                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                    if (this@StartupActivity.retryCounter < CONNECTION_MAX_RETRY) {
+                        this@StartupActivity.retryCounter += 1
+                        this@StartupActivity.getProfile()
+                    } else {
+                        this@StartupActivity.retryCounter = 0
+
+                        if (error != null) {
+                            when (error) {
+                                NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                    AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                                }
+                                else -> {
+                                    AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+                                }
                             }
-                            else -> {
-                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
-                            }
+
                         }
-
+                        this@StartupActivity.setupUnauthenticated()
                     }
-                    this@StartupActivity.setupUnauthenticated()
-
                 }
 
             })
@@ -652,9 +705,16 @@ class StartupActivity : AppCompatActivity() {
                         if (httpErrorType === HTTPErrorType.Refresh) {
                             SyncWithServerTask().execute()
                         } else {
-                            AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null)
+                            if (this@StartupActivity.retryCounter < CONNECTION_MAX_RETRY) {
+                                this@StartupActivity.retryCounter += 1
+                                SyncWithServerTask().execute()
+                            } else {
+                                this@StartupActivity.retryCounter = 0
+                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null)
+                            }
                         }
                     } else {
+                        this@StartupActivity.retryCounter = 0
                         if (jsonElement != null) {
                             val status = jsonElement!!.asJsonObject.get("status").asString
                             when (status) {
@@ -831,13 +891,19 @@ class StartupActivity : AppCompatActivity() {
             }, fun(networkErrorType: NetworkErrorType?): Unit {
                 runOnUiThread {
                     //AlertClass.hideLoadingMessage(loadingProgress)
-                    if (networkErrorType != null) {
-                        when (networkErrorType) {
-                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", networkErrorType!!.name, "error", null)
-                            }
-                            else -> {
-                                AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", networkErrorType!!.name, "", null)
+                    if (this@StartupActivity.retryCounter < CONNECTION_MAX_RETRY) {
+                        this@StartupActivity.retryCounter += 1
+                        SyncWithServerTask().execute()
+                    } else {
+                        this@StartupActivity.retryCounter = 0
+                        if (networkErrorType != null) {
+                            when (networkErrorType) {
+                                NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                    AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", networkErrorType!!.name, "error", null)
+                                }
+                                else -> {
+                                    AlertClass.showTopMessage(this@StartupActivity, findViewById(R.id.container), "NetworkError", networkErrorType!!.name, "", null)
+                                }
                             }
                         }
                     }

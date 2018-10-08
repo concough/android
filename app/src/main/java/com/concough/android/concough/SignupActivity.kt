@@ -17,6 +17,7 @@ import com.concough.android.extensions.DirectionFix
 import com.concough.android.extensions.isValidPhoneNumber
 import com.concough.android.general.AlertClass
 import com.concough.android.rest.AuthRestAPIClass
+import com.concough.android.settings.CONNECTION_MAX_RETRY
 import com.concough.android.singletons.FontCacheSingleton
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
@@ -31,6 +32,7 @@ class SignupActivity : AppCompatActivity() {
     private var mainUsernameText: String = ""
     private var signupStruct: SignupStruct? = null
     private var loadingProgress: KProgressHUD? = null
+    private var retryCounter: Int = 0
 
     private var send_type: String = "sms"
         set(value) {
@@ -134,89 +136,8 @@ class SignupActivity : AppCompatActivity() {
                         signupA_usernameCheckTextView.text = ""
 
                         signupA_SignupAloading.visibility = View.VISIBLE
-                        doAsync {
+                        this@SignupActivity.checkUsername(username)
 
-                            AuthRestAPIClass.checkUsername(username, completion = { data, error ->
-
-                                uiThread {
-                                    signupA_SignupAloading.visibility = View.GONE
-
-                                    signupA_usernameCheckTextView.visibility = View.VISIBLE
-//                                    Log.d(TAG, data.toString())
-//                                    Log.d(TAG, error.toString())
-
-                                    if (error == HTTPErrorType.Success) {
-                                        val status = data?.get("status")?.asString
-                                        status.let {
-                                            when (status) {
-                                                "OK" -> {
-                                                    isUsernameValid = true
-                                                    signupA_usernameCheckTextView.text = "شماره همراه وارد شده صحیح است"
-                                                    signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughGreen))
-                                                    signupA_sendCode.background = ActivityCompat.getDrawable(this@SignupActivity, R.drawable.concough_border_outline_style)
-                                                    signupA_sendCode.isEnabled = true
-
-                                                }
-                                                "Error" -> {
-                                                    isUsernameValid = false
-                                                    signupA_sendCode.background = ActivityCompat.getDrawable(this@SignupActivity, R.drawable.concough_border_outline_gray_style)
-                                                    signupA_sendCode.isEnabled = false
-
-                                                    val error_type = data?.get("error_type")?.asString
-                                                    error_type.let {
-                                                        when (error_type) {
-                                                            "ExistUsername" -> {
-                                                                signupA_usernameCheckTextView.text = "این شماره همراه قبلا رزرو شده است"
-                                                                signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughRedLight))
-
-                                                            }
-                                                            else -> {
-                                                                signupA_usernameCheckTextView.text = mainUsernameText
-                                                                signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughGray))
-                                                                AlertClass.showAlertMessage(this@SignupActivity, "ErrorResult", error_type.toString(), "error", null);
-
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } else {
-                                        AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
-                                        signupA_usernameCheckTextView.text = mainUsernameText
-                                        signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughGray))
-                                    }
-
-                                }
-
-                            }, failure = { error ->
-                                //                                Log.d(TAG, error.toString())
-                                uiThread {
-                                    signupA_SignupAloading.visibility = View.GONE
-
-                                    if (error != null) {
-                                        when (error) {
-                                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                                                AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
-                                            }
-                                            else -> {
-                                                AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
-                                            }
-                                        }
-
-//                                        when (error) {
-//                                            NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
-//                                            }
-//                                            else -> {
-//                                            }
-//                                        }
-                                    }
-
-                                    val t = Toast.makeText(this@SignupActivity, error.toString(), Toast.LENGTH_LONG)
-                                    t.show()
-                                }
-                            })
-                        }
                     } else {
                         signupA_usernameCheckTextView.text = "شماره همراه وارد شده صحیح نمی باشد"
                         signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughRedLight))
@@ -233,6 +154,103 @@ class SignupActivity : AppCompatActivity() {
         })
     }
 
+    private fun checkUsername(username: String) {
+        doAsync {
+
+            AuthRestAPIClass.checkUsername(username, completion = { data, error ->
+
+                uiThread {
+                    if (error == HTTPErrorType.Success) {
+                        signupA_SignupAloading.visibility = View.GONE
+                        signupA_usernameCheckTextView.visibility = View.VISIBLE
+
+                        this@SignupActivity.retryCounter = 0
+
+                        val status = data?.get("status")?.asString
+                        status.let {
+                            when (status) {
+                                "OK" -> {
+                                    isUsernameValid = true
+                                    signupA_usernameCheckTextView.text = "شماره همراه وارد شده صحیح است"
+                                    signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughGreen))
+                                    signupA_sendCode.background = ActivityCompat.getDrawable(this@SignupActivity, R.drawable.concough_border_outline_style)
+                                    signupA_sendCode.isEnabled = true
+
+                                }
+                                "Error" -> {
+                                    isUsernameValid = false
+                                    signupA_sendCode.background = ActivityCompat.getDrawable(this@SignupActivity, R.drawable.concough_border_outline_gray_style)
+                                    signupA_sendCode.isEnabled = false
+
+                                    val error_type = data?.get("error_type")?.asString
+                                    error_type.let {
+                                        when (error_type) {
+                                            "ExistUsername" -> {
+                                                signupA_usernameCheckTextView.text = "این شماره همراه قبلا رزرو شده است"
+                                                signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughRedLight))
+
+                                            }
+                                            else -> {
+                                                signupA_usernameCheckTextView.text = mainUsernameText
+                                                signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughGray))
+                                                AlertClass.showAlertMessage(this@SignupActivity, "ErrorResult", error_type.toString(), "error", null);
+
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        if (this@SignupActivity.retryCounter < CONNECTION_MAX_RETRY) {
+                            this@SignupActivity.retryCounter += 1
+                            this@SignupActivity.checkUsername(username)
+                        } else {
+                            signupA_SignupAloading.visibility = View.GONE
+                            signupA_usernameCheckTextView.visibility = View.VISIBLE
+                            this@SignupActivity.retryCounter = 0
+
+                            AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                            signupA_usernameCheckTextView.text = mainUsernameText
+                            signupA_usernameCheckTextView.setTextColor(resources.getColor(R.color.colorConcoughGray))
+                        }
+                    }
+
+                }
+
+            }, failure = { error ->
+                //                                Log.d(TAG, error.toString())
+                uiThread {
+                    if (this@SignupActivity.retryCounter < CONNECTION_MAX_RETRY) {
+                        this@SignupActivity.retryCounter += 1
+                        this@SignupActivity.checkUsername(username)
+                    } else {
+                        this@SignupActivity.retryCounter = 0
+                        signupA_SignupAloading.visibility = View.GONE
+
+                        if (error != null) {
+                            when (error) {
+                                NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                    AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                                }
+                                else -> {
+                                    AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+                                }
+                            }
+
+//                                        when (error) {
+//                                            NetworkErrorType.HostUnreachable, NetworkErrorType.NoInternetAccess -> {
+//                                            }
+//                                            else -> {
+//                                            }
+//                                        }
+                        }
+                    }
+                }
+            })
+        }
+    }
+
     private fun makePreSignup(username: String) {
         loadingProgress = AlertClass.showLoadingMessage(this@SignupActivity)
         loadingProgress?.show()
@@ -242,6 +260,8 @@ class SignupActivity : AppCompatActivity() {
                 uiThread {
                     AlertClass.hideLoadingMessage(loadingProgress)
                     if (error == HTTPErrorType.Success) {
+                        this@SignupActivity.retryCounter = 0
+
                         if (data != null) {
                             try {
                                 val status = data.get("status").asString
@@ -289,23 +309,36 @@ class SignupActivity : AppCompatActivity() {
                             }
                         }
                     } else {
-                        AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                        if (this@SignupActivity.retryCounter < CONNECTION_MAX_RETRY) {
+                            this@SignupActivity.retryCounter += 1
+                            this@SignupActivity.makePreSignup(username)
+                        } else {
+                            this@SignupActivity.retryCounter = 0
+                            AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                        }
                     }
                 }
             }, { error ->
                 uiThread {
                     AlertClass.hideLoadingMessage(loadingProgress)
-                    if (error != null) {
-                        when (error) {
-                            NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                                AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
-                            }
-                            else -> {
-                                AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+
+                    if (this@SignupActivity.retryCounter < CONNECTION_MAX_RETRY) {
+                        this@SignupActivity.retryCounter += 1
+                        this@SignupActivity.makePreSignup(username)
+                    } else {
+                        this@SignupActivity.retryCounter = 0
+
+                        if (error != null) {
+                            when (error) {
+                                NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                                    AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                                }
+                                else -> {
+                                    AlertClass.showTopMessage(this@SignupActivity, findViewById(R.id.container), "NetworkError", error.name, "", null)
+                                }
                             }
                         }
                     }
-
                 }
             })
         }

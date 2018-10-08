@@ -8,6 +8,7 @@ import com.concough.android.general.AlertClass
 import com.concough.android.models.EntranceModelHandler
 import com.concough.android.models.PurchasedModelHandler
 import com.concough.android.rest.BasketRestAPIClass
+import com.concough.android.settings.CONNECTION_MAX_RETRY
 import com.concough.android.structures.EntranceStruct
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
@@ -43,6 +44,7 @@ class BasketSingleton : Handler.Callback {
     private var totalCost: Int = 0
     private var sales: ArrayList<SaleItem> = ArrayList()
     private var lastAuthorityId: String? = null
+    private var retryCounter: Int = 0
 
     private var loadingProgress: KProgressHUD? = null
 
@@ -335,6 +337,8 @@ class BasketSingleton : Handler.Callback {
         BasketRestAPIClass.loadBasketItems(context?.applicationContext!!, { data, error ->
 //            AlertClass.hideLoadingMessage(loadingProgress)
             if (error == HTTPErrorType.Success) {
+                this@BasketSingleton.retryCounter = 0
+
                 if (data != null) {
                     try {
                         val status = data.get("status").asString
@@ -414,23 +418,34 @@ class BasketSingleton : Handler.Callback {
                 if (error == HTTPErrorType.Refresh) {
                     this@BasketSingleton.handleLoadBasketItems(msg)
                 } else {
-                    AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                    if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
+                        this@BasketSingleton.retryCounter += 1
+                        this@BasketSingleton.handleLoadBasketItems(msg)
+                    } else {
+                        this@BasketSingleton.retryCounter = 0
+                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                    }
                 }
             }
 
         }, { error ->
 //            AlertClass.hideLoadingMessage(loadingProgress)
-            if (error != null) {
-                when (error) {
-                    NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
-                    }
-                    else -> {
-                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+            if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
+                this@BasketSingleton.retryCounter += 1
+                this@BasketSingleton.handleLoadBasketItems(msg)
+            } else {
+                this@BasketSingleton.retryCounter = 0
+                if (error != null) {
+                    when (error) {
+                        NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                            AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                        }
+                        else -> {
+                            AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+                        }
                     }
                 }
             }
-
         })
     }
 
@@ -452,6 +467,7 @@ class BasketSingleton : Handler.Callback {
 //            AlertClass.hideLoadingMessage(loadingProgress)
 
             if (error == HTTPErrorType.Success) {
+                this@BasketSingleton.retryCounter = 0
                 if (data != null) {
                     try {
                         val status = data.get("status").asString
@@ -482,9 +498,16 @@ class BasketSingleton : Handler.Callback {
                 if (error == HTTPErrorType.Refresh) {
                     this@BasketSingleton.handleCreateBasket(msg)
                 } else {
-                    AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
-                    if (this@BasketSingleton.listener != null) {
-                        this@BasketSingleton.listener?.onCreateFailed(position)
+                    if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
+                        this@BasketSingleton.retryCounter += 1
+                        this@BasketSingleton.handleCreateBasket(msg)
+                    } else {
+                        this@BasketSingleton.retryCounter = 0
+
+                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                        if (this@BasketSingleton.listener != null) {
+                            this@BasketSingleton.listener?.onCreateFailed(position)
+                        }
                     }
                 }
             }
@@ -492,19 +515,25 @@ class BasketSingleton : Handler.Callback {
         }, { error ->
 
 //            AlertClass.hideLoadingMessage(loadingProgress)
+            if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
+                this@BasketSingleton.retryCounter += 1
+                this@BasketSingleton.handleCreateBasket(msg)
+            } else {
+                this@BasketSingleton.retryCounter = 0
 
-            if (error != null) {
-                when (error) {
-                    NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
-                    }
-                    else -> {
-                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+                if (error != null) {
+                    when (error) {
+                        NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                            AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                        }
+                        else -> {
+                            AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+                        }
                     }
                 }
-            }
-            if (this@BasketSingleton.listener != null) {
-                this@BasketSingleton.listener?.onCreateFailed(position)
+                if (this@BasketSingleton.listener != null) {
+                    this@BasketSingleton.listener?.onCreateFailed(position)
+                }
             }
         })
     }
@@ -527,6 +556,8 @@ class BasketSingleton : Handler.Callback {
 //            loadingProgress = null
 
             if (error == HTTPErrorType.Success) {
+                this@BasketSingleton.retryCounter = 0
+
                 if (data != null) {
                     try {
                         val status = data.get("status").asString
@@ -608,27 +639,40 @@ class BasketSingleton : Handler.Callback {
                 if (error == HTTPErrorType.Refresh) {
                     this@BasketSingleton.handleAddSale(msg)
                 } else {
-                    AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
-                    if (this@BasketSingleton.listener != null) {
-                        this@BasketSingleton.listener?.onAddFailed(position)
+                    if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
+                        this@BasketSingleton.retryCounter += 1
+                        this@BasketSingleton.handleAddSale(msg)
+                    } else {
+                        this@BasketSingleton.retryCounter = 0
+
+                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                        if (this@BasketSingleton.listener != null) {
+                            this@BasketSingleton.listener?.onAddFailed(position)
+                        }
                     }
                 }
             }
 
         }, { error ->
-            if (error != null) {
-                when (error) {
-                    NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
-                    }
-                    else -> {
-                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+            if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
+                this@BasketSingleton.retryCounter += 1
+                this@BasketSingleton.handleAddSale(msg)
+            } else {
+                this@BasketSingleton.retryCounter = 0
+                if (error != null) {
+                    when (error) {
+                        NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                            AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                        }
+                        else -> {
+                            AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+                        }
                     }
                 }
-            }
 
-            if (this@BasketSingleton.listener != null) {
-                this@BasketSingleton.listener?.onAddFailed(position)
+                if (this@BasketSingleton.listener != null) {
+                    this@BasketSingleton.listener?.onAddFailed(position)
+                }
             }
         })
     }
@@ -649,6 +693,8 @@ class BasketSingleton : Handler.Callback {
 //            loadingProgress = null
 
             if (error == HTTPErrorType.Success) {
+                this@BasketSingleton.retryCounter = 0
+
                 if (data != null) {
                     try {
                         val status = data.get("status").asString
@@ -700,26 +746,40 @@ class BasketSingleton : Handler.Callback {
                 if (error == HTTPErrorType.Refresh) {
                     this@BasketSingleton.handleRemoveFromBasket(msg)
                 } else {
-                    AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
-                    if (this@BasketSingleton.listener != null) {
-                        this@BasketSingleton.listener?.onRemoveFailed(salePosition)
+                    if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
+                        this@BasketSingleton.retryCounter += 1
+                        this@BasketSingleton.handleRemoveFromBasket(msg)
+                    } else {
+                        this@BasketSingleton.retryCounter = 0
+
+                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                        if (this@BasketSingleton.listener != null) {
+                            this@BasketSingleton.listener?.onRemoveFailed(salePosition)
+                        }
                     }
                 }
             }
 
         }, { error ->
-            if (error != null) {
-                when (error) {
-                    NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
-                    }
-                    else -> {
-                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+            if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
+                this@BasketSingleton.retryCounter += 1
+                this@BasketSingleton.handleRemoveFromBasket(msg)
+            } else {
+                this@BasketSingleton.retryCounter = 0
+
+                if (error != null) {
+                    when (error) {
+                        NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                            AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                        }
+                        else -> {
+                            AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+                        }
                     }
                 }
-            }
-            if (this@BasketSingleton.listener != null) {
-                this@BasketSingleton.listener?.onRemoveFailed(salePosition)
+                if (this@BasketSingleton.listener != null) {
+                    this@BasketSingleton.listener?.onRemoveFailed(salePosition)
+                }
             }
         })
     }
@@ -736,6 +796,8 @@ class BasketSingleton : Handler.Callback {
             loadingProgress = null
 
             if (error == HTTPErrorType.Success) {
+                this@BasketSingleton.retryCounter = 0
+
                 if (data != null) {
                     try {
                         val status = data.get("status").asString
@@ -832,7 +894,13 @@ class BasketSingleton : Handler.Callback {
                 if (error == HTTPErrorType.Refresh) {
                     this@BasketSingleton.handleCheckout(msg)
                 } else {
-                    AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                    if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
+                        this@BasketSingleton.retryCounter += 1
+                        this@BasketSingleton.handleCheckout(msg)
+                    } else {
+                        this@BasketSingleton.retryCounter = 0
+                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                    }
                 }
             }
 
@@ -840,17 +908,22 @@ class BasketSingleton : Handler.Callback {
             AlertClass.hideLoadingMessage(loadingProgress)
             loadingProgress = null
 
-            if (error != null) {
-                when (error) {
-                    NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
-                    }
-                    else -> {
-                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+            if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
+                this@BasketSingleton.retryCounter += 1
+                this@BasketSingleton.handleCheckout(msg)
+            } else {
+                this@BasketSingleton.retryCounter = 0
+                if (error != null) {
+                    when (error) {
+                        NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                            AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                        }
+                        else -> {
+                            AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+                        }
                     }
                 }
             }
-
         })
 
     }
@@ -868,6 +941,7 @@ class BasketSingleton : Handler.Callback {
             loadingProgress = null
 
             if (error == HTTPErrorType.Success) {
+                this@BasketSingleton.retryCounter = 0
                 if (data != null) {
                     try {
                         val status = data.get("status").asString
@@ -946,7 +1020,13 @@ class BasketSingleton : Handler.Callback {
                 if (error == HTTPErrorType.Refresh) {
                     this@BasketSingleton.handleVerifyCheckout(msg)
                 } else {
-                    AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                    if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
+                        this@BasketSingleton.retryCounter += 1
+                        this@BasketSingleton.handleVerifyCheckout(msg)
+                    } else {
+                        this@BasketSingleton.retryCounter = 0
+                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                    }
                 }
             }
 
@@ -954,17 +1034,22 @@ class BasketSingleton : Handler.Callback {
             AlertClass.hideLoadingMessage(loadingProgress)
             loadingProgress = null
 
-            if (error != null) {
-                when (error) {
-                    NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
-                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
-                    }
-                    else -> {
-                        AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+            if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
+                this@BasketSingleton.retryCounter += 1
+                this@BasketSingleton.handleVerifyCheckout(msg)
+            } else {
+                this@BasketSingleton.retryCounter = 0
+                if (error != null) {
+                    when (error) {
+                        NetworkErrorType.NoInternetAccess, NetworkErrorType.HostUnreachable -> {
+                            AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "error", null)
+                        }
+                        else -> {
+                            AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "NetworkError", error.name, "", null)
+                        }
                     }
                 }
             }
-
         })
 
     }

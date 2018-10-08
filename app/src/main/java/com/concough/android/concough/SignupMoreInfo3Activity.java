@@ -42,6 +42,8 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
+import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
+
 public class SignupMoreInfo3Activity extends TopNavigationActivity {
     private static final String TAG = "SignupMoreInfo3Activity";
 
@@ -61,7 +63,7 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
     AlertDialogCustomize adapter;
 
     private KProgressHUD loadingProgress;
-
+    private Integer retryCounter = 0;
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, SignupMoreInfo3Activity.class);
@@ -243,6 +245,8 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
                             AlertClass.hideLoadingMessage(loadingProgress);
 
                             if (httpErrorType == HTTPErrorType.Success) {
+                                SignupMoreInfo3Activity.this.retryCounter = 0;
+
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
 
@@ -279,7 +283,13 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new GetProfileGradeListTask().execute(params);
                             } else {
-                                AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                if (SignupMoreInfo3Activity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    SignupMoreInfo3Activity.this.retryCounter += 1;
+                                    new GetProfileGradeListTask().execute(params);
+                                } else {
+                                    SignupMoreInfo3Activity.this.retryCounter = 0;
+                                    AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
                             }
                         }
                     });
@@ -292,20 +302,25 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             AlertClass.hideLoadingMessage(loadingProgress);
 
-                            switch (networkErrorType) {
-                                case NoInternetAccess:
-                                case HostUnreachable: {
-                                    AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                    break;
-                                }
-                                default: {
-                                    AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                    break;
-                                }
+                            if (SignupMoreInfo3Activity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                SignupMoreInfo3Activity.this.retryCounter += 1;
+                                new GetProfileGradeListTask().execute(params);
+                            } else {
+                                SignupMoreInfo3Activity.this.retryCounter = 0;
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
 
+                                }
                             }
                         }
                     });
@@ -347,10 +362,11 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             AlertClass.hideLoadingMessage(loadingProgress);
 
                             if (httpErrorType == HTTPErrorType.Success) {
+                                SignupMoreInfo3Activity.this.retryCounter = 0;
+
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
                                     switch (status) {
@@ -391,7 +407,13 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new PostProfileTask().execute(params);
                             } else {
-                                AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                if (SignupMoreInfo3Activity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    SignupMoreInfo3Activity.this.retryCounter += 1;
+                                    new PostProfileTask().execute(params);
+                                } else {
+                                    SignupMoreInfo3Activity.this.retryCounter = 0;
+                                    AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
                             }
                         }
                     });
@@ -405,21 +427,26 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             AlertClass.hideLoadingMessage(loadingProgress);
 
-                            if (networkErrorType != null) {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
-                                    }
-                                    default: {
-                                        AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
-                                    }
+                            if (SignupMoreInfo3Activity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                SignupMoreInfo3Activity.this.retryCounter += 1;
+                                new PostProfileTask().execute(params);
+                            } else {
+                                SignupMoreInfo3Activity.this.retryCounter = 0;
+                                if (networkErrorType != null) {
+                                    switch (networkErrorType) {
+                                        case NoInternetAccess:
+                                        case HostUnreachable: {
+                                            AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                            break;
+                                        }
+                                        default: {
+                                            AlertClass.showTopMessage(SignupMoreInfo3Activity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                            break;
+                                        }
 
+                                    }
                                 }
                             }
                         }

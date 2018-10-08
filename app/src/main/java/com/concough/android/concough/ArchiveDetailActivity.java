@@ -48,6 +48,8 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
+import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
+
 public class ArchiveDetailActivity extends BottomNavigationActivity {
     private static String TAG = "ArchiveDetailActivity";
 
@@ -61,10 +63,9 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
     private final static String Detail_Struct = "Detail_Struct";
     private String username = "";
+    private Integer retryCounter = 0;
 
     private KProgressHUD loadingProgress;
-
-
     private ArchiveEsetDetailStruct mArchiveEsetDetailStruct;
 
     public static Intent newIntent(Context packageContext, @Nullable ArchiveEsetDetailStruct detailStruct) {
@@ -266,7 +267,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
                             if (jsonObject != null) {
                                 if (httpErrorType == HTTPErrorType.Success) {
-
+                                    ArchiveDetailActivity.this.retryCounter = 0;
                                     String status = jsonObject.get("status").getAsString();
 
                                     switch (status) {
@@ -314,7 +315,13 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                                     if (httpErrorType == HTTPErrorType.Refresh) {
                                         getSets(params[0]);
                                     } else {
-                                        AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                        if (ArchiveDetailActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                            ArchiveDetailActivity.this.retryCounter += 1;
+                                            getSets(params[0]);
+                                        } else {
+                                            ArchiveDetailActivity.this.retryCounter = 0;
+                                            AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                        }
                                     }
                                 }
                             }
@@ -334,17 +341,22 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
 
                             AlertClass.hideLoadingMessage(loadingProgress);
 
-                            switch (networkErrorType) {
-                                case NoInternetAccess:
-                                case HostUnreachable: {
-                                    AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                    break;
+                            if (ArchiveDetailActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                ArchiveDetailActivity.this.retryCounter += 1;
+                                getSets(params[0]);
+                            } else {
+                                ArchiveDetailActivity.this.retryCounter = 0;
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
                                 }
-                                default: {
-                                    AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                    break;
-                                }
-
                             }
                         }
                     });

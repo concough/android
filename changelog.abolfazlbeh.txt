@@ -315,3 +315,8 @@ Some Bugs Fixed (abolfazl.beh) - 2018-03-17
 1 - SignupMoreInfo bugs fixed.
 2 - "EntrancePackageDownloader" downloadMultiImage function try/catch changed
 3 - progressHUD in some activity onDestroy Added
+
+------------------------------------------------------------------------------------------------
+Add Retry Counter Ability (abolfazl.beh) - 2018-10-09
+
+1 - "retryCounter" variable added to all activities and some Singleton classes as needed.

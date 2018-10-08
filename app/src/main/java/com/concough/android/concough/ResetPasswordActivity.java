@@ -59,6 +59,7 @@ import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
+import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
 import static com.concough.android.settings.ConstantsKt.getPASSWORD_KEY;
 import static com.concough.android.settings.ConstantsKt.getUSERNAME_KEY;
 import static com.concough.android.extensions.EditTextExtensionKt.DirectionFix;
@@ -71,9 +72,9 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private Button saveButton;
     private KProgressHUD loadingProgress;
 
-
     private final static String SIGNUP_STRUCTURE_KEY = "SignupS";
     private SignupStruct infoStruct;
+    private Integer retryCounter = 0;
 
     public static Intent newIntent(Context packageContext, SignupStruct ss, Boolean clearStack) {
         Intent i = new Intent(packageContext, ResetPasswordActivity.class);
@@ -198,6 +199,8 @@ public class ResetPasswordActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         if (httpErrorType == HTTPErrorType.Success) {
+                            ResetPasswordActivity.this.retryCounter = 0;
+
                             KeyChainAccessProxy.getInstance(getApplicationContext()).setValueAsString(getUSERNAME_KEY(), username);
                             KeyChainAccessProxy.getInstance(getApplicationContext()).setValueAsString(getPASSWORD_KEY(), password);
 
@@ -245,12 +248,16 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                 ResetPasswordActivity.this.startActivity(i);
                                 finish();
                             }
-                        } else if (httpErrorType == HTTPErrorType.BadRequest) {
-
                         } else {
-                            AlertClass.hideLoadingMessage(loadingProgress);
-                            AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                            if (ResetPasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                ResetPasswordActivity.this.retryCounter += 1;
+                                startUp(username, password);
+                            } else {
+                                ResetPasswordActivity.this.retryCounter = 0;
 
+                                AlertClass.hideLoadingMessage(loadingProgress);
+                                AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                            }
                         }
                     }
                 });
@@ -262,22 +269,27 @@ public class ResetPasswordActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        hideLoading();
+                        if (ResetPasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                            ResetPasswordActivity.this.retryCounter += 1;
+                            startUp(username, password);
+                        } else {
+                            ResetPasswordActivity.this.retryCounter = 0;
+                            hideLoading();
 
-                        if (networkErrorType != null) {
-                            switch (networkErrorType) {
-                                case NoInternetAccess:
-                                case HostUnreachable: {
-                                    AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                    break;
-                                }
-                                default: {
-                                    AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                    break;
+                            if (networkErrorType != null) {
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
                                 }
                             }
                         }
-
                     }
                 });
                 return null;
@@ -298,8 +310,9 @@ public class ResetPasswordActivity extends AppCompatActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-
                                     if (httpErrorType == HTTPErrorType.Success) {
+                                        ResetPasswordActivity.this.retryCounter = 0;
+
                                         if (jsonObject != null) {
                                             String status = jsonObject.get("status").getAsString();
                                             switch (status) {
@@ -353,8 +366,15 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                     } else if (httpErrorType == HTTPErrorType.Refresh) {
                                         new ResetPasswordTask().execute(params);
                                     } else {
-                                        AlertClass.hideLoadingMessage(loadingProgress);
-                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                        if (ResetPasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                            ResetPasswordActivity.this.retryCounter += 1;
+                                            new ResetPasswordTask().execute(params);
+                                        } else {
+                                            ResetPasswordActivity.this.retryCounter = 0;
+
+                                            AlertClass.hideLoadingMessage(loadingProgress);
+                                            AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                        }
                                     }
                                 }
                             });
@@ -365,22 +385,27 @@ public class ResetPasswordActivity extends AppCompatActivity {
                         @Override
                         public Unit invoke(NetworkErrorType networkErrorType) {
 
-                            AlertClass.hideLoadingMessage(loadingProgress);
+                            if (ResetPasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                ResetPasswordActivity.this.retryCounter += 1;
+                                new ResetPasswordTask().execute(params);
+                            } else {
+                                ResetPasswordActivity.this.retryCounter = 0;
+                                AlertClass.hideLoadingMessage(loadingProgress);
 
-                            if (networkErrorType != null) {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
-                                    }
-                                    default: {
-                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
+                                if (networkErrorType != null) {
+                                    switch (networkErrorType) {
+                                        case NoInternetAccess:
+                                        case HostUnreachable: {
+                                            AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                            break;
+                                        }
+                                        default: {
+                                            AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                            break;
+                                        }
                                     }
                                 }
                             }
-
                             return null;
                         }
                     }
@@ -430,6 +455,8 @@ public class ResetPasswordActivity extends AppCompatActivity {
                         public void run() {
 
                             if (httpErrorType == HTTPErrorType.Success) {
+                                ResetPasswordActivity.this.retryCounter = 0;
+
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
                                     switch (status) {
@@ -504,10 +531,17 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                 }
 
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
-                                new ResetPasswordActivity.LockStatusTask().execute(params);
+                                new LockStatusTask().execute(params);
                             } else {
-                                AlertClass.hideLoadingMessage(loadingProgress);
-                                AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                if (ResetPasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    ResetPasswordActivity.this.retryCounter += 1;
+                                    new LockStatusTask().execute(params);
+                                } else {
+                                    ResetPasswordActivity.this.retryCounter = 0;
+
+                                    AlertClass.hideLoadingMessage(loadingProgress);
+                                    AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
                             }
                         }
                     });
@@ -520,23 +554,27 @@ public class ResetPasswordActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            if (ResetPasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                ResetPasswordActivity.this.retryCounter += 1;
+                                new LockStatusTask().execute(params);
+                            } else {
+                                ResetPasswordActivity.this.retryCounter = 0;
+                                AlertClass.hideLoadingMessage(loadingProgress);
 
-                            AlertClass.hideLoadingMessage(loadingProgress);
-
-                            if (networkErrorType != null) {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
-                                    }
-                                    default: {
-                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
+                                if (networkErrorType != null) {
+                                    switch (networkErrorType) {
+                                        case NoInternetAccess:
+                                        case HostUnreachable: {
+                                            AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                            break;
+                                        }
+                                        default: {
+                                            AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                            break;
+                                        }
                                     }
                                 }
                             }
-
                         }
                     });
                     return null;
@@ -585,9 +623,17 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                 if (httpErrorType == HTTPErrorType.Refresh) {
                                     new SyncWithServerTask().execute();
                                 } else {
-                                    AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                    if (ResetPasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                        ResetPasswordActivity.this.retryCounter += 1;
+                                        new SyncWithServerTask().execute();
+                                    } else {
+                                        ResetPasswordActivity.this.retryCounter = 0;
+                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                    }
                                 }
                             } else {
+                                ResetPasswordActivity.this.retryCounter = 0;
+
                                 if (jsonElement != null) {
                                     String status = jsonElement.getAsJsonObject().get("status").getAsString();
                                     switch (status) {
@@ -771,18 +817,25 @@ public class ResetPasswordActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             //AlertClass.hideLoadingMessage(loadingProgress);
-                            if (networkErrorType != null) {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
-                                    }
-                                    default: {
-                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
-                                    }
+                            if (ResetPasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                ResetPasswordActivity.this.retryCounter += 1;
+                                new SyncWithServerTask().execute();
+                            } else {
+                                ResetPasswordActivity.this.retryCounter = 0;
 
+                                if (networkErrorType != null) {
+                                    switch (networkErrorType) {
+                                        case NoInternetAccess:
+                                        case HostUnreachable: {
+                                            AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                            break;
+                                        }
+                                        default: {
+                                            AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                            break;
+                                        }
+
+                                    }
                                 }
                             }
                         }
@@ -875,10 +928,11 @@ public class ResetPasswordActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             AlertClass.hideLoadingMessage(loadingProgress);
 
                             if (httpErrorType == HTTPErrorType.Success) {
+                                ResetPasswordActivity.this.retryCounter = 0;
+
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
                                     switch (status) {
@@ -942,7 +996,13 @@ public class ResetPasswordActivity extends AppCompatActivity {
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new GetProfileTask().execute(params);
                             } else {
-                                AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                if (ResetPasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    ResetPasswordActivity.this.retryCounter += 1;
+                                    new GetProfileTask().execute(params);
+                                } else {
+                                    ResetPasswordActivity.this.retryCounter = 0;
+                                    AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
                             }
                         }
                     });
@@ -955,23 +1015,27 @@ public class ResetPasswordActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             AlertClass.hideLoadingMessage(loadingProgress);
 
-                            if (networkErrorType != null) {
-                                switch (networkErrorType) {
-                                    case NoInternetAccess:
-                                    case HostUnreachable: {
-                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                        break;
-                                    }
-                                    default: {
-                                        AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                        break;
+                            if (ResetPasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                ResetPasswordActivity.this.retryCounter += 1;
+                                new GetProfileTask().execute(params);
+                            } else {
+                                ResetPasswordActivity.this.retryCounter = 0;
+                                if (networkErrorType != null) {
+                                    switch (networkErrorType) {
+                                        case NoInternetAccess:
+                                        case HostUnreachable: {
+                                            AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                            break;
+                                        }
+                                        default: {
+                                            AlertClass.showTopMessage(ResetPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                            break;
+                                        }
                                     }
                                 }
                             }
-
                         }
                     });
                     return null;

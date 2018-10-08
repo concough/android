@@ -23,6 +23,8 @@ import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
+import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
+
 public class ErrorReportActivity extends BottomNavigationActivity {
     private static String TAG = "ErrorReportActivity";
 
@@ -33,7 +35,7 @@ public class ErrorReportActivity extends BottomNavigationActivity {
 
 
     private boolean isKeyboardShow = false;
-
+    private Integer retryCounter = 0;
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, ErrorReportActivity.class);
@@ -118,6 +120,8 @@ public class ErrorReportActivity extends BottomNavigationActivity {
                             AlertClass.hideLoadingMessage(loadingProgress);
 
                             if (httpErrorType == HTTPErrorType.Success) {
+                                ErrorReportActivity.this.retryCounter = 0;
+
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
 
@@ -143,7 +147,13 @@ public class ErrorReportActivity extends BottomNavigationActivity {
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new PostProfileGradeTask().execute(params);
                             } else {
-                                AlertClass.showTopMessage(ErrorReportActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                if (ErrorReportActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    ErrorReportActivity.this.retryCounter += 1;
+                                    new PostProfileGradeTask().execute(params);
+                                } else {
+                                    ErrorReportActivity.this.retryCounter = 0;
+                                    AlertClass.showTopMessage(ErrorReportActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
                             }
                         }
                     });
@@ -159,17 +169,22 @@ public class ErrorReportActivity extends BottomNavigationActivity {
 
                             AlertClass.hideLoadingMessage(loadingProgress);
 
-                            switch (networkErrorType) {
-                                case NoInternetAccess:
-                                case HostUnreachable: {
-                                    AlertClass.showTopMessage(ErrorReportActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                    break;
+                            if (ErrorReportActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                ErrorReportActivity.this.retryCounter += 1;
+                                new PostProfileGradeTask().execute(params);
+                            } else {
+                                ErrorReportActivity.this.retryCounter = 0;
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(ErrorReportActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(ErrorReportActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
                                 }
-                                default: {
-                                    AlertClass.showTopMessage(ErrorReportActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                    break;
-                                }
-
                             }
                         }
                     });
