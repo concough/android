@@ -72,6 +72,7 @@ import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
 import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
+import static com.concough.android.utils.DataConvertorsKt.monthToString;
 
 public class FavoritesActivity extends BottomNavigationActivity implements Handler.Callback {
     private class FavoriteItem {
@@ -286,6 +287,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                 EntranceStruct entranceS = new EntranceStruct();
                                 entranceS.setEntranceSetId(entrance.setId);
                                 entranceS.setEntranceYear(entrance.year);
+                                entranceS.setEntranceMonth(entrance.month);
                                 entranceS.setEntranceUniqueId(entrance.uniqueId);
                                 entranceS.setEntranceTypeTitle(entrance.type);
                                 entranceS.setEntranceBookletCounts(entrance.bookletsCount);
@@ -414,6 +416,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                                 int bookletsCount = target.getAsJsonObject().get("booklets_count").getAsInt();
                                                                 int duration = target.getAsJsonObject().get("duration").getAsInt();
                                                                 int year = target.getAsJsonObject().get("year").getAsInt();
+                                                                int month = target.getAsJsonObject().get("month").getAsInt();
 
                                                                 String extraStr = target.getAsJsonObject().get("extra_data").getAsString();
                                                                 JsonElement extraData = null;
@@ -440,9 +443,9 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                                     entrance.setEntranceTypeTitle(type);
                                                                     entrance.setEntranceUniqueId(uniqueId);
                                                                     entrance.setEntranceYear(year);
+                                                                    entrance.setEntranceMonth(month);
 
                                                                     EntranceModelHandler.add(getApplicationContext(), username, entrance);
-
                                                             }
                                                         }
                                                     } else {
@@ -459,6 +462,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                                 int bookletsCount = target.getAsJsonObject().get("booklets_count").getAsInt();
                                                                 int duration = target.getAsJsonObject().get("duration").getAsInt();
                                                                 int year = target.getAsJsonObject().get("year").getAsInt();
+                                                                int month = target.getAsJsonObject().get("month").getAsInt();
 
                                                                 String extraStr = target.getAsJsonObject().get("extra_data").getAsString();
                                                                 JsonElement extraData = null;
@@ -486,6 +490,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                                     entrance.setEntranceTypeTitle(type);
                                                                     entrance.setEntranceUniqueId(uniqueId);
                                                                     entrance.setEntranceYear(year);
+                                                                    entrance.setEntranceMonth(month);
 
                                                                     EntranceModelHandler.add(getApplicationContext(), username, entrance);
                                                                 }
@@ -1150,8 +1155,14 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 //                params.width = 0;
 //                FEntranceNotDownloadViewHolder.this.downloadProgress2Level.setLayoutParams(params);
 
-                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle().trim() + " " +
-                        FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()).trim());
+                if (entrance.getEntranceMonth() > 0) {
+                    entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle().trim() + " " +
+                            monthToString(entrance.getEntranceMonth()) + " " +
+                            FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()).trim());
+                } else {
+                    entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle().trim() + " " +
+                            FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()).trim());
+                }
                 entranceSetTextView.setText(entrance.getEntranceSetTitle().trim() + " (" + entrance.getEntranceGroupTitle().trim() + ")");
 
                 try {
@@ -1534,10 +1545,6 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
             }
 
-
-
-
-
             private void downloadImage(final int imageId) {
                 byte[] data;
                 final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
@@ -1601,7 +1608,6 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                     });
                 }
             }
-
 
             public void changeToDownlaodState(final int total) {
                 FEntranceNotDownloadViewHolder.this.entranceDownloadLayout.setVisibility(View.GONE);
@@ -1695,9 +1701,14 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
             public void setupHolder(final EntranceStruct entrance, EntrancePurchasedStruct purchased, int index, final int starCount, int openedCount, long qCount) {
 
-
-                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle().trim() + " " +
-                        FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
+                if (entrance.getEntranceMonth() > 0) {
+                    entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle().trim() + " " +
+                            monthToString(entrance.getEntranceMonth()) + " " +
+                            FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
+                } else {
+                    entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle().trim() + " " +
+                            FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
+                }
                 entranceSetTextView.setText(entrance.getEntranceSetTitle().trim() + " (" + entrance.getEntranceGroupTitle().trim() + ")");
 
                 try {

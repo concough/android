@@ -375,6 +375,7 @@ class BasketSingleton : Handler.Callback {
                                                 entrance.entranceTypeTitle = target.getAsJsonObject("entrance_type").get("title").asString
                                                 entrance.entranceUniqueId = target.get("unique_key").asString
                                                 entrance.entranceYear = target.get("year").asInt
+                                                entrance.entranceMonth = target.get("month").asInt
 
                                                 tCostLocal += cost
                                                 salesLocal.add(SaleItem(sale_id, created, cost, entrance, "Entrance"))

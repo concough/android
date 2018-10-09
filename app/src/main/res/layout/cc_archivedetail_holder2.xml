@@ -31,8 +31,12 @@
             android:layout_height="70dp"
             android:layout_marginRight="0dp"
             android:orientation="horizontal"
-            app:layout_constraintRight_toLeftOf="@+id/frameLayout"
-            tools:layout_editor_absoluteY="0dp">
+            app:layout_constraintRight_toLeftOf="@id/frameLayout"
+            app:layout_constraintLeft_toRightOf="@id/constraintLayout4"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:layout_editor_absoluteY="0dp"
+            android:layout_marginEnd="0dp">
 
             <View
                 android:id="@+id/view10"
@@ -80,28 +84,41 @@
                     android:layout_marginEnd="1dp"
                     android:layout_marginRight="1dp"
                     android:layout_marginTop="1dp"
-                    android:background="@drawable/concough_recycle_box_style_holder2_gray_logo_archivedetail"
-                    tools:layout_editor_absoluteX="29dp"
-                    tools:layout_editor_absoluteY="191dp">
+                    android:background="@drawable/concough_recycle_box_style_holder2_gray_logo_archivedetail">
 
 
-                    <TextView
-                        android:id="@+id/archiveDetailHolder2L_yearText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
                         android:layout_marginBottom="8dp"
                         android:layout_marginEnd="8dp"
                         android:layout_marginLeft="8dp"
                         android:layout_marginRight="8dp"
                         android:layout_marginStart="8dp"
                         android:layout_marginTop="8dp"
-                        android:text="TextView"
-                        android:textColor="@color/colorConcoughBlue"
-                        android:textSize="14sp"
+                        app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintLeft_toLeftOf="parent"
-                        app:layout_constraintRight_toRightOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintRight_toRightOf="parent">
+
+                        <TextView
+                            android:id="@+id/archiveDetailHolder2L_monthText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text=""
+                            android:textColor="@color/colorConcoughBlueLight"
+                            android:textSize="12sp"
+                            android:layout_marginBottom="8dp" />
+                        <TextView
+                            android:id="@+id/archiveDetailHolder2L_yearText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text=""
+                            android:textColor="@color/colorConcoughBlue"
+                            android:textSize="14sp" />
+                    </LinearLayout>
 
                 </android.support.constraint.ConstraintLayout>
 

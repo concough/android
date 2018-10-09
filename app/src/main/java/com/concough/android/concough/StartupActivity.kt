@@ -746,6 +746,7 @@ class StartupActivity : AppCompatActivity() {
                                                         val bookletsCount = target.asJsonObject.get("booklets_count").asInt
                                                         val duration = target.asJsonObject.get("duration").asInt
                                                         val year = target.asJsonObject.get("year").asInt
+                                                        val month = target.asJsonObject.get("month").asInt
 
                                                         val extraStr = target.asJsonObject.get("extra_data").asString
                                                         var extraData: JsonElement? = null
@@ -773,6 +774,7 @@ class StartupActivity : AppCompatActivity() {
                                                         entrance.entranceTypeTitle = type
                                                         entrance.entranceUniqueId = uniqueId
                                                         entrance.entranceYear = year
+                                                        entrance.entranceMonth = month
 
                                                         EntranceModelHandler.add(applicationContext, username!!, entrance)
 
@@ -792,6 +794,7 @@ class StartupActivity : AppCompatActivity() {
                                                         val bookletsCount = target.asJsonObject.get("booklets_count").asInt
                                                         val duration = target.asJsonObject.get("duration").asInt
                                                         val year = target.asJsonObject.get("year").asInt
+                                                        val month = target.asJsonObject.get("month").asInt
 
                                                         val extraStr = target.asJsonObject.get("extra_data").asString
                                                         var extraData: JsonElement? = null
@@ -820,6 +823,7 @@ class StartupActivity : AppCompatActivity() {
                                                             entrance.entranceTypeTitle = type
                                                             entrance.entranceUniqueId = uniqueId
                                                             entrance.entranceYear = year
+                                                            entrance.entranceMonth = month
 
                                                             EntranceModelHandler.add(applicationContext, username!!, entrance)
                                                         }

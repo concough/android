@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import com.concough.android.singletons.RealmSingleton
-import com.concough.android.structures.EntranceStruct
 import io.realm.RealmResults
 import io.realm.Sort
 

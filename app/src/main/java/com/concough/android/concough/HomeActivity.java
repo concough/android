@@ -8,6 +8,9 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +44,7 @@ import kotlin.jvm.functions.Function2;
 import kotlin.jvm.functions.Function3;
 
 import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
+import static com.concough.android.utils.DataConvertorsKt.monthToString;
 
 public class HomeActivity extends BottomNavigationActivity {
 
@@ -405,6 +409,7 @@ public class HomeActivity extends BottomNavigationActivity {
                 additionalData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                dateTopLeft.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
             }
 
@@ -413,7 +418,7 @@ public class HomeActivity extends BottomNavigationActivity {
                 concoughActivityStructLocal = concoughActivityStruct;
 
                 int dateNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("year").getAsInt();
-
+                int monthNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("month").getAsInt();
 
                 String datePublishString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_published").getAsString();
                 String lastUpdateString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_update").getAsString();
@@ -438,10 +443,15 @@ public class HomeActivity extends BottomNavigationActivity {
 
                 dateJalali.setText(persianDateString.trim());
 
+                int c = Color.argb(70,
+                        Color.red(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue)),
+                        Color.green(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue)),
+                        Color.blue(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue))
+                );
 
-                dateTopLeft.setText(FormatterSingleton.getInstance().getNumberFormatter().format(dateNumber));
-                dateTopLeft.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-
+                Spannable spannable = new SpannableString(monthToString(monthNumber) + " " + FormatterSingleton.getInstance().getNumberFormatter().format(dateNumber));
+                spannable.setSpan(new ForegroundColorSpan(c), 0, monthToString(monthNumber).length(), 0);
+                dateTopLeft.setText(spannable);
 
                 JsonArray stats = concoughActivityStruct.getTarget().getAsJsonObject().get("stats").getAsJsonArray();
                 Integer sellCountInt = 0;
@@ -568,12 +578,16 @@ public class HomeActivity extends BottomNavigationActivity {
                 additionalData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                dateTopLeft.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
             }
 
             public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
                 String datePublishString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_published").getAsString();
                 String lastUpdateString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_update").getAsString();
+
+                int dateNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("year").getAsInt();
+                int monthNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("month").getAsInt();
 
                 Date georgianDate = null;
                 String persianDateString = "";
@@ -595,10 +609,15 @@ public class HomeActivity extends BottomNavigationActivity {
                 dateJalali.setText(persianDateString.trim());
 
 
-                int dateNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("year").getAsInt();
-                dateTopLeft.setText(FormatterSingleton.getInstance().getNumberFormatter().format(dateNumber));
-                dateTopLeft.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                int c = Color.argb(70,
+                        Color.red(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue)),
+                        Color.green(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue)),
+                        Color.blue(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue))
+                );
 
+                Spannable spannable = new SpannableString(monthToString(monthNumber) + " " + FormatterSingleton.getInstance().getNumberFormatter().format(dateNumber));
+                spannable.setSpan(new ForegroundColorSpan(c), 0, monthToString(monthNumber).length(), 0);
+                dateTopLeft.setText(spannable);
 
                 JsonArray stats = concoughActivityStruct.getTarget().getAsJsonObject().get("stats").getAsJsonArray();
                 Integer sellCountInt = 0;

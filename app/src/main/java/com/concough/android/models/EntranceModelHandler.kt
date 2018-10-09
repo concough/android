@@ -28,6 +28,7 @@ class EntranceModelHandler {
             entrance.type = e.entranceTypeTitle!!
             entrance.uniqueId = e.entranceUniqueId!!
             entrance.year = e.entranceYear!!
+            entrance.month = e.entranceMonth!!
             entrance.username = username
             entrance.pUniqueId = "$username-${e.entranceUniqueId!!}"
 

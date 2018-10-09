@@ -69,6 +69,7 @@ import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
 import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
+import static com.concough.android.utils.DataConvertorsKt.monthToString;
 
 public class EntranceDetailActivity extends BottomNavigationActivity implements Handler.Callback {
 
@@ -548,6 +549,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 myLocalEntrance.setEntranceTypeTitle(localEntrance.type);
                 myLocalEntrance.setEntranceUniqueId(localEntrance.uniqueId);
                 myLocalEntrance.setEntranceYear(localEntrance.year);
+                myLocalEntrance.setEntranceMonth(localEntrance.month);
 
                 EntranceDetailActivity.this.entrance = myLocalEntrance;
                 EntranceDetailActivity.this.state = EntranceVCStateEnum.EntranceComplete;
@@ -1216,6 +1218,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                                 int bookletCount = record.get("booklets_count").getAsInt();
                                                 int duration = record.get("duration").getAsInt();
                                                 int year = record.get("year").getAsInt();
+                                                int month = record.get("month").getAsInt();
                                                 String lastPublishedStr = record.get("last_published").getAsString();
                                                 Date lastPublished = FormatterSingleton.getInstance().getUTCDateFormatter().parse(lastPublishedStr);
 
@@ -1241,6 +1244,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                                 myLocalEntrance.setEntranceTypeTitle(entrance_type);
                                                 myLocalEntrance.setEntranceUniqueId(entranceUniqueId);
                                                 myLocalEntrance.setEntranceYear(year);
+                                                myLocalEntrance.setEntranceMonth(month);
 
                                                 EntranceDetailActivity.this.entrance = myLocalEntrance;
                                                 EntranceDetailActivity.this.state = EntranceVCStateEnum.EntranceComplete;
@@ -1703,8 +1707,12 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
             public void setupHolder(EntranceStruct es) {
                 try {
+                    if (es.getEntranceMonth() > 0) {
+                        entranceYearTextView.setText(monthToString(es.getEntranceMonth()) + " " + FormatterSingleton.getInstance().getNumberFormatter().format(es.getEntranceYear()));
+                    } else {
+                        entranceYearTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(es.getEntranceYear()));
+                    }
 
-                    entranceYearTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(es.getEntranceYear()));
                     entranceBookletCountsTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(es.getEntranceBookletCounts()) + " دفترچه");
                     entranceDurationTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(es.getEntranceDuration()) + " دقیقه");
 

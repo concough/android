@@ -8,7 +8,7 @@ import java.util.*
 /**
  * Created by abolfazl on 7/11/17.
  */
-class EntranceStruct() : Serializable {
+class EntranceStruct : Serializable {
     var entranceTypeTitle: String? = null
     var entranceOrgTitle: String? = null
     var entranceGroupTitle: String? = null
@@ -17,6 +17,7 @@ class EntranceStruct() : Serializable {
     var entranceExtraData: JsonElement? = null
     var entranceBookletCounts: Int? = null
     var entranceYear: Int? = null
+    var entranceMonth: Int? = null
     var entranceDuration: Int? = null
     var entranceUniqueId: String? = null
     var entranceLastPublished: Date? = null

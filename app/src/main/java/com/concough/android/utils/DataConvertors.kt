@@ -18,6 +18,25 @@ val answers: HashMap<Int, String> = hashMapOf(
         10 to "۳ و ۴"
 )
 
+val months: HashMap<Int, String> = hashMapOf(
+        1 to "فروردین",
+        2 to "اردیبهشت",
+        3 to "خرداد",
+        4 to "تیر",
+        5 to "مرداد",
+        6 to "شهریور",
+        7 to "مهر",
+        8 to "آبان",
+        9 to "آذر",
+        10 to "دی",
+        11 to "بهمن",
+        12 to "اسفند"
+)
+
 fun questionAnswerToString(key: Int) : String {
     return answers.get(key)!!
+}
+
+fun monthToString(key: Int): String {
+    return months.get(key)!!
 }

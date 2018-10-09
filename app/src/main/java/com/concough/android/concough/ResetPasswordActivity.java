@@ -666,6 +666,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                                                     int bookletsCount = target.getAsJsonObject().get("booklets_count").getAsInt();
                                                                     int duration = target.getAsJsonObject().get("duration").getAsInt();
                                                                     int year = target.getAsJsonObject().get("year").getAsInt();
+                                                                    int month = target.getAsJsonObject().get("month").getAsInt();
 
                                                                     String extraStr = target.getAsJsonObject().get("extra_data").getAsString();
                                                                     JsonElement extraData = null;
@@ -692,6 +693,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                                                     entrance.setEntranceTypeTitle(type);
                                                                     entrance.setEntranceUniqueId(uniqueId);
                                                                     entrance.setEntranceYear(year);
+                                                                    entrance.setEntranceMonth(month);
 
                                                                     EntranceModelHandler.add(getApplicationContext(), username, entrance);
 
@@ -711,6 +713,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                                                     int bookletsCount = target.getAsJsonObject().get("booklets_count").getAsInt();
                                                                     int duration = target.getAsJsonObject().get("duration").getAsInt();
                                                                     int year = target.getAsJsonObject().get("year").getAsInt();
+                                                                    int month = target.getAsJsonObject().get("month").getAsInt();
 
                                                                     String extraStr = target.getAsJsonObject().get("extra_data").getAsString();
                                                                     JsonElement extraData = null;
@@ -738,6 +741,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                                                         entrance.setEntranceTypeTitle(type);
                                                                         entrance.setEntranceUniqueId(uniqueId);
                                                                         entrance.setEntranceYear(year);
+                                                                        entrance.setEntranceMonth(month);
 
                                                                         EntranceModelHandler.add(getApplicationContext(), username, entrance);
                                                                     }

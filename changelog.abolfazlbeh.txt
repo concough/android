@@ -320,3 +320,10 @@ Some Bugs Fixed (abolfazl.beh) - 2018-03-17
 Add Retry Counter Ability (abolfazl.beh) - 2018-10-09
 
 1 - "retryCounter" variable added to all activities and some Singleton classes as needed.
+
+------------------------------------------------------------------------------------------------
+Entrance Month (abolfazl.beh) - 2018-10-10
+
+1 - "month" field added to EntranceModel and EntranceStruct.
+2 - Add activities that depend on month modified to capture it and show it to user.
+

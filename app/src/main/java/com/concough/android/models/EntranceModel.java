@@ -24,6 +24,7 @@ public class EntranceModel extends RealmObject {
     public String extraData = "";
     public int bookletsCount = 0;
     public int year = 0;
+    public int month = 0;
     public int duration = 0;
     public Date lastPublished = new Date();
 

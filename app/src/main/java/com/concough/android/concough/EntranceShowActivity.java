@@ -118,6 +118,7 @@ import static com.bumptech.glide.request.target.Target.SIZE_ORIGINAL;
 import static com.concough.android.concough.FavoritesActivity.convertFileToByteArray;
 import static com.concough.android.concough.R.id.headerShowStarred_countEntrance;
 import static com.concough.android.settings.ConstantsKt.getSECRET_KEY;
+import static com.concough.android.utils.DataConvertorsKt.monthToString;
 import static com.concough.android.utils.DataConvertorsKt.questionAnswerToString;
 
 public class EntranceShowActivity extends AppCompatActivity implements Handler.Callback {
@@ -528,7 +529,11 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
 
         String entranceYear = FormatterSingleton.getInstance().getNumberFormatter().format(this.entranceDB.year);
-        tvEntranceTypeName.setText("آزمون " + this.entranceDB.type + " " + entranceYear);
+        if (this.entranceDB.month > 0) {
+            tvEntranceTypeName.setText("آزمون " + this.entranceDB.type + " " + monthToString(this.entranceDB.month) + " " + entranceYear);
+        } else {
+            tvEntranceTypeName.setText("آزمون " + this.entranceDB.type + " " + entranceYear);
+        }
         tvEntranceGroupName.setText(this.entranceDB.group + " (" + this.entranceDB.set + ")");
 
 

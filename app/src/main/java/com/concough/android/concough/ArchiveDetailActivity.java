@@ -49,6 +49,7 @@ import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
 import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
+import static com.concough.android.utils.DataConvertorsKt.monthToString;
 
 public class ArchiveDetailActivity extends BottomNavigationActivity {
     private static String TAG = "ArchiveDetailActivity";
@@ -69,7 +70,6 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
     private ArchiveEsetDetailStruct mArchiveEsetDetailStruct;
 
     public static Intent newIntent(Context packageContext, @Nullable ArchiveEsetDetailStruct detailStruct) {
-        Log.d(TAG, "newIntent: ");
         Intent i = new Intent(packageContext, ArchiveDetailActivity.class);
         i.putExtra(Detail_Struct, detailStruct);
         return i;
@@ -520,6 +520,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
             private TextView dateJalali;
             //            private TextView typeText;
             private TextView yearText;
+            private TextView monthText;
 
             private ImageView doubleCheck;
 
@@ -538,16 +539,17 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                 dateJalali = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_dateJalali);
 //                typeText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_constrantRight);
                 yearText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_yearText);
+                monthText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_monthText);
                 entranceBuyButton = (Button) itemView.findViewById(R.id.archiveDetailHolder2L_BuyButton);
                 doubleCheck = (ImageView) itemView.findViewById(R.id.archiveDetailHolder2L_DoubleCheck);
 //                logoImage = (ImageView) itemView.findViewById(R.id.archiveDetailHolder2L_imageRight);
-
 
                 extraDataText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 countText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
 //                typeText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 yearText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                monthText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 entranceBuyButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
 
             }
@@ -561,9 +563,11 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                 doubleCheck.setVisibility(View.GONE);
                 entranceBuyButton.setVisibility(View.GONE);
 
-                Integer t2 = jsonElement.getAsJsonObject().get("year").getAsInt();
-                yearText.setText(FormatterSingleton.getInstance().getNumberFormatter().format(t2).toString());
+                Integer year = jsonElement.getAsJsonObject().get("year").getAsInt();
+                Integer month = jsonElement.getAsJsonObject().get("month").getAsInt();
 
+                yearText.setText(FormatterSingleton.getInstance().getNumberFormatter().format(year));
+                monthText.setText(monthToString(month));
 
                 String currentDateString = jsonElement.getAsJsonObject().get("last_published").getAsString();
                 Date georgianDate = null;
@@ -679,6 +683,9 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                 final Integer entranceYear;
                 entranceYear = jsonElement.getAsJsonObject().get("year").getAsInt();
 
+                final Integer entranceMonth;
+                entranceMonth = jsonElement.getAsJsonObject().get("month").getAsInt();
+
                 final Integer entranceDuration;
                 entranceDuration = jsonElement.getAsJsonObject().get("duration").getAsInt();
 
@@ -710,6 +717,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                     myLocalEntrance.setEntranceTypeTitle(ArchiveDetailActivity.this.mArchiveEsetDetailStruct.typeTitle);
                     myLocalEntrance.setEntranceUniqueId(uniqId);
                     myLocalEntrance.setEntranceYear(entranceYear);
+                    myLocalEntrance.setEntranceMonth(entranceMonth);
 
 //                    entranceBuyButton.setText("-  سبد خرید");
 //                    entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_red_style));

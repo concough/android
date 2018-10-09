@@ -53,6 +53,8 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
+import static com.concough.android.utils.DataConvertorsKt.monthToString;
+
 public class BasketCheckoutActivity extends BottomNavigationActivity {
     // testing with Basket
 
@@ -436,8 +438,6 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
 
                 }
             }
-
-
         }
 
         @Override
@@ -496,8 +496,15 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
 
             @SuppressLint("SetTextI18n")
             public void setupHolder(EntranceStruct entrance, int cost, final int position) {
-                orgTypeTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " +
-                        FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
+                if (entrance.getEntranceMonth() > 0) {
+                    orgTypeTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " +
+                            monthToString(entrance.getEntranceMonth()) + " " +
+                            FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
+
+                } else {
+                    orgTypeTextView.setText("آزمون " + entrance.getEntranceTypeTitle() + " " +
+                            FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
+                }
                 groupTextView.setText(entrance.getEntranceSetTitle() + " (" + entrance.getEntranceGroupTitle() + ")");
 
                 if (cost == 0) {
