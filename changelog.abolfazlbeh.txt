@@ -327,3 +327,7 @@ Entrance Month (abolfazl.beh) - 2018-10-10
 1 - "month" field added to EntranceModel and EntranceStruct.
 2 - Add activities that depend on month modified to capture it and show it to user.
 
+------------------------------------------------------------------------------------------------
+Download Directory Changed (abolfazl.beh) - 2018-10-10
+
+1 - Download directory changed to include "username" in path. Also compatible with older version.

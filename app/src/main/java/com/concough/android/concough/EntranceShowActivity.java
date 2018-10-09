@@ -1240,17 +1240,22 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             String hashStr = username + ":" + getSECRET_KEY();
             String hashKey = MD5Digester.digest(hashStr);
 
+            String finalPath = username + "_" + entranceUniqueId;
+            File f = new File(EntranceShowActivity.this.getFilesDir(), finalPath);
+            if (!f.exists()) {
+                finalPath = entranceUniqueId;
+            }
+
             for (JsonElement item : jsonObjects) {
                 String imageId = item.getAsJsonObject().get("unique_key").getAsString();
                 if (!imageRepo.containsKey(imageId)) {
-                    String filePath = entranceUniqueId + "/" + imageId;
+                    String filePath = finalPath + "/" + imageId;
 
                     File file = new File(EntranceShowActivity.this.getFilesDir(), filePath);
                     if (file.exists()) {
                         try {
                             byte[] buffer = new byte[(int) file.length()];
                             FileInputStream input = new FileInputStream(file);
-
 
                             input.read(buffer);
 
@@ -2287,10 +2292,16 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             String hashStr = username + ":" + getSECRET_KEY();
             String hashKey = MD5Digester.digest(hashStr);
 
+            String finalPath = username + "_" + entranceUniqueId;
+            File f = new File(EntranceShowActivity.this.getFilesDir(), finalPath);
+            if (!f.exists()) {
+                finalPath = entranceUniqueId;
+            }
+
             for (JsonElement item : jsonObjects) {
                 String imageId = item.getAsJsonObject().get("unique_key").getAsString();
                 if (!imageRepo.containsKey(imageId)) {
-                    String filePath = entranceUniqueId + "/" + imageId;
+                    String filePath = finalPath + "/" + imageId;
 
                     File file = new File(EntranceShowActivity.this.getFilesDir(), filePath);
                     if (file.exists()) {

@@ -2025,6 +2025,11 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                     if (downloader.fillImageArray()) {
                                         String newDir = entranceUniqueId;
                                         File f = new File(context.getFilesDir(), newDir);
+                                        if (!f.exists()) {
+                                            newDir = username + "_" + newDir;
+                                            f = new File(context.getFilesDir(), newDir);
+                                        }
+
                                         boolean d = f.mkdir();
 
                                         Integer count = (Integer) downloader.getDownloadCount();
@@ -2044,7 +2049,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                                 boolean valid2 = PurchasedModelHandler.setIsLocalDBCreatedTrue(getApplicationContext(), username, entranceUniqueId, "Entrance");
                                                 if (valid2) {
 //                                                    String newDir = context.getFilesDir().getPath().concat(entranceUniqueId);
-                                                    String newDir = entranceUniqueId;
+                                                    String newDir = username + "_" + entranceUniqueId;
                                                     File f = new File(context.getFilesDir(), newDir);
                                                     boolean d = f.mkdir();
                                                     Integer count = (Integer) downloader.getDownloadCount();

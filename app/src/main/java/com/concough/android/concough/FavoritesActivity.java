@@ -1492,6 +1492,12 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                         if (FEntranceNotDownloadViewHolder.this.downloader.fillImageArray()) {
                                                             String newDir = entranceS.getEntranceUniqueId();
                                                             File f = new File(context.getFilesDir(), newDir);
+
+                                                            if (!f.exists()) {
+                                                                newDir = username + "_" + newDir;
+                                                                f = new File(context.getFilesDir(), newDir);
+                                                            }
+
                                                             boolean d = f.mkdir();
 
                                                             Integer count = (Integer) FEntranceNotDownloadViewHolder.this.downloader.getDownloadCount();
@@ -1511,7 +1517,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                                     boolean valid2 = PurchasedModelHandler.setIsLocalDBCreatedTrue(getApplicationContext(), username, entranceS.getEntranceUniqueId(), "Entrance");
                                                                     if (valid2) {
 //                                                    String newDir = context.getFilesDir().getPath().concat(entranceUniqueId);
-                                                                        String newDir = entranceS.getEntranceUniqueId();
+                                                                        String newDir = username + "_" + entranceS.getEntranceUniqueId();
                                                                         File f = new File(context.getFilesDir(), newDir);
                                                                         boolean d = f.mkdir();
                                                                         Integer count = (Integer) FEntranceNotDownloadViewHolder.this.downloader.getDownloadCount();
