@@ -117,6 +117,20 @@ class AlertClass {
                         else -> showMessage = false
                     }
                 }
+                "ExamAction" -> {
+                    when (messageSubType) {
+                        "FinishEntranceExam" -> {
+                            title = "پیغام"; message = "آیا از اتمام سنجش مطمئن هستید؟"
+                        }
+                        "FinishEntranceExamResult" -> {
+                            title = "پیغام"; message = "محاسبه نتیجه سنجش با انصراف از سنجش؟\n\nدر صورت انصراف سابقه ای ثبت نخواهد شد."
+                        }
+                        "LessonExamHistoryNotAvail" -> {
+                            title = "پیغام"; message = "شما هنوز هیچ سنجشی ندارید."
+                        }
+                        else -> showMessage = false
+                    }
+                }
                 "ErrorResult" -> {
                     when (messageSubType) {
                         "RemoteDBError" -> {
@@ -133,6 +147,12 @@ class AlertClass {
                         }
                         "EmptyArray" -> {
                             title = "خطا"; message = "اطلاعات برای نمایش ناموجود است"
+                        }
+                        "UnsupportedVersion" -> {
+                            title = "خطا"; message = "این قابلیت در این نسخه پشتیبانی نمی شود. به نسخه جدیدتر بروز رسانی نمایید."
+                        }
+                        "ProductNotExist" -> {
+                            title = "خطا"; message = "چنین محصولی موجود نمی باشد."
                         }
                         else -> showMessage = false
                     }
@@ -173,6 +193,14 @@ class AlertClass {
                         }
                         "MustCheckoutLast" -> {
                             title = "خطا"; message = "ابتدا پرداخت قبلی خود را نهایی نمایید"
+                        }
+                        else -> showMessage = false
+                    }
+                }
+                "WalletResult" -> {
+                    when (messageSubType) {
+                        "WalletNotEnoughCash" -> {
+                            title = "خطا"; message = "موجودی کافی نیست"
                         }
                         else -> showMessage = false
                     }
@@ -325,14 +353,24 @@ class AlertClass {
         @JvmStatic
         fun hideLoadingMessage(progressHUD: KProgressHUD?) {
 //            synchronized(AlertClass.hideLoadingLock) {
-
-
             if (progressHUD != null) {
                 progressHUD.dismiss()
             }
-
-
 //            }
+        }
+
+        @JvmStatic
+        fun showMakeExamMessage(context: Context): KProgressHUD {
+            val v = SpinView(context, context.resources.getColor(R.color.colorConcoughRed))
+
+            val hud = KProgressHUD.create(context)
+            hud.setStyle(KProgressHUD.Style.SPIN_INDETERMINATE)
+            hud.setDimAmount(0.35F)
+            hud.setCustomView(v)
+            hud.setLabel("آماده سازی سنجش ...", context.resources.getColor(android.R.color.black))
+            hud.setLabelFont(FontCacheSingleton.getInstance(context.applicationContext!!).Light)
+            hud.setBackgroundColor(context.resources.getColor(android.R.color.white))
+            return hud
         }
 
         @JvmStatic

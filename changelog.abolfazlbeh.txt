@@ -342,3 +342,9 @@ Times Ago Feature (abolfazl.beh) - 2018-10-11
 Scroll to top feature (abolfazl.beh) - 2018-10-11
 
 1 - TopNavigationActivity modified. Title OnClickListener add to react to click event. Also All activities that need this feature modified, implement interface and scroll to top.
+
+------------------------------------------------------------------------------------------------
+Alert Class Modifications (abolfazl.beh) - 2018-10-11
+
+1 - New message types and subtypes added to AlertClass
+2 - "showMakeExamMessage" function added to AlertClass to show spin loading on preparing exam.
