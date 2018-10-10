@@ -354,3 +354,8 @@ Models and Model Handlers (abolfazl.beh) - 2018-10-11
 
 1 - All model handlers that need username fixed and checked
 2 - Also some methods ("getAllLessons" and "getOneLessonByTitleAndOrder") added to EntranceLessonModelHandler
+
+------------------------------------------------------------------------------------------------
+Entrance Last Visit Info (abolfazl.beh) - 2018-10-11
+
+1 - EntranceLastVisitInfoModel and its handler created to store last visit info of entrance
