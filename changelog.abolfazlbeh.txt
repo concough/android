@@ -348,3 +348,9 @@ Alert Class Modifications (abolfazl.beh) - 2018-10-11
 
 1 - New message types and subtypes added to AlertClass
 2 - "showMakeExamMessage" function added to AlertClass to show spin loading on preparing exam.
+
+------------------------------------------------------------------------------------------------
+Models and Model Handlers (abolfazl.beh) - 2018-10-11
+
+1 - All model handlers that need username fixed and checked
+2 - Also some methods ("getAllLessons" and "getOneLessonByTitleAndOrder") added to EntranceLessonModelHandler
