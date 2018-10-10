@@ -1,5 +1,7 @@
 package com.concough.android.utils
 
+import com.concough.android.singletons.FormatterSingleton
+
 /**
  * Created by abolfazl on 10/10/17.
  */
@@ -39,4 +41,36 @@ fun questionAnswerToString(key: Int) : String {
 
 fun monthToString(key: Int): String {
     return months.get(key)!!
+}
+
+fun timesAgoTranslate(lang: String, key: String, vararg params: Int): String {
+    if (lang == "fa") {
+        var result = "چند لحظه پیش"
+
+        when(key) {
+            "1_year_ago" -> result = "یک سال پیش"
+            "last_year" -> result = "پارسال"
+            "d_year_ago" -> result = FormatterSingleton.getInstance().NumberFormatter.format(params[0]) + " سال پیش"
+            "1_month_ago" -> result = "یک ماه پیش"
+            "last_month" -> result = "ماه پیش"
+            "d_month_ago" -> result = FormatterSingleton.getInstance().NumberFormatter.format(params[0]) + " ماه پیش"
+            "1_week_ago" -> result = "یک هفته پیش"
+            "last_week" -> result = "هفته پیش"
+            "d_weak_ago" -> result = FormatterSingleton.getInstance().NumberFormatter.format(params[0]) + " هفته پیش"
+            "1_day_ago" -> result = "یک روز پیش"
+            "last_day" -> result = "دیروز"
+            "d_day_ago" -> result = FormatterSingleton.getInstance().NumberFormatter.format(params[0]) + " روز پیش"
+            "1_hour_ago" -> result = "یک ساعت پیش"
+            "last_hour" -> result = "یک ساعت پیش"
+            "d_hour_ago" -> result = FormatterSingleton.getInstance().NumberFormatter.format(params[0]) + " ساعت پیش"
+            "1_minute_ago" -> result = "یک دقیقه پیش"
+            "last_minute" -> result = "یک دقیقه پیش"
+            "d_minute_ago" -> result = FormatterSingleton.getInstance().NumberFormatter.format(params[0]) + " دقیقه پیش"
+            "d_second_ago" -> result = FormatterSingleton.getInstance().NumberFormatter.format(params[0]) + " ثانیه پیش"
+        }
+
+        return result
+    }
+
+    return ""
 }

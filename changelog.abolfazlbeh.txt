@@ -331,3 +331,9 @@ Entrance Month (abolfazl.beh) - 2018-10-10
 Download Directory Changed (abolfazl.beh) - 2018-10-10
 
 1 - Download directory changed to include "username" in path. Also compatible with older version.
+
+------------------------------------------------------------------------------------------------
+Times Ago Feature (abolfazl.beh) - 2018-10-11
+
+1 - Times ago feature added to HomeActivity and ArchiveDetailActivity replace the actual time
+2 - New Extension function added to Date type.

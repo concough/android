@@ -45,6 +45,7 @@ import kotlin.jvm.functions.Function3;
 
 import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
 import static com.concough.android.utils.DataConvertorsKt.monthToString;
+import static com.concough.android.extensions.TypeExtensionsKt.timeAgoSinceDate;
 
 public class HomeActivity extends BottomNavigationActivity {
 
@@ -410,7 +411,6 @@ public class HomeActivity extends BottomNavigationActivity {
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 dateTopLeft.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-
             }
 
             public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
@@ -423,7 +423,6 @@ public class HomeActivity extends BottomNavigationActivity {
                 String datePublishString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_published").getAsString();
                 String lastUpdateString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_update").getAsString();
 
-
                 Date georgianDate = null;
                 String persianDateString = "";
                 String currentDateString = "";
@@ -434,14 +433,21 @@ public class HomeActivity extends BottomNavigationActivity {
                     currentDateString = lastUpdateString;
                 }
 
+//                try {
+//                    georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
+//                    persianDateString = FormatterSingleton.getInstance().getPersianDateString(georgianDate);
+//                } catch (ParseException e) {
+//                    e.printStackTrace();
+//                }
+//                dateJalali.setText(persianDateString.trim());
+
                 try {
                     georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
-                    persianDateString = FormatterSingleton.getInstance().getPersianDateString(georgianDate);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+                    String timeAgo = timeAgoSinceDate(georgianDate, "fa", false);
+                    dateJalali.setText(timeAgo);
+                } catch (Exception e) {
 
-                dateJalali.setText(persianDateString.trim());
+                }
 
                 int c = Color.argb(70,
                         Color.red(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue)),

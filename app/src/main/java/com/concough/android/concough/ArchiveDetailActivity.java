@@ -48,6 +48,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
+import static com.concough.android.extensions.TypeExtensionsKt.timeAgoSinceDate;
 import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
 import static com.concough.android.utils.DataConvertorsKt.monthToString;
 
@@ -573,14 +574,23 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
                 Date georgianDate = null;
                 String persianDateString = "";
 
+//                try {
+//                    georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
+//                    persianDateString = FormatterSingleton.getInstance().getPersianDateString(georgianDate);
+//                } catch (ParseException e) {
+//                    e.printStackTrace();
+//                }
+//
+//                dateJalali.setText(persianDateString);
+
                 try {
                     georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
-                    persianDateString = FormatterSingleton.getInstance().getPersianDateString(georgianDate);
-                } catch (ParseException e) {
-                    e.printStackTrace();
+                    String timeAgo = timeAgoSinceDate(georgianDate, "fa", false);
+                    dateJalali.setText(timeAgo);
+                } catch (Exception e) {
+
                 }
 
-                dateJalali.setText(persianDateString);
 
                 String t3 = FormatterSingleton.getInstance().getNumberFormatter().format(jsonElement.getAsJsonObject().get("stats").getAsJsonArray().get(0).getAsJsonObject().get("purchased").getAsInt()) + " خرید";
                 countText.setText(t3);

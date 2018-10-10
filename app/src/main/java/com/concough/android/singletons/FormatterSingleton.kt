@@ -54,8 +54,8 @@ class FormatterSingleton {
         val month = PersianCalendar.getPersianMonth(d)
         val day = PersianCalendar.getPersianDayOfMonth(d)
 
-        var dayStr = FormatterSingleton.getInstance().NumberFormatter.format(day);
-        var yearStr = FormatterSingleton.getInstance().NumberFormatter.format(year);
+        var dayStr = FormatterSingleton.getInstance().NumberFormatter.format(day)
+        var yearStr = FormatterSingleton.getInstance().NumberFormatter.format(year)
 
         val d = _months[month - 1]
         return "%s %s %s".format(dayStr, d, yearStr)

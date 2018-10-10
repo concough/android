@@ -38,10 +38,10 @@ android {
         }
     }
     compileOptions {
-//        targetCompatibility 1.8
-//        sourceCompatibility 1.8
-        targetCompatibility JavaVersion.VERSION_1_7
-        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
     }
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
@@ -57,7 +57,7 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
     compile "org.jetbrains.anko:anko-common:$anko_version"
     //    annotationProcessor 'com.github.bumptech.glide:compiler:3.5.2'
     compile 'com.android.support:support-v4:25.3.1'
@@ -88,7 +88,6 @@ dependencies {
     //    compile 'com.github.tgio:rncryptor-native:0.0.9'
     testCompile 'junit:junit:4.12'
     compile 'com.xenione.widgets:loupe:1.0.0'
-
  }
 repositories {
     mavenCentral()
