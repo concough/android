@@ -142,6 +142,11 @@ public class SettingActivity extends BottomNavigationActivity {
             public void OnBackClicked() {
 
             }
+
+            @Override
+            public void OnTitleClicked() {
+
+            }
         };
 
         ArrayList<ButtonDetail> buttonDetailArrayList = new ArrayList<>();

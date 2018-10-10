@@ -84,10 +84,19 @@ public class TopNavigationActivity extends AppCompatActivity {
         mActionBar.setCustomView(mCustomView, layoutParams);
         mActionBar.setDisplayShowCustomEnabled(true);
 
-
         TextView abtext = (TextView) mCustomView.findViewById(R.id.archiveDetailActionBarA_title);
         abtext.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
         abtext.setText(titleName);
+
+        // adding click listener on textview
+        abtext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (clickEventInterface != null) {
+                    clickEventInterface.OnTitleClicked();
+                }
+            }
+        });
 
         ImageView icon0 = (ImageView) mCustomView.findViewById(R.id.actionBarIcon0);
         ImageView icon1 = (ImageView) mCustomView.findViewById(R.id.actionBarIcon1);
@@ -261,8 +270,8 @@ public class TopNavigationActivity extends AppCompatActivity {
 
     protected interface OnClickEventInterface {
         void OnButtonClicked(int id);
-
         void OnBackClicked();
+        void OnTitleClicked();
     }
 
     protected class ButtonDetail {

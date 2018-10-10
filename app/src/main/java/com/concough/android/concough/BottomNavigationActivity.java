@@ -122,7 +122,6 @@ public class BottomNavigationActivity extends TopNavigationActivity {
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         navigation.getMenu().findItem(this.selectedItemId).setChecked(true);
-
     }
 
     protected void setMenuItemColor(int item, int color) {

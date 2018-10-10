@@ -106,6 +106,11 @@ public class SignupMoreInfo2Activity extends TopNavigationActivity {
             public void OnBackClicked() {
                 onBackPressed();
             }
+
+            @Override
+            public void OnTitleClicked() {
+
+            }
         };
 
 

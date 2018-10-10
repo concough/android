@@ -219,6 +219,13 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
             @Override
             public void OnBackClicked() {
+                if (FavoritesActivity.this.recycleView != null) {
+                    FavoritesActivity.this.recycleView.smoothScrollToPosition(0);
+                }
+            }
+
+            @Override
+            public void OnTitleClicked() {
 
             }
         };

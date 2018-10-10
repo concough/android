@@ -371,6 +371,13 @@ public class BasketCheckoutActivity extends BottomNavigationActivity {
             public void OnBackClicked() {
                 onBackPressed();
             }
+
+            @Override
+            public void OnTitleClicked() {
+                if (BasketCheckoutActivity.this.recycleView != null) {
+                    BasketCheckoutActivity.this.recycleView.smoothScrollToPosition(0);
+                }
+            }
         };
 
         super.createActionBar("سبد محصولات", true, null);

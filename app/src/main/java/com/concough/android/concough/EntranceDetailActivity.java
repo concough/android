@@ -188,6 +188,13 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     finish();
                 }
             }
+
+            @Override
+            public void OnTitleClicked() {
+                if (EntranceDetailActivity.this.recycleView != null) {
+                    EntranceDetailActivity.this.recycleView.smoothScrollToPosition(0);
+                }
+            }
         };
 
         super.createActionBar("اطلاعات آزمون", true, buttonDetailArrayList);

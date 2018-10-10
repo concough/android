@@ -337,3 +337,8 @@ Times Ago Feature (abolfazl.beh) - 2018-10-11
 
 1 - Times ago feature added to HomeActivity and ArchiveDetailActivity replace the actual time
 2 - New Extension function added to Date type.
+
+------------------------------------------------------------------------------------------------
+Scroll to top feature (abolfazl.beh) - 2018-10-11
+
+1 - TopNavigationActivity modified. Title OnClickListener add to react to click event. Also All activities that need this feature modified, implement interface and scroll to top.

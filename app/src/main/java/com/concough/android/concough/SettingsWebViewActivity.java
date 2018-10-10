@@ -76,6 +76,11 @@ public class SettingsWebViewActivity extends BottomNavigationActivity {
             public void OnBackClicked() {
                 onBackPressed();
             }
+
+            @Override
+            public void OnTitleClicked() {
+
+            }
         };
 
         String title = getIntent().getStringExtra(mTitle);

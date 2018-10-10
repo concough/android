@@ -189,6 +189,13 @@ public class HomeActivity extends BottomNavigationActivity {
             public void OnBackClicked() {
 
             }
+
+            @Override
+            public void OnTitleClicked() {
+                if (HomeActivity.this.recycleView != null) {
+                    HomeActivity.this.recycleView.smoothScrollToPosition(0);
+                }
+            }
         };
 
         super.createActionBar("خانه", false, buttonDetailArrayList);

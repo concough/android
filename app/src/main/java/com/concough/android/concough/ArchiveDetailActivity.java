@@ -241,6 +241,13 @@ public class ArchiveDetailActivity extends BottomNavigationActivity {
             public void OnBackClicked() {
                 onBackPressed();
             }
+
+            @Override
+            public void OnTitleClicked() {
+                if (ArchiveDetailActivity.this.recyclerView != null) {
+                    ArchiveDetailActivity.this.recyclerView.smoothScrollToPosition(0);
+                }
+            }
         };
 
         String title = mArchiveEsetDetailStruct.typeTitle;

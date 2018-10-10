@@ -94,6 +94,11 @@ public class ErrorReportActivity extends BottomNavigationActivity {
             public void OnBackClicked() {
                 onBackPressed();
             }
+
+            @Override
+            public void OnTitleClicked() {
+
+            }
         };
 
         super.createActionBar("کنکوق", true, null);
