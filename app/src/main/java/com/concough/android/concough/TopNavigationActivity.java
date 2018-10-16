@@ -27,6 +27,7 @@ public class TopNavigationActivity extends AppCompatActivity {
     protected OnClickEventInterface clickEventInterface = null;
     private Boolean backPressed = false;
     private static String TAG = "TopNavigationActivity";
+    private TextView mainTitleTextView;
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -84,12 +85,12 @@ public class TopNavigationActivity extends AppCompatActivity {
         mActionBar.setCustomView(mCustomView, layoutParams);
         mActionBar.setDisplayShowCustomEnabled(true);
 
-        TextView abtext = (TextView) mCustomView.findViewById(R.id.archiveDetailActionBarA_title);
-        abtext.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
-        abtext.setText(titleName);
+        mainTitleTextView = (TextView) mCustomView.findViewById(R.id.archiveDetailActionBarA_title);
+        mainTitleTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+        mainTitleTextView.setText(titleName);
 
         // adding click listener on textview
-        abtext.setOnClickListener(new View.OnClickListener() {
+        mainTitleTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (clickEventInterface != null) {
@@ -267,6 +268,9 @@ public class TopNavigationActivity extends AppCompatActivity {
 
     }
 
+    protected void updateMainTitle(String title) {
+        this.mainTitleTextView.setText(title);
+    }
 
     protected interface OnClickEventInterface {
         void OnButtonClicked(int id);

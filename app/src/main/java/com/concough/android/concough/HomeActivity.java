@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.baoyz.widget.PullRefreshLayout;
@@ -44,6 +45,8 @@ import kotlin.jvm.functions.Function2;
 import kotlin.jvm.functions.Function3;
 
 import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
+import static com.concough.android.settings.SupportAbilitiesKt.getSUPPORT_ACTIVITY_TYPES;
+import static com.concough.android.settings.SupportAbilitiesKt.isSupportActivityTypes;
 import static com.concough.android.utils.DataConvertorsKt.monthToString;
 import static com.concough.android.extensions.TypeExtensionsKt.timeAgoSinceDate;
 
@@ -105,6 +108,16 @@ public class HomeActivity extends BottomNavigationActivity {
                             }
                         }
                     }
+                } else if (v.getClass() == HomeActivityAdapter.ItemMultiHolder.class) {
+                    ((HomeActivityAdapter.ItemMultiHolder) v).downloadImageHandler();
+                    if (((HomeActivityAdapter.ItemMultiHolder) v).getAdapterPosition() >= homeActivityAdapter.getItemCount() - 4) {
+                        if (HomeActivity.this.moreFeedExist) {
+                            if (!loading) {
+                                HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
+                                counter++;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -122,10 +135,9 @@ public class HomeActivity extends BottomNavigationActivity {
             }
         });
 
+        actionBarSet();
         HomeActivity.this.isRefresh = false;
-
         homeActivity(null);
-
 
         final PullRefreshLayout layout = (PullRefreshLayout) findViewById(R.id.homeA_swipeRefreshLayout);
         layout.setColorSchemeColors(Color.TRANSPARENT, Color.GRAY, Color.GRAY, Color.GRAY);
@@ -153,15 +165,13 @@ public class HomeActivity extends BottomNavigationActivity {
             }
         });
 
-        actionBarSet();
-
     }
 
 
     @Override
     protected void onPause() {
-        AlertClass.hideLoadingMessage(loadingProgress);
-        loadingProgress = null;
+//        AlertClass.hideLoadingMessage(loadingProgress);
+//        loadingProgress = null;
         super.onPause();
     }
 
@@ -201,25 +211,34 @@ public class HomeActivity extends BottomNavigationActivity {
         super.createActionBar("خانه", false, buttonDetailArrayList);
     }
 
+//    private void homeActivity(String date) {
+//        HomeActivity.this.loading = true;
+//        new HomeActivityTask().execute(date);
+//
+//        if (date == null) {
+//            if (!isFinishing()) {
+//                if (loadingProgress == null) {
+//                    loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+//                    loadingProgress.show();
+//                } else {
+//                    if (!loadingProgress.isShowing()) {
+//                        //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+//                        loadingProgress.show();
+//                    }
+//                }
+//            }
+//        }
+//
+//    }
 
     private void homeActivity(String date) {
         HomeActivity.this.loading = true;
-        new HomeActivityTask().execute(date);
 
         if (date == null) {
-            if (!isFinishing()) {
-                if (loadingProgress == null) {
-                    loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
-                    loadingProgress.show();
-                } else {
-                    if (!loadingProgress.isShowing()) {
-                        //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
-                        loadingProgress.show();
-                    }
-                }
-            }
+            super.updateMainTitle("به روز رسانی ...");
         }
 
+        new HomeActivityTask().execute(date);
     }
 
 
@@ -232,10 +251,12 @@ public class HomeActivity extends BottomNavigationActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            AlertClass.hideLoadingMessage(loadingProgress);
+//                            AlertClass.hideLoadingMessage(loadingProgress);
 
                             try {
                                 if (httpErrorType == HTTPErrorType.Success) {
+                                    HomeActivity.super.updateMainTitle("کنکوق");
+
                                     HomeActivity.this.retryCounter = 0;
 
                                     if (jsonObject != null) {
@@ -253,11 +274,11 @@ public class HomeActivity extends BottomNavigationActivity {
                                                 String activityType = item.getAsJsonObject().get("activity_type").getAsString();
                                                 JsonObject target = item.getAsJsonObject().get("target").getAsJsonObject();
 
-                                                concoughActivityStruct = new ConcoughActivityStruct(created, createdStr, activityType, target);
-                                                localList.add(concoughActivityStruct);
-
+                                                if (isSupportActivityTypes(activityType)) {
+                                                    concoughActivityStruct = new ConcoughActivityStruct(created, createdStr, activityType, target);
+                                                    localList.add(concoughActivityStruct);
+                                                }
                                             }
-
 
                                             HomeActivity.this.moreFeedExist = true;
 
@@ -289,6 +310,7 @@ public class HomeActivity extends BottomNavigationActivity {
                                         new HomeActivityTask().execute(params);
                                     } else {
                                         HomeActivity.this.retryCounter = 0;
+                                        HomeActivity.super.updateMainTitle("کنکوق");
                                     }
                                 }
 
@@ -299,12 +321,9 @@ public class HomeActivity extends BottomNavigationActivity {
                         }
                     });
 
-
                     return null;
                 }
-            }, new Function1<NetworkErrorType, Unit>()
-
-            {
+            }, new Function1<NetworkErrorType, Unit>() {
                 @Override
                 public Unit invoke(final NetworkErrorType networkErrorType) {
 
@@ -319,6 +338,8 @@ public class HomeActivity extends BottomNavigationActivity {
                                 new HomeActivityTask().execute(params);
                             } else {
                                 HomeActivity.this.retryCounter = 0;
+                                HomeActivity.super.updateMainTitle("کنکوق");
+
                                 switch (networkErrorType) {
                                     case NoInternetAccess:
                                     case HostUnreachable: {
@@ -339,10 +360,7 @@ public class HomeActivity extends BottomNavigationActivity {
             });
             return null;
         }
-
-
     }
-
 
     private class MediaTask extends AsyncTask<String, Void, Void> {
         @Override
@@ -353,11 +371,12 @@ public class HomeActivity extends BottomNavigationActivity {
     }
 
     private enum ConcoughActivityType {
-        ENTRANCE_CREATE(1), ENTRANCE_UPDATE(2);
+        ENTRANCE_CREATE(1), ENTRANCE_UPDATE(2), EMPTY_HOLDER(50), LOADING_HOLDER(51),
+        ENTRANCE_MULTI(3);
 
         private final int value;
 
-        private ConcoughActivityType(int value) {
+        ConcoughActivityType(int value) {
             this.value = value;
         }
 
@@ -506,6 +525,183 @@ public class HomeActivity extends BottomNavigationActivity {
 
             public void downloadImageHandler() {
                 int imageId = concoughActivityStructLocal.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
+                downloadImage(imageId);
+            }
+
+            private void downloadImage(final int imageId) {
+                final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+                byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+                if (data != null) {
+
+                    Glide.with(HomeActivity.this)
+                            .load(data)
+                            //.crossFade()
+                            .dontAnimate()
+                            .into(entranceLogo)
+                            .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+
+                } else {
+                    MediaRestAPIClass.downloadEsetImage(HomeActivity.this, imageId, new Function2<byte[], HTTPErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
+//                            runOnUiThread(new Runnable() {
+//                                @Override
+//                                public void run() {
+                            if (httpErrorType != HTTPErrorType.Success) {
+                                Log.d(TAG, "run: ");
+                                if (httpErrorType == HTTPErrorType.Refresh) {
+                                    downloadImage(imageId);
+                                } else {
+//                                    entranceLogo.setImageResource(R.drawable.no_image);
+                                }
+                            } else {
+                                MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+
+                                Glide.with(getApplicationContext())
+
+                                        .load(data)
+                                        //.crossFade()
+                                        .dontAnimate()
+                                        .into(entranceLogo)
+                                        .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+
+                            }
+//                                }
+//                            });
+                            return null;
+                        }
+                    }, new Function1<NetworkErrorType, Unit>() {
+                        @Override
+                        public Unit invoke(NetworkErrorType networkErrorType) {
+                            return null;
+                        }
+                    });
+                }
+            }
+
+        }
+
+        public class ItemMultiHolder extends RecyclerView.ViewHolder {
+            private ImageView entranceLogo;
+            private TextView concourText;
+            private TextView entranceType;
+            private TextView entranceSetGroup;
+            private TextView additionalData;
+            private TextView sellCount;
+            private TextView dateJalali;
+            private TextView itemCountsTextView;
+            private TextView firstYearTextView;
+            private TextView lastYearTextView;
+
+            private JsonObject extraData;
+            ConcoughActivityStruct concoughActivityStructLocal;
+
+            public ItemMultiHolder(View itemView) {
+                super(itemView);
+
+                concourText = (TextView) itemView.findViewById(R.id.itemEntranceMultiI_concourText);
+                entranceType = (TextView) itemView.findViewById(R.id.itemEntranceMultiI_entranceType);
+                entranceSetGroup = (TextView) itemView.findViewById(R.id.itemEntranceMultiI_entranceSetGroup);
+                additionalData = (TextView) itemView.findViewById(R.id.itemEntranceMultiI_additionalData);
+                sellCount = (TextView) itemView.findViewById(R.id.itemEntranceMultiI_sellCount);
+                dateJalali = (TextView) itemView.findViewById(R.id.itemEntranceMultiI_dateJalali);
+                entranceLogo = (ImageView) itemView.findViewById(R.id.itemEntranceMultiI_entranceLogo);
+                itemCountsTextView = (TextView) itemView.findViewById(R.id.itemEntranceMultiI_count);
+                firstYearTextView = (TextView) itemView.findViewById(R.id.itemEntranceMultiI_firstYear);
+                lastYearTextView = (TextView) itemView.findViewById(R.id.itemEntranceMultiI_lastYear);
+
+                concourText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                entranceType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                entranceSetGroup.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                additionalData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                itemCountsTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                firstYearTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                lastYearTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+            }
+
+            public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
+
+                concoughActivityStructLocal = concoughActivityStruct;
+
+                int yearNumber1 = concoughActivityStruct.getTarget().getAsJsonObject().get("entrances").getAsJsonArray().get(0).getAsJsonObject().get("year").getAsInt();
+                int monthNumber1 = concoughActivityStruct.getTarget().getAsJsonObject().get("entrances").getAsJsonArray().get(0).getAsJsonObject().get("month").getAsInt();
+
+                int arrayCount = concoughActivityStruct.getTarget().getAsJsonObject().get("entrances").getAsJsonArray().size();
+
+                int yearNumber2 = concoughActivityStruct.getTarget().getAsJsonObject().get("entrances").getAsJsonArray().get(arrayCount - 1).getAsJsonObject().get("year").getAsInt();
+                int monthNumber2 = concoughActivityStruct.getTarget().getAsJsonObject().get("entrances").getAsJsonArray().get(arrayCount - 1).getAsJsonObject().get("month").getAsInt();
+
+                String currentDateString = concoughActivityStruct.getTarget().getAsJsonObject().get("updated").getAsString();
+
+                Date georgianDate = null;
+//                try {
+//                    georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
+//                    persianDateString = FormatterSingleton.getInstance().getPersianDateString(georgianDate);
+//                } catch (ParseException e) {
+//                    e.printStackTrace();
+//                }
+//                dateJalali.setText(persianDateString.trim());
+
+                try {
+                    georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
+                    String timeAgo = timeAgoSinceDate(georgianDate, "fa", false);
+                    dateJalali.setText(timeAgo);
+                } catch (Exception e) {
+
+                }
+
+                int c = Color.argb(70,
+                        Color.red(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue)),
+                        Color.green(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue)),
+                        Color.blue(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue))
+                );
+
+                Spannable spannable = new SpannableString(monthToString(monthNumber1) + " " + FormatterSingleton.getInstance().getNumberFormatter().format(yearNumber1));
+                spannable.setSpan(new ForegroundColorSpan(c), 0, monthToString(monthNumber1).length(), 0);
+                firstYearTextView.setText(spannable);
+
+                Spannable spannable2 = new SpannableString(monthToString(monthNumber2) + " " + FormatterSingleton.getInstance().getNumberFormatter().format(yearNumber2));
+                spannable2.setSpan(new ForegroundColorSpan(c), 0, monthToString(monthNumber2).length(), 0);
+                lastYearTextView.setText(spannable2);
+
+                itemCountsTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(arrayCount));
+
+//                JsonArray stats = concoughActivityStruct.getTarget().getAsJsonObject().get("stats").getAsJsonArray();
+//                Integer sellCountInt = 0;
+//                if (stats.size() > 0) {
+//                    sellCountInt = stats.get(0).getAsJsonObject().get("purchased").getAsInt();
+//                }
+//                sellCount.setText(FormatterSingleton.getInstance().getNumberFormatter().format(sellCountInt));
+//                sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+
+                entranceType.setText(concoughActivityStruct.getTarget().getAsJsonObject()
+                        .get("entrances").getAsJsonArray().get(0).getAsJsonObject()
+                        .get("entrance_type").getAsJsonObject().get("title").getAsString().trim());
+                entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject()
+                        .get("entrances").getAsJsonArray().get(0).getAsJsonObject()
+                        .get("entrance_set").getAsJsonObject().get("title").getAsString().trim() +
+                        " (" +
+                        concoughActivityStruct.getTarget().getAsJsonObject()
+                                .get("entrances").getAsJsonArray().get(0).getAsJsonObject()
+                                .get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString().trim() + ")");
+
+                additionalData.setText(concoughActivityStruct.getTarget().getAsJsonObject()
+                        .get("entrances").getAsJsonArray().get(0).getAsJsonObject()
+                        .get("organization").getAsJsonObject().get("title").getAsString().trim());
+            }
+
+            public void removeImageHandler() {
+                entranceLogo.setImageResource(R.drawable.no_image);
+
+            }
+
+            public void downloadImageHandler() {
+                int imageId = concoughActivityStructLocal.getTarget().getAsJsonObject()
+                        .get("entrances").getAsJsonArray().get(0).getAsJsonObject()
+                        .get("entrance_set").getAsJsonObject().get("id").getAsInt();
                 downloadImage(imageId);
             }
 
@@ -725,11 +921,9 @@ public class HomeActivity extends BottomNavigationActivity {
 
 
         private class ItemEmptyHolder extends RecyclerView.ViewHolder {
-
             private TextView emptyText;
             private ImageView emptyImage;
             private ViewGroup linearLayout;
-
 
             public ItemEmptyHolder(View itemView) {
                 super(itemView);
@@ -749,17 +943,34 @@ public class HomeActivity extends BottomNavigationActivity {
 
         }
 
+        private class LoadingHolder extends RecyclerView.ViewHolder {
+            private ProgressBar progressBar;
+
+            public LoadingHolder(View itemView) {
+                super(itemView);
+
+                progressBar = (ProgressBar)itemView.findViewById(R.id.loadingMoreProgressBar);
+            }
+
+            public void setupHolder() {
+            }
+        }
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            if (viewType == 50) {
+            if (viewType == ConcoughActivityType.EMPTY_HOLDER.getValue()) {
                 View view = LayoutInflater.from(context).inflate(R.layout.cc_recycle_not_item, parent, false);
                 return new ItemEmptyHolder(view);
 
             } else if (viewType == ConcoughActivityType.ENTRANCE_UPDATE.getValue()) {
                 View view = LayoutInflater.from(context).inflate(R.layout.item_entrance_update, parent, false);
                 return new EntranceUpdateHolder(view);
-
+            } else if (viewType == ConcoughActivityType.LOADING_HOLDER.getValue()) {
+                View view = LayoutInflater.from(context).inflate(R.layout.cc_recycle_loading, parent, false);
+                return new LoadingHolder(view);
+            } else if (viewType == ConcoughActivityType.ENTRANCE_MULTI.getValue()) {
+                View view = LayoutInflater.from(context).inflate(R.layout.item_entrance_multi, parent, false);
+                return new ItemMultiHolder(view);
             } else {
                 View view = LayoutInflater.from(context).inflate(R.layout.item_entrance_create, parent, false);
                 return new ItemHolder(view);
@@ -772,7 +983,9 @@ public class HomeActivity extends BottomNavigationActivity {
             if (holder.getClass() == ItemEmptyHolder.class) {
                 ItemEmptyHolder itemEmptyHolder = (ItemEmptyHolder) holder;
                 itemEmptyHolder.setupHolder();
-
+            } else if (holder.getClass() == LoadingHolder.class) {
+                LoadingHolder lholder = (LoadingHolder) holder;
+                lholder.setupHolder();
             } else {
                 final ConcoughActivityStruct oneItem = this.concoughActivityStructList.get(position);
                 switch (oneItem.getActivityType()) {
@@ -784,6 +997,21 @@ public class HomeActivity extends BottomNavigationActivity {
                             public void onClick(View v) {
                                 Intent i = EntranceDetailActivity.newIntent(HomeActivity.this, oneItem.getTarget().getAsJsonObject().get("unique_key").getAsString(), "Home");
                                 startActivity(i);
+                            }
+                        });
+                        break;
+                    }
+                    case "ENTRANCE_MULTI": {
+                        ItemMultiHolder itemHolder = (ItemMultiHolder) holder;
+                        itemHolder.setupHolder(oneItem);
+                        ImageView img = (ImageView) itemHolder.itemView.findViewById(R.id.itemEntranceMultiI_entranceLogo);
+                        img.setImageResource(R.drawable.no_image);
+
+                        itemHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+//                                Intent i = EntranceDetailActivity.newIntent(HomeActivity.this, oneItem.getTarget().getAsJsonObject().get("unique_key").getAsString(), "Home");
+//                                startActivity(i);
                             }
                         });
                         break;
@@ -814,7 +1042,11 @@ public class HomeActivity extends BottomNavigationActivity {
             if (concoughActivityStructList.size() == 0) {
                 return 1;
             } else {
-                return concoughActivityStructList.size();
+                if (moreFeedExist) {
+                    return concoughActivityStructList.size() + 1;
+                } else {
+                    return concoughActivityStructList.size();
+                }
             }
         }
 
@@ -822,19 +1054,25 @@ public class HomeActivity extends BottomNavigationActivity {
         public int getItemViewType(int position) {
 
             if (concoughActivityStructList.size() == 0) {
-                return 50;
+                if (moreFeedExist) {
+                    return ConcoughActivityType.LOADING_HOLDER.getValue();
+                }
+                return ConcoughActivityType.EMPTY_HOLDER.getValue();
             } else {
-                switch (concoughActivityStructList.get(position).getActivityType()) {
-                    case "ENTRANCE_UPDATE":
-                        return ConcoughActivityType.ENTRANCE_UPDATE.getValue();
-                    default:
-                        return ConcoughActivityType.ENTRANCE_CREATE.getValue();
+                if (position == this.concoughActivityStructList.size()) {
+                    return ConcoughActivityType.LOADING_HOLDER.getValue();
+                } else {
+                    switch (concoughActivityStructList.get(position).getActivityType()) {
+                        case "ENTRANCE_UPDATE":
+                            return ConcoughActivityType.ENTRANCE_UPDATE.getValue();
+                        case "ENTRANCE_MULTI":
+                            return ConcoughActivityType.ENTRANCE_MULTI.getValue();
+                        default:
+                            return ConcoughActivityType.ENTRANCE_CREATE.getValue();
+                    }
                 }
             }
-
         }
-
-
     }
 }
 

@@ -65,6 +65,7 @@
     <string name="StartupA_S_offlineMessage">دسترسی به اینترنت وجود ندارد</string>
     <string name="StartupA_S_offlineButton">ورود بصورت آفلاین</string>
     <string name="itemEntranceCreateI_S_concourText">آزمون</string>
+    <string name="itemEntranceMultiI_S_concourText">بسته آزمون</string>
     <string name="title_activity_bottom_navigation">BottomNavigationActivity</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>

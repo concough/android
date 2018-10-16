@@ -8,15 +8,15 @@ import android.util.Log
 
 // Application Version
 val APP_VERSION = 1
-val API_VERSION = "v1"
+val API_VERSION = "v2"
 
 
 val ADD_CODE = "ncdjncdujb"
 val P_CODE = "67mnnv^vs7&^v87YrV&hd8bw92bu9b%\$\$#b8728^%93y6==37yb&BBB6*njs*99__=="
 
 // Host Urls
-//val BASE_URL = "http://192.168.0.21:8000/api/"
-val BASE_URL = "https://concough.zhycan.com/api/"
+val BASE_URL = "http://192.168.0.21:8000/api/"
+//val BASE_URL = "https://concough.zhycan.com/api/"
 val MEDIA_CLASS_NAME = "media"
 
 val ACTIVITY_CLASS_NAME = "activities"

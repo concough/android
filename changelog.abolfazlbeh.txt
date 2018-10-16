@@ -359,3 +359,11 @@ Models and Model Handlers (abolfazl.beh) - 2018-10-11
 Entrance Last Visit Info (abolfazl.beh) - 2018-10-11
 
 1 - EntranceLastVisitInfoModel and its handler created to store last visit info of entrance
+
+------------------------------------------------------------------------------------------------
+HomeActivity and EntranceMulti (abolfazl.beh) - 2018-10-16
+
+1 - "SUPPORT_ACTIVITY_TYPES" array created to hold support keywords. setting > SupportAbilities
+2 - ProgressHud deleted and title message modified to reflex loading mechanism
+3 - Loading holder added to end of holders for better presentations
+4 - Multi entrances package type added to "HomeActivity" to show other type
