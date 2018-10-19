@@ -367,3 +367,11 @@ HomeActivity and EntranceMulti (abolfazl.beh) - 2018-10-16
 2 - ProgressHud deleted and title message modified to reflex loading mechanism
 3 - Loading holder added to end of holders for better presentations
 4 - Multi entrances package type added to "HomeActivity" to show other type
+
+------------------------------------------------------------------------------------------------
+Testing New Features (abolfazl.beh) - 2018-10-19
+
+1 - "timeAgoSinceDate" extension of Date type modified
+    - 'net.danlew:android.joda:2.9.9.4' installed
+2 - MainApplication class added to first initialization process
+3 - HomeActivity MultiEntrance checked and some views modified and enhanced

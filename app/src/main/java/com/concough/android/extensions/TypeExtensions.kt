@@ -1,11 +1,8 @@
 package com.concough.android.extensions
 
-import android.content.res.Configuration
-import android.content.res.Resources
-import android.text.format.DateUtils
 import com.concough.android.utils.timesAgoTranslate
+import org.joda.time.Period
 import java.util.*
-
 
 fun Date.timeAgoSinceDate(lang: String, numericDates: Boolean = false): String {
     val nowD = Date()
@@ -15,61 +12,48 @@ fun Date.timeAgoSinceDate(lang: String, numericDates: Boolean = false): String {
         finalDate = nowD
     }
 
-    if (lang == "fa") {
-        val configuration = Configuration(Resources.getSystem().configuration)
-        configuration.locale = Locale("fa", "IR") // or whichever locale you desire
-        Resources.getSystem().updateConfiguration(configuration, null)
+    val p = Period(finalDate.time, nowD.time)
+
+    when {
+        p.years >= 2 -> return timesAgoTranslate(lang, "d_year_ago", p.years)
+        p.years >= 1 -> return if (numericDates) {
+            timesAgoTranslate(lang, "1_year_ago", 0)
+        } else {
+            timesAgoTranslate(lang, "last_year", 0)
+        }
+        p.months >= 2 -> return timesAgoTranslate(lang, "d_month_ago", p.months)
+        p.months >= 1 -> return if (numericDates) {
+            timesAgoTranslate(lang, "1_month_ago", 0)
+        } else {
+            timesAgoTranslate(lang, "last_month", 0)
+        }
+        p.weeks >= 2 -> return timesAgoTranslate(lang, "d_week_ago", p.weeks)
+        p.weeks >= 1 -> return if (numericDates) {
+            timesAgoTranslate(lang, "1_week_ago", 0)
+        } else {
+            timesAgoTranslate(lang, "last_week", 0)
+        }
+        p.days >= 2 -> return timesAgoTranslate(lang, "d_day_ago", p.days)
+        p.days >= 1 -> return if (numericDates) {
+            timesAgoTranslate(lang, "1_day_ago", 0)
+        } else {
+            timesAgoTranslate(lang, "last_day", 0)
+        }
+        p.hours >= 2 -> return timesAgoTranslate(lang, "d_hour_ago", p.hours)
+        p.hours >= 1 -> return if (numericDates) {
+            timesAgoTranslate(lang, "1_hour_ago", 0)
+        } else {
+            timesAgoTranslate(lang, "last_hour", 0)
+        }
+        p.minutes >= 2 -> return timesAgoTranslate(lang, "d_minute_ago", p.minutes)
+        p.minutes >= 1 -> return if (numericDates) {
+            timesAgoTranslate(lang, "1_minute_ago", 0)
+        } else {
+            timesAgoTranslate(lang, "last_minute", 0)
+        }
+        p.seconds >= 10 -> return timesAgoTranslate(lang, "d_second_ago", p.seconds)
+        else -> {
+            return timesAgoTranslate(lang, "just_now", 0)
+        }
     }
-
-    val diff = nowD.time - finalDate.time
-    val ago = DateUtils.getRelativeTimeSpanString(finalDate.time, nowD.time, 0)
-    return ago.toString()
-
-
-//    var years = 0
-//    var months = 0
-//    var days = 0
-//
-//    //create calendar object for birth day
-//    val birthDay = Calendar.getInstance()
-//    birthDay.timeInMillis = finalDate.getTime()
-//
-//    //create calendar object for current day
-//    val now = Calendar.getInstance()
-//    now.time = nowD
-//
-//    //Get difference between years
-//    years = now.get(Calendar.YEAR) - birthDay.get(Calendar.YEAR)
-//    val currMonth = now.get(Calendar.MONTH) + 1
-//    val birthMonth = birthDay.get(Calendar.MONTH) + 1
-//
-//    //Get difference between months
-//    months = currMonth - birthMonth
-//
-//    //if month difference is in negative then reduce years by one
-//    //and calculate the number of months.
-//    if (months < 0) {
-//        years--
-//        months = 12 - birthMonth + currMonth
-//        if (now.get(Calendar.DATE) < birthDay.get(Calendar.DATE))
-//            months--
-//    } else if (months == 0 && now.get(Calendar.DATE) < birthDay.get(Calendar.DATE)) {
-//        years--
-//        months = 11
-//    }
-//
-//    //Calculate the days
-//    if (now.get(Calendar.DATE) > birthDay.get(Calendar.DATE))
-//        days = now.get(Calendar.DATE) - birthDay.get(Calendar.DATE)
-//    else if (now.get(Calendar.DATE) < birthDay.get(Calendar.DATE)) {
-//        val today = now.get(Calendar.DAY_OF_MONTH)
-//        now.add(Calendar.MONTH, -1)
-//        days = now.getActualMaximum(Calendar.DAY_OF_MONTH) - birthDay.get(Calendar.DAY_OF_MONTH) + today
-//    } else {
-//        days = 0
-//        if (months == 12) {
-//            years++
-//            months = 0
-//        }
-//    }
 }

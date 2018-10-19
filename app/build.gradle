@@ -88,7 +88,8 @@ dependencies {
     //    compile 'com.github.tgio:rncryptor-native:0.0.9'
     testCompile 'junit:junit:4.12'
     compile 'com.xenione.widgets:loupe:1.0.0'
- }
+    implementation 'net.danlew:android.joda:2.9.9.4'
+}
 repositories {
     mavenCentral()
     maven { url "https://jitpack.io" }

@@ -100,20 +100,20 @@ public class HomeActivity extends BottomNavigationActivity {
                 RecyclerView.ViewHolder v = recycleView.findContainingViewHolder(view);
                 if (v.getClass() == HomeActivityAdapter.ItemHolder.class) {
                     ((HomeActivityAdapter.ItemHolder) v).downloadImageHandler();
-                    if (((HomeActivityAdapter.ItemHolder) v).getAdapterPosition() >= homeActivityAdapter.getItemCount() - 4) {
+                    if (v.getAdapterPosition() >= homeActivityAdapter.getItemCount() - 5) {
                         if (HomeActivity.this.moreFeedExist) {
                             if (!loading) {
-                                HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
+//                                HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
                                 counter++;
                             }
                         }
                     }
                 } else if (v.getClass() == HomeActivityAdapter.ItemMultiHolder.class) {
                     ((HomeActivityAdapter.ItemMultiHolder) v).downloadImageHandler();
-                    if (((HomeActivityAdapter.ItemMultiHolder) v).getAdapterPosition() >= homeActivityAdapter.getItemCount() - 4) {
+                    if (v.getAdapterPosition() >= homeActivityAdapter.getItemCount() - 5) {
                         if (HomeActivity.this.moreFeedExist) {
                             if (!loading) {
-                                HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
+//                                HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
                                 counter++;
                             }
                         }
@@ -406,7 +406,8 @@ public class HomeActivity extends BottomNavigationActivity {
 
         public class ItemHolder extends RecyclerView.ViewHolder {
             private ImageView entranceLogo;
-            private TextView dateTopLeft;
+            private TextView dateYear;
+            private TextView dateMonth;
             private TextView concourText;
             private TextView entranceType;
             private TextView entranceSetGroup;
@@ -422,7 +423,8 @@ public class HomeActivity extends BottomNavigationActivity {
                 super(itemView);
 
                 concourText = (TextView) itemView.findViewById(R.id.itemEntranceCreateI_concourText);
-                dateTopLeft = (TextView) itemView.findViewById(R.id.itemEntranceCreateI_dateTopLeft);
+                dateYear = (TextView) itemView.findViewById(R.id.itemEntranceCreateI_dateYear);
+                dateMonth = (TextView) itemView.findViewById(R.id.itemEntranceCreateI_dateMonth);
                 entranceType = (TextView) itemView.findViewById(R.id.itemEntranceCreateI_entranceType);
                 entranceSetGroup = (TextView) itemView.findViewById(R.id.itemEntranceCreateI_entranceSetGroup);
                 additionalData = (TextView) itemView.findViewById(R.id.itemEntranceCreateI_additionalData);
@@ -431,12 +433,13 @@ public class HomeActivity extends BottomNavigationActivity {
                 entranceLogo = (ImageView) itemView.findViewById(R.id.itemEntranceCreateI_entranceLogo);
 
                 concourText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-                entranceType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                entranceType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 entranceSetGroup.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 additionalData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-                dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
-                dateTopLeft.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                dateYear.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                dateMonth.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
             }
 
             public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
@@ -472,18 +475,11 @@ public class HomeActivity extends BottomNavigationActivity {
                     String timeAgo = timeAgoSinceDate(georgianDate, "fa", false);
                     dateJalali.setText(timeAgo);
                 } catch (Exception e) {
-
+                    Log.d(TAG, e.getMessage());
                 }
 
-                int c = Color.argb(70,
-                        Color.red(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue)),
-                        Color.green(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue)),
-                        Color.blue(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue))
-                );
-
-                Spannable spannable = new SpannableString(monthToString(monthNumber) + " " + FormatterSingleton.getInstance().getNumberFormatter().format(dateNumber));
-                spannable.setSpan(new ForegroundColorSpan(c), 0, monthToString(monthNumber).length(), 0);
-                dateTopLeft.setText(spannable);
+                dateYear.setText(FormatterSingleton.getInstance().getNumberFormatter().format(dateNumber));
+                dateMonth.setText(monthToString(monthNumber));
 
                 JsonArray stats = concoughActivityStruct.getTarget().getAsJsonObject().get("stats").getAsJsonArray();
                 Integer sellCountInt = 0;
@@ -593,6 +589,9 @@ public class HomeActivity extends BottomNavigationActivity {
             private TextView itemCountsTextView;
             private TextView firstYearTextView;
             private TextView lastYearTextView;
+            private TextView firstMonthTextView;
+            private TextView lastMonthTextView;
+            private ImageView countCarouselImageView;
 
             private JsonObject extraData;
             ConcoughActivityStruct concoughActivityStructLocal;
@@ -610,16 +609,23 @@ public class HomeActivity extends BottomNavigationActivity {
                 itemCountsTextView = (TextView) itemView.findViewById(R.id.itemEntranceMultiI_count);
                 firstYearTextView = (TextView) itemView.findViewById(R.id.itemEntranceMultiI_firstYear);
                 lastYearTextView = (TextView) itemView.findViewById(R.id.itemEntranceMultiI_lastYear);
+                firstMonthTextView = (TextView) itemView.findViewById(R.id.itemEntranceMultiI_firstMonth);
+                lastMonthTextView = (TextView) itemView.findViewById(R.id.itemEntranceMultiI_lastMonth);
+                countCarouselImageView = (ImageView) itemView.findViewById(R.id.itemEntranceMultiI_carousal);
 
                 concourText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-                entranceType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                entranceType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 entranceSetGroup.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 additionalData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-                dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 itemCountsTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 firstYearTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 lastYearTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                firstMonthTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                lastMonthTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+
+                countCarouselImageView.setColorFilter(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughGreen));
             }
 
             public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
@@ -653,19 +659,10 @@ public class HomeActivity extends BottomNavigationActivity {
 
                 }
 
-                int c = Color.argb(70,
-                        Color.red(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue)),
-                        Color.green(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue)),
-                        Color.blue(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue))
-                );
-
-                Spannable spannable = new SpannableString(monthToString(monthNumber1) + " " + FormatterSingleton.getInstance().getNumberFormatter().format(yearNumber1));
-                spannable.setSpan(new ForegroundColorSpan(c), 0, monthToString(monthNumber1).length(), 0);
-                firstYearTextView.setText(spannable);
-
-                Spannable spannable2 = new SpannableString(monthToString(monthNumber2) + " " + FormatterSingleton.getInstance().getNumberFormatter().format(yearNumber2));
-                spannable2.setSpan(new ForegroundColorSpan(c), 0, monthToString(monthNumber2).length(), 0);
-                lastYearTextView.setText(spannable2);
+                firstYearTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(yearNumber1));
+                firstMonthTextView.setText(monthToString(monthNumber1));
+                lastYearTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(yearNumber2));
+                lastMonthTextView.setText(monthToString(monthNumber2));
 
                 itemCountsTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(arrayCount));
 
@@ -761,7 +758,8 @@ public class HomeActivity extends BottomNavigationActivity {
 
         private class EntranceUpdateHolder extends RecyclerView.ViewHolder {
             private de.hdodenhof.circleimageview.CircleImageView entranceLogo;
-            private TextView dateTopLeft;
+            private TextView dateYear;
+            private TextView dateMonth;
             private TextView entranceType;
             private TextView entranceSetGroup;
             private TextView additionalData;
@@ -774,7 +772,8 @@ public class HomeActivity extends BottomNavigationActivity {
             public EntranceUpdateHolder(View itemView) {
                 super(itemView);
 
-                dateTopLeft = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_dateTopLeft);
+                dateYear = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_dateYear);
+                dateMonth = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_dateMonth);
                 entranceType = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceType);
                 entranceSetGroup = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceSetGroup);
                 additionalData = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_additionalData);
@@ -782,13 +781,13 @@ public class HomeActivity extends BottomNavigationActivity {
                 dateJalali = (TextView) itemView.findViewById(R.id.itemEntranceUpdateI_dateJalali);
                 entranceLogo = (de.hdodenhof.circleimageview.CircleImageView) itemView.findViewById(R.id.itemEntranceUpdateI_entranceLogo);
 
-                entranceType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                entranceType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 entranceSetGroup.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 additionalData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-                dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
-                dateTopLeft.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-
+                dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                dateYear.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                dateMonth.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
             }
 
             public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
@@ -810,23 +809,14 @@ public class HomeActivity extends BottomNavigationActivity {
 
                 try {
                     georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
-                    persianDateString = FormatterSingleton.getInstance().getPersianDateString(georgianDate);
+                    String timeAgo = timeAgoSinceDate(georgianDate, "fa", false);
+                    dateJalali.setText(timeAgo);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
 
-                dateJalali.setText(persianDateString.trim());
-
-
-                int c = Color.argb(70,
-                        Color.red(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue)),
-                        Color.green(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue)),
-                        Color.blue(ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughBlue))
-                );
-
-                Spannable spannable = new SpannableString(monthToString(monthNumber) + " " + FormatterSingleton.getInstance().getNumberFormatter().format(dateNumber));
-                spannable.setSpan(new ForegroundColorSpan(c), 0, monthToString(monthNumber).length(), 0);
-                dateTopLeft.setText(spannable);
+                dateYear.setText(FormatterSingleton.getInstance().getNumberFormatter().format(dateNumber));
+                dateMonth.setText(monthToString(monthNumber));
 
                 JsonArray stats = concoughActivityStruct.getTarget().getAsJsonObject().get("stats").getAsJsonArray();
                 Integer sellCountInt = 0;
@@ -1052,7 +1042,7 @@ public class HomeActivity extends BottomNavigationActivity {
 
         @Override
         public int getItemViewType(int position) {
-
+            Log.d(TAG, "position: " + position);
             if (concoughActivityStructList.size() == 0) {
                 if (moreFeedExist) {
                     return ConcoughActivityType.LOADING_HOLDER.getValue();
