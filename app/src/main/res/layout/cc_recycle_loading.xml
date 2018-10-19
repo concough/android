@@ -7,7 +7,7 @@
 
     <ProgressBar
         android:id="@+id/loadingMoreProgressBar"
-        style="?android:attr/progressBarStyle"
+        style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Inverse"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"

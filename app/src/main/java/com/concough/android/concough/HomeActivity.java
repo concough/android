@@ -3,6 +3,7 @@ package com.concough.android.concough;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -103,7 +104,7 @@ public class HomeActivity extends BottomNavigationActivity {
                     if (v.getAdapterPosition() >= homeActivityAdapter.getItemCount() - 5) {
                         if (HomeActivity.this.moreFeedExist) {
                             if (!loading) {
-//                                HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
+                                HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
                                 counter++;
                             }
                         }
@@ -113,7 +114,7 @@ public class HomeActivity extends BottomNavigationActivity {
                     if (v.getAdapterPosition() >= homeActivityAdapter.getItemCount() - 5) {
                         if (HomeActivity.this.moreFeedExist) {
                             if (!loading) {
-//                                HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
+                                HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
                                 counter++;
                             }
                         }
@@ -940,6 +941,9 @@ public class HomeActivity extends BottomNavigationActivity {
                 super(itemView);
 
                 progressBar = (ProgressBar)itemView.findViewById(R.id.loadingMoreProgressBar);
+                progressBar.getIndeterminateDrawable().setColorFilter(
+                        ContextCompat.getColor(HomeActivity.this, R.color.colorConcoughGray),
+                        PorterDuff.Mode.SRC_IN);
             }
 
             public void setupHolder() {

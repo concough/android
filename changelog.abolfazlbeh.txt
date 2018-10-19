@@ -375,3 +375,9 @@ Testing New Features (abolfazl.beh) - 2018-10-19
     - 'net.danlew:android.joda:2.9.9.4' installed
 2 - MainApplication class added to first initialization process
 3 - HomeActivity MultiEntrance checked and some views modified and enhanced
+
+------------------------------------------------------------------------------------------------
+Home Activity Progress Bar (abolfazl.beh) - 2018-10-19
+
+1 - Progress Bar color style for loading fixed.
+2 - HomeActivity loading more feeds activated
