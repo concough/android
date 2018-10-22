@@ -381,3 +381,10 @@ Home Activity Progress Bar (abolfazl.beh) - 2018-10-19
 
 1 - Progress Bar color style for loading fixed.
 2 - HomeActivity loading more feeds activated
+
+------------------------------------------------------------------------------------------------
+Wallet Ready (abolfazl.beh) - 2018-10-22
+
+1 - UrlMakerSingleton modified to include urls need to fetch wallet information.
+2 - UserDefaultSingleton modified to include functions store and fetch wallet information.
+3 - WalletRestAPIClass created to get info from remote server.

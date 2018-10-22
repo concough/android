@@ -30,6 +30,7 @@ val PURCHASED_CLASS_NAME = "purchased"
 val PRODUCT_CLASS_NAME = "product"
 val BASKET_CLASS_NAME = "basket"
 val DEVICE_CLASS_NAME = "device"
+val WALLET_CLASS_NAME = "wallet"
 val JWT_URL_PREFIX = "j"
 
 // Connection settings

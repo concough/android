@@ -9,6 +9,7 @@ import java.util.*
  * Created by abolfazl on 7/5/17.
  */
 class UserDefaultsSingleton {
+    data class WalletStruct(var cash: Int, var updated: Date)
 
     private var prefs: SharedPreferences
     private var context: Context
@@ -49,6 +50,13 @@ class UserDefaultsSingleton {
         return this.prefs.getBoolean(key, false)
     }
 
+    private fun setValueAsInt(key: String, value: Int) {
+        this.prefs.edit().putInt(key, value).apply()
+    }
+
+    private fun getValueAsInt(key: String): Int? {
+        return this.prefs.getInt(key, 0)
+    }
 
     public fun clearAll(): Boolean {
         this.prefs.edit().clear().apply()
@@ -111,5 +119,36 @@ class UserDefaultsSingleton {
             }
         }
         return null
+    }
+
+    fun clearWallet() {
+        this.prefs.edit().remove("Wallet.Created").apply()
+        this.prefs.edit().remove("Wallet.Cash").apply()
+        this.prefs.edit().remove("Wallet.Updated").apply()
+    }
+
+    fun hasWallet(): Boolean {
+        if (this.prefs.contains("Wallet.Created")) {
+            return this.getValueAsBoolean("Wallet.Created")
+        }
+        return false
+    }
+
+    fun getWalletInfo(): WalletStruct? {
+        val cash = this.getValueAsInt("Wallet.Cash")
+        val updated = this.getValueAsString("Wallet.Updated")
+
+        if (cash != null && updated != null) {
+            val up = FormatterSingleton.getInstance().UTCDateFormatter.parse(updated)
+            return WalletStruct(cash, up)
+        }
+
+        return null
+    }
+
+    fun setWalletInfo(cash: Int, updated: String) {
+        this.setValueAsInt("Wallet.Cash", cash)
+        this.setValueAsString("Wallet.Updated", updated)
+        this.setValueAsBoolean("Wallet.Created", true)
     }
 }
