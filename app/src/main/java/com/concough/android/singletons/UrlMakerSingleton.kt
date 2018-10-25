@@ -343,6 +343,11 @@ class UrlMakerSingleton private constructor() {
         return this.getProductUrl(functionName)
     }
 
+    fun getProductStatAndSaleForEntranceUrl(uniqueId: String): String? {
+        val functionName = "entrance/$uniqueId/stat_and_sale"
+        return this.getProductUrl(functionName)
+    }
+
     fun getProductAddToLibUrl(): String? {
         val functionName = "add_to_lib"
         return this.getProductUrl(functionName)

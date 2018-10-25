@@ -293,136 +293,126 @@ public class ArchiveDetailActivity extends BottomNavigationActivity implements P
     }
 
     private void handleCreateWallet(Message message) {
-        new CreateWalletTask().execute(message);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (!isFinishing()) {
+                    if (loadingProgress == null) {
+                        loadingProgress = AlertClass.showLoadingMessage(ArchiveDetailActivity.this);
+                        loadingProgress.show();
+                    } else {
+                        if (!loadingProgress.isShowing()) {
+                            //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                            loadingProgress.show();
+                        }
+                    }
+                }
+            }
+        });
+
+        WalletRestAPIClass.info(ArchiveDetailActivity.this, new Function2<JsonObject, HTTPErrorType, Unit>() {
+            @Override
+            public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AlertClass.hideLoadingMessage(loadingProgress);
+
+                        if (httpErrorType == HTTPErrorType.Success) {
+                            AlertClass.hideLoadingMessage(loadingProgress);
+                            ArchiveDetailActivity.this.retryCounter = 0;
+
+                            RecyclerView.ViewHolder h = ArchiveDetailActivity.this.recyclerView.findViewHolderForAdapterPosition(message.getData().getInt("POSITION"));
+                            if (h.getClass() == GetEntranceAdapter.ItemsHolder.class) {
+                                ((GetEntranceAdapter.ItemsHolder) h).changedBuyButtonState(false);
+                            }
+
+                            String status = jsonObject.get("status").getAsString();
+
+                            switch (status) {
+                                case "OK": {
+                                    JsonObject walletRecord = jsonObject.getAsJsonObject("record");
+                                    int cash = walletRecord.get("cash").getAsInt();
+                                    String updatedStr = walletRecord.get("updated").getAsString();
+
+                                    UserDefaultsSingleton.getInstance(ArchiveDetailActivity.this.getApplicationContext()).setWalletInfo(
+                                            cash, updatedStr);
+
+                                    if (UserDefaultsSingleton.getInstance(ArchiveDetailActivity.this.getApplicationContext()).hasWallet()) {
+                                        ArchiveDetailActivity.this.adapter.showBuyDialog(message.getData().getInt("POSITION"));
+                                    }
+                                }
+                            }
+                        } else {
+                            if (httpErrorType == HTTPErrorType.Refresh) {
+                                if (ArchiveDetailActivity.this.handler != null) {
+                                    ArchiveDetailActivity.this.handler.sendMessage(message);
+                                } else {
+                                    AlertClass.hideLoadingMessage(loadingProgress);
+                                }
+
+                            } else {
+                                if (ArchiveDetailActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    ArchiveDetailActivity.this.retryCounter += 1;
+
+                                    if (ArchiveDetailActivity.this.handler != null) {
+                                        ArchiveDetailActivity.this.handler.sendMessage(message);
+                                    } else {
+                                        AlertClass.hideLoadingMessage(loadingProgress);
+                                    }
+                                } else {
+                                    AlertClass.hideLoadingMessage(loadingProgress);
+
+                                    ArchiveDetailActivity.this.retryCounter = 0;
+                                    AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+
+                                    RecyclerView.ViewHolder h = ArchiveDetailActivity.this.recyclerView.findViewHolderForAdapterPosition(message.getData().getInt("POSITION"));
+                                    if (h.getClass() == GetEntranceAdapter.ItemsHolder.class) {
+                                        ((GetEntranceAdapter.ItemsHolder) h).changedBuyButtonState(false);
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                });
+                return null;
+            }
+        }, new Function1<NetworkErrorType, Unit>() {
+            @Override
+            public Unit invoke(final NetworkErrorType networkErrorType){
+                if (ArchiveDetailActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                    ArchiveDetailActivity.this.retryCounter += 1;
+
+                    if (ArchiveDetailActivity.this.handler != null) {
+                        ArchiveDetailActivity.this.handler.sendMessage(message);
+                    } else {
+                        AlertClass.hideLoadingMessage(loadingProgress);
+                    }
+
+                } else {
+                    ArchiveDetailActivity.this.retryCounter = 0;
+                    AlertClass.hideLoadingMessage(loadingProgress);
+
+                    switch (networkErrorType) {
+                        case NoInternetAccess:
+                        case HostUnreachable: {
+                            AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                            break;
+                        }
+                        default: {
+                            AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                            break;
+                        }
+                    }
+                }
+                return null;
+            }
+        });
     }
 
     private void getSets(Integer setId) {
         new GetEntranceSetsTask().execute(setId);
-    }
-
-    private class CreateWalletTask extends AsyncTask<Message, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Message... messages) {
-            WalletRestAPIClass.info(ArchiveDetailActivity.this, new Function2<JsonObject, HTTPErrorType, Unit>() {
-                @Override
-                public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            AlertClass.hideLoadingMessage(loadingProgress);
-
-                            if (httpErrorType == HTTPErrorType.Success) {
-                                AlertClass.hideLoadingMessage(loadingProgress);
-                                ArchiveDetailActivity.this.retryCounter = 0;
-
-                                RecyclerView.ViewHolder h = ArchiveDetailActivity.this.recyclerView.findViewHolderForAdapterPosition(messages[0].getData().getInt("POSITION"));
-                                if (h.getClass() == GetEntranceAdapter.ItemsHolder.class) {
-                                    ((GetEntranceAdapter.ItemsHolder) h).changedBuyButtonState(false);
-                                }
-
-                                String status = jsonObject.get("status").getAsString();
-
-                                switch (status) {
-                                    case "OK": {
-                                        JsonObject walletRecord = jsonObject.getAsJsonObject("record");
-                                        int cash = walletRecord.get("cash").getAsInt();
-                                        String updatedStr = walletRecord.get("updated").getAsString();
-
-                                        UserDefaultsSingleton.getInstance(ArchiveDetailActivity.this.getApplicationContext()).setWalletInfo(
-                                                cash, updatedStr);
-
-                                        if (UserDefaultsSingleton.getInstance(ArchiveDetailActivity.this.getApplicationContext()).hasWallet()) {
-                                            ArchiveDetailActivity.this.adapter.showBuyDialog(messages[0].getData().getInt("POSITION"));
-                                        }
-                                    }
-                                }
-                            } else {
-                                if (httpErrorType == HTTPErrorType.Refresh) {
-                                    if (ArchiveDetailActivity.this.handler != null) {
-                                        ArchiveDetailActivity.this.handler.sendMessage(messages[0]);
-                                    } else {
-                                        AlertClass.hideLoadingMessage(loadingProgress);
-                                    }
-
-                                } else {
-                                    if (ArchiveDetailActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
-                                        ArchiveDetailActivity.this.retryCounter += 1;
-
-                                        if (ArchiveDetailActivity.this.handler != null) {
-                                            ArchiveDetailActivity.this.handler.sendMessage(messages[0]);
-                                        } else {
-                                            AlertClass.hideLoadingMessage(loadingProgress);
-                                        }
-                                    } else {
-                                        AlertClass.hideLoadingMessage(loadingProgress);
-
-                                        ArchiveDetailActivity.this.retryCounter = 0;
-                                        AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
-
-                                        RecyclerView.ViewHolder h = ArchiveDetailActivity.this.recyclerView.findViewHolderForAdapterPosition(messages[0].getData().getInt("POSITION"));
-                                        if (h.getClass() == GetEntranceAdapter.ItemsHolder.class) {
-                                            ((GetEntranceAdapter.ItemsHolder) h).changedBuyButtonState(false);
-                                        }
-                                    }
-                                }
-
-                            }
-                        }
-                    });
-                    return null;
-                }
-            }, new Function1<NetworkErrorType, Unit>() {
-                    @Override
-                    public Unit invoke(final NetworkErrorType networkErrorType){
-                        if (ArchiveDetailActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
-                            ArchiveDetailActivity.this.retryCounter += 1;
-
-                            if (ArchiveDetailActivity.this.handler != null) {
-                                ArchiveDetailActivity.this.handler.sendMessage(messages[0]);
-                            } else {
-                                AlertClass.hideLoadingMessage(loadingProgress);
-                            }
-
-                        } else {
-                            ArchiveDetailActivity.this.retryCounter = 0;
-                            AlertClass.hideLoadingMessage(loadingProgress);
-
-                            switch (networkErrorType) {
-                                case NoInternetAccess:
-                                case HostUnreachable: {
-                                    AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                    break;
-                                }
-                                default: {
-                                    AlertClass.showTopMessage(ArchiveDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                    break;
-                                }
-                            }
-                        }
-                        return null;
-                    }
-                });
-
-            return null;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            if (!isFinishing()) {
-                if (loadingProgress == null) {
-                    loadingProgress = AlertClass.showLoadingMessage(ArchiveDetailActivity.this);
-                    loadingProgress.show();
-                } else {
-                    if (!loadingProgress.isShowing()) {
-                        //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
-                        loadingProgress.show();
-                    }
-                }
-            }
-        }
     }
 
     private class GetEntranceSetsTask extends AsyncTask<Integer, Void, Void> {
@@ -1159,7 +1149,9 @@ public class ArchiveDetailActivity extends BottomNavigationActivity implements P
 
                         String purchasedTimeStr = element.getAsJsonObject().get("purchase_time").getAsString();
                         Date purchasedTime = new Date();
-                        purchasedTime = FormatterSingleton.getInstance().getUTCDateFormatter().parse(purchasedTimeStr);
+                        try {
+                            purchasedTime = FormatterSingleton.getInstance().getUTCDateFormatter().parse(purchasedTimeStr);
+                        } catch (Exception exc) {}
 
                         if (EntranceModelHandler.add(this.getApplicationContext(), this.username, entranceStruct)) {
                             if (PurchasedModelHandler.add(this.getApplicationContext(), purchaseId,

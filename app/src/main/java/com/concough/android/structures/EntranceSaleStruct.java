@@ -7,4 +7,5 @@ package com.concough.android.structures;
 public class EntranceSaleStruct {
     public Integer discount = 0;
     public Integer cost = null;
+    public Integer costBon = null;
 }

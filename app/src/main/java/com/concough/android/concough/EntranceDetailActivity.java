@@ -3,6 +3,7 @@ package com.concough.android.concough;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -26,6 +27,8 @@ import android.widget.TextView;
 import com.baoyz.widget.PullRefreshLayout;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
+import com.concough.android.concough.dialogs.EntranceBuyDialog;
+import com.concough.android.concough.interfaces.ProductBuyDelegate;
 import com.concough.android.downloader.EntrancePackageDownloader;
 import com.concough.android.general.AlertClass;
 import com.concough.android.models.EntranceModel;
@@ -37,6 +40,7 @@ import com.concough.android.rest.EntranceRestAPIClass;
 import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.rest.ProductRestAPIClass;
 import com.concough.android.rest.PurchasedRestAPIClass;
+import com.concough.android.rest.WalletRestAPIClass;
 import com.concough.android.singletons.BasketSingleton;
 import com.concough.android.singletons.DownloaderSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
@@ -53,16 +57,21 @@ import com.concough.android.structures.LogTypeEnum;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.utils.MemoryUtilities;
 import com.concough.android.vendor.progressHUD.KProgressHUD;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.UUID;
 
+import io.realm.RealmResults;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
@@ -71,7 +80,7 @@ import kotlin.jvm.functions.Function2;
 import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
 import static com.concough.android.utils.DataConvertorsKt.monthToString;
 
-public class EntranceDetailActivity extends BottomNavigationActivity implements Handler.Callback {
+public class EntranceDetailActivity extends BottomNavigationActivity implements Handler.Callback, ProductBuyDelegate {
 
     private HandlerThread handlerThread = null;
     private Handler handler = null;
@@ -87,6 +96,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     private static final int DOWNLOAD_ENTRANCE_STAT = 2;
     private static final int DOWNLOAD_ENTRANCE_SALE = 3;
     private static final int UPDATE_USER_PURCHASE_DATE = 4;
+    private static final int DOWNLOAD_ENTRANCE_STAT_AND_SALE = 5;
+    private static final int CREATE_WALLET = 6;
 
     private static int BUY_BADGE_INDEX = 0;
 
@@ -158,26 +169,26 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
         final ArrayList<ButtonDetail> buttonDetailArrayList = new ArrayList<>();
 
-        ButtonDetail buttonDetail;
-        buttonDetail = new ButtonDetail();
-        if (BasketSingleton.getInstance().getSalesCount() > 0) {
-            buttonDetail.hasBadge = true;
-            buttonDetail.badgeCount = BasketSingleton.getInstance().getSalesCount();
-            buttonDetail.imageSource = R.drawable.buy_icon;
-            buttonDetailArrayList.add(buttonDetail);
-        }
+//        ButtonDetail buttonDetail;
+//        buttonDetail = new ButtonDetail();
+//        if (BasketSingleton.getInstance().getSalesCount() > 0) {
+//            buttonDetail.hasBadge = true;
+//            buttonDetail.badgeCount = BasketSingleton.getInstance().getSalesCount();
+//            buttonDetail.imageSource = R.drawable.buy_icon;
+//            buttonDetailArrayList.add(buttonDetail);
+//        }
 
 
         super.clickEventInterface = new OnClickEventInterface() {
             @Override
             public void OnButtonClicked(int id) {
-                switch (id) {
-                    case R.drawable.buy_icon: {
-                        Intent i = BasketCheckoutActivity.newIntent(EntranceDetailActivity.this, "EntranceDetail");
-                        EntranceDetailActivity.this.startActivity(i);
-                        break;
-                    }
-                }
+//                switch (id) {
+//                    case R.drawable.buy_icon: {
+//                        Intent i = BasketCheckoutActivity.newIntent(EntranceDetailActivity.this, "EntranceDetail");
+//                        EntranceDetailActivity.this.startActivity(i);
+//                        break;
+//                    }
+//                }
             }
 
             @Override
@@ -226,80 +237,80 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         EntranceDetailActivity.this.resetView();
         EntranceDetailActivity.this.stateMachine();
 
-        BasketSingleton.getInstance().setListener(new BasketSingleton.BasketSingletonListener() {
-            @Override
-            public void onRemoveFailed(int position) {
-                RecyclerView.ViewHolder holder = EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
-                if (holder.getClass() == EntranceDetailAdapter.EDSaleSectionViewHolder.class) {
-                    ((EntranceDetailAdapter.EDSaleSectionViewHolder) holder).changeBuyState(EntranceDetailActivity.this.selfBasketAdd);
-                    EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
-                }
-            }
-
-            @Override
-            public void onAddFailed(int position) {
-                RecyclerView.ViewHolder holder = EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
-                if (holder.getClass() == EntranceDetailAdapter.EDSaleSectionViewHolder.class) {
-                    ((EntranceDetailAdapter.EDSaleSectionViewHolder) holder).changeBuyState(EntranceDetailActivity.this.selfBasketAdd);
-                    EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
-                }
-            }
-
-            @Override
-            public void onAddCompleted(int count, int position) {
-                EntranceDetailActivity.this.selfBasketAdd = !EntranceDetailActivity.this.selfBasketAdd;
-                EntranceDetailActivity.this.updateBasketBadge(count);
-
-                EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
-                EntranceDetailActivity.this.recycleView.smoothScrollToPosition(EntranceDetailActivity.this.entranceDetailAdapter.getItemCount());
-            }
-
-            @Override
-            public void onCreateFailed(@org.jetbrains.annotations.Nullable Integer position) {
-                RecyclerView.ViewHolder holder = EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
-                if (holder.getClass() == EntranceDetailAdapter.EDSaleSectionViewHolder.class) {
-                    ((EntranceDetailAdapter.EDSaleSectionViewHolder) holder).changeBuyState(EntranceDetailActivity.this.selfBasketAdd);
-                    EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
-                }
-            }
-
-            @Override
-            public void onCheckoutRedirect(String payUrl, String authority) {
-
-            }
-
-            @Override
-            public void onLoadItemCompleted(int count) {
-                EntranceDetailActivity.this.recycleView.setAdapter(entranceDetailAdapter);
-                EntranceDetailActivity.this.resetView();
-                EntranceDetailActivity.this.stateMachine();
-            }
-
-            @Override
-            public void onCreateCompleted(Integer position) {
-                Integer id = BasketSingleton.getInstance().findSaleByTargetId(EntranceDetailActivity.this.entranceUniqueId, "Entrance");
-                if (id != null && id > 0) {
-                    BasketSingleton.getInstance().removeSaleById(EntranceDetailActivity.this, id, 0);
-                } else {
-                    BasketSingleton.getInstance().addSale(EntranceDetailActivity.this, EntranceDetailActivity.this.entrance, "Entrance", position);
-                }
-            }
-
-            @Override
-            public void onRemoveCompleted(int count, int position) {
-                EntranceDetailActivity.this.selfBasketAdd = !EntranceDetailActivity.this.selfBasketAdd;
-                EntranceDetailActivity.this.updateBasketBadge(count);
-
-                EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
-                EntranceDetailActivity.this.recycleView.smoothScrollToPosition(EntranceDetailActivity.this.entranceDetailAdapter.getItemCount());
-//                actionBarSet();
-            }
-
-            @Override
-            public void onCheckout(int count, HashMap<Integer, BasketSingleton.PurchasedItem> purchased) {
-
-            }
-        });
+//        BasketSingleton.getInstance().setListener(new BasketSingleton.BasketSingletonListener() {
+//            @Override
+//            public void onRemoveFailed(int position) {
+//                RecyclerView.ViewHolder holder = EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
+//                if (holder.getClass() == EntranceDetailAdapter.EDSaleSectionViewHolder.class) {
+//                    ((EntranceDetailAdapter.EDSaleSectionViewHolder) holder).changeBuyState(EntranceDetailActivity.this.selfBasketAdd);
+//                    EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
+//                }
+//            }
+//
+//            @Override
+//            public void onAddFailed(int position) {
+//                RecyclerView.ViewHolder holder = EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
+//                if (holder.getClass() == EntranceDetailAdapter.EDSaleSectionViewHolder.class) {
+//                    ((EntranceDetailAdapter.EDSaleSectionViewHolder) holder).changeBuyState(EntranceDetailActivity.this.selfBasketAdd);
+//                    EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
+//                }
+//            }
+//
+//            @Override
+//            public void onAddCompleted(int count, int position) {
+//                EntranceDetailActivity.this.selfBasketAdd = !EntranceDetailActivity.this.selfBasketAdd;
+//                EntranceDetailActivity.this.updateBasketBadge(count);
+//
+//                EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
+//                EntranceDetailActivity.this.recycleView.smoothScrollToPosition(EntranceDetailActivity.this.entranceDetailAdapter.getItemCount());
+//            }
+//
+//            @Override
+//            public void onCreateFailed(@org.jetbrains.annotations.Nullable Integer position) {
+//                RecyclerView.ViewHolder holder = EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
+//                if (holder.getClass() == EntranceDetailAdapter.EDSaleSectionViewHolder.class) {
+//                    ((EntranceDetailAdapter.EDSaleSectionViewHolder) holder).changeBuyState(EntranceDetailActivity.this.selfBasketAdd);
+//                    EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
+//                }
+//            }
+//
+//            @Override
+//            public void onCheckoutRedirect(String payUrl, String authority) {
+//
+//            }
+//
+//            @Override
+//            public void onLoadItemCompleted(int count) {
+//                EntranceDetailActivity.this.recycleView.setAdapter(entranceDetailAdapter);
+//                EntranceDetailActivity.this.resetView();
+//                EntranceDetailActivity.this.stateMachine();
+//            }
+//
+//            @Override
+//            public void onCreateCompleted(Integer position) {
+//                Integer id = BasketSingleton.getInstance().findSaleByTargetId(EntranceDetailActivity.this.entranceUniqueId, "Entrance");
+//                if (id != null && id > 0) {
+//                    BasketSingleton.getInstance().removeSaleById(EntranceDetailActivity.this, id, 0);
+//                } else {
+//                    BasketSingleton.getInstance().addSale(EntranceDetailActivity.this, EntranceDetailActivity.this.entrance, "Entrance", position);
+//                }
+//            }
+//
+//            @Override
+//            public void onRemoveCompleted(int count, int position) {
+//                EntranceDetailActivity.this.selfBasketAdd = !EntranceDetailActivity.this.selfBasketAdd;
+//                EntranceDetailActivity.this.updateBasketBadge(count);
+//
+//                EntranceDetailActivity.this.entranceDetailAdapter.notifyItemChanged(3);
+//                EntranceDetailActivity.this.recycleView.smoothScrollToPosition(EntranceDetailActivity.this.entranceDetailAdapter.getItemCount());
+////                actionBarSet();
+//            }
+//
+//            @Override
+//            public void onCheckout(int count, HashMap<Integer, BasketSingleton.PurchasedItem> purchased) {
+//
+//            }
+//        });
 
     }
 
@@ -317,8 +328,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             AlertClass.hideLoadingMessage(loadingProgress);
         }
         recycleView.setAdapter(null);
-        super.onDestroy();
         DownloaderSingleton.getInstance().unbind(EntranceDetailActivity.this, entranceUniqueId);
+        super.onDestroy();
     }
 
     private void resetView() {
@@ -338,13 +349,13 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         actionBarSet();
     }
 
-    private void updateBasketBadge(int count) {
-        if (count == 1) { // if first time aded to basket
-            actionBarSet();
-        } else {
-            super.updateBadge(BUY_BADGE_INDEX, count);
-        }
-    }
+//    private void updateBasketBadge(int count) {
+//        if (count == 1) { // if first time aded to basket
+//            actionBarSet();
+//        } else {
+//            super.updateBadge(BUY_BADGE_INDEX, count);
+//        }
+//    }
 
     @Override
     public boolean handleMessage(Message msg) {
@@ -364,6 +375,12 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     break;
                 case UPDATE_USER_PURCHASE_DATE:
                     EntranceDetailActivity.this.handleUpdateUserPurchaseData(msg);
+                    break;
+                case DOWNLOAD_ENTRANCE_STAT_AND_SALE:
+                    EntranceDetailActivity.this.handleDownloadEntranceStatAndSale(msg);
+                    break;
+                case CREATE_WALLET:
+                    EntranceDetailActivity.this.handleCreateWallet(msg);
                     break;
             }
         }
@@ -435,7 +452,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     break;
                 case NotPurchased:
                     if (this.handler != null) {
-                        Message msg = EntranceDetailActivity.this.handler.obtainMessage(DOWNLOAD_ENTRANCE_STAT);
+                        Message msg = EntranceDetailActivity.this.handler.obtainMessage(DOWNLOAD_ENTRANCE_STAT_AND_SALE);
                         msg.setTarget(new Handler(EntranceDetailActivity.this.getMainLooper()));
 
                         EntranceDetailActivity.this.handler.sendMessage(msg);
@@ -707,22 +724,22 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     }
 
     private void handleDownloadEntranceStat(@Nullable Message msg) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (!isFinishing()) {
-                    if (loadingProgress == null) {
-                        loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
-                        loadingProgress.show();
-                    } else {
-                        if (!loadingProgress.isShowing()) {
-                            //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
-                            loadingProgress.show();
-                        }
-                    }
-                }
-            }
-        });
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                if (!isFinishing()) {
+//                    if (loadingProgress == null) {
+//                        loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
+//                        loadingProgress.show();
+//                    } else {
+//                        if (!loadingProgress.isShowing()) {
+//                            //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+//                            loadingProgress.show();
+//                        }
+//                    }
+//                }
+//            }
+//        });
 
         ProductRestAPIClass.getEntranceStatData(EntranceDetailActivity.this, EntranceDetailActivity.this.entranceUniqueId, new Function2<JsonElement, HTTPErrorType, Unit>() {
             @Override
@@ -977,6 +994,148 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
                             if (EntranceDetailActivity.this.handler != null) {
                                 Message msg = EntranceDetailActivity.this.handler.obtainMessage(DOWNLOAD_ENTRANCE_SALE);
+                                msg.setTarget(new Handler(EntranceDetailActivity.this.getMainLooper()));
+
+                                EntranceDetailActivity.this.handler.sendMessage(msg);
+                            }
+                        } else {
+                            EntranceDetailActivity.this.retryCounter = 0;
+                            if (networkErrorType != null) {
+                                switch (networkErrorType) {
+                                    case NoInternetAccess:
+                                    case HostUnreachable: {
+                                        AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                        break;
+                                    }
+                                    default: {
+                                        AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                        break;
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                });
+                return null;
+            }
+        });
+    }
+
+    private void handleDownloadEntranceStatAndSale(@Nullable Message msg) {
+        ProductRestAPIClass.getEntranceStatData(EntranceDetailActivity.this, EntranceDetailActivity.this.entranceUniqueId, new Function2<JsonElement, HTTPErrorType, Unit>() {
+            @Override
+            public Unit invoke(final JsonElement jsonElement, final HTTPErrorType httpErrorType) {
+                uiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+//                        AlertClass.hideLoadingMessage(loadingProgress);
+                        EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
+
+                        if (httpErrorType != HTTPErrorType.Success) {
+                            if (httpErrorType == HTTPErrorType.Refresh) {
+                                if (EntranceDetailActivity.this.handler != null) {
+                                    Message msg = EntranceDetailActivity.this.handler.obtainMessage(DOWNLOAD_ENTRANCE_STAT_AND_SALE);
+                                    msg.setTarget(new Handler(EntranceDetailActivity.this.getMainLooper()));
+
+                                    EntranceDetailActivity.this.handler.sendMessage(msg);
+                                }
+                            } else {
+                                if (EntranceDetailActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    EntranceDetailActivity.this.retryCounter += 1;
+
+                                    if (EntranceDetailActivity.this.handler != null) {
+                                        Message msg = EntranceDetailActivity.this.handler.obtainMessage(DOWNLOAD_ENTRANCE_STAT_AND_SALE);
+                                        msg.setTarget(new Handler(EntranceDetailActivity.this.getMainLooper()));
+
+                                        EntranceDetailActivity.this.handler.sendMessage(msg);
+                                    }
+                                } else {
+                                    EntranceDetailActivity.this.retryCounter = 0;
+                                    AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
+                            }
+                        } else {
+                            EntranceDetailActivity.this.retryCounter = 0;
+                            if (jsonElement != null) {
+                                String status = jsonElement.getAsJsonObject().get("status").getAsString();
+                                switch (status) {
+                                    case "OK":
+                                        try {
+                                            JsonObject statData = jsonElement.getAsJsonObject().get("stat_data").getAsJsonObject();
+                                            if (statData != null) {
+                                                int purchased = statData.get("purchased").getAsInt();
+                                                String updatedStr = statData.get("updated").getAsString();
+                                                Date updated = FormatterSingleton.getInstance().getUTCDateFormatter().parse(updatedStr);
+
+                                                EntranceStatStruct stat = new EntranceStatStruct();
+                                                stat.purchased = purchased;
+                                                stat.updated = updated;
+
+                                                EntranceDetailActivity.this.entranceStat = stat;
+                                            }
+
+                                            JsonObject saleData = jsonElement.getAsJsonObject().get("sale_data").getAsJsonObject();
+                                            if (saleData != null) {
+                                                int discount = saleData.get("discount").getAsInt();
+                                                int cost = saleData.get("sale_record").getAsJsonObject().get("cost").getAsInt();
+                                                int costBon = saleData.get("sale_record").getAsJsonObject().get("cost_bon").getAsInt();
+
+                                                EntranceSaleStruct es = new EntranceSaleStruct();
+                                                es.cost = cost;
+                                                es.discount = discount;
+                                                es.costBon = costBon;
+                                                EntranceDetailActivity.this.entranceSale = es;
+
+                                                EntranceDetailActivity.this.state = EntranceVCStateEnum.ShowSaleInfo;
+                                                EntranceDetailActivity.this.stateMachine();
+                                                return;
+
+                                            }
+
+                                        } catch (Exception exc) {
+                                        }
+                                        break;
+                                    case "Error":
+                                        String errorType = jsonElement.getAsJsonObject().get("error_type").getAsString();
+                                        switch (errorType) {
+                                            case "EntranceNotExist":
+                                            case "EmptyArray":
+                                                AlertClass.showAlertMessage(EntranceDetailActivity.this, "EntranceResult", "EntranceNotExist", "error", new Function0<Unit>() {
+                                                    @Override
+                                                    public Unit invoke() {
+                                                        finish();
+                                                        return null;
+                                                    }
+                                                });
+                                                break;
+                                            default:
+                                                AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "ErrorResult", errorType, "", null);
+                                                break;
+                                        }
+                                        break;
+                                }
+                            }
+                        }
+
+                    }
+                });
+                return null;
+            }
+        }, new Function1<NetworkErrorType, Unit>() {
+            @Override
+            public Unit invoke(final NetworkErrorType networkErrorType) {
+                uiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+//                        AlertClass.hideLoadingMessage(loadingProgress);
+                        EntranceDetailActivity.this.pullRefreshLayout.setRefreshing(false);
+
+                        if (EntranceDetailActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                            EntranceDetailActivity.this.retryCounter += 1;
+
+                            if (EntranceDetailActivity.this.handler != null) {
+                                Message msg = EntranceDetailActivity.this.handler.obtainMessage(DOWNLOAD_ENTRANCE_STAT_AND_SALE);
                                 msg.setTarget(new Handler(EntranceDetailActivity.this.getMainLooper()));
 
                                 EntranceDetailActivity.this.handler.sendMessage(msg);
@@ -1463,13 +1622,269 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         });
     }
 
+    private void handleCreateWallet(Message message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (!isFinishing()) {
+                    if (loadingProgress == null) {
+                        loadingProgress = AlertClass.showLoadingMessage(EntranceDetailActivity.this);
+                        loadingProgress.show();
+                    } else {
+                        if (!loadingProgress.isShowing()) {
+                            //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                            loadingProgress.show();
+                        }
+                    }
+                }
+            }
+        });
+
+        WalletRestAPIClass.info(EntranceDetailActivity.this, new Function2<JsonObject, HTTPErrorType, Unit>() {
+            @Override
+            public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AlertClass.hideLoadingMessage(loadingProgress);
+
+                        if (httpErrorType == HTTPErrorType.Success) {
+                            AlertClass.hideLoadingMessage(loadingProgress);
+                            EntranceDetailActivity.this.retryCounter = 0;
+
+                            RecyclerView.ViewHolder h = EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
+                            if (h.getClass() == EntranceDetailAdapter.EDSaleSectionViewHolder.class) {
+                                ((EntranceDetailAdapter.EDSaleSectionViewHolder) h).changeBuyState(false);
+                            }
+
+                            String status = jsonObject.get("status").getAsString();
+
+                            switch (status) {
+                                case "OK": {
+                                    JsonObject walletRecord = jsonObject.getAsJsonObject("record");
+                                    int cash = walletRecord.get("cash").getAsInt();
+                                    String updatedStr = walletRecord.get("updated").getAsString();
+
+                                    UserDefaultsSingleton.getInstance(EntranceDetailActivity.this.getApplicationContext()).setWalletInfo(
+                                            cash, updatedStr);
+
+                                    if (UserDefaultsSingleton.getInstance(EntranceDetailActivity.this.getApplicationContext()).hasWallet()) {
+                                        EntranceDetailActivity.this.entranceDetailAdapter.showBuyDialog();
+                                    }
+                                }
+                            }
+                        } else {
+                            if (httpErrorType == HTTPErrorType.Refresh) {
+                                if (EntranceDetailActivity.this.handler != null) {
+                                    EntranceDetailActivity.this.handler.sendMessage(message);
+                                } else {
+                                    AlertClass.hideLoadingMessage(loadingProgress);
+                                }
+
+                            } else {
+                                if (EntranceDetailActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    EntranceDetailActivity.this.retryCounter += 1;
+
+                                    if (EntranceDetailActivity.this.handler != null) {
+                                        EntranceDetailActivity.this.handler.sendMessage(message);
+                                    } else {
+                                        AlertClass.hideLoadingMessage(loadingProgress);
+                                    }
+                                } else {
+                                    AlertClass.hideLoadingMessage(loadingProgress);
+
+                                    EntranceDetailActivity.this.retryCounter = 0;
+                                    AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+
+                                    RecyclerView.ViewHolder h = EntranceDetailActivity.this.recycleView.findViewHolderForAdapterPosition(3);
+                                    if (h.getClass() == EntranceDetailAdapter.EDSaleSectionViewHolder.class) {
+                                        ((EntranceDetailAdapter.EDSaleSectionViewHolder) h).changeBuyState(false);
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                });
+                return null;
+            }
+        }, new Function1<NetworkErrorType, Unit>() {
+            @Override
+            public Unit invoke(final NetworkErrorType networkErrorType){
+                if (EntranceDetailActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                    EntranceDetailActivity.this.retryCounter += 1;
+
+                    if (EntranceDetailActivity.this.handler != null) {
+                        EntranceDetailActivity.this.handler.sendMessage(message);
+                    } else {
+                        AlertClass.hideLoadingMessage(loadingProgress);
+                    }
+
+                } else {
+                    EntranceDetailActivity.this.retryCounter = 0;
+                    AlertClass.hideLoadingMessage(loadingProgress);
+
+                    switch (networkErrorType) {
+                        case NoInternetAccess:
+                        case HostUnreachable: {
+                            AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                            break;
+                        }
+                        default: {
+                            AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                            break;
+                        }
+                    }
+                }
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void productBuyResult(@NotNull JsonObject data, @NotNull String productId, @NotNull String productType) {
+        try {
+            int cash = data.get("wallet_cash").getAsInt();
+            String updated = data.get("wallet_updated").getAsString();
+
+            UserDefaultsSingleton.getInstance(this.getApplicationContext()).setWalletInfo(cash, updated);
+            String username = UserDefaultsSingleton.getInstance(this.getApplicationContext()).getUsername();
+
+            ArrayList<Integer> purchasedTemp = new ArrayList<>();
+            JsonArray purchased = null;
+            if (data.has("purchased")) {
+                if (data.get("purchased").isJsonArray()) {
+                    purchased = data.get("purchased").getAsJsonArray();
+                }
+            }
+
+            if (purchased != null) {
+                for (JsonElement element : purchased) {
+                    int purchaseId = element.getAsJsonObject().get("purchase_id").getAsInt();
+                    int downloaded = element.getAsJsonObject().get("downloaded").getAsInt();
+
+                    String purchasedTimeStr = element.getAsJsonObject().get("purchase_time").getAsString();
+                    Date purchasedTime = new Date();
+                    try {
+                        purchasedTime = FormatterSingleton.getInstance().getUTCDateFormatter().parse(purchasedTimeStr);
+                    } catch (Exception exc) {}
+
+                    if (EntranceModelHandler.add(this.getApplicationContext(), username, this.entrance)) {
+                        if (PurchasedModelHandler.add(this.getApplicationContext(), purchaseId,
+                                username, false, downloaded, false,
+                                productType, this.entranceUniqueId, purchasedTime)) {
+
+                            purchasedTemp.add(purchaseId);
+                        } else {
+                            EntranceModelHandler.removeById(this, username, this.entranceUniqueId);
+                        }
+                    }
+                }
+            }
+
+            this.resetView();
+            this.stateMachine();
+            this.downloadImages(purchasedTemp);
+
+            AlertClass.showAlertMessage(this, "ActionResult",
+                    "PurchasedSuccess",
+                    "success", null);
+
+            this.setMenuItemColor(1, R.color.colorConcoughRedLight);
+        } catch (Exception exc) {
+        }
+
+    }
+
+    private void downloadImages(ArrayList<Integer> ids) {
+        String username = UserDefaultsSingleton.getInstance(this.getApplicationContext()).getUsername();
+
+        if (username != null) {
+            RealmResults<PurchasedModel> purchased = PurchasedModelHandler.getAllPurchasedIn(this.getApplicationContext(),
+                    username, (Integer[]) ids.toArray());
+            if (purchased != null) {
+                for (PurchasedModel pm : purchased) {
+                    if (pm.productType == "Entrance") {
+                        EntranceModel em = EntranceModelHandler.getByUsernameAndId(this.getApplicationContext(),
+                                username, pm.productUniqueId);
+                        if (em != null) {
+                            this.downloadEsetImage(em.setId);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void downloadEsetImage(final int imageId) {
+        final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+
+        if (url != null) {
+            byte[] data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+            if (data != null) {
+                saveToFile(data, imageId);
+            } else {
+                MediaRestAPIClass.downloadEsetImage(this, imageId, new Function2<byte[], HTTPErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (httpErrorType != HTTPErrorType.Success) {
+                                    if (httpErrorType == HTTPErrorType.Refresh) {
+                                        downloadEsetImage(imageId);
+                                    }
+                                } else {
+                                    MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+                                    saveToFile(data, imageId);
+                                }
+                            }
+                        });
+                        return null;
+                    }
+                }, new Function1<NetworkErrorType, Unit>() {
+                    @Override
+                    public Unit invoke(NetworkErrorType networkErrorType) {
+                        return null;
+                    }
+                });
+
+            }
+        }
+    }
+
+    private void saveToFile(byte[] data, int imageId) {
+        File folder = new File(getApplicationContext().getFilesDir(), "images");
+        File folder2 = new File(getApplicationContext().getFilesDir() + "/images", "eset");
+        if (!folder.exists()) {
+            folder.mkdir();
+            folder2.mkdir();
+        }
+
+        File photo = new File(getApplicationContext().getFilesDir() + "/images/eset", String.valueOf(imageId));
+        if (photo.exists()) {
+            photo.delete();
+        }
+
+        try {
+            FileOutputStream fos = new FileOutputStream(photo.getPath());
+
+            fos.write(data);
+            fos.close();
+        } catch (java.io.IOException e) {
+            Log.e("PictureDemo", "Exception in photoCallback", e);
+        }
+    }
+
+
     private enum EDViewHolderType {
         INITIAL_SECTION(1),
         HEADER_SECTION(2),
         INFORMATION_SECTION(3),
         SALE_SECTION(4),
         PURCHASED_SECTION(5),
-        DOWNLOADED_SECTION(6);
+        DOWNLOADED_SECTION(6),
+        ENTRANCE_DETAIL_LOADING(50);
 
         private final int value;
 
@@ -1493,6 +1908,24 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             this.myGlide = g;
         }
 
+        public void showBuyDialog() {
+            UserDefaultsSingleton.WalletStruct ws = UserDefaultsSingleton.getInstance(getApplicationContext()).getWalletInfo();
+            int cost = EntranceDetailActivity.this.entranceSale.costBon;
+
+            boolean canBuy = true;
+            if (cost > (ws != null ? ws.getCash() : 0)) {
+                canBuy = false;
+            }
+
+            EntranceBuyDialog dialog = new EntranceBuyDialog(EntranceDetailActivity.this);
+            dialog.setCancelable(false);
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.setListener(EntranceDetailActivity.this);
+            dialog.show();
+            dialog.setupDialog("Entrance", EntranceDetailActivity.this.entranceUniqueId,
+                    canBuy, cost, (ws != null ? ws.getCash() : 0), null);
+        }
+
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             if (EDViewHolderType.INITIAL_SECTION.getValue() == viewType) {
@@ -1513,6 +1946,9 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             } else if (EDViewHolderType.DOWNLOADED_SECTION.getValue() == viewType) {
                 View view = LayoutInflater.from(this.context).inflate(R.layout.item_ed_downloaded_section, parent, false);
                 return new EDDownloadedSectionViewHolder(view);
+            } else if (EDViewHolderType.ENTRANCE_DETAIL_LOADING.getValue() == viewType) {
+                View view = LayoutInflater.from(this.context).inflate(R.layout.cc_recycle_loading, parent, false);
+                return new EDLoadingViewHolder(view);
             }
             return null;
         }
@@ -1531,6 +1967,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 ((EDPurchasedSectionViewHolder) holder).setupHolder(EntranceDetailActivity.this.entrancePurchase);
             } else if (holder.getClass() == EDDownloadedSectionViewHolder.class) {
                 ((EDDownloadedSectionViewHolder) holder).setupHolder();
+            } else if (holder.getClass() == EDLoadingViewHolder.class) {
+                ((EDLoadingViewHolder) holder).setupHolder();
             }
         }
 
@@ -1538,7 +1976,6 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         public int getItemCount() {
             switch (EntranceDetailActivity.this.state) {
                 case EntranceComplete:
-                    return 3;
                 case ShowSaleInfo:
                 case Purchased:
                 case Downloaded:
@@ -1567,6 +2004,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                         return EDViewHolderType.PURCHASED_SECTION.getValue();
                     } else if (EntranceDetailActivity.this.state == EntranceVCStateEnum.Downloaded) {
                         return EDViewHolderType.DOWNLOADED_SECTION.getValue();
+                    } else {
+                        return EDViewHolderType.ENTRANCE_DETAIL_LOADING.getValue();
                     }
             }
             return 0;
@@ -1760,37 +2199,16 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
                 checkoutSection = (ConstraintLayout) itemView.findViewById(R.id.EDItem_sale_section_checkout);
                 checkoutSection.setVisibility(View.GONE);
-
-                entranceCostLabelTextView.setText("قیمت:");
                 entranceCheckoutButton.setText("خرید خود را نهایی کنید");
 
-                entranceCostTextView.setText("0 تومان");
-
-                entranceBuyButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        disableBuyButton();
-                        if (BasketSingleton.getInstance().getBasketId() == null) {
-                            BasketSingleton.getInstance().createBasket(EntranceDetailActivity.this, -1);
-                        } else {
-                            Integer id = BasketSingleton.getInstance().findSaleByTargetId(EntranceDetailActivity.this.entranceUniqueId, "Entrance");
-                            if (id != null && id > 0) {
-                                BasketSingleton.getInstance().removeSaleById(EntranceDetailActivity.this, id, 0);
-                            } else {
-                                BasketSingleton.getInstance().addSale(EntranceDetailActivity.this, EntranceDetailActivity.this.entrance, "Entrance", 0);
-                            }
-                        }
-                    }
-                });
-
-                entranceCheckoutButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent i = BasketCheckoutActivity.newIntent(EntranceDetailActivity.this, "EntranceDetail");
-                        EntranceDetailActivity.this.startActivity(i);
-//
-                    }
-                });
+//                entranceCheckoutButton.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        Intent i = BasketCheckoutActivity.newIntent(EntranceDetailActivity.this, "EntranceDetail");
+//                        EntranceDetailActivity.this.startActivity(i);
+////
+//                    }
+//                });
 
             }
 
@@ -1814,15 +2232,59 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                         entranceCostTextView.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughRedLight));
 
                     } else {
-                        entranceCostTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(saleStruct.cost) + " تومان");
+                        entranceCostTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(saleStruct.costBon));
                     }
 
                     this.changeBuyState(buttonState);
+//                    entranceCheckoutSummeryTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(basketCount) + " قلم در سبد کالا موجود است.");
 
-                    entranceCheckoutSummeryTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(basketCount) + " قلم در سبد کالا موجود است.");
+
+                    entranceBuyButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+//                        disableBuyButton();
+//                        if (BasketSingleton.getInstance().getBasketId() == null) {
+//                            BasketSingleton.getInstance().createBasket(EntranceDetailActivity.this, -1);
+//                        } else {
+//                            Integer id = BasketSingleton.getInstance().findSaleByTargetId(EntranceDetailActivity.this.entranceUniqueId, "Entrance");
+//                            if (id != null && id > 0) {
+//                                BasketSingleton.getInstance().removeSaleById(EntranceDetailActivity.this, id, 0);
+//                            } else {
+//                                BasketSingleton.getInstance().addSale(EntranceDetailActivity.this, EntranceDetailActivity.this.entrance, "Entrance", 0);
+//                            }
+//                        }
+
+                            if (UserDefaultsSingleton.getInstance(EntranceDetailActivity.this.getApplicationContext()).hasWallet()) {
+                                UserDefaultsSingleton.WalletStruct ws = UserDefaultsSingleton.getInstance(EntranceDetailActivity.this.getApplicationContext()).getWalletInfo();
+                                int costBon = saleStruct.costBon;
+
+                                boolean canBuy = true;
+                                if (costBon > ws.getCash()) {
+                                    canBuy = false;
+                                }
+
+                                EntranceBuyDialog dialog = new EntranceBuyDialog(EntranceDetailActivity.this);
+                                dialog.setCancelable(false);
+                                dialog.setCanceledOnTouchOutside(false);
+                                dialog.setListener(EntranceDetailActivity.this);
+                                dialog.show();
+                                dialog.setupDialog("Entrance", EntranceDetailActivity.this.entranceUniqueId,
+                                        canBuy, costBon, (ws != null ? ws.getCash() : 0), null);
+
+
+                            } else {
+                                EDSaleSectionViewHolder.this.disableBuyButton();
+                                if (EntranceDetailActivity.this.handler != null) {
+                                    Message msg = EntranceDetailActivity.this.handler.obtainMessage(CREATE_WALLET);
+                                    EntranceDetailActivity.this.handler.sendMessage(msg);
+                                }
+
+                            }
+                        }
+                    });
 
                 } catch (Exception exc) {
-                    Log.d(TAG, "setupHolder: ");
+//                    Log.d(TAG, "setupHolder: ");
                 }
             }
 
@@ -1842,7 +2304,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                     checkoutSection.setVisibility(View.VISIBLE);
 
                 } else {
-                    entranceBuyButton.setText("+  سبد خرید");
+                    entranceBuyButton.setText("خرید آزمون");
                     entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_style));
                     entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughBlue));
                     checkoutSection.setVisibility(View.GONE);
@@ -2150,5 +2612,22 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 });
             }
         }
+
+        private class EDLoadingViewHolder extends RecyclerView.ViewHolder {
+            private ProgressBar progressBar;
+
+            public EDLoadingViewHolder(View itemView) {
+                super(itemView);
+
+                progressBar = (ProgressBar)itemView.findViewById(R.id.loadingMoreProgressBar);
+                progressBar.getIndeterminateDrawable().setColorFilter(
+                        ContextCompat.getColor(EntranceDetailActivity.this, R.color.colorConcoughGray),
+                        PorterDuff.Mode.SRC_IN);
+            }
+
+            public void setupHolder() {
+            }
+        }
+
     }
 }
