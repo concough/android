@@ -189,12 +189,10 @@
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:text="TextView"
-                android:textAlignment="textEnd"
                 android:textColor="@color/colorConcoughGreen"
                 android:textDirection="rtl"
                 android:textSize="11sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                tools:layout_editor_absoluteX="305dp" />
+                app:layout_constraintBottom_toBottomOf="parent" />
 
             <ImageView
                 android:id="@+id/imageView"
@@ -208,7 +206,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/itemEntranceCreateI_clockLenearLeft"
+            android:id="@+id/archiveDetailHolder2L_costContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
@@ -219,19 +217,20 @@
             app:layout_constraintRight_toLeftOf="@+id/linearLayout10">
 
             <TextView
-                android:id="@+id/archiveDetailHolder2L_dateJalali"
+                android:id="@+id/archiveDetailHolder2L_costTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="TextView"
+                android:text=""
                 android:textColor="@color/colorConcoughGray"
-                android:textSize="9sp" />
+                android:textSize="11sp" />
 
             <ImageView
-                android:id="@+id/itemEntranceCreateI_clock"
+                android:id="@+id/itemEntranceCreateI_costImageView"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                app:srcCompat="@drawable/clock_100" />
+                android:visibility="visible"
+                app:srcCompat="@drawable/coins_96" />
 
         </LinearLayout>
 

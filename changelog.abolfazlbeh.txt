@@ -388,3 +388,17 @@ Wallet Ready (abolfazl.beh) - 2018-10-22
 1 - UrlMakerSingleton modified to include urls need to fetch wallet information.
 2 - UserDefaultSingleton modified to include functions store and fetch wallet information.
 3 - WalletRestAPIClass created to get info from remote server.
+
+------------------------------------------------------------------------------------------------
+Archive and ArchiveDetail (abolfazl.beh) - 2018-10-25
+
+1 - Archive activity modified to remove progressHUD module and add Loading Holder to show loading. Also title changed based on loading or not loading.
+2 - ArchiveDetail activity modified to remove progressHUD module and add Loading Holder to show loading.
+3 - ArchiveDetail activity basket badge removed
+4 - Some modification in code:
+    - ArchiveEntranceStruct structure created to hold fetched entrances from remote in archive detail.
+    - Some functions refactored and ItemHolder modified for future features
+5 - EntranceBuyDialog added to EntranceDetail activity to show buy information.
+6 - EntranceBuyDelegate interface created for communicating between ArchiveDetail activity and EntranceBuy dialog.
+7 - "createWallet" functionality added to EntranceDetail activity to create wallet if does not exist.
+8 - Some bugs fixed

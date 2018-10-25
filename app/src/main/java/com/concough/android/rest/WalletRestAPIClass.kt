@@ -8,7 +8,6 @@ import com.concough.android.singletons.UrlMakerSingleton
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
 import com.google.gson.Gson
-import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
 import okhttp3.OkHttpClient
@@ -28,7 +27,7 @@ class WalletRestAPIClass {
         val TAG = "WalletRestAPIClass"
 
         @JvmStatic
-        fun info(context: Context, completion: (data: JsonElement?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
+        fun info(context: Context, completion: (data: JsonObject?, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit): Unit {
             var fullPath = UrlMakerSingleton.getInstance().getWalletInfoUrl() ?: return
 
             TokenHandlerSingleton.getInstance(context).assureAuthorized(completion = { authenticated, error ->

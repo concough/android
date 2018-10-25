@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,6 +33,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -95,7 +97,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
     private View mCustomView;
     private LinearLayout linearLayout;
 
-    private KProgressHUD loadingProgress;
+//    private KProgressHUD loadingProgress;
 
     private Integer currentPositionDropDown;
     private Integer currentGroupSelected;
@@ -227,7 +229,6 @@ public class ArchiveActivity extends BottomNavigationActivity {
         mCustomView = mInflater.inflate(R.layout.cc_archive_actionbar, null);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-
             appBar.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
             tabLayout.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
         }
@@ -267,6 +268,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
 //                }
                 RotateViewExtensions.buttonRotateStart(refreshButton, getApplicationContext());
 //                if (ArchiveActivity.this.adapter.mArrayList.size() == 0) { //avoid duplicate dropdown
+                ArchiveActivity.this.texButton.setText("دریافت اطلاعات ...");
                 getTypes();
 //                }
                 //   changeTypeIndex(0);
@@ -286,6 +288,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
             }
         });
 
+        ArchiveActivity.this.texButton.setText("دریافت اطلاعات ...");
         getTypes();
 
     }
@@ -293,15 +296,14 @@ public class ArchiveActivity extends BottomNavigationActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        AlertClass.hideLoadingMessage(ArchiveActivity.this.loadingProgress);
-        ArchiveActivity.this.loadingProgress = null;
+//        AlertClass.hideLoadingMessage(ArchiveActivity.this.loadingProgress);
+//        ArchiveActivity.this.loadingProgress = null;
     }
 
     @Override
     protected void onStop() {
-        Log.d(TAG, "onStop: Archive");
-        AlertClass.hideLoadingMessage(loadingProgress);
-        loadingProgress = null;
+//        AlertClass.hideLoadingMessage(loadingProgress);
+//        loadingProgress = null;
         super.onStop();
     }
 
@@ -315,23 +317,22 @@ public class ArchiveActivity extends BottomNavigationActivity {
         TextView badgeCount = (TextView) mCustomView.findViewById(R.id.actionBar_constraintIcon0Badge);
         LinearLayout badgeLinear = (LinearLayout) mCustomView.findViewById(R.id.badgeLinear);
 
-
-        badgeLinear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = BasketCheckoutActivity.newIntent(ArchiveActivity.this, "EntranceDetail");
-                ArchiveActivity.this.startActivity(i);
-            }
-        });
-
-        badgeCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
-        if (BasketSingleton.getInstance().getSalesCount() > 0) {
-            String basketCount = FormatterSingleton.getInstance().getNumberFormatter().format(BasketSingleton.getInstance().getSalesCount());
-            badgeCount.setText(basketCount);
-            badgeLinear.setVisibility(View.VISIBLE);
-        } else {
-            badgeLinear.setVisibility(View.GONE);
-        }
+//        badgeLinear.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent i = BasketCheckoutActivity.newIntent(ArchiveActivity.this, "EntranceDetail");
+//                ArchiveActivity.this.startActivity(i);
+//            }
+//        });
+//
+//        badgeCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+//        if (BasketSingleton.getInstance().getSalesCount() > 0) {
+//            String basketCount = FormatterSingleton.getInstance().getNumberFormatter().format(BasketSingleton.getInstance().getSalesCount());
+//            badgeCount.setText(basketCount);
+//            badgeLinear.setVisibility(View.VISIBLE);
+//        } else {
+//            badgeLinear.setVisibility(View.GONE);
+//        }
     }
 
 
@@ -700,17 +701,20 @@ public class ArchiveActivity extends BottomNavigationActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (!isFinishing()) {
-                        if (loadingProgress == null) {
-                            loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
-                            loadingProgress.show();
-                        } else {
-                            if (!loadingProgress.isShowing()) {
-                                //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
-                                loadingProgress.show();
-                            }
-                        }
-                    }
+//                    if (!isFinishing()) {
+//                        if (loadingProgress == null) {
+//                            loadingProgress = AlertClass.showLoadingMessage(ArchiveActivity.this);
+//                            loadingProgress.show();
+//                        } else {
+//                            if (!loadingProgress.isShowing()) {
+//                                //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+//                                loadingProgress.show();
+//                            }
+//                        }
+//                    }
+
+                    ArchiveActivity.this.adapterSet.changeLoadingState(false);
+                    ArchiveActivity.this.adapterSet.notifyDataSetChanged();
                 }
             });
 
@@ -727,7 +731,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                         @Override
                         public void run() {
 
-                            AlertClass.hideLoadingMessage(loadingProgress);
+//                            AlertClass.hideLoadingMessage(loadingProgress);
 
                             RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
                             try {
@@ -763,7 +767,6 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                             }
 
                                             case "Error": {
-                                                AlertClass.hideLoadingMessage(loadingProgress);
                                                 String errorType = jsonObject.get("error_type").getAsString();
 
                                                 switch (errorType) {
@@ -791,9 +794,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                     } else {
                                         ArchiveActivity.this.retryCounter = 0;
 
-                                        AlertClass.hideLoadingMessage(loadingProgress);
-
-                                        ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
+                                        ArchiveActivity.this.adapterSet.changeLoadingState(false);
                                         ArchiveActivity.this.adapterSet.notifyDataSetChanged();
 
                                         AlertClass.showTopMessage(ArchiveActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
@@ -801,15 +802,10 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                 }
 
                             } catch (Exception exc) {
-                                AlertClass.hideLoadingMessage(loadingProgress);
-
                                 ArchiveActivity.this.adapterSet.setItems(new ArrayList<JsonElement>());
                                 ArchiveActivity.this.adapterSet.notifyDataSetChanged();
 
                                 RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
-
-
-                                Log.d(TAG, "run: ");
                             }
                         }
                     });
@@ -827,7 +823,10 @@ public class ArchiveActivity extends BottomNavigationActivity {
                                 new GetSetsTask().execute(params);
                             } else {
                                 ArchiveActivity.this.retryCounter = 0;
-                                AlertClass.hideLoadingMessage(loadingProgress);
+//                                AlertClass.hideLoadingMessage(loadingProgress);
+
+                                ArchiveActivity.this.adapterSet.changeLoadingState(false);
+                                ArchiveActivity.this.adapterSet.notifyDataSetChanged();
 
                                 RotateViewExtensions.buttonRotateStop(ArchiveActivity.this.refreshButton, getApplicationContext());
                                 if (networkErrorType != null) {
@@ -861,11 +860,25 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
     }
 
+    private enum SetsAdapterHolderType {
+        ENTRANCE_SET(1), EMPTY_HOLDER(50), LOADING_HOLDER(51);
+        private final int value;
+
+        SetsAdapterHolderType(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
+
 
     private class GetSetsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         private Context context;
         private ArrayList<JsonElement> mArrayList = new ArrayList<>();
+        private Boolean isLoaded = false;
 
         public GetSetsAdapter(Context context, ArrayList<JsonElement> arrayList) {
             this.context = context;
@@ -874,6 +887,11 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
         public void setItems(ArrayList<JsonElement> arrayList) {
             this.mArrayList = arrayList;
+            this.changeLoadingState(true);
+        }
+
+        public void changeLoadingState(boolean state) {
+            this.isLoaded = state;
         }
 
         private class ItemHolder extends RecyclerView.ViewHolder {
@@ -1058,12 +1076,31 @@ public class ArchiveActivity extends BottomNavigationActivity {
             }
         }
 
+        private class LoadingHolder extends RecyclerView.ViewHolder {
+            private ProgressBar progressBar;
+
+            public LoadingHolder(View itemView) {
+                super(itemView);
+
+                progressBar = (ProgressBar)itemView.findViewById(R.id.loadingMoreProgressBar);
+                progressBar.getIndeterminateDrawable().setColorFilter(
+                        ContextCompat.getColor(ArchiveActivity.this, R.color.colorConcoughGray),
+                        PorterDuff.Mode.SRC_IN);
+            }
+
+            public void setupHolder() {
+            }
+        }
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            if (viewType == 50) {
+            if (viewType == SetsAdapterHolderType.EMPTY_HOLDER.getValue()) {
                 View view = LayoutInflater.from(context).inflate(R.layout.cc_recycle_not_item, parent, false);
                 return new ItemEmptyHolder(view);
+            } else if (viewType == SetsAdapterHolderType.LOADING_HOLDER.getValue()) {
+                View view = LayoutInflater.from(context).inflate(R.layout.cc_recycle_loading, parent, false);
+                return new LoadingHolder(view);
+
             } else {
                 View view = LayoutInflater.from(context).inflate(R.layout.cc_archive_listitem_details, parent, false);
                 return new ItemHolder(view);
@@ -1072,10 +1109,14 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
         @Override
         public int getItemViewType(int position) {
-            if (mArrayList.size() == 0) {
-                return 50;
+            if (this.isLoaded) {
+                if (mArrayList.size() == 0) {
+                    return SetsAdapterHolderType.EMPTY_HOLDER.getValue();
+                } else {
+                    return SetsAdapterHolderType.ENTRANCE_SET.getValue();
+                }
             } else {
-                return 2;
+                return SetsAdapterHolderType.LOADING_HOLDER.getValue();
             }
         }
 
@@ -1084,6 +1125,9 @@ public class ArchiveActivity extends BottomNavigationActivity {
             if (holder.getClass() == ItemEmptyHolder.class) {
                 ItemEmptyHolder itemEmptyHolder = (ItemEmptyHolder) holder;
                 itemEmptyHolder.setupHolder();
+            } else if (holder.getClass() == LoadingHolder.class) {
+                LoadingHolder h = (LoadingHolder) holder;
+                h.setupHolder();
             } else if (holder.getClass() == ItemHolder.class) {
                 JsonElement oneItem = this.mArrayList.get(position);
                 ItemHolder itemHolder = (ItemHolder) holder;
@@ -1094,10 +1138,14 @@ public class ArchiveActivity extends BottomNavigationActivity {
 
         @Override
         public int getItemCount() {
-            if (mArrayList.size() == 0) {
-                return 1;
+            if (this.isLoaded) {
+                if (mArrayList.size() == 0) {
+                    return 1;
+                } else {
+                    return mArrayList.size();
+                }
             } else {
-                return mArrayList.size();
+                return 1;
             }
         }
     }

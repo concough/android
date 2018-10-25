@@ -1,6 +1,7 @@
 package com.concough.android.concough;
 
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
@@ -186,7 +187,11 @@ public class TopNavigationActivity extends AppCompatActivity {
             if (buttonDetailList.size() > 0) {
                 for (int i = 0; i < buttonDetailList.size(); i++) {
                     if (i == 0) {
-                        icon0.setBackground(ContextCompat.getDrawable(getApplicationContext(), buttonDetailList.get(i).imageSource));
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                            icon0.setBackground(ContextCompat.getDrawable(getApplicationContext(), buttonDetailList.get(i).imageSource));
+                        } else {
+                            icon0.setBackgroundResource(buttonDetailList.get(i).imageSource);
+                        }
                         constraintIcon0.setVisibility(View.VISIBLE);
                         if (buttonDetailList.get(0).hasBadge) {
                             if (buttonDetailList.get(0).badgeCount > 0) {
@@ -198,7 +203,11 @@ public class TopNavigationActivity extends AppCompatActivity {
                             }
                         }
                     } else if (i == 1) {
-                        icon1.setBackground(ContextCompat.getDrawable(getApplicationContext(), buttonDetailList.get(i).imageSource));
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                            icon1.setBackground(ContextCompat.getDrawable(getApplicationContext(), buttonDetailList.get(i).imageSource));
+                        } else {
+                            icon1.setBackgroundResource(buttonDetailList.get(i).imageSource);
+                        }
                         constraintIcon1.setVisibility(View.VISIBLE);
                         if (buttonDetailList.get(1).hasBadge) {
                             if (buttonDetailList.get(1).badgeCount > 0) {
@@ -210,7 +219,11 @@ public class TopNavigationActivity extends AppCompatActivity {
                             }
                         }
                     } else if (i == 2) {
-                        icon2.setBackground(ContextCompat.getDrawable(getApplicationContext(), buttonDetailList.get(i).imageSource));
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                            icon2.setBackground(ContextCompat.getDrawable(getApplicationContext(), buttonDetailList.get(i).imageSource));
+                        } else {
+                            icon2.setBackgroundResource(buttonDetailList.get(i).imageSource);
+                        }
                         constraintIcon2.setVisibility(View.VISIBLE);
 
                         if (buttonDetailList.get(2).hasBadge) {

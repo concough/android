@@ -343,6 +343,11 @@ class UrlMakerSingleton private constructor() {
         return this.getProductUrl(functionName)
     }
 
+    fun getProductAddToLibUrl(): String? {
+        val functionName = "add_to_lib"
+        return this.getProductUrl(functionName)
+    }
+
     fun getReportBugUrl(): String? {
         var fullPath: String? = null
         val functionName = "report_bug"
