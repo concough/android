@@ -42,7 +42,7 @@ import com.concough.android.singletons.MediaCacheSingleton;
 import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.ArchiveEntranceStructure;
 import com.concough.android.structures.ArchiveEsetDetailStruct;
-import com.concough.android.structures.EntranceMultiSaleStruct;
+import com.concough.android.structures.ArchiveEntranceSaleStruct;
 import com.concough.android.structures.EntranceStruct;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
@@ -87,7 +87,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity implements P
 
     private KProgressHUD loadingProgress;
     private ArchiveEsetDetailStruct mArchiveEsetDetailStruct;
-    private ArrayList<EntranceMultiSaleStruct> entranceSaleData = new ArrayList<>();
+    private ArrayList<ArchiveEntranceSaleStruct> entranceSaleData = new ArrayList<>();
 
     public static Intent newIntent(Context packageContext, @Nullable ArchiveEsetDetailStruct detailStruct) {
         Intent i = new Intent(packageContext, ArchiveDetailActivity.class);
@@ -447,7 +447,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity implements P
                                                 int cost = item.getAsJsonObject().get("cost").getAsInt();
                                                 int costBon = item.getAsJsonObject().get("cost_bon").getAsInt();
 
-                                                EntranceMultiSaleStruct ems = new EntranceMultiSaleStruct(typeId, year,
+                                                ArchiveEntranceSaleStruct ems = new ArchiveEntranceSaleStruct(typeId, year,
                                                         month, cost, costBon);
                                                 ArchiveDetailActivity.this.entranceSaleData.add(ems);
                                             }
@@ -480,7 +480,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity implements P
 
                                                     int index = -1;
                                                     for (int j = 0; j < ArchiveDetailActivity.this.entranceSaleData.size(); j++) {
-                                                        EntranceMultiSaleStruct es =  ArchiveDetailActivity.this.entranceSaleData.get(j);
+                                                        ArchiveEntranceSaleStruct es =  ArchiveDetailActivity.this.entranceSaleData.get(j);
                                                         if (entranceMonth == es.getEntranceMonth() && entranceYear == es.getEntranceYear() &&
                                                                 entranceTypeId == es.getEntranceType()) {
                                                             index = j;
@@ -971,8 +971,8 @@ public class ArchiveDetailActivity extends BottomNavigationActivity implements P
             public void disableBuyButton() {
                 entranceBuyButton.setEnabled(false);
                 entranceBuyButton.setText("●●●");
-                entranceBuyButton.setBackground(getResources().getDrawable(R.drawable.concough_border_radius_lightgray_style));
-                entranceBuyButton.setTextColor(getResources().getColor(R.color.colorConcoughGray));
+                entranceBuyButton.setBackground(ContextCompat.getDrawable(ArchiveDetailActivity.this, R.drawable.concough_border_radius_lightgray_style));
+                entranceBuyButton.setTextColor(ContextCompat.getColor(ArchiveDetailActivity.this, R.color.colorConcoughGray));
             }
 
             public void changedBuyButtonState(boolean state) {

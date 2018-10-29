@@ -1023,7 +1023,7 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
     }
 
     private void handleDownloadEntranceStatAndSale(@Nullable Message msg) {
-        ProductRestAPIClass.getEntranceStatData(EntranceDetailActivity.this, EntranceDetailActivity.this.entranceUniqueId, new Function2<JsonElement, HTTPErrorType, Unit>() {
+        ProductRestAPIClass.getEntranceStatAndSaleData(EntranceDetailActivity.this, EntranceDetailActivity.this.entranceUniqueId, new Function2<JsonElement, HTTPErrorType, Unit>() {
             @Override
             public Unit invoke(final JsonElement jsonElement, final HTTPErrorType httpErrorType) {
                 uiHandler.post(new Runnable() {

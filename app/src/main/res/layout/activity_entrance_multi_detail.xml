@@ -7,27 +7,20 @@
     android:orientation="vertical"
     android:id="@+id/container"
     android:layoutDirection="ltr"
-    tools:context="com.concough.android.concough.ArchiveDetailActivity">
+    tools:context="com.concough.android.concough.EntranceMultiDetailActivity">
 
-    <com.baoyz.widget.PullRefreshLayout
-        android:id="@+id/homeA_swipeRefreshLayout"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/entranceMultiDetailA_recycle"
         android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="0dp"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginTop="0dp"
         android:layout_weight="1"
-        android:layout_height="0dp">
+        android:background="@drawable/concough_bottom_line_gray3">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/archiveDetailA_recycle"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginBottom="0dp"
-            android:layout_marginLeft="0dp"
-            android:layout_marginRight="0dp"
-            android:layout_marginTop="0dp"
-            android:layout_weight="1"
-            android:background="@drawable/concough_bottom_line_gray3">
-
-        </android.support.v7.widget.RecyclerView>
-    </com.baoyz.widget.PullRefreshLayout>
+    </android.support.v7.widget.RecyclerView>
 
     <android.support.design.widget.BottomNavigationView
         android:id="@+id/navigation"
@@ -39,5 +32,4 @@
         app:itemIconTint="@drawable/concough_navigation_style"
         app:menu="@menu/navigation"
         />
-
 </LinearLayout>

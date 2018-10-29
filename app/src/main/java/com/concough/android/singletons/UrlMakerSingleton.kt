@@ -353,6 +353,11 @@ class UrlMakerSingleton private constructor() {
         return this.getProductUrl(functionName)
     }
 
+    fun getProductDataForEntranceMultiUrl(uniqueId: String): String? {
+        val functionName = "entrance_multi/$uniqueId/sale"
+        return this.getProductUrl(functionName)
+    }
+
     fun getReportBugUrl(): String? {
         var fullPath: String? = null
         val functionName = "report_bug"

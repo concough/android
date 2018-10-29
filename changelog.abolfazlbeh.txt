@@ -402,3 +402,22 @@ Archive and ArchiveDetail (abolfazl.beh) - 2018-10-25
 6 - EntranceBuyDelegate interface created for communicating between ArchiveDetail activity and EntranceBuy dialog.
 7 - "createWallet" functionality added to EntranceDetail activity to create wallet if does not exist.
 8 - Some bugs fixed
+
+------------------------------------------------------------------------------------------------
+EntranceDetail (abolfazl.beh) - 2018-10-25
+
+1 - EntranceDetail activity basket badge removed
+2 - Merge downloading entrance stat and sale data. Also ProductRestAPIClass modified to have this.
+3 - EntranceLoadingViewHolder added to show loading state.
+4 - Some of ViewHolder layout changed in EntranceDetail activity
+5 - Some drawables style modified.
+6 - EntranceDetail activity integrated with EntranceBuyDialog to show dialog for buy entrance.
+7 - Create wallet functionality added to EntranceDetail activity.
+
+------------------------------------------------------------------------------------------------
+EntranceMultiDetail (abolfazl.beh) - 2018-10-29
+
+1 - EntranceMultiDetail activity created to show this activity type details.
+2 - EntranceMultiSale structure created to hold sale information of EntranceMulti type
+3 - Some API calls added to ProductRestAPIClass
+4 - Some bugs fixed.

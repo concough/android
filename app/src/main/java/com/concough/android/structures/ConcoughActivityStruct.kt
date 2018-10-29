@@ -1,6 +1,7 @@
 package com.concough.android.structures
 
 import com.google.gson.JsonObject
+import java.io.Serializable
 import java.util.*
 
 /**
@@ -9,4 +10,4 @@ import java.util.*
 data class ConcoughActivityStruct (var created: Date,
                                    var createdStr: String,
                                    var activityType: String,
-                                   var target: JsonObject)
+                                   var target: JsonObject): Serializable

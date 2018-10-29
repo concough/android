@@ -20,12 +20,12 @@
         tools:replace="android:icon">
         <service android:name="com.concough.android.downloader.EntrancePackageDownloader" />
 
-        <!--<receiver android:name=".StartupActivity$NetworkChangeReceiver" >-->
-        <!--<intent-filter >-->
-        <!--<action android:name="android.net.conn.CONNECTIVITY_CHANGE" />-->
-        <!--<action android:name="android.net.wifi.WIFI_STATE_CHANGED" />-->
-        <!--</intent-filter>-->
-        <!--</receiver>-->
+        <!-- <receiver android:name=".StartupActivity$NetworkChangeReceiver" > -->
+        <!-- <intent-filter > -->
+        <!-- <action android:name="android.net.conn.CONNECTIVITY_CHANGE" /> -->
+        <!-- <action android:name="android.net.wifi.WIFI_STATE_CHANGED" /> -->
+        <!-- </intent-filter> -->
+        <!-- </receiver> -->
         <activity
             android:name=".StartupActivity"
             android:screenOrientation="portrait"
@@ -85,9 +85,7 @@
         <activity
             android:name=".ArchiveActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"
-
-            />
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ArchiveDetailActivity"
             android:screenOrientation="portrait"
@@ -114,10 +112,11 @@
             android:name=".BasketCheckoutActivity"
             android:exported="true"
             android:screenOrientation="portrait">
-            <!--<intent-filter>-->
-            <!--<data android:scheme="concough" />-->
-            <!--<action android:name="android.intent.action.VIEW" />-->
-            <!--</intent-filter>-->
+
+            <!-- <intent-filter> -->
+            <!-- <data android:scheme="concough" /> -->
+            <!-- <action android:name="android.intent.action.VIEW" /> -->
+            <!-- </intent-filter> -->
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -128,9 +127,7 @@
                 <data
                     android:host="concough.zhycan.com"
                     android:scheme="concough" />
-
             </intent-filter>
-
         </activity>
         <activity
             android:name=".FavoritesActivity"
@@ -146,6 +143,7 @@
         <activity
             android:name=".TopNavigationActivity"
             android:screenOrientation="portrait" />
+        <activity android:name=".EntranceMultiDetailActivity"></activity>
     </application>
 
 </manifest>

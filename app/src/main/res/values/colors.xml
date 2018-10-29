@@ -12,6 +12,7 @@
     <color name="colorConcoughRed">#960000</color>
     <color name="colorConcoughRedLight">#DD0000</color>
     <color name="colorConcoughGreen">#008000</color>
+    <color name="colorConcoughGreenLight">#b3008000</color>
     <color name="colorConcoughGrayDiasable">#75f7f7f7</color>
     <color name="colorConcoughYellow">#e6b903</color>
     <color name="colorConcoughGray">#b7b7b7</color>
@@ -30,7 +31,9 @@
 
 
 
-    <color name="colorWhite">#fff</color>
+    <color name="colorWhite">#fffffff</color>
+    <color name="colorBlack">#0000000</color>
+    <color name="colorConcoughBlackLight">#b30000000</color>
     <color name="colorWhiteAlpha">#aaffffff</color>
 
     <color name="kprogresshud_default_color">#b1000000</color>
