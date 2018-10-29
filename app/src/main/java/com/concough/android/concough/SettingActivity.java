@@ -28,6 +28,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.concough.android.general.AlertClass;
+import com.concough.android.models.EntranceOpenedCountModelHandler;
 import com.concough.android.models.EntrancePackageHandler;
 import com.concough.android.models.EntranceQuestionStarredModelHandler;
 import com.concough.android.models.PurchasedModel;
@@ -106,9 +107,7 @@ public class SettingActivity extends BottomNavigationActivity {
 
         //names = GradeType.values();
         actionBarSet();
-
     }
-
 
     private void actionBarSet() {
         super.clickEventInterface = new OnClickEventInterface() {
@@ -652,7 +651,8 @@ public class SettingActivity extends BottomNavigationActivity {
         ERROR_REPORT(6),
         ABOUT(7),
         LOGOUT(8),
-        LOCK(9);
+        LOCK(9),
+        WALLET_CASH(10);
 
         private final int value;
 
@@ -705,6 +705,9 @@ public class SettingActivity extends BottomNavigationActivity {
                 case 9:
                     view = LayoutInflater.from(this.context).inflate(R.layout.cc_setting_link_blue, parent, false);
                     return new LinksViewHolder(view);
+                case 10:
+                    view = LayoutInflater.from(this.context).inflate(R.layout.cc_setting_wallet, parent, false);
+                    return new UserInforViewHolder(view);
             }
 
 
@@ -714,13 +717,11 @@ public class SettingActivity extends BottomNavigationActivity {
 
         @Override
         public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
-
             String text;
             int image;
             String url;
 
-
-            if (SettingActivity.this.isEditing == false) {
+            if (!SettingActivity.this.isEditing) {
                 switch (position) {
                     case 0:
                         ((UserInforViewHolder) holder).setupHolder();
@@ -731,6 +732,16 @@ public class SettingActivity extends BottomNavigationActivity {
                         break;
 
                     case 2:
+                        int cost = 0;
+                        if (UserDefaultsSingleton.getInstance(SettingActivity.this).hasProfile()) {
+                            if (UserDefaultsSingleton.getInstance(SettingActivity.this).hasWallet()) {
+                                cost = UserDefaultsSingleton.getInstance(SettingActivity.this).getWalletInfo().getCash();
+                            }
+                        }
+                        ((UserWalletViewHolder) holder).setupHolder(cost);
+                        break;
+
+                    case 3:
                         holder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -743,7 +754,7 @@ public class SettingActivity extends BottomNavigationActivity {
                         ((WithArrowViewHolder) holder).setupHolder(text, image, null, 0);
                         break;
 
-                    case 3:
+                    case 4:
                         holder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -757,7 +768,7 @@ public class SettingActivity extends BottomNavigationActivity {
                         ((WithArrowViewHolder) holder).setupHolder(text, image, null, null);
                         break;
 
-                    case 4:
+                    case 5:
                         holder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -780,7 +791,18 @@ public class SettingActivity extends BottomNavigationActivity {
                         ((UserEditViewHolder) holder).setupHolder();
                         break;
 
+
                     case 2:
+                        int cost = 0;
+                        if (UserDefaultsSingleton.getInstance(SettingActivity.this).hasProfile()) {
+                            if (UserDefaultsSingleton.getInstance(SettingActivity.this).hasWallet()) {
+                                cost = UserDefaultsSingleton.getInstance(SettingActivity.this).getWalletInfo().getCash();
+                            }
+                        }
+                        ((UserWalletViewHolder) holder).setupHolder(cost);
+                        break;
+
+                    case 3:
                         holder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -799,7 +821,7 @@ public class SettingActivity extends BottomNavigationActivity {
 //                        ((LinksViewHolder) holder).setupHolder(text, image, null, 5);
 //                        break;
 
-                    case 3:
+                    case 4:
                         holder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -814,11 +836,16 @@ public class SettingActivity extends BottomNavigationActivity {
 
                                         if (items != null) {
                                             for (PurchasedModel item : items) {
-                                                SettingActivity.this.deletePurchaseData(item.productUniqueId);
+                                                SettingActivity.this.deletePurchaseData(item.productUniqueId, username);
 
                                                 if (PurchasedModelHandler.resetDownloadFlags(getApplicationContext(), username, item.id)) {
-                                                    EntrancePackageHandler.removePackage(getApplicationContext(), username, item.productUniqueId);
-                                                    EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, item.productUniqueId);
+                                                    if (item.productType == "Entrance") {
+                                                        EntrancePackageHandler.removePackage(getApplicationContext(), username, item.productUniqueId);
+                                                        EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, item.productUniqueId);
+                                                        EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, item.productUniqueId);
+
+                                                        // TODO: EntranceQuestionCommentModelHandler delete all comments of entrance
+                                                    }
                                                 }
                                             }
                                             SettingActivity.this.recycleAdapter.notifyDataSetChanged();
@@ -839,7 +866,7 @@ public class SettingActivity extends BottomNavigationActivity {
                         break;
 
 
-                    case 5:
+                    case 6:
                         holder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -862,7 +889,7 @@ public class SettingActivity extends BottomNavigationActivity {
                         ((LinksViewHolder) holder).setupHolder(text, image, linkColor, 5);
                         break;
 
-                    case 4:
+                    case 5:
                         holder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -879,12 +906,10 @@ public class SettingActivity extends BottomNavigationActivity {
 
         @Override
         public int getItemCount() {
-            if (SettingActivity.this.isEditing == false) {
-                return 5;
-
-            } else {
+            if (!SettingActivity.this.isEditing) {
                 return 6;
-
+            } else {
+                return 7;
             }
         }
 
@@ -899,10 +924,12 @@ public class SettingActivity extends BottomNavigationActivity {
                     case 1:
                         return SettingHolderType.USER_EDIT.getValue();
                     case 2:
-                        return SettingHolderType.ERROR_REPORT.getValue();
+                        return SettingHolderType.WALLET_CASH.getValue();
                     case 3:
-                        return SettingHolderType.ABOUT.getValue();
+                        return SettingHolderType.ERROR_REPORT.getValue();
                     case 4:
+                        return SettingHolderType.ABOUT.getValue();
+                    case 5:
                         return SettingHolderType.LOCK.getValue();
                 }
             } else {
@@ -912,19 +939,18 @@ public class SettingActivity extends BottomNavigationActivity {
                     case 1:
                         return SettingHolderType.USER_EDIT.getValue();
                     case 2:
-                        return SettingHolderType.CHANGE_PASSWORD.getValue();
+                        return SettingHolderType.WALLET_CASH.getValue();
                     case 3:
-                        return SettingHolderType.DELETE_CACHE.getValue();
-                    case 5:
-                        return SettingHolderType.LOGOUT.getValue();
+                        return SettingHolderType.CHANGE_PASSWORD.getValue();
                     case 4:
+                        return SettingHolderType.DELETE_CACHE.getValue();
+                    case 6:
+                        return SettingHolderType.LOGOUT.getValue();
+                    case 5:
                         return SettingHolderType.LOCK.getValue();
                 }
             }
-
-
             return 0;
-
         }
 
         private class UserInforViewHolder extends RecyclerView.ViewHolder {
@@ -1058,6 +1084,24 @@ public class SettingActivity extends BottomNavigationActivity {
 
         }
 
+        private class UserWalletViewHolder extends RecyclerView.ViewHolder {
+            private TextView cashTextView;
+            private TextView cashLabelTextView;
+
+            public UserWalletViewHolder(View itemView) {
+                super(itemView);
+
+                cashTextView = (TextView) itemView.findViewById(R.id.settingWalletL_type);
+                cashLabelTextView = (TextView) itemView.findViewById(R.id.settingWalletL_label);
+
+                cashTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                cashLabelTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+            }
+
+            public void setupHolder(int cost) {
+                cashTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(cost));
+            }
+        }
 
         private class LinksViewHolder extends RecyclerView.ViewHolder {
 
@@ -1126,14 +1170,18 @@ public class SettingActivity extends BottomNavigationActivity {
 
     }
 
-    private void deletePurchaseData(String uniqueId) {
-        File f = new File(SettingActivity.this.getFilesDir(), uniqueId);
+    private void deletePurchaseData(String uniqueId, String username) {
+        String path = username + "_" + uniqueId;
+        File f = new File(SettingActivity.this.getFilesDir(), path);
         if (f.exists() && f.isDirectory()) {
-            for (File fc : f.listFiles()) {
-                fc.delete();
-            }
-            boolean rd = f.delete();
+        } else {
+            f = new File(SettingActivity.this.getFilesDir(), uniqueId);
         }
+
+        for (File fc : f.listFiles()) {
+            fc.delete();
+        }
+        boolean rd = f.delete();
     }
 
 }

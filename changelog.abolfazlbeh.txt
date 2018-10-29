@@ -421,3 +421,11 @@ EntranceMultiDetail (abolfazl.beh) - 2018-10-29
 2 - EntranceMultiSale structure created to hold sale information of EntranceMulti type
 3 - Some API calls added to ProductRestAPIClass
 4 - Some bugs fixed.
+
+------------------------------------------------------------------------------------------------
+Wallet in Setting Activity (abolfazl.beh) - 2018-10-29
+
+1 - Wallet cash holder created. Adapter modified to include this holder.
+2 - Clear cache functionality correct to include "username" in deleting directory data.
+3 - Bug report label changed.
+4 - Synchronization singleton not created yet so modified later.
