@@ -429,3 +429,7 @@ Wallet in Setting Activity (abolfazl.beh) - 2018-10-29
 2 - Clear cache functionality correct to include "username" in deleting directory data.
 3 - Bug report label changed.
 4 - Synchronization singleton not created yet so modified later.
+
+------------------------------------------------------------------------------------------------
+Some Testing and Bugs Fix (abolfazl.beh) - 2018-11-12
+

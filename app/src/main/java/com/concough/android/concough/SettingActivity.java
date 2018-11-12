@@ -707,7 +707,7 @@ public class SettingActivity extends BottomNavigationActivity {
                     return new LinksViewHolder(view);
                 case 10:
                     view = LayoutInflater.from(this.context).inflate(R.layout.cc_setting_wallet, parent, false);
-                    return new UserInforViewHolder(view);
+                    return new UserWalletViewHolder(view);
             }
 
 
@@ -1015,7 +1015,6 @@ public class SettingActivity extends BottomNavigationActivity {
 
         }
 
-
         private class UserEditViewHolder extends RecyclerView.ViewHolder {
 
             private TextView typeTitle;
@@ -1025,13 +1024,12 @@ public class SettingActivity extends BottomNavigationActivity {
             public UserEditViewHolder(View itemView) {
                 super(itemView);
 
-
                 typeTitle = (TextView) itemView.findViewById(R.id.settingUsereEditL_type);
                 labelType = (TextView) itemView.findViewById(R.id.settingUserEditL_label);
                 editTv = (TextView) itemView.findViewById(R.id.settingUserEditL_button);
 
                 typeTitle.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
-                labelType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                labelType.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 editTv.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
             }
 
@@ -1088,17 +1086,17 @@ public class SettingActivity extends BottomNavigationActivity {
             private TextView cashTextView;
             private TextView cashLabelTextView;
 
-            public UserWalletViewHolder(View itemView) {
+            UserWalletViewHolder(View itemView) {
                 super(itemView);
 
                 cashTextView = (TextView) itemView.findViewById(R.id.settingWalletL_type);
                 cashLabelTextView = (TextView) itemView.findViewById(R.id.settingWalletL_label);
 
                 cashTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-                cashLabelTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                cashLabelTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
             }
 
-            public void setupHolder(int cost) {
+            void setupHolder(int cost) {
                 cashTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(cost));
             }
         }
@@ -1137,13 +1135,14 @@ public class SettingActivity extends BottomNavigationActivity {
 
 
         private class WithArrowViewHolder extends RecyclerView.ViewHolder {
-
             private TextView textLink;
             private ImageView iconImage;
+            private TextView arrowTextView;
 
             public WithArrowViewHolder(View itemView) {
                 super(itemView);
 
+                arrowTextView = (TextView) itemView.findViewById(R.id.settingLinkL_arrow);
                 textLink = (TextView) itemView.findViewById(R.id.settingLinkL_link);
                 iconImage = (ImageView) itemView.findViewById(R.id.settingLinkL_image);
 
@@ -1161,8 +1160,6 @@ public class SettingActivity extends BottomNavigationActivity {
 //                if (padding != null) {
 //                    itemView.setPadding(itemView.getPaddingLeft(), itemView.getPaddingTop(), itemView.getPaddingRight(), padding);
 //                }
-
-
             }
 
         }

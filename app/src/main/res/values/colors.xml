@@ -20,6 +20,7 @@
     <color name="colorConcoughGray5">#878787</color>
     <color name="colorConcoughGray3">#f7f7f7</color>
     <color name="colorConcoughGray4">#e9e9e9</color>
+    <color name="colorConcoughGray6">#dddddd</color>
 
     <color name="colorConcoughGrayBackground">#f6f6f6</color>
     <color name="colorConcoughBorderWhite">#cccccc</color>
@@ -27,13 +28,13 @@
     <color name="colorConcoughVideoIntro">#99000000</color>
 
 
-    <color name="colorConcoughHolder2Box">#DDFCFCFC</color>
+    <color name="colorConcoughHolder2Box">#EEEEEE</color>
 
 
 
-    <color name="colorWhite">#fffffff</color>
-    <color name="colorBlack">#0000000</color>
-    <color name="colorConcoughBlackLight">#b30000000</color>
+    <color name="colorWhite">#ffffff</color>
+    <color name="colorBlack">#000000</color>
+    <color name="colorConcoughBlackLight">#b3000000</color>
     <color name="colorWhiteAlpha">#aaffffff</color>
 
     <color name="kprogresshud_default_color">#b1000000</color>

@@ -39,6 +39,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.File
 import java.io.FileOutputStream
+import java.io.Serializable
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -63,7 +64,8 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
         private const val ACTIVITY_TYPE_KEY = "ACTIVITY_TYPE"
         private const val TARGET_KEY = "TARGET"
 
-        fun newIntent(packageContext: Context, uniqueId: String, actType: String, target: ConcoughActivityStruct): Intent {
+        @JvmStatic
+        fun newIntent(packageContext: Context, uniqueId: String, actType: String, target: String): Intent {
             val i = Intent(packageContext, EntranceMultiDetailActivity::class.java)
             i.putExtra(UNIQUE_ID_KEY, uniqueId)
             i.putExtra(ACTIVITY_TYPE_KEY, actType)
@@ -82,8 +84,10 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
 
         this.uniqueId = intent.getStringExtra(UNIQUE_ID_KEY)
         this.activityType = intent.getStringExtra(ACTIVITY_TYPE_KEY)
-        val cas = intent.getSerializableExtra(TARGET_KEY) as ConcoughActivityStruct
-        this.target = cas.target
+        val cas = intent.getStringExtra(TARGET_KEY)
+
+        val parser = JsonParser()
+        this.target = parser.parse(cas).asJsonObject
 
         entranceMultiDetailA_recycle.layoutManager = LinearLayoutManager(this,
                 LinearLayoutManager.VERTICAL,
@@ -99,6 +103,7 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
         actionBarSet()
 
         this.entranceMultiSale = null
+        this.entrances.clear()
         this.entranceMultiDetailAdapter.setItems(this.entranceMultiSale, this.entrances)
         this.entranceMultiDetailAdapter.notifyDataSetChanged()
 
@@ -114,19 +119,21 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
                 val entranceSetId = ent.asJsonObject.get("entrance_set").asJsonObject.get("id").asInt
                 val entranceGroup = ent.asJsonObject.get("entrance_set").asJsonObject.get("group").asJsonObject.get("title").asString
 
-                val extraStr = ent.asJsonObject.get("extra_data").getAsString()
+                val extraStr = ent.asJsonObject.get("extra_data").asString
                 var extraData: JsonElement? = null
                 if (extraStr != null && "" != extraStr) {
-                    try {
-                        extraData = JsonParser().parse(extraStr)
+                    extraData = try {
+                        JsonParser().parse(extraStr)
                     } catch (exc: Exception) {
-                        extraData = JsonParser().parse("[]")
+                        JsonParser().parse("[]")
                     }
-
                 }
 
-                val bookletCount = ent.asJsonObject.get("booklets_count").asInt
-                val duration = ent.asJsonObject.get("duration").asInt
+//                val bookletCount = ent.asJsonObject.get("booklets_count").asInt
+//                val duration = ent.asJsonObject.get("duration").asInt
+
+                val bookletCount = 0
+                val duration = 0
                 val year = ent.asJsonObject.get("year").asInt
                 val month = ent.asJsonObject.get("month").asInt
                 val lastPublishedStr = ent.asJsonObject.get("last_published").asString
@@ -317,6 +324,7 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
                                     UserDefaultsSingleton.getInstance(this@EntranceMultiDetailActivity).setWalletInfo(cash, updatedStr)
 
                                     if (UserDefaultsSingleton.getInstance(this@EntranceMultiDetailActivity).hasWallet()) {
+                                        this@EntranceMultiDetailActivity.entranceMultiDetailAdapter.notifyItemChanged(0)
                                         this@EntranceMultiDetailActivity.entranceMultiDetailAdapter.showBuyDialog()
                                     }
                                 }
@@ -813,7 +821,7 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
 
                 this.buyCountTextView.text = FormatterSingleton.getInstance().NumberFormatter.format(buyedCount)
 
-                if (buyed) {
+                if (!buyed) {
                     this.buyedImageView.visibility = View.INVISIBLE
                     this.buyCountContainer.visibility = View.VISIBLE
                 } else {

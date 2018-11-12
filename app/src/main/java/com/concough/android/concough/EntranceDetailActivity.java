@@ -142,6 +142,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
             this.setMenuSelectedIndex(0);
         } else if ("Archive".equals(this.contextFromWho)) {
             this.setMenuSelectedIndex(1);
+        } else if ("EntranceMulti".equals(this.contextFromWho)) {
+            this.setMenuSelectedIndex(0);
         }
         super.onCreate(savedInstanceState);
 

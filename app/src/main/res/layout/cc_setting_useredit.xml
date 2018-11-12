@@ -16,8 +16,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="متقاضی آزمون: "
-        android:textColor="@android:color/black"
-        android:textSize="13sp"
+        android:textColor="@color/colorConcoughGray5"
+        android:textSize="12sp"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -26,11 +26,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginRight="4dp"
-        android:text="TextView"
-        android:textColor="@color/colorConcoughGray2"
-        android:textSize="12sp"
+        android:text=""
+        android:textColor="@color/colorBlack"
+        android:textSize="13sp"
         app:layout_constraintBaseline_toBaselineOf="@+id/settingUserEditL_label"
-        app:layout_constraintRight_toLeftOf="@+id/settingUserEditL_label" />
+        app:layout_constraintRight_toLeftOf="@+id/settingUserEditL_label"
+        android:layout_marginEnd="4dp" />
 
     <Button
         android:id="@+id/settingUserEditL_button"

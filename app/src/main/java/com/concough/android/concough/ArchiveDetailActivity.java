@@ -779,16 +779,16 @@ public class ArchiveDetailActivity extends BottomNavigationActivity implements P
         private class ItemsHolder extends RecyclerView.ViewHolder {
             private TextView extraDataText;
             private TextView countText;
-            private TextView dateJalali;
             private TextView yearText;
             private TextView monthText;
+            private TextView costText;
+
             private ImageView doubleCheck;
             private Button entranceBuyButton;
 
             private LinearLayout costContainer;
             private LinearLayout buyedTimeContainer;
 
-            private JsonElement extraData;
             private ArchiveEntranceStructure entrance;
 
             public ItemsHolder(View itemView) {
@@ -796,9 +796,9 @@ public class ArchiveDetailActivity extends BottomNavigationActivity implements P
 
                 extraDataText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_extraDataText);
                 countText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_countText);
-                dateJalali = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_dateJalali);
                 yearText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_yearText);
                 monthText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_monthText);
+                costText = (TextView) itemView.findViewById(R.id.archiveDetailHolder2L_costTextView);
                 entranceBuyButton = (Button) itemView.findViewById(R.id.archiveDetailHolder2L_BuyButton);
                 doubleCheck = (ImageView) itemView.findViewById(R.id.archiveDetailHolder2L_DoubleCheck);
                 costContainer = (LinearLayout) itemView.findViewById(R.id.archiveDetailHolder2L_costContainer);
@@ -806,9 +806,9 @@ public class ArchiveDetailActivity extends BottomNavigationActivity implements P
 
                 extraDataText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 countText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-                dateJalali.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 yearText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 monthText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                costText.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 entranceBuyButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
             }
 
@@ -828,18 +828,18 @@ public class ArchiveDetailActivity extends BottomNavigationActivity implements P
                 }
 
                 if (entrance.getCostBon() > 0) {
-                    this.countText.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getCostBon()));
-                    this.countText.setTextColor(ContextCompat.getColor(ArchiveDetailActivity.this, R.color.colorConcoughGray2));
+                    this.costText.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getCostBon()));
+                    this.costText.setTextColor(ContextCompat.getColor(ArchiveDetailActivity.this, R.color.colorConcoughGray2));
                 } else {
-                    this.countText.setText("رایگان");
-                    this.countText.setTextColor(ContextCompat.getColor(ArchiveDetailActivity.this, R.color.colorConcoughRed));
+                    this.costText.setText("رایگان");
+                    this.costText.setTextColor(ContextCompat.getColor(ArchiveDetailActivity.this, R.color.colorConcoughRed));
                 }
 
                 if (buyed) {
                     if (buyedTime != null) {
                         try {
                             String timeAgo = timeAgoSinceDate(entrance.getLastPublished(), "fa", false);
-                            dateJalali.setText("خرید: " + timeAgo);
+                            countText.setText("خرید: " + timeAgo);
                         } catch (Exception e) {
 
                         }
@@ -847,7 +847,6 @@ public class ArchiveDetailActivity extends BottomNavigationActivity implements P
                 }
 
                 extraDataText.setText(this.entrance.getOrganization());
-
                 entranceBuyButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

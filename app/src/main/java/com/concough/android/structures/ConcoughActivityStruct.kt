@@ -1,6 +1,9 @@
 package com.concough.android.structures
 
+import android.os.Parcel
+import android.os.Parcelable
 import com.google.gson.JsonObject
+import com.google.gson.JsonSerializer
 import java.io.Serializable
 import java.util.*
 

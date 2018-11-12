@@ -21,6 +21,7 @@
 -keep class * {
     public private *;
 }
+-keep class com.google.gson.** { *; }
 
 -dontwarn java.nio.file.Files
 -dontwarn java.nio.file.Path

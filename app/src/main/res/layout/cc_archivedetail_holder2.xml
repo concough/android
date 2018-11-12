@@ -35,17 +35,13 @@
             app:layout_constraintLeft_toRightOf="@id/constraintLayout4"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            tools:layout_editor_absoluteY="0dp"
             android:layout_marginEnd="0dp">
 
             <View
                 android:id="@+id/view10"
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
-                android:background="@color/colorConcoughGray3"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:background="@color/colorConcoughGray6" />
         </LinearLayout>
 
         <android.support.constraint.ConstraintLayout
@@ -71,19 +67,17 @@
                     android:id="@+id/archiveDetailHolder2L_imageRight"
                     android:layout_width="70dp"
                     android:layout_height="70dp"
-                    android:padding="4dp"
-                    tools:layout_editor_absoluteX="44dp"
-                    tools:layout_editor_absoluteY="206dp" />
+                    android:padding="4dp" />
 
                 <android.support.constraint.ConstraintLayout
                     android:id="@+id/archiveDetailHolder2L_constrantRight"
                     android:layout_width="70dp"
                     android:layout_height="70dp"
 
-                    android:layout_marginBottom="1dp"
-                    android:layout_marginEnd="1dp"
-                    android:layout_marginRight="1dp"
-                    android:layout_marginTop="1dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginRight="0dp"
+                    android:layout_marginTop="0dp"
                     android:background="@drawable/concough_recycle_box_style_holder2_gray_logo_archivedetail">
 
 
@@ -108,6 +102,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text=""
+                            android:textAlignment="center"
                             android:textColor="@color/colorConcoughBlueLight"
                             android:textSize="12sp"
                             android:layout_marginBottom="8dp" />
@@ -116,6 +111,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text=""
+                            android:textAlignment="center"
                             android:textColor="@color/colorConcoughBlue"
                             android:textSize="14sp" />
                     </LinearLayout>
@@ -175,10 +171,10 @@
             android:id="@+id/archiveDetailHolder2L_countTextLinear"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="2dp"
+            android:layout_marginBottom="8dp"
             android:layout_marginRight="8dp"
             android:orientation="horizontal"
-            android:visibility="gone"
+            android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toRightOf="@+id/constraintLayout4">
 
@@ -189,7 +185,7 @@
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:text="TextView"
-                android:textColor="@color/colorConcoughGreen"
+                android:textColor="@color/colorConcoughGray"
                 android:textDirection="rtl"
                 android:textSize="11sp"
                 app:layout_constraintBottom_toBottomOf="parent" />
@@ -200,6 +196,7 @@
                 android:layout_height="20dp"
                 android:layout_marginLeft="4dp"
                 android:layout_weight="1"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintRight_toRightOf="@+id/constraintLayout4"
                 app:srcCompat="@drawable/cloud_100" />
@@ -222,8 +219,10 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text=""
+                android:layout_marginRight="4dp"
                 android:textColor="@color/colorConcoughGray"
-                android:textSize="11sp" />
+                android:textSize="12sp"
+                android:layout_marginEnd="4dp" />
 
             <ImageView
                 android:id="@+id/itemEntranceCreateI_costImageView"

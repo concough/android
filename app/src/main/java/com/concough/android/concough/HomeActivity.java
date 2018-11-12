@@ -989,7 +989,9 @@ public class HomeActivity extends BottomNavigationActivity {
                         itemHolder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                Intent i = EntranceDetailActivity.newIntent(HomeActivity.this, oneItem.getTarget().getAsJsonObject().get("unique_key").getAsString(), "Home");
+                                Intent i = EntranceDetailActivity.newIntent(HomeActivity.this,
+                                        oneItem.getTarget().getAsJsonObject().get("unique_key").getAsString(),
+                                        "Home");
                                 startActivity(i);
                             }
                         });
@@ -1004,8 +1006,11 @@ public class HomeActivity extends BottomNavigationActivity {
                         itemHolder.itemView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-//                                Intent i = EntranceDetailActivity.newIntent(HomeActivity.this, oneItem.getTarget().getAsJsonObject().get("unique_key").getAsString(), "Home");
-//                                startActivity(i);
+                                Intent i = EntranceMultiDetailActivity.newIntent(HomeActivity.this,
+                                        oneItem.getTarget().getAsJsonObject().get("unique_key").getAsString(),
+                                        oneItem.getActivityType(),
+                                        oneItem.getTarget().toString());
+                                startActivity(i);
                             }
                         });
                         break;

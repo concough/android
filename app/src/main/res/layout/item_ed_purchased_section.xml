@@ -164,7 +164,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginRight="8dp"
                 android:text=""
-                android:textColor="@color/colorConcoughGray"
+                android:textColor="@color/colorConcoughGray2"
                 android:textDirection="rtl"
                 android:textSize="13sp" />
 
@@ -174,7 +174,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="start"
                 android:text="@string/entrance_detail_download_sale_label"
-                android:textColor="@color/colorConcoughGray2"
+                android:textColor="@color/colorConcoughGray"
                 android:textDirection="rtl"
                 android:textSize="12sp" />
         </LinearLayout>
