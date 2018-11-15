@@ -199,8 +199,8 @@
             android:layout_weight="1"
             android:text="پشیمان شدم"
             android:textSize="14sp"
-            android:textColor="@color/colorConcoughGray2"
-            android:background="@drawable/concough_border_radius_gray_style"
+            android:textColor="@color/colorConcoughGray"
+            android:background="@drawable/concough_border_radius_lightgray_style"
             android:layout_marginRight="16dp"
             android:layout_marginEnd="16dp" />
         <Button

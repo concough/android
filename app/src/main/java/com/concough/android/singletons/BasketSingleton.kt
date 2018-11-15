@@ -417,11 +417,23 @@ class BasketSingleton : Handler.Callback {
                 }
             } else {
                 if (error == HTTPErrorType.Refresh) {
-                    this@BasketSingleton.handleLoadBasketItems(msg)
+                    if (this.handler != null) {
+                        val msg1 = this.handler?.obtainMessage(LOAD_BASKET_ITEMS)
+                        msg1?.target = Handler(context?.mainLooper)
+                        msg1?.obj = context
+
+                        this.handler?.sendMessage(msg1)
+                    }
                 } else {
                     if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
                         this@BasketSingleton.retryCounter += 1
-                        this@BasketSingleton.handleLoadBasketItems(msg)
+                        if (this.handler != null) {
+                            val msg1 = this.handler?.obtainMessage(LOAD_BASKET_ITEMS)
+                            msg1?.target = Handler(context?.mainLooper)
+                            msg1?.obj = context
+
+                            this.handler?.sendMessage(msg1)
+                        }
                     } else {
                         this@BasketSingleton.retryCounter = 0
                         AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
@@ -433,7 +445,13 @@ class BasketSingleton : Handler.Callback {
 //            AlertClass.hideLoadingMessage(loadingProgress)
             if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
                 this@BasketSingleton.retryCounter += 1
-                this@BasketSingleton.handleLoadBasketItems(msg)
+                if (this.handler != null) {
+                    val msg1 = this.handler?.obtainMessage(LOAD_BASKET_ITEMS)
+                    msg1?.target = Handler(context?.mainLooper)
+                    msg1?.obj = context
+
+                    this.handler?.sendMessage(msg1)
+                }
             } else {
                 this@BasketSingleton.retryCounter = 0
                 if (error != null) {
@@ -497,11 +515,35 @@ class BasketSingleton : Handler.Callback {
                 }
             } else {
                 if (error == HTTPErrorType.Refresh) {
-                    this@BasketSingleton.handleCreateBasket(msg)
+                    if (this.handler != null) {
+                        val msg1 = this.handler?.obtainMessage(CREATE_BASKET)
+                        msg1?.target = Handler(context?.mainLooper)
+                        msg1?.obj = context
+
+                        val bundle2 = Bundle()
+                        bundle2.putInt("POSITION", position)
+                        msg1?.data = bundle2
+
+
+                        this.handler?.sendMessage(msg1)
+                    }
                 } else {
                     if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
                         this@BasketSingleton.retryCounter += 1
-                        this@BasketSingleton.handleCreateBasket(msg)
+
+                        if (this.handler != null) {
+                            val msg1 = this.handler?.obtainMessage(CREATE_BASKET)
+                            msg1?.target = Handler(context?.mainLooper)
+                            msg1?.obj = context
+
+                            val bundle2 = Bundle()
+                            bundle2.putInt("POSITION", position)
+                            msg1?.data = bundle2
+
+
+                            this.handler?.sendMessage(msg1)
+                        }
+
                     } else {
                         this@BasketSingleton.retryCounter = 0
 
@@ -518,7 +560,20 @@ class BasketSingleton : Handler.Callback {
 //            AlertClass.hideLoadingMessage(loadingProgress)
             if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
                 this@BasketSingleton.retryCounter += 1
-                this@BasketSingleton.handleCreateBasket(msg)
+
+                if (this.handler != null) {
+                    val msg1 = this.handler?.obtainMessage(CREATE_BASKET)
+                    msg1?.target = Handler(context?.mainLooper)
+                    msg1?.obj = context
+
+                    val bundle2 = Bundle()
+                    bundle2.putInt("POSITION", position)
+                    msg1?.data = bundle2
+
+
+                    this.handler?.sendMessage(msg1)
+                }
+
             } else {
                 this@BasketSingleton.retryCounter = 0
 
@@ -638,11 +693,39 @@ class BasketSingleton : Handler.Callback {
                 }
             } else {
                 if (error == HTTPErrorType.Refresh) {
-                    this@BasketSingleton.handleAddSale(msg)
+                    if (this.handler != null) {
+                        val msg1 = this.handler?.obtainMessage(ADD_TO_BASKET)
+                        msg1?.target = Handler(context?.mainLooper)
+                        msg1?.obj = context
+
+                        val bundle1 = Bundle()
+                        bundle1.putString("PRODUCT_ID", productId)
+                        bundle1.putString("TYPE", productType)
+                        bundle1.putInt("POSITION", position)
+                        bundle1.putSerializable("TARGET", target as Serializable)
+                        msg1?.data = bundle1
+
+                        this.handler?.sendMessage(msg1)
+                    }
                 } else {
                     if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
                         this@BasketSingleton.retryCounter += 1
-                        this@BasketSingleton.handleAddSale(msg)
+
+                        if (this.handler != null) {
+                            val msg1 = this.handler?.obtainMessage(ADD_TO_BASKET)
+                            msg1?.target = Handler(context?.mainLooper)
+                            msg1?.obj = context
+
+                            val bundle1 = Bundle()
+                            bundle1.putString("PRODUCT_ID", productId)
+                            bundle1.putString("TYPE", productType)
+                            bundle1.putInt("POSITION", position)
+                            bundle1.putSerializable("TARGET", target as Serializable)
+                            msg1?.data = bundle1
+
+                            this.handler?.sendMessage(msg1)
+                        }
+
                     } else {
                         this@BasketSingleton.retryCounter = 0
 
@@ -657,7 +740,21 @@ class BasketSingleton : Handler.Callback {
         }, { error ->
             if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
                 this@BasketSingleton.retryCounter += 1
-                this@BasketSingleton.handleAddSale(msg)
+
+                if (this.handler != null) {
+                    val msg1 = this.handler?.obtainMessage(ADD_TO_BASKET)
+                    msg1?.target = Handler(context?.mainLooper)
+                    msg1?.obj = context
+
+                    val bundle1 = Bundle()
+                    bundle1.putString("PRODUCT_ID", productId)
+                    bundle1.putString("TYPE", productType)
+                    bundle1.putInt("POSITION", position)
+                    bundle1.putSerializable("TARGET", target as Serializable)
+                    msg1?.data = bundle1
+
+                    this.handler?.sendMessage(msg1)
+                }
             } else {
                 this@BasketSingleton.retryCounter = 0
                 if (error != null) {
@@ -745,11 +842,35 @@ class BasketSingleton : Handler.Callback {
                 }
             } else {
                 if (error == HTTPErrorType.Refresh) {
-                    this@BasketSingleton.handleRemoveFromBasket(msg)
+                    if (this.handler != null) {
+                        val msg1 = this.handler?.obtainMessage(DELETE_FROM_BASKET)
+                        msg1?.target = Handler(context?.mainLooper)
+                        msg1?.obj = context
+
+                        val bundle1 = Bundle()
+                        bundle1.putInt("SALE_ID", saleId)
+                        bundle1.putInt("SALE_POSITION", salePosition)
+                        msg1?.data = bundle1
+
+                        this.handler?.sendMessage(msg1)
+                    }
                 } else {
                     if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
                         this@BasketSingleton.retryCounter += 1
-                        this@BasketSingleton.handleRemoveFromBasket(msg)
+
+                        if (this.handler != null) {
+                            val msg1 = this.handler?.obtainMessage(DELETE_FROM_BASKET)
+                            msg1?.target = Handler(context?.mainLooper)
+                            msg1?.obj = context
+
+                            val bundle1 = Bundle()
+                            bundle1.putInt("SALE_ID", saleId)
+                            bundle1.putInt("SALE_POSITION", salePosition)
+                            msg1?.data = bundle1
+
+                            this.handler?.sendMessage(msg1)
+                        }
+
                     } else {
                         this@BasketSingleton.retryCounter = 0
 
@@ -764,7 +885,20 @@ class BasketSingleton : Handler.Callback {
         }, { error ->
             if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
                 this@BasketSingleton.retryCounter += 1
-                this@BasketSingleton.handleRemoveFromBasket(msg)
+
+                if (this.handler != null) {
+                    val msg1 = this.handler?.obtainMessage(DELETE_FROM_BASKET)
+                    msg1?.target = Handler(context?.mainLooper)
+                    msg1?.obj = context
+
+                    val bundle1 = Bundle()
+                    bundle1.putInt("SALE_ID", saleId)
+                    bundle1.putInt("SALE_POSITION", salePosition)
+                    msg1?.data = bundle1
+
+                    this.handler?.sendMessage(msg1)
+                }
+
             } else {
                 this@BasketSingleton.retryCounter = 0
 
@@ -893,11 +1027,25 @@ class BasketSingleton : Handler.Callback {
                 }
             } else {
                 if (error == HTTPErrorType.Refresh) {
-                    this@BasketSingleton.handleCheckout(msg)
+                    if (this.handler != null) {
+                        val msg1 = this.handler?.obtainMessage(CHECKOUT_BASKET)
+                        msg1?.target = Handler(context?.mainLooper)
+                        msg1?.obj = context
+
+                        this.handler?.sendMessage(msg1)
+                    }
                 } else {
                     if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
                         this@BasketSingleton.retryCounter += 1
-                        this@BasketSingleton.handleCheckout(msg)
+
+                        if (this.handler != null) {
+                            val msg1 = this.handler?.obtainMessage(CHECKOUT_BASKET)
+                            msg1?.target = Handler(context?.mainLooper)
+                            msg1?.obj = context
+
+                            this.handler?.sendMessage(msg1)
+                        }
+
                     } else {
                         this@BasketSingleton.retryCounter = 0
                         AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
@@ -911,7 +1059,15 @@ class BasketSingleton : Handler.Callback {
 
             if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
                 this@BasketSingleton.retryCounter += 1
-                this@BasketSingleton.handleCheckout(msg)
+
+                if (this.handler != null) {
+                    val msg1 = this.handler?.obtainMessage(CHECKOUT_BASKET)
+                    msg1?.target = Handler(context?.mainLooper)
+                    msg1?.obj = context
+
+                    this.handler?.sendMessage(msg1)
+                }
+
             } else {
                 this@BasketSingleton.retryCounter = 0
                 if (error != null) {
@@ -1019,11 +1175,25 @@ class BasketSingleton : Handler.Callback {
                 }
             } else {
                 if (error == HTTPErrorType.Refresh) {
-                    this@BasketSingleton.handleVerifyCheckout(msg)
+                    if (this.handler != null) {
+                        val msg1 = this.handler?.obtainMessage(VERIFY_CHECKOUT_BASKET)
+                        msg1?.target = Handler(context?.mainLooper)
+                        msg1?.obj = context
+
+                        this.handler?.sendMessage(msg1)
+                    }
                 } else {
                     if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
                         this@BasketSingleton.retryCounter += 1
-                        this@BasketSingleton.handleVerifyCheckout(msg)
+
+                        if (this.handler != null) {
+                            val msg1 = this.handler?.obtainMessage(VERIFY_CHECKOUT_BASKET)
+                            msg1?.target = Handler(context?.mainLooper)
+                            msg1?.obj = context
+
+                            this.handler?.sendMessage(msg1)
+                        }
+
                     } else {
                         this@BasketSingleton.retryCounter = 0
                         AlertClass.showTopMessage(context, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
@@ -1037,7 +1207,15 @@ class BasketSingleton : Handler.Callback {
 
             if (this@BasketSingleton.retryCounter < CONNECTION_MAX_RETRY) {
                 this@BasketSingleton.retryCounter += 1
-                this@BasketSingleton.handleVerifyCheckout(msg)
+
+                if (this.handler != null) {
+                    val msg1 = this.handler?.obtainMessage(VERIFY_CHECKOUT_BASKET)
+                    msg1?.target = Handler(context?.mainLooper)
+                    msg1?.obj = context
+
+                    this.handler?.sendMessage(msg1)
+                }
+
             } else {
                 this@BasketSingleton.retryCounter = 0
                 if (error != null) {

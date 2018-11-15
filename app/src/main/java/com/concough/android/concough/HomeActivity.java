@@ -152,20 +152,6 @@ public class HomeActivity extends BottomNavigationActivity {
 
             }
         });
-
-
-        recycleView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-//                if (HomeActivity.this.moreFeedExist) {
-//                    if (!loading) {
-//                        HomeActivity.this.homeActivity(HomeActivity.this.lastCreatedStr);
-//                        counter++;
-//                    }
-//                }
-            }
-        });
-
     }
 
 
@@ -312,6 +298,8 @@ public class HomeActivity extends BottomNavigationActivity {
                                     } else {
                                         HomeActivity.this.retryCounter = 0;
                                         HomeActivity.super.updateMainTitle("کنکوق");
+                                        HomeActivity.this.moreFeedExist = false;
+                                        HomeActivity.this.homeActivityAdapter.notifyDataSetChanged();
                                     }
                                 }
 
@@ -340,6 +328,8 @@ public class HomeActivity extends BottomNavigationActivity {
                             } else {
                                 HomeActivity.this.retryCounter = 0;
                                 HomeActivity.super.updateMainTitle("کنکوق");
+                                HomeActivity.this.moreFeedExist = false;
+                                HomeActivity.this.homeActivityAdapter.notifyDataSetChanged();
 
                                 switch (networkErrorType) {
                                     case NoInternetAccess:
@@ -930,6 +920,14 @@ public class HomeActivity extends BottomNavigationActivity {
             public void setupHolder() {
                 emptyImage.setImageResource(R.drawable.refresh_empty);
                 emptyText.setText("داده ای موجود نیست");
+
+                emptyImage.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        HomeActivity.this.isRefresh = true;
+                        homeActivity(null);
+                    }
+                });
             }
 
         }

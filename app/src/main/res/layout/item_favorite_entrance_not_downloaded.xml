@@ -1,47 +1,212 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/FItem_entrance_not_downloaded"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/concough_recycle_box_style"
-    android:layoutDirection="ltr"
-    android:orientation="vertical">
+    android:layoutDirection="ltr">
 
     <android.support.constraint.ConstraintLayout
-        android:id="@+id/FItem_entrance_not_downloaded_inner_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/concough_recycle_box_style"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="16dp"
         android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:background="@android:color/white"
-        android:paddingBottom="8dp">
-
-
-        <LinearLayout
-            android:id="@+id/linearLayout8"
-            android:layout_width="0dp"
+        >
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/FItem_entrance_not_downloaded_inner_container"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:orientation="horizontal"
+            android:background="@android:color/white"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:paddingBottom="8dp">
 
             <LinearLayout
+                android:id="@+id/FItem_entrance_yearContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:layout_marginTop="8dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp">
+
+                <TextView
+                    android:id="@+id/FItem_entrance_yearTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/colorConcoughGrayBlue"
+                    android:textSize="14sp"
+                    android:text=""
+                    android:layout_marginRight="4dp"
+                    android:layout_marginEnd="4dp"
+                    />
+                <TextView
+                    android:id="@+id/FItem_entrance_monthTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/colorConcoughGrayBlueLight"
+                    android:textSize="13sp"
+                    android:text=""
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/FItem_entrance_downloadContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/FItem_entrance_yearContainer"
+                android:layout_marginTop="32dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginLeft="8dp"
+                >
+
+                <Button
+                    android:id="@+id/FItem_entrance_downloadButton"
+                    android:layout_width="160dp"
+                    android:layout_height="32dp"
+                    android:textColor="@color/colorConcoughBlue"
+                    android:background="@drawable/concough_border_radius_style"
+                    android:textSize="14sp"
+                    android:text="@string/entrance_detail_download_button"
+                    />
+
+                <TextView
+                    android:id="@+id/FItem_entrance_download_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/colorConcoughGray"
+                    android:textSize="11sp"
+                    android:text=""
+                    android:textDirection="rtl"
+                    android:layout_marginTop="4dp"
+                    />
+            </LinearLayout>
+
+            <android.support.constraint.ConstraintLayout
+                android:id="@+id/FItem_entrance_progressContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="4dp"
+                android:layout_marginLeft="0dp"
+                android:layout_marginTop="48dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/FItem_entrance_yearContainer"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="0dp"
+                >
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:orientation="horizontal">
+
+
+                    <android.support.constraint.ConstraintLayout
+                        android:id="@+id/FItem_entrance_download_progress2"
+                        android:layout_width="0dp"
+                        android:layout_height="2dp"
+                        android:layout_weight="1"
+                        android:layout_marginTop="0dp"
+                        android:background="@color/colorConcoughGray3">
+
+                        <LinearLayout
+                            android:id="@+id/FItem_entrance_download_progress_level"
+                            android:layout_width="wrap_content"
+                            android:layout_height="2dp"
+                            android:background="@color/colorConcoughGreen"
+                            android:orientation="horizontal"
+                            app:layout_constraintLeft_toLeftOf="parent"
+                            app:layout_constraintTop_toTopOf="parent">
+
+                        </LinearLayout>
+
+                    </android.support.constraint.ConstraintLayout>
+
+                    <ProgressBar
+                        android:id="@+id/isDownloadingProgressBar"
+                        style="?android:attr/progressBarStyle"
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:layout_marginLeft="4dp"
+                        android:layout_marginStart="4dp" />
+
+                </LinearLayout>
+
+            </android.support.constraint.ConstraintLayout>
+
+            <LinearLayout
+                android:id="@+id/linearLayout9"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/FItem_entrance_downloadContainer">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/colorConcoughGray3" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/FItem_entrance_infoContainer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="20dp"
+                android:layout_marginLeft="12dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/linearLayout9">
+
+
+                    <TextView
+                        android:id="@+id/FItem_entrance_set"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:gravity="right"
+                        android:text=""
+                        android:textAlignment="gravity"
+                        android:textColor="@android:color/black"
+                        android:textDirection="rtl"
+                        android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/FItem_entrance_org"
@@ -49,273 +214,125 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
                     android:gravity="right"
-                    android:text="TextView"
-                    android:textAlignment="gravity"
-                    android:textColor="@android:color/black"
-                    android:textDirection="rtl"
-                    android:textSize="13sp" />
-
-                <TextView
-                    android:id="@+id/FItem_entrance_set"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:gravity="right"
-                    android:text="TextView"
+                    android:text=""
                     android:textAlignment="gravity"
                     android:textColor="@android:color/black"
                     android:textDirection="rtl"
                     android:textSize="12sp" />
 
-                <TextView
-                    android:id="@+id/FItem_entrance_extra_data"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="right"
-                    android:text="TextView"
-                    android:textAlignment="gravity"
-                    android:textColor="@color/colorConcoughGray2"
-                    android:textDirection="rtl"
-                    android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/FItem_entrance_extra_data"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="right"
+                        android:text=""
+                        android:textAlignment="gravity"
+                        android:textColor="@color/colorConcoughGray2"
+                        android:textDirection="rtl"
+                        android:textSize="11sp" />
             </LinearLayout>
 
-            <ImageView
-                android:id="@+id/FItem_entrance_set_image"
-                android:layout_width="70dp"
-                android:layout_height="70dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp"
-                app:srcCompat="@drawable/no_image" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/linearLayout9"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:orientation="vertical"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout8">
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/colorConcoughGray4" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/linearLayout11"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout9">
 
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_marginRight="16dp"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/FItem_entrance_duration"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="4dp"
-                    android:layout_marginRight="4dp"
-                    android:text="TextView"
-                    android:textColor="@android:color/black"
-                    android:textDirection="rtl" />
-
-                <ImageView
-                    android:id="@+id/imageView51"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    app:srcCompat="@drawable/timer" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/FItem_entrance_booklets_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="4dp"
-                    android:layout_marginRight="4dp"
-                    android:text="TextView"
-                    android:textColor="@android:color/black"
-                    android:textDirection="rtl" />
-
-                <ImageView
-                    android:id="@+id/imageView5"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    app:srcCompat="@drawable/page_overview" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/FItem_entrance_line_gray"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:orientation="vertical"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout11">
-
-            <View
+                android:id="@+id/FItem_entrance_line_gray"
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/colorConcoughGray4" />
-
-        </LinearLayout>
-
-        <ProgressBar
-            android:id="@+id/isDownloadingProgressBar"
-            style="?android:attr/progressBarStyle"
-            android:layout_width="10dp"
-            android:layout_height="10dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="5dp"
-            android:visibility="invisible"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/constraintLayout5" />
-
-        <android.support.constraint.ConstraintLayout
-            android:id="@+id/constraintLayout5"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/FItem_entrance_line_gray">
-
-            <android.support.constraint.ConstraintLayout
-                android:id="@+id/FItem_entrance_download_progress2"
-                android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:layout_marginTop="16dp"
-                android:background="@color/colorConcoughGray3"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="20dp"
+                android:layout_marginLeft="12dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toBottomOf="@id/FItem_entrance_infoContainer">
 
-                <LinearLayout
-                    android:id="@+id/FItem_entrance_download_progress_level"
-                    android:layout_width="wrap_content"
-                    android:layout_height="2dp"
-                    android:background="@color/colorConcoughGreen"
-                    android:orientation="horizontal"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
-
-
-                </LinearLayout>
-
-            </android.support.constraint.ConstraintLayout>
-
-            <ProgressBar
-                android:id="@+id/FItem_entrance_download_progress"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="0dp"
-                android:layout_marginLeft="0dp"
-                android:layout_marginRight="0dp"
-                android:layout_marginTop="0dp"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="@+id/constraintLayout5"
-                app:layout_constraintLeft_toLeftOf="@+id/constraintLayout5"
-                app:layout_constraintRight_toRightOf="@+id/constraintLayout5"
-                app:layout_constraintTop_toTopOf="@+id/constraintLayout5" />
-
-            <LinearLayout
-                android:id="@+id/FItem_entrance_download_section"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="0dp"
-                android:layout_marginEnd="0dp"
-                android:layout_marginRight="0dp"
-                android:layout_marginTop="0dp"
-                android:gravity="center"
-                android:orientation="horizontal"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <TextView
-                    android:id="@+id/FItem_entrance_download_count"
+                <View
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginRight="8dp"
-                    android:layout_weight="1"
-                    android:text=""
-                    android:textColor="@color/colorConcoughGray"
-                    android:textDirection="rtl"
-                    android:textSize="12sp" />
-
-                <ProgressBar
-                    android:id="@+id/preStartProgressBar"
-                    style="?android:attr/progressBarStyle"
-                    android:layout_width="15dp"
-                    android:layout_height="15dp"
-                    android:layout_marginEnd="4dp"
-                    android:layout_marginRight="4dp"
-                    android:layout_weight="1"
-                    android:visibility="invisible" />
-
-                <TextView
-                    android:id="@+id/FItem_entrance_download_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="4dp"
-                    android:layout_marginRight="4dp"
-                    android:layout_weight="1"
-                    android:text="@string/entrance_detail_download_button"
-                    android:textColor="@color/colorConcoughBlue"
-                    android:textDirection="rtl"
-                    android:textSize="14sp" />
-
-                <ImageView
-                    android:id="@+id/imageView6"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_weight="1"
-                    app:srcCompat="@drawable/download" />
+                    android:layout_height="1dp"
+                    android:background="@color/colorConcoughGray3" />
 
             </LinearLayout>
-        </android.support.constraint.ConstraintLayout>
 
+            <LinearLayout
+                android:id="@+id/linearLayout11"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/FItem_entrance_line_gray">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginRight="16dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/FItem_entrance_duration"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:layout_marginRight="4dp"
+                        android:text=""
+                        android:textSize="11sp"
+                        android:textColor="@android:color/black"
+                        android:textDirection="rtl" />
+
+                    <ImageView
+                        android:id="@+id/imageView51"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        app:srcCompat="@drawable/timer" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/FItem_entrance_booklets_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:layout_marginRight="4dp"
+                        android:text=""
+                        android:textSize="11sp"
+                        android:textColor="@android:color/black"
+                        android:textDirection="rtl" />
+
+                    <ImageView
+                        android:id="@+id/imageView5"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        app:srcCompat="@drawable/page_overview" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </android.support.constraint.ConstraintLayout>
     </android.support.constraint.ConstraintLayout>
-</LinearLayout>
+
+    <ImageView
+        android:id="@+id/FItem_entrance_set_image"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="-16dp"
+        android:background="@drawable/concough_recycle_box_style"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/no_image"
+        android:layout_marginEnd="16dp" />
+</android.support.constraint.ConstraintLayout>

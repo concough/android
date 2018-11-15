@@ -433,3 +433,20 @@ Wallet in Setting Activity (abolfazl.beh) - 2018-10-29
 ------------------------------------------------------------------------------------------------
 Some Testing and Bugs Fix (abolfazl.beh) - 2018-11-12
 
+------------------------------------------------------------------------------------------------
+Favorite Activity and Some Bugs Fixed (abolfazl.beh) - 2018-11-15
+
+1 - FavoriteActivity view holders layout changed.
+2 - FavoriteActivity Some modification on download and separate downloaded from not downloaded entrances.
+3 - FavoriteActivity new view holder for header added.
+4 - EntrancePackageDownloader finish sub message for local notification changed.
+5 - All HandlerThreads and Handlers chacked to fix bug:
+    - BasketSingleton
+    - ArchiveDetailActivity
+    - EntranceDetailActivity
+    - FavoriteActivity
+6 - HomeActivity on load error empty holder not showed --> fixed
+7 - EntranceDetailActivity cost information fixed
+8 - ArchiveDetailActivity buyed time fixed.
+9 - EntranceBuyDialog checked and worked correctly.
+10 - SettingActivity delete purchased data modified.

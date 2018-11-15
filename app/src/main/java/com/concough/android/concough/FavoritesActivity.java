@@ -15,9 +15,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -27,6 +27,8 @@ import com.baoyz.widget.PullRefreshLayout;
 import com.bumptech.glide.Glide;
 import com.concough.android.downloader.EntrancePackageDownloader;
 import com.concough.android.general.AlertClass;
+import com.concough.android.models.EntranceLessonModel;
+import com.concough.android.models.EntranceLessonModelHandler;
 import com.concough.android.models.EntranceModel;
 import com.concough.android.models.EntranceModelHandler;
 import com.concough.android.models.EntranceOpenedCountModelHandler;
@@ -56,6 +58,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Console;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -63,6 +66,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.UUID;
 
 import io.realm.RealmResults;
@@ -152,7 +156,6 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
         });
 
         username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
-
         actionBarSet();
     }
 
@@ -194,7 +197,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                         buttonDetail.imageSource = R.drawable.checkmark;
                         buttonDetailArrayList.add(buttonDetail);
 
-                        FavoritesActivity.super.createActionBar("کتابخانه من", false, buttonDetailArrayList);
+                        FavoritesActivity.super.createActionBar("ویرایش کتابخانه", false, buttonDetailArrayList);
                         break;
                     }
 
@@ -232,50 +235,53 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
     }
 
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.favorite_edit) {
-            if ("Normal".equals(showType)) {
-                showType = "Edit";
-                favAdapter.notifyDataSetChanged();
-            } else if ("Edit".equals(showType)) {
-                showType = "Normal";
-                loadData();
-            }
-
-            invalidateOptionsMenu();
-        } else if (item.getItemId() == R.id.favorite_sync) {
-            if (FavoritesActivity.this.handler != null) {
-                Message msg = FavoritesActivity.this.handler.obtainMessage(SYNC_WITH_SERVER);
-                msg.setTarget(new Handler(FavoritesActivity.this.getMainLooper()));
-
-                FavoritesActivity.this.handler.sendMessage(msg);
-            }
-        }
-        return super.onOptionsItemSelected(item);
-    }
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        if (item.getItemId() == R.id.favorite_edit) {
+//            if ("Normal".equals(showType)) {
+//                showType = "Edit";
+//                favAdapter.notifyDataSetChanged();
+//            } else if ("Edit".equals(showType)) {
+//                showType = "Normal";
+//                loadData();
+//            }
+//
+//            invalidateOptionsMenu();
+//        } else if (item.getItemId() == R.id.favorite_sync) {
+//            if (FavoritesActivity.this.handler != null) {
+//                Message msg = FavoritesActivity.this.handler.obtainMessage(SYNC_WITH_SERVER);
+//                msg.setTarget(new Handler(FavoritesActivity.this.getMainLooper()));
+//
+//                FavoritesActivity.this.handler.sendMessage(msg);
+//            }
+//        }
+//        return super.onOptionsItemSelected(item);
+//    }
 
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        favAdapter = new FavoritesAdapter(this, new ArrayList<FavoriteItem>(), new ArrayList<Integer>());
+        favAdapter = new FavoritesAdapter(this, new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>());
         recycleView.setAdapter(favAdapter);
 
-
         this.loadData();
+        this.loadLessonData();
     }
 
     private void loadData() {
         try {
             ArrayList<FavoriteItem> localPurchased = new ArrayList<>();
+            ArrayList<FavoriteItem> localNotDownloaded = new ArrayList<>();
             ArrayList<Integer> localDownloadCount = new ArrayList<>();
 
             String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
             if (username != null) {
                 RealmResults<PurchasedModel> items = PurchasedModelHandler.getAllPurchased(getApplicationContext(), username);
-                if (items != null) {
+                if (items != null && !items.isEmpty()) {
                     for (int i = 0; i < items.size(); i++) {
                         PurchasedModel item = items.get(i);
                         if ("Entrance".equals(item.productType)) {
@@ -320,23 +326,39 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                 fav.opened = openedCount;
                                 fav.questionCount = qCount;
 
-                                localPurchased.add(fav);
-
                                 if (purchased.isDownloaded) {
+                                    localPurchased.add(fav);
                                     localDownloadCount.add(localPurchased.size() - 1);
+                                } else {
+                                    localNotDownloaded.add(fav);
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            pullRefreshLayout.setRefreshing(false);
-            favAdapter.setItems(localPurchased, localDownloadCount);
-            favAdapter.notifyDataSetChanged();
+                pullRefreshLayout.setRefreshing(false);
+                favAdapter.setItems(localPurchased, localNotDownloaded, localDownloadCount);
+                favAdapter.notifyDataSetChanged();
+            }
 
         } catch (Exception exc) {
             Log.d(TAG, "loadData: " + exc.getMessage());
+        }
+    }
+
+    private void loadLessonData() {
+        String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+        ArrayList<EntranceLessonModel> items = EntranceLessonModelHandler.getAllLessons(getApplicationContext(),
+                username);
+
+        HashMap<String, Integer> result = new HashMap<>();
+        for(EntranceLessonModel item: items) {
+            if (result.containsKey(item.fullTitle)) {
+                result.put(item.fullTitle, result.get(item.fullTitle) + item.qCount);
+            } else {
+                result.put(item.fullTitle, item.qCount);
+            }
         }
     }
 
@@ -516,11 +538,11 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                 RealmResults<PurchasedModel> deletedItems = PurchasedModelHandler.getAllPurchasedNotIn(getApplicationContext(), username, dat);
                                                 if (deletedItems.size() > 0) {
                                                     for (PurchasedModel pm : deletedItems) {
-                                                        FavoritesActivity.this.deletePurchaseData(pm.productUniqueId);
+                                                        FavoritesActivity.this.deletePurchaseData(pm.productUniqueId, username);
 
                                                         if ("Entrance".equals(pm.productType)) {
                                                             if (EntranceModelHandler.removeById(getApplicationContext(), username, pm.productUniqueId)) {
-                                                                //EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
+                                                                EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
                                                                 EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
                                                                 PurchasedModelHandler.removeById(getApplicationContext(), username, pm.id);
                                                             }
@@ -528,14 +550,11 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                     }
                                                 }
 
-                                                //RealmResults<PurchasedModel> purchasedIn = PurchasedModelHandler.getAllPurchasedIn(BasketCheckoutActivity.this, username, purchasedIds);
-
                                                 purchasedIds(dat);
                                                 FavoritesActivity.this.loadData();
-
                                             }
                                         } catch (Exception exc) {
-                                            Log.d(TAG, exc.getLocalizedMessage());
+                                            //Log.d(TAG, exc.getLocalizedMessage());
                                         }
                                         break;
                                     case "Error":
@@ -547,7 +566,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                     RealmResults<PurchasedModel> items = PurchasedModelHandler.getAllPurchased(getApplicationContext(), username);
 
                                                     for (PurchasedModel pm : items) {
-                                                        FavoritesActivity.this.deletePurchaseData(pm.productUniqueId);
+                                                        FavoritesActivity.this.deletePurchaseData(pm.productUniqueId, username);
 
                                                         if ("Entrance".equals(pm.productType)) {
                                                             if (EntranceModelHandler.removeById(getApplicationContext(), username, pm.productUniqueId)) {
@@ -730,16 +749,20 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
 
 
-    private void deletePurchaseData(String uniqueId) {
-        File f = new File(FavoritesActivity.this.getFilesDir(), uniqueId);
+    private void deletePurchaseData(String path, String username) {
+        String finalPath = username + "_" + path;
+
+        File f = new File(FavoritesActivity.this.getFilesDir(), finalPath);
+        if (!(f.exists() && f.isDirectory())) {
+            f = new File(FavoritesActivity.this.getFilesDir(), path);
+        }
+
         if (f.exists() && f.isDirectory()) {
-//                                String[] children = f.list();
             for (File fc : f.listFiles()) {
                 fc.delete();
             }
             boolean rd = f.delete();
         }
-
     }
 
     @Override
@@ -760,7 +783,9 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
     private enum FavViewHolderType {
         ENTRANCE_NOT_DOWNLOADED(1),
         ENTRANCE_DOWNLOADED(2),
-        ENTRANCE_DELETE(3);
+        ENTRANCE_DELETE(3),
+        FAVORITE_HEADER(4),
+        EMPTY_RECYCLE(50);
 
         private final int value;
 
@@ -941,23 +966,26 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
         }
     }
 
-
     private class FavoritesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         private Context context;
         private ArrayList<FavoriteItem> purchased;
+        private ArrayList<FavoriteItem> notDownloaded;
         private ArrayList<Integer> DownloadCount;
 
-        public FavoritesAdapter(Context context, ArrayList<FavoriteItem> items, ArrayList<Integer> dCounts) {
+        public FavoritesAdapter(Context context,
+                                ArrayList<FavoriteItem> items,
+                                ArrayList<FavoriteItem> nitems,
+                                ArrayList<Integer> dCounts) {
             this.context = context;
             this.purchased = items;
+            this.notDownloaded = nitems;
             this.DownloadCount = dCounts;
         }
 
-
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            if (viewType == 50) {
+            if (viewType == FavViewHolderType.EMPTY_RECYCLE.getValue()) {
                 View view = LayoutInflater.from(context).inflate(R.layout.cc_recycle_not_item, parent, false);
                 return new ItemEmptyHolder(view);
             } else if (viewType == FavViewHolderType.ENTRANCE_NOT_DOWNLOADED.getValue()) {
@@ -969,6 +997,9 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             } else if (viewType == FavViewHolderType.ENTRANCE_DELETE.getValue()) {
                 View view = LayoutInflater.from(this.context).inflate(R.layout.item_favorite_entrance_delete, parent, false);
                 return new FEntranceDeleteViewHolder(view);
+            } else if (viewType == FavViewHolderType.FAVORITE_HEADER.getValue()) {
+                View view = LayoutInflater.from(this.context).inflate(R.layout.item_favorite_header, parent, false);
+                return new FHeaderViewHeader(view);
             }
 
             return null;
@@ -980,32 +1011,37 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 ItemEmptyHolder itemEmptyHolder = (ItemEmptyHolder) holder;
                 itemEmptyHolder.setupHolder();
             } else if (holder.getClass() == FEntranceNotDownloadViewHolder.class) {
-                FavoriteItem item = this.purchased.get(position);
+                FavoriteItem item = this.notDownloaded.get(position - this.purchased.size() - 2);
                 EntrancePurchasedStruct purchasedData = (EntrancePurchasedStruct) item.purchased;
                 ((FEntranceNotDownloadViewHolder) holder).setupHolder((EntranceStruct) item.object, purchasedData, position);
             } else if (holder.getClass() == FEntranceDownloadViewHolder.class) {
-                FavoriteItem item = this.purchased.get(position);
+                FavoriteItem item = this.purchased.get(position - 1);
                 EntrancePurchasedStruct purchasedData = (EntrancePurchasedStruct) item.purchased;
                 ((FEntranceDownloadViewHolder) holder).setupHolder((EntranceStruct) item.object, purchasedData, position, item.starred, item.opened, item.questionCount);
             } else if (holder.getClass() == FEntranceDeleteViewHolder.class) {
                 Integer i = this.DownloadCount.get(position);
                 FavoriteItem item = this.purchased.get(i);
                 ((FEntranceDeleteViewHolder) holder).setupHolder(item, position);
+            } else if (holder.getClass() == FHeaderViewHeader.class) {
+                if (position == 0) {
+                    ((FHeaderViewHeader) holder).setupHolder("آزمون ها");
+                } else if (position == this.purchased.size() + 1) {
+                    ((FHeaderViewHeader) holder).setupHolder("دانلود نشده");
+                }
             }
-
         }
 
         @Override
         public int getItemCount() {
-            if (purchased.size() == 0) {
-                return 1;
-            } else {
-                switch (FavoritesActivity.this.showType) {
-                    case "Normal":
-                        return this.purchased.size();
-                    case "Edit":
-                        return this.DownloadCount.size();
-                }
+            switch (FavoritesActivity.this.showType) {
+                case "Normal":
+                    if (purchased.size() == 0 && notDownloaded.size() == 0) {
+                        return 1;
+                    } else {
+                        return this.purchased.size() + this.notDownloaded.size() + 2;
+                    }
+                case "Edit":
+                    return this.DownloadCount.size();
             }
             return 0;
         }
@@ -1018,31 +1054,38 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             }
         }
 
-        public void setItems(ArrayList<FavoriteItem> items, ArrayList<Integer> dCounts) {
+        public void setItems(ArrayList<FavoriteItem> items,
+                             ArrayList<FavoriteItem> nitems,
+                             ArrayList<Integer> dCounts) {
             this.purchased = items;
+            this.notDownloaded = nitems;
             this.DownloadCount = dCounts;
         }
 
         @Override
         public int getItemViewType(int position) {
             if ("Normal".equals(FavoritesActivity.this.showType)) {
-                if (this.purchased.size() == 0) {
-                    return 50;
-                } else if (position < this.purchased.size()) {
-                    FavoriteItem item = this.purchased.get(position);
-                    if ("Entrance".equals(item.type)) {
-                        EntrancePurchasedStruct purchasedData = (EntrancePurchasedStruct) item.purchased;
-                        if (!purchasedData.isDownloaded) {
-                            return FavViewHolderType.ENTRANCE_NOT_DOWNLOADED.getValue();
-                        } else {
+                if (this.purchased.size() == 0 && this.notDownloaded.size() == 0) {
+                    return FavViewHolderType.EMPTY_RECYCLE.getValue();
+                } else {
+                    if (position == 0) {
+                        return FavViewHolderType.FAVORITE_HEADER.getValue();
+                    } else if (position < this.purchased.size() + 1) {
+                        FavoriteItem item = this.purchased.get(position - 1);
+                        if ("Entrance".equals(item.type)) {
                             return FavViewHolderType.ENTRANCE_DOWNLOADED.getValue();
+                        }
+                    } else if (position == this.purchased.size() + 1) {
+                        return FavViewHolderType.FAVORITE_HEADER.getValue();
+                    } else {
+                        FavoriteItem item = this.notDownloaded.get(position - this.purchased.size() - 2);
+                        if ("Entrance".equals(item.type)) {
+                            return FavViewHolderType.ENTRANCE_NOT_DOWNLOADED.getValue();
                         }
                     }
                 }
             } else if ("Edit".equals(FavoritesActivity.this.showType)) {
-                if (this.purchased.size() == 0) {
-                    return 50;
-                } else if (position < this.purchased.size()) {
+                if (this.purchased.size() != 0) {
                     Integer i = this.DownloadCount.get(position);
                     FavoriteItem item = this.purchased.get(i);
                     if ("Entrance".equals(item.type)) {
@@ -1054,7 +1097,8 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
         }
 
 
-        private class ItemEmptyHolder extends RecyclerView.ViewHolder {
+        // MARK: ViewHolders
+        class ItemEmptyHolder extends RecyclerView.ViewHolder {
 
             private TextView emptyText;
             private ImageView emptyImage;
@@ -1078,8 +1122,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             }
         }
 
-        // MARK: ViewHolders
-        private class FEntranceNotDownloadViewHolder extends RecyclerView.ViewHolder {
+        class FEntranceNotDownloadViewHolder extends RecyclerView.ViewHolder {
             private EntrancePackageDownloader downloader = null;
 
             private EntranceStruct entranceS;
@@ -1091,11 +1134,11 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             private ImageView entranceSetImage;
             private TextView entranceBookletCountTextView;
             private TextView entranceDurationTextView;
-            private TextView downloadTextView;
+            private TextView entranceYearTextView;
+            private TextView entranceMonthTextView;
+            private Button downloadButton;
             private TextView entranceDownloadCountTextView;
             private LinearLayout entranceDownloadLayout;
-            private ProgressBar downloadProgress;
-            private ProgressBar preStartProgressBar;
             private ProgressBar isDownloadingProgressBar;
             private ConstraintLayout downloadProgress2;
             private LinearLayout downloadProgress2Level;
@@ -1113,25 +1156,26 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 entranceBookletCountTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_booklets_count);
                 entranceDurationTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_duration);
                 entranceDownloadCountTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_download_count);
-                downloadTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_download_label);
-                entranceDownloadLayout = (LinearLayout) itemView.findViewById(R.id.FItem_entrance_download_section);
-                downloadProgress = (ProgressBar) itemView.findViewById(R.id.FItem_entrance_download_progress);
+                entranceYearTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_yearTextView);
+                entranceMonthTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_monthTextView);
+                entranceDownloadLayout = (LinearLayout) itemView.findViewById(R.id.FItem_entrance_downloadContainer);
 
                 downloadProgress2 = (ConstraintLayout) itemView.findViewById(R.id.FItem_entrance_download_progress2);
                 downloadProgress2Level = (LinearLayout) itemView.findViewById(R.id.FItem_entrance_download_progress_level);
-
-                preStartProgressBar = (ProgressBar) itemView.findViewById(R.id.preStartProgressBar);
                 isDownloadingProgressBar = (ProgressBar) itemView.findViewById(R.id.isDownloadingProgressBar);
 
                 line = (LinearLayout) itemView.findViewById(R.id.FItem_entrance_line_gray);
+                downloadButton = (Button) itemView.findViewById(R.id.FItem_entrance_downloadButton);
 
-                entranceOrgTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-                entranceSetTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                entranceOrgTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                entranceSetTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 entranceExtraDataTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-                entranceBookletCountTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-                entranceDurationTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-                downloadTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                entranceBookletCountTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                entranceDurationTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 entranceDownloadCountTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                entranceYearTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                entranceMonthTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                downloadButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
             }
 
             public void setupHolder(final EntranceStruct entrance, final EntrancePurchasedStruct purchased, final int index) {
@@ -1142,33 +1186,24 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                     @Override
                     public void run() {
                         widthI = FEntranceNotDownloadViewHolder.this.line.getWidth();
+                        Log.d(TAG, "width " + widthI);
                     }
                 });
-                downloadProgress2.setVisibility(View.GONE);
 
-                preStartProgressBar.setVisibility(View.GONE);
+                downloadProgress2.setVisibility(View.GONE);
                 isDownloadingProgressBar.setVisibility(View.GONE);
 
                 FEntranceNotDownloadViewHolder.this.downloader = null;
                 FEntranceNotDownloadViewHolder.this.entranceDownloadLayout.setVisibility(View.GONE);
 
-//                downloadProgress.setVisibility(View.GONE);
-//                downloadProgress.setProgress(0);
-//                downloadProgress.setMax(100);
-//                downloadProgress.setIndeterminate(false);
-//                downloadProgress.invalidate();
-
-//                ViewGroup.LayoutParams params = FEntranceNotDownloadViewHolder.this.downloadProgress2Level.getLayoutParams();
-//                params.width = 0;
-//                FEntranceNotDownloadViewHolder.this.downloadProgress2Level.setLayoutParams(params);
+                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle().trim());
+                entranceYearTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()).trim());
 
                 if (entrance.getEntranceMonth() > 0) {
-                    entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle().trim() + " " +
-                            monthToString(entrance.getEntranceMonth()) + " " +
-                            FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()).trim());
+                    entranceMonthTextView.setText(monthToString(entrance.getEntranceMonth()));
                 } else {
-                    entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle().trim() + " " +
-                            FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()).trim());
+                    entranceMonthTextView.setText("");
+                    entranceMonthTextView.setVisibility(View.GONE);
                 }
                 entranceSetTextView.setText(entrance.getEntranceSetTitle().trim() + " (" + entrance.getEntranceGroupTitle().trim() + ")");
 
@@ -1193,15 +1228,14 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
                 entranceBookletCountTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceBookletCounts()) + " دفترچه");
                 entranceDurationTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceDuration()) + " دقیقه");
-                entranceDownloadCountTextView.setText("(" + FormatterSingleton.getInstance().getNumberFormatter().format(purchased.downloaded) + " بار دانلود شده است)");
+                entranceDownloadCountTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(purchased.downloaded) + " بار دانلود شده است");
                 if( purchased.isDataDownloaded) {
-                    downloadTextView.setText("ادامه دانلود");
+                    downloadButton.setText("ادامه دانلود");
                 }
 
                 downloadImage(entrance.getEntranceSetId());
                 checkForState(index);
             }
-
 //            private void setDownloader(Object downloader) {
 //
 //                this.downloader = (EntrancePackageDownloader) downloader;
@@ -1348,77 +1382,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 FEntranceNotDownloadViewHolder.this.downloader.setListener(new EntrancePackageDownloader.EntrancePackageDownloaderListener() {
                     @Override
                     public void onDownloadImagesFinishedForViewHolder(boolean result, final int index) {
-                        if (result) {
-                            uiHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    DownloaderSingleton.getInstance().removeDownloader(entranceS.getEntranceUniqueId());
-
-                                    if (FavoritesActivity.this.handler != null) {
-                                        Message msg = FavoritesActivity.this.handler.obtainMessage(UPDATE_USER_PURCHASE_DATA);
-                                        msg.setTarget(new Handler(FavoritesActivity.this.getMainLooper()));
-
-                                        Bundle bundle = new Bundle();
-                                        bundle.putString("PRODUCT_ID", entranceS.getEntranceUniqueId());
-                                        bundle.putString("PRODUCT_TYPE", "Entrance");
-                                        msg.setData(bundle);
-
-                                        FavoritesActivity.this.handler.sendMessage(msg);
-                                    }
-
-
-                                    JsonObject eData = new JsonObject();
-                                    eData.addProperty("uniqueId", entranceS.getEntranceUniqueId());
-                                    FavoritesActivity.this.createLog(LogTypeEnum.EntranceDownload.getTitle(), eData);
-
-                                    String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
-                                    if (username != null) {
-                                        FavoriteItem item = favAdapter.purchased.get(index);
-                                        PurchasedModel p = PurchasedModelHandler.getByProductId(getApplicationContext(), username, item.type, item.uniqueId);
-                                        if (p != null) {
-                                            EntrancePurchasedStruct ps = new EntrancePurchasedStruct();
-                                            ps.id = p.id;
-                                            ps.created = p.created;
-                                            ps.amount = 0;
-                                            ps.downloaded = p.downloadTimes;
-                                            ps.isDownloaded = p.isDownloaded;
-                                            ps.isDataDownloaded = p.isLocalDBCreated;
-                                            ps.isImagesDownloaded = p.isImageDownloaded;
-
-                                            long qCount = EntranceQuestionModelHandler.countQuestions(getApplicationContext(), username, item.uniqueId);
-
-                                            FavoriteItem fav = new FavoriteItem();
-                                            fav.uniqueId = item.uniqueId;
-                                            fav.type = item.type;
-                                            fav.object = item.object;
-                                            fav.purchased = ps;
-                                            fav.starred = 0;
-                                            fav.opened = 0;
-                                            fav.questionCount = qCount;
-
-                                            favAdapter.purchased.set(index, fav);
-                                            favAdapter.DownloadCount.add(index);
-                                            favAdapter.notifyItemRangeChanged(index, 1);
-
-                                        }
-                                    }
-
-                                    AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "ActionResult", "DownloadSuccess", "success", null);
-                                    FavoritesActivity.this.entranceUniqueId = "";
-                                }
-                            });
-                        } else {
-                            uiHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    DownloaderSingleton.getInstance().removeDownloader(entranceS.getEntranceUniqueId());
-                                    AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "ActionResult", "DownloadFailed", "error", null);
-                                    favAdapter.notifyItemRangeChanged(index, 1);
-                                    FavoritesActivity.this.entranceUniqueId = "";
-                                }
-                            });
-                        }
-
+                        FEntranceNotDownloadViewHolder.this.onDownloadFinished(result, index);
                     }
 
                     @Override
@@ -1442,6 +1406,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                     public void onDownloadPausedForViewHolder(int index) {
                         DownloaderSingleton.getInstance().removeDownloader(entranceS.getEntranceUniqueId());
                         FavoritesActivity.this.entranceUniqueId = "";
+                        FavoritesAdapter.this.notifyItemChanged(1);
                     }
 
                     @Override
@@ -1452,10 +1417,103 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
             }
 
+            private void onDownloadFinished(boolean result, final int index) {
+                if (result) {
+                    uiHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            DownloaderSingleton.getInstance().removeDownloader(entranceS.getEntranceUniqueId());
+
+                            if (FavoritesActivity.this.handler != null) {
+                                Message msg = FavoritesActivity.this.handler.obtainMessage(UPDATE_USER_PURCHASE_DATA);
+                                msg.setTarget(new Handler(FavoritesActivity.this.getMainLooper()));
+
+                                Bundle bundle = new Bundle();
+                                bundle.putString("PRODUCT_ID", entranceS.getEntranceUniqueId());
+                                bundle.putString("PRODUCT_TYPE", "Entrance");
+                                msg.setData(bundle);
+
+                                FavoritesActivity.this.handler.sendMessage(msg);
+                            }
+
+
+                            JsonObject eData = new JsonObject();
+                            eData.addProperty("uniqueId", entranceS.getEntranceUniqueId());
+                            FavoritesActivity.this.createLog(LogTypeEnum.EntranceDownload.getTitle(), eData);
+
+                            String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+                            if (username != null) {
+                                FavoriteItem item = FavoritesAdapter.this.notDownloaded.get(index - FavoritesAdapter.this.purchased.size() - 2);
+                                if (item.type == "Entrance") {
+                                    PurchasedModel p = PurchasedModelHandler.getByProductId(getApplicationContext(), username, item.type, item.uniqueId);
+                                    if (p != null) {
+                                        EntrancePurchasedStruct ps = new EntrancePurchasedStruct();
+                                        ps.id = p.id;
+                                        ps.created = p.created;
+                                        ps.amount = 0;
+                                        ps.downloaded = p.downloadTimes;
+                                        ps.isDownloaded = p.isDownloaded;
+                                        ps.isDataDownloaded = p.isLocalDBCreated;
+                                        ps.isImagesDownloaded = p.isImageDownloaded;
+
+                                        long openedCount = EntranceOpenedCountModelHandler.countByEntranceId(getApplicationContext(),
+                                                username, item.uniqueId);
+                                        long bookmarkedCount = EntranceQuestionStarredModelHandler.countByEntranceId(getApplicationContext(),
+                                                username, item.uniqueId);
+                                        long qCount = EntranceQuestionModelHandler.countQuestions(getApplicationContext(), username, item.uniqueId);
+
+                                        FavoriteItem fav = new FavoriteItem();
+                                        fav.uniqueId = item.uniqueId;
+                                        fav.type = item.type;
+                                        fav.object = item.object;
+                                        fav.purchased = ps;
+                                        fav.starred = (int) bookmarkedCount;
+                                        fav.opened = (int) openedCount;
+                                        fav.questionCount = qCount;
+
+                                        FavoritesAdapter.this.notDownloaded.remove(index - FavoritesAdapter.this.purchased.size() - 2);
+                                        FavoritesAdapter.this.notifyItemRemoved(index);
+
+                                        FavoritesAdapter.this.purchased.add(fav);
+                                        FavoritesAdapter.this.DownloadCount.add(FavoritesAdapter.this.purchased.size() - 1);
+                                        FavoritesAdapter.this.notifyItemInserted(FavoritesAdapter.this.purchased.size());
+
+                                        uiHandler.postDelayed(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                RecyclerView.ViewHolder holder = FavoritesActivity.this.recycleView.findViewHolderForAdapterPosition(FavoritesAdapter.this.purchased.size());
+                                                if (holder.getClass() == FEntranceDownloadViewHolder.class) {
+                                                    ((FEntranceDownloadViewHolder) holder).changeBackground();
+                                                }
+
+                                                FavoritesActivity.this.recycleView.smoothScrollToPosition(FavoritesAdapter.this.purchased.size());
+                                            }
+                                        }, 200);
+                                    }
+                                }
+                            }
+
+                            AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "ActionResult", "DownloadSuccess", "success", null);
+                            FavoritesActivity.this.entranceUniqueId = "";
+                        }
+                    });
+                } else {
+                    uiHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            DownloaderSingleton.getInstance().removeDownloader(entranceS.getEntranceUniqueId());
+                            AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "ActionResult", "DownloadFailed", "error", null);
+                            FavoritesAdapter.this.notifyItemRangeChanged(index, 1);
+                            FavoritesActivity.this.entranceUniqueId = "";
+                        }
+                    });
+                }
+            }
+
             private void setOnClickListener(final int index) {
                 entranceDownloadLayout.setVisibility(View.VISIBLE);
 
-                FEntranceNotDownloadViewHolder.this.entranceDownloadLayout.setOnClickListener(new View.OnClickListener() {
+                FEntranceNotDownloadViewHolder.this.downloadButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if (MemoryUtilities.getMemorySize() <= 30) {
@@ -1465,12 +1523,10 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
                         if (DownloaderSingleton.getInstance().getIsInDownloadProgress()) {
                             AlertClass.showTopMessage(FavoritesActivity.this, findViewById(R.id.container), "DownloadError", "DownloadInProgress", "warning", null);
-                            preStartProgressBar.setVisibility(View.GONE);
-                            entranceDownloadLayout.setClickable(true);
+                            downloadButton.setClickable(true);
                             return;
                         } else {
-                            preStartProgressBar.setVisibility(View.VISIBLE);
-                            entranceDownloadLayout.setClickable(false);
+                            downloadButton.setClickable(false);
                         }
 
                         if (!DownloaderSingleton.getInstance().getIsInDownloadProgress()) {
@@ -1512,6 +1568,25 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                             changeToDownlaodState(count);
                                                             DownloaderSingleton.getInstance().setDownloaderStarted(entranceS.getEntranceUniqueId());
                                                             FEntranceNotDownloadViewHolder.this.downloader.downloadPackageImages(f);
+                                                        } else {
+                                                            PurchasedModelHandler.setIsDownloadedTrue(getApplicationContext(),
+                                                                    username,
+                                                                    entranceS.getEntranceUniqueId(), "Entrance");
+
+                                                            EntranceModel em = EntranceModelHandler.getByUsernameAndId(getApplicationContext(),
+                                                                    username,
+                                                                    entranceS.getEntranceUniqueId());
+                                                            if (em != null) {
+                                                                String message = "دانلود آزمون به اتمام رسید";
+                                                                String subMassage = entranceS.getEntranceTypeTitle() + " " +
+                                                                        monthToString(entranceS.getEntranceMonth()) + " " +
+                                                                        FormatterSingleton.getInstance().getNumberFormatter().format(entranceS.getEntranceYear()) + "\n" +
+                                                                        entranceS.getEntranceSetTitle() + " (" + entranceS.getEntranceGroupTitle() + ")";
+
+                                                                // TODO: create local notification
+                                                            }
+
+                                                            FEntranceNotDownloadViewHolder.this.onDownloadFinished(true, index);
                                                         }
                                                     }
                                                 } else {
@@ -1565,7 +1640,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 File photo=new File(getApplicationContext().getFilesDir()+"/images/eset", String.valueOf(imageId));
                 if (photo.exists()) {
                     data = convertFileToByteArray(photo);
-                    Log.d(TAG, "downloadImage: From File");
+                    //Log.d(TAG, "downloadImage: From File");
                 } else {
                       data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
                 }
@@ -1589,7 +1664,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 //                                @Override
 //                                public void run() {
                                     if (httpErrorType != HTTPErrorType.Success) {
-                                        Log.d(TAG, "run: ");
+                                        //Log.d(TAG, "run: ");
                                         if (httpErrorType == HTTPErrorType.Refresh) {
                                             downloadImage(imageId);
                                         } else {
@@ -1623,7 +1698,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             }
 
             public void changeToDownlaodState(final int total) {
-                FEntranceNotDownloadViewHolder.this.entranceDownloadLayout.setVisibility(View.GONE);
+                FEntranceNotDownloadViewHolder.this.entranceDownloadLayout.setVisibility(View.INVISIBLE);
                 FEntranceNotDownloadViewHolder.this.downloadProgress2.setVisibility(View.VISIBLE);
 //                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) downloadProgress2Level.getLayoutParams();
 
@@ -1664,25 +1739,32 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             }
         }
 
-        private class FEntranceDownloadViewHolder extends RecyclerView.ViewHolder {
+        class FEntranceDownloadViewHolder extends RecyclerView.ViewHolder {
             private TextView entranceOrgTextView;
             private TextView entranceSetTextView;
             private TextView entranceExtraDataTextView;
             private ImageView entranceSetImage;
+            private TextView entranceYearTextView;
+            private TextView entranceMonthTextView;
             private TextView entranceBookletCountTextView;
             private TextView entranceDurationTextView;
             private TextView entranceQuestionCountTextView;
-            private TextView entranceOpenLabelTextView;
-            private TextView entranceQuestionStarredTextView;
             private TextView entranceOpenedCountTextView;
-            private TextView entranceStarredCountTextView;
+            private TextView entranceBookmarkedCountTextView;
+            private ImageView entranceOpenedCountImageView;
+            private ImageView entranceBookmarkedCountImageView;
 
-            private ConstraintLayout entranceOpenLayout;
-            private ConstraintLayout entranceOpenStarredLayout;
+            private Button entranceOpenButton;
+            private Button entranceShowBookmarkedButton;
+
+            private ConstraintLayout container;
 
             public FEntranceDownloadViewHolder(View itemView) {
                 super(itemView);
 
+                container = (ConstraintLayout) itemView.findViewById(R.id.FItem_entrance_downloaded_container);
+                entranceYearTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_yearTextView);
+                entranceMonthTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_monthTextView);
                 entranceOrgTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_org);
                 entranceSetTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_set);
                 entranceExtraDataTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_extra_data);
@@ -1690,39 +1772,41 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 entranceBookletCountTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_booklets_count);
                 entranceDurationTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_duration);
                 entranceQuestionCountTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_question_count);
-                entranceOpenLabelTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_open_normal_label);
-                entranceQuestionStarredTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_open_starred_label);
-                entranceOpenedCountTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_open_normal_count);
-                entranceStarredCountTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_open_starred_qcount);
+                entranceOpenedCountTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_open_normal_countTextView);
+                entranceBookmarkedCountTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_bookmarkedTextView);
+                entranceOpenedCountImageView = (ImageView) itemView.findViewById(R.id.FItem_entrance_open_normal_countImageView);
+                entranceBookmarkedCountImageView = (ImageView) itemView.findViewById(R.id.FItem_entrance_bookmarkedImageView);
 
-                entranceOpenLayout = (ConstraintLayout) itemView.findViewById(R.id.FItem_entrance_open_layout);
-                entranceOpenStarredLayout = (ConstraintLayout) itemView.findViewById(R.id.FItem_entrance_open_starred_layout);
+                entranceOpenButton = (Button) itemView.findViewById(R.id.FItem_entrance_showNormalButton);
+                entranceShowBookmarkedButton = (Button) itemView.findViewById(R.id.FItem_entrance_showStarredButton);
 
-                entranceOrgTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-                entranceSetTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                entranceYearTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                entranceMonthTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                entranceOrgTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                entranceSetTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 entranceExtraDataTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 entranceBookletCountTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 entranceDurationTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 entranceQuestionCountTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
 
-                entranceOpenLabelTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
-                entranceQuestionStarredTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                entranceOpenButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                entranceShowBookmarkedButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 entranceOpenedCountTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-                entranceStarredCountTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-
+                entranceBookmarkedCountTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
             }
 
             public void setupHolder(final EntranceStruct entrance, EntrancePurchasedStruct purchased, int index, final int starCount, int openedCount, long qCount) {
-
-                if (entrance.getEntranceMonth() > 0) {
-                    entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle().trim() + " " +
-                            monthToString(entrance.getEntranceMonth()) + " " +
-                            FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
-                } else {
-                    entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle().trim() + " " +
-                            FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
-                }
+                entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle().trim() + " ");
                 entranceSetTextView.setText(entrance.getEntranceSetTitle().trim() + " (" + entrance.getEntranceGroupTitle().trim() + ")");
+
+                entranceYearTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
+                if (entrance.getEntranceMonth() > 0) {
+                    entranceMonthTextView.setText(monthToString(entrance.getEntranceMonth()));
+                    entranceMonthTextView.setVisibility(View.VISIBLE);
+                } else {
+                    entranceMonthTextView.setText("");
+                    entranceMonthTextView.setVisibility(View.GONE);
+                }
 
                 try {
 //                    JsonObject extraData = entrance.getEntranceExtraData().getAsJsonObject();
@@ -1748,11 +1832,21 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 entranceQuestionCountTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(qCount) + " سوال");
 
                 entranceOpenedCountTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(openedCount));
-                entranceStarredCountTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(starCount));
+                entranceBookmarkedCountTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(starCount));
 
                 downloadImage(entrance.getEntranceSetId());
 
-                entranceOpenLayout.setOnClickListener(new View.OnClickListener() {
+                if (starCount > 0) {
+                    this.entranceBookmarkedCountImageView.setImageResource(R.drawable.bookmark_100_red);
+                    this.entranceShowBookmarkedButton.setTextColor(ContextCompat.getColor(FavoritesActivity.this, R.color.colorConcoughBlue));
+                    this.entranceShowBookmarkedButton.setBackground(ContextCompat.getDrawable(FavoritesActivity.this, R.drawable.concough_border_radius_style));
+                } else {
+                    this.entranceBookmarkedCountImageView.setImageResource(R.drawable.bookmark_100_gray);
+                    this.entranceShowBookmarkedButton.setTextColor(ContextCompat.getColor(FavoritesActivity.this, R.color.colorConcoughGray));
+                    this.entranceShowBookmarkedButton.setBackground(ContextCompat.getDrawable(FavoritesActivity.this, R.drawable.concough_border_radius_lightgray_style));
+                }
+
+                entranceOpenButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
 
@@ -1761,7 +1855,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                     }
                 });
 
-                entranceOpenStarredLayout.setOnClickListener(new View.OnClickListener() {
+                entranceShowBookmarkedButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if (starCount == 0) {
@@ -1781,7 +1875,6 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
             }
 
-
             private void downloadImage(final int imageId) {
                 byte[] data;
                 final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
@@ -1789,7 +1882,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 File photo=new File(getApplicationContext().getFilesDir()+"/images/eset", String.valueOf(imageId));
                 if (photo.exists()) {
                     data = convertFileToByteArray(photo);
-                    Log.d(TAG, "downloadImage: From File");
+                    //Log.d(TAG, "downloadImage: From File");
                 } else {
                     data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
                 }
@@ -1816,7 +1909,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 //                                @Override
 //                                public void run() {
                                     if (httpErrorType != HTTPErrorType.Success) {
-                                        Log.d(TAG, "run: ");
+                                        //Log.d(TAG, "run: ");
                                         if (httpErrorType == HTTPErrorType.Refresh) {
                                             downloadImage(imageId);
                                         } else {
@@ -1850,9 +1943,18 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 }
             }
 
+            public void changeBackground() {
+                container.setBackground(ContextCompat.getDrawable(FavoritesActivity.this, R.drawable.concough_recycle_box_style_yellow));
+                uiHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        container.setBackground(ContextCompat.getDrawable(FavoritesActivity.this, R.drawable.concough_recycle_box_style));
+                    }
+                }, 2000);
+            }
         }
 
-        private class FEntranceDeleteViewHolder extends RecyclerView.ViewHolder {
+        class FEntranceDeleteViewHolder extends RecyclerView.ViewHolder {
 
             private TextView entranceOrgTextView;
             private TextView entranceSetTextView;
@@ -1861,7 +1963,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             private TextView entranceDeleteTextView;
             private LinearLayout entranceDeleteLayout;
 
-            public FEntranceDeleteViewHolder(View itemView) {
+            FEntranceDeleteViewHolder(View itemView) {
                 super(itemView);
 
                 entranceOrgTextView = (TextView) itemView.findViewById(R.id.FItem_entrance_org);
@@ -1877,7 +1979,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 entranceDeleteTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
             }
 
-            public void setupHolder(final FavoriteItem favoriteItem, final int index) {
+            void setupHolder(final FavoriteItem favoriteItem, final int index) {
                 final EntranceStruct entrance = (EntranceStruct) favoriteItem.object;
                 entranceOrgTextView.setText("آزمون " + entrance.getEntranceTypeTitle().trim() + " " +
                         FormatterSingleton.getInstance().getNumberFormatter().format(entrance.getEntranceYear()));
@@ -1915,7 +2017,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                     String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
                                     if (username != null) {
                                         String newDir = favoriteItem.uniqueId;
-                                        FavoritesActivity.this.deletePurchaseData(newDir);
+                                        FavoritesActivity.this.deletePurchaseData(newDir, username);
 
                                         if (PurchasedModelHandler.resetDownloadFlags(getApplicationContext(), username, ((EntrancePurchasedStruct) favoriteItem.purchased).id)) {
                                             EntrancePackageHandler.removePackage(getApplicationContext(), username, favoriteItem.uniqueId);
@@ -1924,7 +2026,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
 
                                             DownloadCount.remove(index);
                                             favAdapter.notifyItemRemoved(index);
-                                            favAdapter.notifyItemRangeChanged(index, getItemCount());
+                                            //favAdapter.notifyItemRangeChanged(index, getItemCount());
                                         }
                                     }
                                 } catch (Exception exc) {
@@ -1936,7 +2038,6 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                     }
                 });
             }
-
 
             private void downloadImage(final int imageId) {
                 byte[] data;
@@ -2001,11 +2102,22 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                     });
                 }
             }
-
-
         }
 
+        class FHeaderViewHeader extends RecyclerView.ViewHolder {
+            private TextView titleTextView;
 
+            public FHeaderViewHeader(View itemView) {
+                super(itemView);
+
+                this.titleTextView = (TextView) itemView.findViewById(R.id.itemFEH_titleTextView);
+                this.titleTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+            }
+
+            public void setupHolder(String title) {
+                this.titleTextView.setText(title);
+            }
+        }
 
     }
 

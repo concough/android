@@ -34,7 +34,7 @@ class EntranceBuyDialog(context: Context) : Dialog(context) {
     private var retryCounter: Int = 0
     public var listener: ProductBuyDelegate? = null
     
-    override fun onCreate(savedInstanceState: Bundle) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -45,7 +45,7 @@ class EntranceBuyDialog(context: Context) : Dialog(context) {
         EBD_titleTextView.typeface = FontCacheSingleton.getInstance(this.context.applicationContext).Regular
         EBD_subTitleTextView.typeface = FontCacheSingleton.getInstance(this.context.applicationContext).Light
         EBD_walletCashTextView.typeface = FontCacheSingleton.getInstance(this.context.applicationContext).Bold
-        EBD_costTitleTextView.typeface = FontCacheSingleton.getInstance(this.context.applicationContext).Regular
+        EBD_costTitleTextView.typeface = FontCacheSingleton.getInstance(this.context.applicationContext).Light
         EBD_costTextView.typeface = FontCacheSingleton.getInstance(this.context.applicationContext).Bold
         EBD_messageTextView.typeface = FontCacheSingleton.getInstance(this.context.applicationContext).Light
 
@@ -90,6 +90,8 @@ class EntranceBuyDialog(context: Context) : Dialog(context) {
                         "error", null)
             }
         }
+
+        this.setupButtons(canBuy)
     }
 
     private fun setupButtons(canBuy: Boolean) {

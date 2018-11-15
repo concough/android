@@ -346,7 +346,12 @@ public class ArchiveDetailActivity extends BottomNavigationActivity implements P
                         } else {
                             if (httpErrorType == HTTPErrorType.Refresh) {
                                 if (ArchiveDetailActivity.this.handler != null) {
-                                    ArchiveDetailActivity.this.handler.sendMessage(message);
+                                    Message msg = ArchiveDetailActivity.this.handler.obtainMessage(CREATE_WALLET);
+
+                                    Bundle bundle = message.getData();
+                                    msg.setData(bundle);
+                                    ArchiveDetailActivity.this.handler.sendMessage(msg);
+
                                 } else {
                                     AlertClass.hideLoadingMessage(loadingProgress);
                                 }
@@ -356,7 +361,12 @@ public class ArchiveDetailActivity extends BottomNavigationActivity implements P
                                     ArchiveDetailActivity.this.retryCounter += 1;
 
                                     if (ArchiveDetailActivity.this.handler != null) {
-                                        ArchiveDetailActivity.this.handler.sendMessage(message);
+                                        Message msg = ArchiveDetailActivity.this.handler.obtainMessage(CREATE_WALLET);
+
+                                        Bundle bundle = message.getData();
+                                        msg.setData(bundle);
+                                        ArchiveDetailActivity.this.handler.sendMessage(msg);
+
                                     } else {
                                         AlertClass.hideLoadingMessage(loadingProgress);
                                     }
@@ -385,7 +395,11 @@ public class ArchiveDetailActivity extends BottomNavigationActivity implements P
                     ArchiveDetailActivity.this.retryCounter += 1;
 
                     if (ArchiveDetailActivity.this.handler != null) {
-                        ArchiveDetailActivity.this.handler.sendMessage(message);
+                        Message msg = ArchiveDetailActivity.this.handler.obtainMessage(CREATE_WALLET);
+
+                        Bundle bundle = message.getData();
+                        msg.setData(bundle);
+                        ArchiveDetailActivity.this.handler.sendMessage(msg);
                     } else {
                         AlertClass.hideLoadingMessage(loadingProgress);
                     }
@@ -838,7 +852,7 @@ public class ArchiveDetailActivity extends BottomNavigationActivity implements P
                 if (buyed) {
                     if (buyedTime != null) {
                         try {
-                            String timeAgo = timeAgoSinceDate(entrance.getLastPublished(), "fa", false);
+                            String timeAgo = timeAgoSinceDate(buyedTime, "fa", false);
                             countText.setText("خرید: " + timeAgo);
                         } catch (Exception e) {
 
@@ -1165,14 +1179,15 @@ public class ArchiveDetailActivity extends BottomNavigationActivity implements P
                     }
                 }
 
-                this.adapter.notifyDataSetChanged();
-                this.downloadImages(purchasedTemp);
-
-                AlertClass.showAlertMessage(this, "ActionResult",
+                AlertClass.showAlertMessage(ArchiveDetailActivity.this, "ActionResult",
                         "PurchasedSuccess",
                         "success", null);
 
                 this.setMenuItemColor(1, R.color.colorConcoughRedLight);
+
+                this.adapter.notifyDataSetChanged();
+                this.downloadImages(purchasedTemp);
+
             }
         } catch (Exception exc) {
         }

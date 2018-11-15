@@ -1175,10 +1175,12 @@ public class SettingActivity extends BottomNavigationActivity {
             f = new File(SettingActivity.this.getFilesDir(), uniqueId);
         }
 
-        for (File fc : f.listFiles()) {
-            fc.delete();
+        if (f.exists() && f.isDirectory()) {
+            for (File fc : f.listFiles()) {
+                fc.delete();
+            }
+            boolean rd = f.delete();
         }
-        boolean rd = f.delete();
     }
 
 }

@@ -2229,9 +2229,9 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
 
                     entranceBuyCountTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(statStruct.purchased) + " خرید");
 
-                    if (saleStruct.cost == 0) {
+                    if (saleStruct.costBon == 0) {
                         entranceCostTextView.setText("رایگان");
-                        entranceCostTextView.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughRedLight));
+                        entranceCostTextView.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughRed));
 
                     } else {
                         entranceCostTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(saleStruct.costBon));

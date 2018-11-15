@@ -26,6 +26,7 @@ import com.concough.android.singletons.UserDefaultsSingleton
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
 import com.concough.android.utils.MD5Digester
+import com.concough.android.utils.monthToString
 import com.google.gson.JsonParser
 import org.cryptonode.jncryptor.AES256JNCryptor
 import org.jetbrains.anko.doAsync
@@ -233,8 +234,9 @@ class EntrancePackageDownloader : Service() {
                         val entrance = EntranceModelHandler.getByUsernameAndId(context!!.applicationContext, username, entranceUniqueId)
                         if (entrance != null) {
                             val year = FormatterSingleton.getInstance().NumberFormatter.format(entrance.year)
+                            val month = monthToString(entrance.month)
                             val message= "دانلود آزمون به اتمام رسید"
-                            val subMessage =" ${entrance.type} سال ${year} " +"\n" +
+                            val subMessage =" ${entrance.type} ${month} ${year} " +"\n" +
                                     "${entrance.set} (${entrance.group})"
 
                             simpleNotification(message,subMessage)

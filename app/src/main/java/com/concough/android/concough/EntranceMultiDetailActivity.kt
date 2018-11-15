@@ -394,7 +394,7 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
                 for (element in purchased) {
                     val purchaseId = element.asJsonObject.get("purchase_id").asInt
                     val downloaded = element.asJsonObject.get("downloaded").asInt
-                    val productId2 = element.asJsonObject.get("product_id").asString
+                    val productId2 = element.asJsonObject.get("product_key").asString
 
                     val purchasedTimeStr = element.asJsonObject.get("purchase_time").asString
                     var purchasedTime = Date()
@@ -413,7 +413,7 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
                         if (EntranceModelHandler.add(this.applicationContext, username, entranceData.entrance)) {
                             if (PurchasedModelHandler.add(this.applicationContext, purchaseId,
                                             username, false, downloaded, false,
-                                            productType, entranceData.entrance.entranceUniqueId!!, purchasedTime)) {
+                                            "Entrance", entranceData.entrance.entranceUniqueId!!, purchasedTime)) {
 
                                 purchasedTemp.add(purchaseId)
                             } else {
@@ -696,13 +696,14 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
             }
 
             fun configureCosts(context: Context, saleStructure: EntranceMultiSaleStructure) {
-                if (saleStructure.totalCost != 0) {
+                this.entranceSaleStruct = saleStructure
+                if (saleStructure.totalCost == 0) {
                     this.costValueTextView.text = "رایگان"
                 } else {
                     this.costValueTextView.text = FormatterSingleton.getInstance().NumberFormatter.format(saleStructure.totalCost)
                 }
 
-                if (saleStructure.payCost != 0) {
+                if (saleStructure.payCost == 0) {
                     this.payCostValueTextView.text = "رایگان"
                     this.payCostValueTextView.setTextColor(ContextCompat.getColor(context, R.color.colorConcoughRed))
                 } else {
