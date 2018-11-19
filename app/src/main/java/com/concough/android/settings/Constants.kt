@@ -76,7 +76,6 @@ val SECRET_KEY: String
         val codeArray = intArrayOf(31, 29, 23, 19, 17, 15, 13, 11, 7)
         val codeArrayString = codeArray.joinToString("")
         val finalString = P_CODE + codeArrayString + ADD_CODE
-        Log.d("rrr", finalString)
         return finalString
     }
 

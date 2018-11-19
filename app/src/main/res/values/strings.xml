@@ -113,5 +113,13 @@
 
     <string name="settingCodeIsNotExist">وجود ندارد</string>
 
+    <string name="noCommentDefaultMessage">هنوز یادداشتی ثبت نکرده اید</string>
+    <string name="moreComments">یادداشت های قبلی \u25BC</string>
+    <string name="newCommentHeaderTitle">یادداشت جدید</string>
+    <string name="newCommentMaxLimitDefault">۲۵۵ کاراکتر</string>
+    <string name="allCommentsHeaderTitle">یادداشت های سوال</string>
 
+    <string name="save">ذخیره</string>
+    <string name="cancel">بی خیال</string>
+    <string name="close">بستن</string>
 </resources>

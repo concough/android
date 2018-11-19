@@ -450,3 +450,20 @@ Favorite Activity and Some Bugs Fixed (abolfazl.beh) - 2018-11-15
 8 - ArchiveDetailActivity buyed time fixed.
 9 - EntranceBuyDialog checked and worked correctly.
 10 - SettingActivity delete purchased data modified.
+
+------------------------------------------------------------------------------------------------
+EntranceShow and Some Modifications (abolfazl.beh) - 2018-11-19
+
+1 - FavoriteActivity some layouts enhanced.
+2 - EntranceShow:
+    - holder layout changed to include comments and charts section
+    - EntranceQuestionAnswerState created to hold answer state (none, answer, comments, charts)
+3 - LogTypeEnum modified and some new values added: EntranceLastVisitInfo,
+    EntranceCommentCreate, EntranceCommentDelete, EntranceLessonExamCancel,
+    EntranceLessonExamFinished
+4 - EntranceShowNewCommentDialog created to show new dialog form to add new comment to question.
+5 - EntranceShowCommentDelegate added to handle comments action feedback in EntranceShowA
+6 - EntranceShowAllCommentsDialog created to show all comments concerned to the question.
+7 - EntranceQuestionCommentModel and its handler created to store comments for each question
+8 - EntranceCommentType enum for different comments types (text for now)
+9 - EntranceQuestionAnswerState enum for different question holder state of bottom view (answer, comment, ...)

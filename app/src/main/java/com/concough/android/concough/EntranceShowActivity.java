@@ -55,6 +55,9 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.concough.android.concough.dialogs.EntranceShowAllCommentsDialog;
+import com.concough.android.concough.dialogs.EntranceShowNewCommentDialog;
+import com.concough.android.concough.interfaces.EntranceShowCommentDelegate;
 import com.concough.android.general.AlertClass;
 import com.concough.android.general.ImageMagnifier;
 import com.concough.android.general.TouchImageView;
@@ -63,6 +66,8 @@ import com.concough.android.models.EntranceLessonModel;
 import com.concough.android.models.EntranceModel;
 import com.concough.android.models.EntranceModelHandler;
 import com.concough.android.models.EntranceOpenedCountModelHandler;
+import com.concough.android.models.EntranceQuestionCommentModel;
+import com.concough.android.models.EntranceQuestionCommentModelHandler;
 import com.concough.android.models.EntranceQuestionModel;
 import com.concough.android.models.EntranceQuestionModelHandler;
 import com.concough.android.models.EntranceQuestionStarredModelHandler;
@@ -73,6 +78,8 @@ import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.singletons.MediaCacheSingleton;
 import com.concough.android.singletons.UserDefaultsSingleton;
+import com.concough.android.structures.EntranceCommentType;
+import com.concough.android.structures.EntranceQuestionAnswerState;
 import com.concough.android.structures.EntranceStruct;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.LogTypeEnum;
@@ -117,11 +124,13 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.bumptech.glide.request.target.Target.SIZE_ORIGINAL;
 import static com.concough.android.concough.FavoritesActivity.convertFileToByteArray;
 import static com.concough.android.concough.R.id.headerShowStarred_countEntrance;
+import static com.concough.android.extensions.TypeExtensionsKt.timeAgoSinceDate;
 import static com.concough.android.settings.ConstantsKt.getSECRET_KEY;
 import static com.concough.android.utils.DataConvertorsKt.monthToString;
 import static com.concough.android.utils.DataConvertorsKt.questionAnswerToString;
 
-public class EntranceShowActivity extends AppCompatActivity implements Handler.Callback {
+public class EntranceShowActivity extends AppCompatActivity implements Handler.Callback,
+        EntranceShowCommentDelegate {
 
     private class StarredQuestionsContainer {
         public String lessionId;
@@ -162,12 +171,13 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     private ArrayList<StarredQuestionsContainer> starredQuestions = new ArrayList<>();
     private int globalPairListInteger = 0;
 
-    private Boolean showAllAnswers = false;
+    private EntranceQuestionAnswerState defaultShowType = EntranceQuestionAnswerState.None;
+    private HashMap<String, EntranceQuestionAnswerState> showedAnswer = new HashMap<>();
+
     //    private Boolean showStarredQuestions = false;
     private ArrayList<String> bookletList;
     private ArrayList<String> dialogInfoList;
     private ArrayList<String> starredIds = new ArrayList<>();
-    private ArrayList<String> showedAnsweresIds = new ArrayList<>();
     private ArrayAdapter<String> lessonAdapter;
     private DialogAdapter bookletAdapter;
     private DialogAdapter dialogInfoAdapter;
@@ -192,10 +202,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     private StarredShowAdapter starredAdapter;
     private HeaderItemDecoration itemDecoration;
 
-    private Configuration config;
-
     private CustomGridLayoutManager recycleLinearLayout;
-
 
     public static Intent newIntent(Context packageContext, String entranceUniqueId, String showType) {
         Intent i = new Intent(packageContext, EntranceShowActivity.class);
@@ -235,8 +242,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_entrance_show);
-
-        config = getResources().getConfiguration();
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,
                 WindowManager.LayoutParams.FLAG_SECURE);
@@ -321,6 +326,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             public void onTabSelected(TabLayout.Tab tab) {
                 int index = tab.getPosition();
                 loadQuestions(index);
+                EntranceShowActivity.this.showedAnswer.clear();
                 loading = AlertClass.showLoadingMessage(EntranceShowActivity.this);
                 loading.show();
                 if (showType.equals("Show")) {
@@ -335,7 +341,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                     }, 1500);
                 }
 
-                Log.d(TAG, "onTabSelected: ");
+                //Log.d(TAG, "onTabSelected: ");
             }
 
             @Override
@@ -561,22 +567,38 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         dialogInfo.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
-                if (entranceSwitch.isChecked() != showAllAnswers) {
-                    showAllAnswers = entranceSwitch.isChecked();
-                    entranceShowAdapter.notifyDataSetChanged();
-                    starredAdapter.notifyDataSetChanged();
+                if (entranceSwitch.isChecked()) {
+                    EntranceShowActivity.this.defaultShowType = EntranceQuestionAnswerState.ANSWER;
+                } else {
+                    EntranceShowActivity.this.defaultShowType = EntranceQuestionAnswerState.None;
                 }
+                entranceShowAdapter.notifyDataSetChanged();
+                starredAdapter.notifyDataSetChanged();
+
+//                if (entranceSwitch.isChecked() != showAllAnswers) {
+//                    showAllAnswers = entranceSwitch.isChecked();
+//                    entranceShowAdapter.notifyDataSetChanged();
+//                    starredAdapter.notifyDataSetChanged();
+//                }
             }
         });
 
         dialogInfo.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-                if (entranceSwitch.isChecked() != showAllAnswers) {
-                    showAllAnswers = entranceSwitch.isChecked();
-                    entranceShowAdapter.notifyDataSetChanged();
-                    starredAdapter.notifyDataSetChanged();
+                if (entranceSwitch.isChecked()) {
+                    EntranceShowActivity.this.defaultShowType = EntranceQuestionAnswerState.ANSWER;
+                } else {
+                    EntranceShowActivity.this.defaultShowType = EntranceQuestionAnswerState.None;
                 }
+                entranceShowAdapter.notifyDataSetChanged();
+                starredAdapter.notifyDataSetChanged();
+
+//                if (entranceSwitch.isChecked() != showAllAnswers) {
+//                    showAllAnswers = entranceSwitch.isChecked();
+//                    entranceShowAdapter.notifyDataSetChanged();
+//                    starredAdapter.notifyDataSetChanged();
+//                }
             }
         });
 
@@ -590,10 +612,11 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
         }
 
-        if (showAllAnswers) {
-            entranceSwitch.setEnabled(false);
+//        if (showAllAnswers) {
+        if (EntranceShowActivity.this.defaultShowType == EntranceQuestionAnswerState.ANSWER) {
+            entranceSwitch.setChecked(false);
         } else {
-            entranceSwitch.setEnabled(true);
+            entranceSwitch.setChecked(true);
         }
 
 
@@ -756,31 +779,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 }
             });
         }
-    }
-
-
-    private ArrayList<View> getAllChildren(View v) {
-
-        if (!(v instanceof ViewGroup)) {
-            ArrayList<View> viewArrayList = new ArrayList<View>();
-            viewArrayList.add(v);
-            return viewArrayList;
-        }
-
-        ArrayList<View> result = new ArrayList<View>();
-
-        ViewGroup viewGroup = (ViewGroup) v;
-        for (int i = 0; i < viewGroup.getChildCount(); i++) {
-
-            View child = viewGroup.getChildAt(i);
-
-            ArrayList<View> viewArrayList = new ArrayList<View>();
-            viewArrayList.add(v);
-            viewArrayList.addAll(getAllChildren(child));
-
-            result.addAll(viewArrayList);
-        }
-        return result;
     }
 
     private void createLog(String logType, JsonObject extraData) {
@@ -979,6 +977,60 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         starredAdapter.loadImages(imageStr);
     }
 
+    @Override
+    public boolean addTextComment(@NotNull String questionId, int questionNo, int position, @NotNull JsonObject commentData) {
+        String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+        EntranceQuestionCommentModel result = EntranceQuestionCommentModelHandler.add(getApplicationContext(),
+                this.entranceUniqueId,
+                username,
+                questionId,
+                EntranceCommentType.TEXT.getCode(),
+                commentData.getAsString());
+
+        if (result != null) {
+            JsonObject data = new JsonObject();
+            data.addProperty("text", commentData.get("text").getAsString());
+            data.addProperty("commentId", result.uniqueId);
+
+            JsonObject eData = new JsonObject();
+            eData.addProperty("uniqueId", this.entranceUniqueId);
+            eData.addProperty("questionNo", questionNo);
+            eData.addProperty("commentType", EntranceCommentType.TEXT.getCode());
+            eData.add("data", data);
+
+            this.createLog(LogTypeEnum.EntranceCommentCreate.getTitle(), eData);
+            if (this.showType == "Starred") {
+                this.starredAdapter.notifyItemChanged(position);
+            } else {
+                this.entranceShowAdapter.notifyItemChanged(position);
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void cancelComment() {
+
+    }
+
+    @Override
+    public void deleteComment(@NotNull String questionId, int questionNo, @NotNull String commentId, int position) {
+        JsonObject eData = new JsonObject();
+        eData.addProperty("uniqueId", this.entranceUniqueId);
+        eData.addProperty("questionNo", questionNo);
+        eData.addProperty("commentId", commentId);
+
+        this.createLog(LogTypeEnum.EntranceCommentDelete.getTitle(), eData);
+
+        if (this.showType == "Starred") {
+            this.starredAdapter.notifyItemChanged(position);
+        } else {
+            this.entranceShowAdapter.notifyItemChanged(position);
+        }
+    }
+
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         public SectionsPagerAdapter(FragmentManager fm) {
@@ -1160,29 +1212,17 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
             final EntranceQuestionModel oneItem = this.questionModelList.get(position);
-            ((EntranceShowHolder) holder).setupHolder(oneItem);
+            ((EntranceShowHolder) holder).setupHolder(oneItem, position);
         }
 
         @Override
         public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
             super.onViewAttachedToWindow(holder);
-
         }
 
         @Override
         public int getItemCount() {
             return questionModelList.size();
-        }
-
-        public byte[] convertStreamToByteArray(InputStream is) throws IOException {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buff = new byte[4096];
-            int i = Integer.MAX_VALUE;
-            while ((i = is.read(buff, 0, buff.length)) > 0) {
-                baos.write(buff, 0, i);
-            }
-
-            return baos.toByteArray(); // be sure to close InputStream in calling function
         }
 
         public void loadImages(String imageString) {
@@ -1277,89 +1317,107 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
         }
 
-
         private class EntranceShowHolder extends RecyclerView.ViewHolder {
+            private LinearLayout questionContainer;
+            private LinearLayout questionAnswerContainer;
+
+            private ConstraintLayout answerContainer;
+            private ConstraintLayout commentsContainer;
+            private ConstraintLayout chartContainer;
+
             private TextView questionNumber;
             private ImageView starImage;
             private ImageView imgPreLoad;
             private ConstraintLayout mainConstraint;
-            // ImageMagnifier ready feature
-//            private ImageMagnifier img1;
-//            private ImageMagnifier img2;
-//            private ImageMagnifier img3;
             private ImageView img1;
             private ImageView img2;
             private ImageView img3;
-            private LinearLayout linearShowAnswer;
-            private TextView answerLabel;
-            private ImageView answerLabelCheckbox;
+            private LinearLayout showAnswerContainer;
+            private TextView showAnswerTextView;
+            private ImageView showAnswerImageView;
+
+            private LinearLayout showCommentsContainer;
+            private TextView showCommentsTextView;
+            private ImageView showCommentsImageView;
+
+            private LinearLayout showStatContainer;
+            private TextView showStatTextView;
+            private ImageView showStatImageView;
+
+            private Button newCommentButton;
+            private Button moreCommentsButton;
+            private TextView lastCommentTextView;
+            private TextView noCommentTextView;
+            private ImageView lastCommentImageView;
+            private TextView lastCommentDateTextView;
+            private LinearLayout lastCommentContainer;
 
             private TextView answer;
             private Boolean starred = false;
             private EntranceQuestionModel mEntranceQuestionModel;
-            private Integer mWidth;
-            private Integer mHeight;
-
 
             public EntranceShowHolder(View itemView) {
-
                 super(itemView);
 
                 questionNumber = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_questionNumber);
                 starImage = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_star);
 
                 imgPreLoad = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_imgPreLoad);
-                // ImageMagnifier ready feature
-//                img1 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img1);
-//                img2 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img2);
-//                img3 = (ImageMagnifier) itemView.findViewById(R.id.ccEntranceShowHolder1I_img3);
-
                 img1 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img1);
                 img2 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img2);
                 img3 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img3);
 
-//                        Canvas child = getLayoutInflater().inflate(R.layout.activity_entrance_show, null);
-
-                LinearLayout item = (LinearLayout) findViewById(R.id.container);
-
-
-                // ImageMagnifier ready feature
-//                img1.touchEventInterface= new ImageMagnifier.OnTouchListener() {
-//                    @Override
-//                    public void OnTouch() {
-//                        recycleLinearLayout.setScrollEnabled(false);
-//
-//                    }
-//
-//                    @Override
-//                    public void OnRelease() {
-//                        recycleLinearLayout.setScrollEnabled(true);
-//                    }
-//                };
-
                 mainConstraint = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_mainConstrant);
+                questionContainer = (LinearLayout)  itemView.findViewById(R.id.ccEntranceShowHolder1I_questionContainer);
+                questionAnswerContainer = (LinearLayout)  itemView.findViewById(R.id.ccEntranceShowHolder1I_questionAnswerContainer);
 
-                linearShowAnswer = (LinearLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_linearShowAnswer);
-                answerLabel = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_textViewClickShowAnswer);
-                answerLabelCheckbox = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_checkBox);
+                answerContainer = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_answerContainer);
+                commentsContainer = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_commentContainer);
+                chartContainer = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_chartContainer);
+
+                showAnswerContainer = (LinearLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_linearShowAnswer);
+                showAnswerTextView = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_textViewClickShowAnswer);
+                showAnswerImageView = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_checkBox);
                 answer = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_answer);
 
+                showCommentsContainer = (LinearLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_linearShowComments);
+                showCommentsTextView = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_textViewClickShowComments);
+                showCommentsImageView = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_comments);
+
+                showStatContainer = (LinearLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_linearShowCharts);
+                showStatTextView = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_textViewClickShowChart);
+                showStatImageView = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_chart);
+
+                lastCommentContainer = (LinearLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_lastCommentContainer);
+                newCommentButton = (Button) itemView.findViewById(R.id.ccEntranceShowHolder1I_newCommentButton);
+                moreCommentsButton = (Button) itemView.findViewById(R.id.ccEntranceShowHolder1I_moreCommentsButton);
+                lastCommentTextView = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_lastCommentTextView);
+                lastCommentDateTextView = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_lastCommentDateTextView);
+                lastCommentImageView = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_lastCommentImageView);
+                noCommentTextView = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_noCommentTextView);
+
+                lastCommentImageView.setColorFilter(ContextCompat.getColor(context, R.color.colorConcoughGray2));
 
                 questionNumber.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
-                answerLabel.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                showAnswerTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 answer.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
-            }
 
+                showCommentsTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                showStatTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+
+                newCommentButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                moreCommentsButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                lastCommentTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                lastCommentDateTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                noCommentTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+
+            }
 
             public void setImages() {
                 insertImage(mEntranceQuestionModel.images);
             }
 
-
-            public void setupHolder(final EntranceQuestionModel entranceQuestionModel) {
-                answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughBlue));
-                answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughBlue));
-                answer.setVisibility(View.INVISIBLE);
+            public void setupHolder(final EntranceQuestionModel entranceQuestionModel, int position) {
 
                 questionNumber.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.number));
 
@@ -1373,20 +1431,69 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 } else {
                     starred = false;
                 }
-
                 changeStarredState(starred);
 
-
-                linearShowAnswer.setOnClickListener(new View.OnClickListener() {
+                showAnswerContainer.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        answer.setVisibility(View.VISIBLE);
-                        if (!EntranceShowActivity.this.showedAnsweresIds.contains(entranceQuestionModel.uniqueId)) {
-                            EntranceShowActivity.this.showedAnsweresIds.add(entranceQuestionModel.uniqueId);
+                        EntranceShowActivity.this.showedAnswer.put(entranceQuestionModel.uniqueId,
+                                EntranceQuestionAnswerState.ANSWER);
+                        changeAnswerContainerState(EntranceQuestionAnswerState.ANSWER);
 
-                            answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-                            answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-                        }
+//                        if (!EntranceShowActivity.this.showedAnsweresIds.contains(entranceQuestionModel.uniqueId)) {
+//                            EntranceShowActivity.this.showedAnsweresIds.add(entranceQuestionModel.uniqueId);
+//
+//                            answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
+//                            answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
+//                        }
+                    }
+                });
+
+                showCommentsContainer.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        EntranceShowActivity.this.showedAnswer.put(entranceQuestionModel.uniqueId,
+                                EntranceQuestionAnswerState.COMMENTS);
+                        changeAnswerContainerState(EntranceQuestionAnswerState.COMMENTS);
+                    }
+                });
+
+                showStatContainer.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        EntranceShowActivity.this.showedAnswer.put(entranceQuestionModel.uniqueId,
+                                EntranceQuestionAnswerState.STATS);
+                        changeAnswerContainerState(EntranceQuestionAnswerState.STATS);
+                    }
+                });
+
+                newCommentButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        EntranceShowNewCommentDialog dialog = new EntranceShowNewCommentDialog(EntranceShowActivity.this);
+                        dialog.setCancelable(false);
+                        dialog.setCanceledOnTouchOutside(false);
+                        dialog.setListener(EntranceShowActivity.this);
+                        dialog.show();
+                        dialog.setupDialog(entranceQuestionModel.uniqueId,
+                                entranceQuestionModel.number,
+                                position);
+
+                    }
+                });
+
+                moreCommentsButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        EntranceShowAllCommentsDialog dialog = new EntranceShowAllCommentsDialog(EntranceShowActivity.this);
+                        dialog.setCancelable(false);
+                        dialog.setCanceledOnTouchOutside(false);
+                        dialog.setListener(EntranceShowActivity.this);
+                        dialog.show();
+                        dialog.setupDialog(entranceQuestionModel.uniqueId,
+                                entranceUniqueId,
+                                entranceQuestionModel.number,
+                                position);
                     }
                 });
 
@@ -1409,19 +1516,29 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                     }
                 });
 
-
-                if (EntranceShowActivity.this.showAllAnswers) {
-                    answer.setVisibility(View.VISIBLE);
-                    answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-                    answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-                } else {
-
-                    if (EntranceShowActivity.this.showedAnsweresIds.contains(entranceQuestionModel.uniqueId)) {
-                        answer.setVisibility(View.VISIBLE);
-                        answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-                        answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-                    }
+                EntranceQuestionAnswerState localState = EntranceQuestionAnswerState.None;
+                if (EntranceShowActivity.this.showedAnswer.containsKey(entranceQuestionModel.uniqueId)) {
+                    localState = EntranceShowActivity.this.showedAnswer.get(entranceQuestionModel.uniqueId);
                 }
+
+                if (EntranceShowActivity.this.defaultShowType != EntranceQuestionAnswerState.None) {
+                    localState = EntranceShowActivity.this.defaultShowType;
+                }
+
+                this.changeAnswerContainerState(localState);
+
+//                if (EntranceShowActivity.this.showAllAnswers) {
+//                    answer.setVisibility(View.VISIBLE);
+//                    answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
+//                    answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
+//                } else {
+//
+//                    if (EntranceShowActivity.this.showedAnsweresIds.contains(entranceQuestionModel.uniqueId)) {
+//                        answer.setVisibility(View.VISIBLE);
+//                        answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
+//                        answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
+//                    }
+//                }
 
                 mainConstraint.canScrollVertically(0);
 
@@ -1668,9 +1785,89 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
             }
 
+            public void setupComment(int commentCount, EntranceQuestionCommentModel lastComment) {
+                this.lastCommentContainer.setVisibility(View.GONE);
+                this.noCommentTextView.setVisibility(View.GONE);
+                this.moreCommentsButton.setVisibility(View.INVISIBLE);
 
+                if (commentCount > 0) {
+                    this.showCommentsTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(commentCount));
+                    if (lastComment != null) {
+                        EntranceCommentType t = EntranceCommentType.toType(lastComment.commentType);
+                        switch (t) {
+                            case TEXT:
+                                JsonElement data = new JsonParser().parse(lastComment.commentData);
+                                String strComment = data.getAsJsonObject().get("text").getAsString();
+                                if (strComment != null) {
+                                    this.lastCommentTextView.setText(strComment);
+                                }
+                                this.lastCommentDateTextView.setText(timeAgoSinceDate(lastComment.created, "fa", false));
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    this.moreCommentsButton.setVisibility(View.VISIBLE);
+                } else {
+                    this.showCommentsTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(0));
+                    this.noCommentTextView.setVisibility(View.VISIBLE);
+                }
+            }
+
+            public void changeAnswerContainerState(EntranceQuestionAnswerState state) {
+                questionAnswerContainer.setVisibility(View.GONE);
+                answerContainer.setVisibility(View.GONE);
+                commentsContainer.setVisibility(View.GONE);
+                chartContainer.setVisibility(View.GONE);
+
+                if (state != EntranceQuestionAnswerState.None) {
+                    questionAnswerContainer.setVisibility(View.VISIBLE);
+                }
+
+                int color1 = ContextCompat.getColor(context, R.color.colorConcoughGray5);
+                int color2 = ContextCompat.getColor(context, R.color.colorConcoughBlue);
+                int color3 = ContextCompat.getColor(context, R.color.colorBlack);
+
+                showAnswerTextView.setTextColor(color2);
+                showCommentsTextView.setTextColor(color1);
+                showStatTextView.setTextColor(color1);
+
+                showAnswerImageView.setColorFilter(color2);
+                showCommentsImageView.setColorFilter(color1);
+                showStatImageView.setColorFilter(color1);
+
+                switch (state) {
+                    case ANSWER:
+                        showAnswerTextView.setTextColor(color3);
+                        showAnswerImageView.setColorFilter(color3);
+                        answerContainer.setVisibility(View.VISIBLE);
+                        break;
+                    case COMMENTS:
+                        showCommentsTextView.setTextColor(color3);
+                        showCommentsImageView.setColorFilter(color3);
+                        commentsContainer.setVisibility(View.VISIBLE);
+                        int commentCount = (int) EntranceQuestionCommentModelHandler.getCommentsCount(context,
+                                EntranceShowActivity.this.entranceUniqueId,
+                                EntranceShowActivity.this.username,
+                                mEntranceQuestionModel.uniqueId);
+                        EntranceQuestionCommentModel lastComment = EntranceQuestionCommentModelHandler.getLastComment(context,
+                                EntranceShowActivity.this.entranceUniqueId,
+                                EntranceShowActivity.this.username,
+                                mEntranceQuestionModel.uniqueId);
+
+                        this.setupComment(commentCount, lastComment);
+                        break;
+                    case STATS:
+                        showStatTextView.setTextColor(color3);
+                        showStatImageView.setColorFilter(color3);
+                        chartContainer.setVisibility(View.VISIBLE);
+                        break;
+                    case None:
+                        break;
+                }
+            }
         }
-
     }
 
     // Starred Adapter
@@ -1768,7 +1965,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 itemHolder.setupHolder(mPairList.get(position).second);
             } else {
                 ListHolder itemHolder = (ListHolder) holder;
-                itemHolder.setupHolder(mPairList.get(position).second);
+                itemHolder.setupHolder(mPairList.get(position).second, position);
             }
 
         }
@@ -1806,22 +2003,41 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
 
         public class ListHolder extends RecyclerView.ViewHolder {
+            private LinearLayout questionContainer;
+            private LinearLayout questionAnswerContainer;
+            private ConstraintLayout answerContainer;
+            private ConstraintLayout commentsContainer;
+            private ConstraintLayout chartContainer;
+
             private TextView questionNumber;
             private ImageView starImage;
             private ImageView imgPreLoad;
-            private ConstraintLayout mainConstraint;
             private ImageView img1;
             private ImageView img2;
             private ImageView img3;
-            private LinearLayout linearShowAnswer;
-            private TextView answerLabel;
-            private ImageView answerLabelCheckbox;
+            private LinearLayout showAnswerContainer;
+            private TextView showAnswerTextView;
+            private ImageView showAnswerImageView;
+
+            private LinearLayout showCommentsContainer;
+            private TextView showCommentsTextView;
+            private ImageView showCommentsImageView;
+
+            private LinearLayout showStatContainer;
+            private TextView showStatTextView;
+            private ImageView showStatImageView;
+
+            private Button newCommentButton;
+            private Button moreCommentsButton;
+            private TextView lastCommentTextView;
+            private TextView noCommentTextView;
+            private ImageView lastCommentImageView;
+            private TextView lastCommentDateTextView;
+            private LinearLayout lastCommentContainer;
 
             private TextView answer;
             private Boolean starred = false;
             private EntranceQuestionModel mEntranceQuestionModel;
-            private Integer mWidth;
-            private Integer mHeight;
 
             public ListHolder(View itemView) {
                 super(itemView);
@@ -1835,27 +2051,55 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 img2 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img2);
                 img3 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img3);
 
+                questionContainer = (LinearLayout)  itemView.findViewById(R.id.ccEntranceShowHolder1I_questionContainer);
+                questionAnswerContainer = (LinearLayout)  itemView.findViewById(R.id.ccEntranceShowHolder1I_questionAnswerContainer);
 
-                mainConstraint = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_mainConstrant);
+                answerContainer = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_answerContainer);
+                commentsContainer = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_commentContainer);
+                chartContainer = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_chartContainer);
 
-                linearShowAnswer = (LinearLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_linearShowAnswer);
-                answerLabel = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_textViewClickShowAnswer);
-                answerLabelCheckbox = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_checkBox);
+                showAnswerContainer = (LinearLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_linearShowAnswer);
+                showAnswerTextView = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_textViewClickShowAnswer);
+                showAnswerImageView = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_checkBox);
                 answer = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_answer);
 
+                showCommentsContainer = (LinearLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_linearShowComments);
+                showCommentsTextView = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_textViewClickShowComments);
+                showCommentsImageView = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_comments);
+
+                showStatContainer = (LinearLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_linearShowCharts);
+                showStatTextView = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_textViewClickShowChart);
+                showStatImageView = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_chart);
+
+                lastCommentContainer = (LinearLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_lastCommentContainer);
+                newCommentButton = (Button) itemView.findViewById(R.id.ccEntranceShowHolder1I_newCommentButton);
+                moreCommentsButton = (Button) itemView.findViewById(R.id.ccEntranceShowHolder1I_moreCommentsButton);
+                lastCommentTextView = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_lastCommentTextView);
+                lastCommentDateTextView = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_lastCommentDateTextView);
+                lastCommentImageView = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_lastCommentImageView);
+                noCommentTextView = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_noCommentTextView);
+
+                lastCommentImageView.setColorFilter(ContextCompat.getColor(context, R.color.colorConcoughGray2));
 
                 questionNumber.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
-                answerLabel.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                showAnswerTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 answer.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+
+                showCommentsTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                showStatTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+
+                newCommentButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                moreCommentsButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                lastCommentTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                lastCommentDateTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                noCommentTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
             }
 
 
-            public void setupHolder(Object item) {
+            public void setupHolder(Object item, int position) {
                 final EntranceQuestionModel entranceQuestionModel = (EntranceQuestionModel) item;
                 this.mEntranceQuestionModel = entranceQuestionModel;
-                answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughBlue));
-                answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughBlue));
-                answer.setVisibility(View.INVISIBLE);
+
 //                imgPreLoad.setVisibility(View.VISIBLE);
 
                 questionNumber.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.number));
@@ -1873,17 +2117,52 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
                 changeStarredState(starred);
 
-
-                linearShowAnswer.setOnClickListener(new View.OnClickListener() {
+                showAnswerContainer.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        answer.setVisibility(View.VISIBLE);
-                        if (!EntranceShowActivity.this.showedAnsweresIds.contains(entranceQuestionModel.uniqueId)) {
-                            EntranceShowActivity.this.showedAnsweresIds.add(entranceQuestionModel.uniqueId);
+//                        if (!EntranceShowActivity.this.showedAnsweresIds.contains(entranceQuestionModel.uniqueId)) {
+//                            EntranceShowActivity.this.showedAnsweresIds.add(entranceQuestionModel.uniqueId);
+//
+//                            answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
+//                            answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
+//                        }
 
-                            answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-                            answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-                        }
+                        EntranceShowActivity.this.showedAnswer.put(entranceQuestionModel.uniqueId,
+                                EntranceQuestionAnswerState.ANSWER);
+                        questionAnswerContainer.setVisibility(View.VISIBLE);
+                        answerContainer.setVisibility(View.VISIBLE);
+                        commentsContainer.setVisibility(View.GONE);
+                        chartContainer.setVisibility(View.GONE);
+                    }
+                });
+
+                newCommentButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        EntranceShowNewCommentDialog dialog = new EntranceShowNewCommentDialog(EntranceShowActivity.this);
+                        dialog.setCancelable(false);
+                        dialog.setCanceledOnTouchOutside(false);
+                        dialog.setListener(EntranceShowActivity.this);
+                        dialog.show();
+                        dialog.setupDialog(entranceQuestionModel.uniqueId,
+                                entranceQuestionModel.number,
+                                position);
+
+                    }
+                });
+
+                moreCommentsButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        EntranceShowAllCommentsDialog dialog = new EntranceShowAllCommentsDialog(EntranceShowActivity.this);
+                        dialog.setCancelable(false);
+                        dialog.setCanceledOnTouchOutside(false);
+                        dialog.setListener(EntranceShowActivity.this);
+                        dialog.show();
+                        dialog.setupDialog(entranceQuestionModel.uniqueId,
+                                entranceUniqueId,
+                                entranceQuestionModel.number,
+                                position);
                     }
                 });
 
@@ -1911,19 +2190,29 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                     }
                 });
 
-                if (EntranceShowActivity.this.showAllAnswers) {
-                    answer.setVisibility(View.VISIBLE);
-                    answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-                    answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-                } else {
-
-                    if (EntranceShowActivity.this.showedAnsweresIds.contains(entranceQuestionModel.uniqueId)) {
-                        answer.setVisibility(View.VISIBLE);
-                        answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-                        answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
-                    }
+                EntranceQuestionAnswerState localState = EntranceQuestionAnswerState.None;
+                if (EntranceShowActivity.this.showedAnswer.containsKey(entranceQuestionModel.uniqueId)) {
+                    localState = EntranceShowActivity.this.showedAnswer.get(entranceQuestionModel.uniqueId);
                 }
 
+                if (EntranceShowActivity.this.defaultShowType != EntranceQuestionAnswerState.None) {
+                    localState = EntranceShowActivity.this.defaultShowType;
+                }
+
+                this.changeAnswerContainerState(localState);
+
+//                if (EntranceShowActivity.this.showAllAnswers) {
+//                    answer.setVisibility(View.VISIBLE);
+//                    answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
+//                    answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
+//                } else {
+//
+//                    if (EntranceShowActivity.this.showedAnsweresIds.contains(entranceQuestionModel.uniqueId)) {
+//                        answer.setVisibility(View.VISIBLE);
+//                        answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
+//                        answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
+//                    }
+//                }
 
                 setImages();
             }
@@ -1978,6 +2267,90 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 }
             }
 
+            public void setupComment(int commentCount, EntranceQuestionCommentModel lastComment) {
+                this.lastCommentContainer.setVisibility(View.GONE);
+                this.noCommentTextView.setVisibility(View.GONE);
+                this.moreCommentsButton.setVisibility(View.INVISIBLE);
+
+                if (commentCount > 0) {
+                    this.showCommentsTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(commentCount));
+                    if (lastComment != null) {
+                        EntranceCommentType t = EntranceCommentType.toType(lastComment.commentType);
+                        switch (t) {
+                            case TEXT:
+                                JsonElement data = new JsonParser().parse(lastComment.commentData);
+                                String strComment = data.getAsJsonObject().get("text").getAsString();
+                                if (strComment != null) {
+                                    this.lastCommentTextView.setText(strComment);
+                                }
+                                this.lastCommentDateTextView.setText(timeAgoSinceDate(lastComment.created, "fa", false));
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    this.moreCommentsButton.setVisibility(View.VISIBLE);
+                } else {
+                    this.showCommentsTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(0));
+                    this.noCommentTextView.setVisibility(View.VISIBLE);
+                }
+            }
+
+            public void changeAnswerContainerState(EntranceQuestionAnswerState state) {
+                questionAnswerContainer.setVisibility(View.GONE);
+                answerContainer.setVisibility(View.GONE);
+                commentsContainer.setVisibility(View.GONE);
+                chartContainer.setVisibility(View.GONE);
+
+                if (state != EntranceQuestionAnswerState.None) {
+                    questionAnswerContainer.setVisibility(View.VISIBLE);
+                }
+
+                int color1 = ContextCompat.getColor(context, R.color.colorConcoughGray5);
+                int color2 = ContextCompat.getColor(context, R.color.colorConcoughBlue);
+                int color3 = ContextCompat.getColor(context, R.color.colorBlack);
+
+                showAnswerTextView.setTextColor(color2);
+                showCommentsTextView.setTextColor(color1);
+                showStatTextView.setTextColor(color1);
+
+                showAnswerImageView.setColorFilter(color2);
+                showCommentsImageView.setColorFilter(color1);
+                showStatImageView.setColorFilter(color1);
+
+                switch (state) {
+                    case ANSWER:
+                        showAnswerTextView.setTextColor(color3);
+                        showAnswerImageView.setColorFilter(color3);
+                        answerContainer.setVisibility(View.VISIBLE);
+                        break;
+                    case COMMENTS:
+                        showCommentsTextView.setTextColor(color3);
+                        showCommentsImageView.setColorFilter(color3);
+                        commentsContainer.setVisibility(View.VISIBLE);
+
+                        int commentCount = (int) EntranceQuestionCommentModelHandler.getCommentsCount(context,
+                                EntranceShowActivity.this.entranceUniqueId,
+                                EntranceShowActivity.this.username,
+                                mEntranceQuestionModel.uniqueId);
+                        EntranceQuestionCommentModel lastComment = EntranceQuestionCommentModelHandler.getLastComment(context,
+                                EntranceShowActivity.this.entranceUniqueId,
+                                EntranceShowActivity.this.username,
+                                mEntranceQuestionModel.uniqueId);
+
+                        this.setupComment(commentCount, lastComment);
+
+                        break;
+                    case STATS:
+                        showStatTextView.setTextColor(color3);
+                        showStatImageView.setColorFilter(color3);
+                        chartContainer.setVisibility(View.VISIBLE);
+                        break;
+                    case None:
+                        break;
+                }
+            }
 
             public void insertImage(String imageString) {
                 img1.setImageDrawable(null);
