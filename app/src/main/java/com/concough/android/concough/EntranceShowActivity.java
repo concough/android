@@ -62,6 +62,8 @@ import com.concough.android.general.AlertClass;
 import com.concough.android.general.ImageMagnifier;
 import com.concough.android.general.TouchImageView;
 import com.concough.android.models.EntranceBookletModel;
+import com.concough.android.models.EntranceLastVisitInfoModel;
+import com.concough.android.models.EntranceLastVisitInfoModelHandler;
 import com.concough.android.models.EntranceLessonModel;
 import com.concough.android.models.EntranceModel;
 import com.concough.android.models.EntranceModelHandler;
@@ -173,11 +175,16 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     private EntranceQuestionAnswerState defaultShowType = EntranceQuestionAnswerState.None;
     private HashMap<String, EntranceQuestionAnswerState> showedAnswer = new HashMap<>();
+    private EntranceLastVisitInfoModel lastVisitInfo = null;
 
     //    private Boolean showStarredQuestions = false;
     private ArrayList<String> bookletList;
     private ArrayList<String> dialogInfoList;
     private ArrayList<String> starredIds = new ArrayList<>();
+
+    private int selectedBooklet = -1;
+    private int selectedLesson = -1;
+
     private ArrayAdapter<String> lessonAdapter;
     private DialogAdapter bookletAdapter;
     private DialogAdapter dialogInfoAdapter;
@@ -325,8 +332,11 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 int index = tab.getPosition();
+
+                EntranceShowActivity.this.selectedLesson = index;
                 loadQuestions(index);
                 EntranceShowActivity.this.showedAnswer.clear();
+
                 loading = AlertClass.showLoadingMessage(EntranceShowActivity.this);
                 loading.show();
                 if (showType.equals("Show")) {
@@ -336,11 +346,28 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         public void run() {
                             EntranceShowActivity.this.entranceShowAdapter.setItems(questionsDB);
                             EntranceShowActivity.this.entranceShowAdapter.notifyDataSetChanged();
+
+                            if (EntranceShowActivity.this.lastVisitInfo != null) {
+                                try {
+                                    int index = Integer.parseInt(EntranceShowActivity.this.lastVisitInfo.index);
+                                    if (EntranceShowActivity.this.lastVisitInfo.showType == "Show") {
+                                        if (index < EntranceShowActivity.this.entranceShowAdapter.getItemCount()) {
+                                            EntranceShowActivity.this.recyclerView.smoothScrollToPosition(index);
+                                        } else {
+                                            EntranceShowActivity.this.recyclerView.smoothScrollToPosition(0);
+                                        }
+                                    }
+                                } catch (Exception exc) {}
+
+                                EntranceShowActivity.this.lastVisitInfo = null;
+                            } else {
+                                EntranceShowActivity.this.recyclerView.smoothScrollToPosition(0);
+                            }
+
                             AlertClass.hideLoadingMessage(loading);
                         }
                     }, 1500);
                 }
-
                 //Log.d(TAG, "onTabSelected: ");
             }
 
@@ -447,6 +474,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         starredAdapter = new StarredShowAdapter(EntranceShowActivity.this);
         itemDecoration = new HeaderItemDecoration(recyclerView, starredAdapter);
 
+        loadLastVisitInfoState();
         loadEntranceDB();
         loadBooklets();
         loadStarredQuestion();
@@ -507,6 +535,12 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         if (this.wakeLock != null) {
             this.wakeLock.release();
         }
+    }
+
+    @Override
+    protected void onStop() {
+        saveLastVisitInfoState();
+        super.onStop();
     }
 
     private void infoDialog() {
@@ -781,6 +815,55 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         }
     }
 
+    private void saveLastVisitInfoState() {
+        String username = UserDefaultsSingleton.getInstance(this.getApplicationContext()).getUsername();
+
+        if (this.selectedBooklet >= 0 && this.selectedLesson >= 0) {
+            if (this.showType == "Show") {
+                String index = "0";
+                int row = 0;
+
+                int position = ((CustomGridLayoutManager)this.recyclerView.getLayoutManager()).findFirstCompletelyVisibleItemPosition();
+                if (position == RecyclerView.NO_POSITION) {
+                    position = ((CustomGridLayoutManager)this.recyclerView.getLayoutManager()).findLastVisibleItemPosition();
+                }
+
+                if (position >= 0) {
+                    index = Integer.toString(position);
+                }
+
+                row = position;
+                if (row >= this.questionsDB.size()) {
+                    row = this.questionsDB.size() - 1;
+                }
+
+                boolean updated = EntranceLastVisitInfoModelHandler.update(getApplicationContext(),
+                        username, this.entranceUniqueId, this.selectedBooklet, this.selectedLesson,
+                        index, new Date(), this.showType);
+
+                if (updated) {
+                    JsonObject eData = new JsonObject();
+                    eData.addProperty("uniqueId", this.entranceUniqueId);
+                    eData.addProperty("bookletIndex", this.selectedBooklet);
+                    eData.addProperty("bookletString", this.bookletList.get(this.selectedBooklet));
+                    eData.addProperty("lessonIndex", this.selectedLesson);
+                    eData.addProperty("bookletString", this.lessonAdapter.getItem(this.selectedLesson));
+                    eData.addProperty("question", this.questionsDB.get(row).number);
+
+                    this.createLog(LogTypeEnum.EntranceLastVisitInfo.getTitle(), eData);
+
+                }
+            }
+        }
+    }
+
+    private void loadLastVisitInfoState() {
+        String username = UserDefaultsSingleton.getInstance(this.getApplicationContext()).getUsername();
+        this.lastVisitInfo = EntranceLastVisitInfoModelHandler.get(getApplicationContext(),
+                username,
+                this.entranceUniqueId,
+                this.showType);
+    }
     private void createLog(String logType, JsonObject extraData) {
         if (username != null) {
             String uniqueId = UUID.randomUUID().toString();
@@ -815,11 +898,18 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         }
 
         if (items.size() > 0) {
+            this.selectedBooklet = 0;
+
+            if (EntranceShowActivity.this.lastVisitInfo != null) {
+                if (EntranceShowActivity.this.lastVisitInfo.showType == "Show") {
+                    this.selectedBooklet = EntranceShowActivity.this.lastVisitInfo.bookletIndex;
+                }
+            }
 
             bookletAdapter.setItems(items);
             bookletAdapter.notifyDataSetChanged();
 
-            loadLessions(0);
+            loadLessions(this.selectedBooklet);
         }
     }
 
@@ -834,18 +924,13 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             } else {
                 lessionModel = bookletsDB.get(index).lessons.sort("order", Sort.DESCENDING);
             }
-
-
             lessonsDB.addAll(lessionModel.subList(0, lessionModel.size()));
 
             lessonAdapter.clear();
-
             for (EntranceLessonModel item : lessonsDB) {
                 lessonAdapter.add(item.title);
             }
-
             lessonAdapter.notifyDataSetChanged();
-
 
             EntranceShowActivity.this.mSectionsPagerAdapter.notifyDataSetChanged();
             tabLayout.setupWithViewPager(EntranceShowActivity.this.mViewPager);
@@ -856,17 +941,17 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             h.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                        EntranceShowActivity.this.tabLayout.getTabAt(0).select();
+                    if (EntranceShowActivity.this.lastVisitInfo != null) {
+                        EntranceShowActivity.this.tabLayout.getTabAt(EntranceShowActivity.this.lastVisitInfo.lessonIndex).select();
                     } else {
-                        EntranceShowActivity.this.tabLayout.getTabAt(mViewPager.getAdapter().getCount() - 1).select();
-
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                            EntranceShowActivity.this.tabLayout.getTabAt(0).select();
+                        } else {
+                            EntranceShowActivity.this.tabLayout.getTabAt(mViewPager.getAdapter().getCount() - 1).select();
+                        }
                     }
-
                 }
             }, 1500);
-
-
         }
     }
 

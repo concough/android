@@ -467,3 +467,11 @@ EntranceShow and Some Modifications (abolfazl.beh) - 2018-11-19
 7 - EntranceQuestionCommentModel and its handler created to store comments for each question
 8 - EntranceCommentType enum for different comments types (text for now)
 9 - EntranceQuestionAnswerState enum for different question holder state of bottom view (answer, comment, ...)
+
+------------------------------------------------------------------------------------------------
+EntranceShow Last Visit Info (abolfazl.beh) - 2018-11-19
+
+1 - EntranceLastVisitInfoModelHandler get function added.
+2 - TabLayout changed to consider to last visit info state
+3 - "saveLastVisitInfo" and "loadLastVisitInfo" functions added to handle store and restore last visit info data
+4 - "loadLessons", "loadBooklets" and "loadQuestions" modified to scroll to last visit info data if exist.
