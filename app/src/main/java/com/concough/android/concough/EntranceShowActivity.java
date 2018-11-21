@@ -56,8 +56,10 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.concough.android.concough.dialogs.EntranceShowAllCommentsDialog;
+import com.concough.android.concough.dialogs.EntranceShowInfoDialog;
 import com.concough.android.concough.dialogs.EntranceShowNewCommentDialog;
 import com.concough.android.concough.interfaces.EntranceShowCommentDelegate;
+import com.concough.android.concough.interfaces.EntranceShowInfoDelegate;
 import com.concough.android.general.AlertClass;
 import com.concough.android.general.ImageMagnifier;
 import com.concough.android.general.TouchImageView;
@@ -124,15 +126,15 @@ import kotlin.jvm.functions.Function2;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.bumptech.glide.request.target.Target.SIZE_ORIGINAL;
-import static com.concough.android.concough.FavoritesActivity.convertFileToByteArray;
 import static com.concough.android.concough.R.id.headerShowStarred_countEntrance;
 import static com.concough.android.extensions.TypeExtensionsKt.timeAgoSinceDate;
 import static com.concough.android.settings.ConstantsKt.getSECRET_KEY;
 import static com.concough.android.utils.DataConvertorsKt.monthToString;
 import static com.concough.android.utils.DataConvertorsKt.questionAnswerToString;
+import static com.concough.android.utils.UtilitiesKt.convertFileToByteArray;
 
 public class EntranceShowActivity extends AppCompatActivity implements Handler.Callback,
-        EntranceShowCommentDelegate {
+        EntranceShowCommentDelegate, EntranceShowInfoDelegate {
 
     private class StarredQuestionsContainer {
         public String lessionId;
@@ -426,7 +428,23 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         infoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialogInfo.show();
+//                dialogInfo.show();
+
+                int aq = 0;
+                // TODO: compute aq for exam
+
+                EntranceShowInfoDialog showInfoDialog = new EntranceShowInfoDialog(EntranceShowActivity.this);
+                showInfoDialog.setCancelable(true);
+                showInfoDialog.setCanceledOnTouchOutside(true);
+                showInfoDialog.setListener(EntranceShowActivity.this);
+                showInfoDialog.show();
+                showInfoDialog.setupDialog(EntranceShowActivity.this.entranceStruct,
+                        EntranceShowActivity.this.starredIds.size(),
+                        EntranceShowActivity.this.defaultShowType,
+                        EntranceShowActivity.this.showType,
+                        EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).qCount,
+                        aq, EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).fullTitle,
+                        EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).duration);
             }
         });
 
@@ -703,7 +721,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
                     backButton.setVisibility(View.VISIBLE);
 
-
                     buttonStarred.setText("سوالات نشان شده");
                     tvStarredCount.setVisibility(View.VISIBLE);
                     tabLayout.setVisibility(View.VISIBLE);
@@ -749,7 +766,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         downloadImage(this.entranceDB.setId);
 
     }
-
 
     private void downloadImage(final int imageId) {
         byte[] data;
@@ -864,6 +880,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 this.entranceUniqueId,
                 this.showType);
     }
+
     private void createLog(String logType, JsonObject extraData) {
         if (username != null) {
             String uniqueId = UUID.randomUUID().toString();
@@ -963,7 +980,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         }
     }
 
-
     private void loadStarredQuestion() {
         RealmResults<EntranceStarredQuestionModel> items = EntranceQuestionStarredModelHandler.getStarredQuestions(getApplicationContext(), username, entranceUniqueId);
 
@@ -1062,6 +1078,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         starredAdapter.loadImages(imageStr);
     }
 
+    // Delegates
+
     @Override
     public boolean addTextComment(@NotNull String questionId, int questionNo, int position, @NotNull JsonObject commentData) {
         String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
@@ -1097,7 +1115,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     @Override
     public void cancelComment() {
-
     }
 
     @Override
@@ -1115,6 +1132,83 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             this.entranceShowAdapter.notifyItemChanged(position);
         }
     }
+
+    @Override
+    public void showStarredQuestionButtonClicked() {
+        if (this.showType == "Show") {
+            this.showType = "Starred";
+
+            loading = AlertClass.showLoadingMessage(EntranceShowActivity.this);
+            loading.show();
+
+            tabLayout.setVisibility(View.GONE);
+
+            recyclerView.setVisibility(View.GONE);
+            recyclerViewStar.setVisibility(View.VISIBLE);
+
+            texButton.setEnabled(false);
+            texButton.setTextColor(ContextCompat.getColor(getApplicationContext(), android.R.color.black));
+            texButton.setText(String.format("سوالات نشان شده (%s)", FormatterSingleton.getInstance().getNumberFormatter().format(EntranceShowActivity.this.globalPairListInteger)));
+
+            recyclerViewStar.addItemDecoration(itemDecoration);
+            recyclerViewStar.setAdapter(starredAdapter);
+            starredAdapter.setItems(starredQuestions);
+            starredAdapter.notifyDataSetChanged();
+            recyclerViewStar.setLayoutManager(new StaggeredGridLayoutManager(1, 1));
+
+            Handler h = new Handler();
+            h.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    AlertClass.hideLoadingMessage(loading);
+                }
+            }, 1500);
+
+
+        } else if (this.showType == "Starred") {
+            this.showType = "Show";
+
+            tabLayout.setVisibility(View.VISIBLE);
+
+            texButton.setVisibility(View.VISIBLE);
+            texButton.setEnabled(true);
+            texButton.setTextColor(ContextCompat.getColor(getApplicationContext(), android.R.color.black));
+
+            recyclerViewStar.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+            recyclerView.setLayoutManager(new LinearLayoutManager(EntranceShowActivity.this));
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    loadLessions(EntranceShowActivity.this.selectedLesson);
+                }
+            });
+
+            Handler h = new Handler();
+            h.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    AlertClass.hideLoadingMessage(loading);
+                }
+            }, 1500);
+        }
+    }
+
+    @Override
+    public void defaultShowSegmantChanged(@NotNull EntranceQuestionAnswerState state) {
+        if (this.showType == "Show" || this.showType == "Starred") {
+            this.defaultShowType = state;
+
+            if (showType == "Show") {
+                entranceShowAdapter.notifyDataSetChanged();
+            } else {
+                starredAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+    // Normal Adapter
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
@@ -1147,54 +1241,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         private ArrayList<String> mArrayList;
 
         public DialogAdapter(Context mContext, ArrayList<String> mArrayList) {
-            this.mContext = mContext;
-            this.mArrayList = mArrayList;
-        }
-
-        @Override
-        public int getCount() {
-            return this.mArrayList.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-
-            return this.mArrayList.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-
-            View v = LayoutInflater.from(EntranceShowActivity.this.getApplicationContext()).inflate(R.layout.cc_archive_listitem_archive, null);
-            TextView tv = (TextView) v.findViewById(R.id.text1);
-            tv.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-            tv.setText(mArrayList.get(position));
-
-            return v;
-        }
-
-        public void addAll(ArrayList<String> arrayList) {
-            this.mArrayList.addAll(arrayList);
-        }
-
-        public void setItems(ArrayList<String> arrayList) {
-            this.mArrayList = arrayList;
-        }
-
-
-    }
-
-    public class DialogInfoAdapter extends BaseAdapter {
-
-        private Context mContext;
-        private ArrayList<String> mArrayList;
-
-        public DialogInfoAdapter(Context mContext, ArrayList<String> mArrayList) {
             this.mContext = mContext;
             this.mArrayList = mArrayList;
         }

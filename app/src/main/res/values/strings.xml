@@ -3,18 +3,6 @@
     <string name="app_name">Concough</string>
     <string name="signupMoreInfo1A_app_name">کنکوق</string>
 
-
-    <string name="planet_prompt">Test-Drop</string>
-    <string-array name="planets_array">
-        <item>Mercury</item>
-        <item>Venus</item>
-        <item>Earth</item>
-        <item>Mars</item>
-        <item>Jupiter</item>
-        <item>Saturn</item>
-        <item>Uranus</item>
-        <item>Neptune</item>
-    </string-array>
     <string name="forgotPasswordA_S_forgotTextView">بازیابی گذرواژه</string>
     <string name="forgotPasswordA_S_usernameEdit">شماره همراه</string>
     <string name="forgotPasswordA_S_sendCodeButton">ارسال کد رمز عبور</string>
@@ -118,6 +106,14 @@
     <string name="newCommentHeaderTitle">یادداشت جدید</string>
     <string name="newCommentMaxLimitDefault">۲۵۵ کاراکتر</string>
     <string name="allCommentsHeaderTitle">یادداشت های سوال</string>
+
+    <string name="entrance_info_default_show">پیش فرض نمایش</string>
+    <string name="entrance_info_default_show_starred_q">سوالات نشان شده</string>
+    <string name="entrance_info_default_show_all_q">کل سوالات</string>
+    <string name="entrance_info_default_show_segment_stats">آمار</string>
+    <string name="entrance_info_default_show_segment_comments">یادداشت</string>
+    <string name="entrance_info_default_show_segment_answer">جواب</string>
+    <string name="entrance_info_default_show_segment_none">هیچ کدام</string>
 
     <string name="save">ذخیره</string>
     <string name="cancel">بی خیال</string>

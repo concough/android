@@ -475,3 +475,12 @@ EntranceShow Last Visit Info (abolfazl.beh) - 2018-11-19
 2 - TabLayout changed to consider to last visit info state
 3 - "saveLastVisitInfo" and "loadLastVisitInfo" functions added to handle store and restore last visit info data
 4 - "loadLessons", "loadBooklets" and "loadQuestions" modified to scroll to last visit info data if exist.
+
+------------------------------------------------------------------------------------------------
+EntranceShow Last Visit Info (abolfazl.beh) - 2018-11-22
+
+1 - EntranceShowInfoDialog and its layout "dialog_entrance_show_info" created to show info about entrance.
+2 = "info.hoang8f:android-segmented:1.0.6" package added to gradle build.
+3 - EntranceShowInfoDelegate created to trigger EntranceShowActivity about EntranceShowInfoDialog event
+4 - EntranceShowActivity modified to show new EntranceShowInfoDialog and respond to its delegates.
+5 - Some functions refactored and some bugs fixed.
