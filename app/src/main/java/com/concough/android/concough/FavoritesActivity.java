@@ -270,7 +270,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
         recycleView.setAdapter(favAdapter);
 
         this.loadData();
-        this.loadLessonData();
+        //this.loadLessonData();
     }
 
     private void loadData() {

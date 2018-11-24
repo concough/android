@@ -15,6 +15,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.PowerManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
@@ -55,6 +56,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.concough.android.chartaccessory.ChartValueNumberFormatter;
 import com.concough.android.concough.dialogs.EntranceShowAllCommentsDialog;
 import com.concough.android.concough.dialogs.EntranceShowInfoDialog;
 import com.concough.android.concough.dialogs.EntranceShowNewCommentDialog;
@@ -66,6 +68,8 @@ import com.concough.android.general.TouchImageView;
 import com.concough.android.models.EntranceBookletModel;
 import com.concough.android.models.EntranceLastVisitInfoModel;
 import com.concough.android.models.EntranceLastVisitInfoModelHandler;
+import com.concough.android.models.EntranceLessonExamModel;
+import com.concough.android.models.EntranceLessonExamModelHandler;
 import com.concough.android.models.EntranceLessonModel;
 import com.concough.android.models.EntranceModel;
 import com.concough.android.models.EntranceModelHandler;
@@ -90,6 +94,12 @@ import com.concough.android.structures.LogTypeEnum;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.utils.MD5Digester;
 import com.concough.android.vendor.progressHUD.KProgressHUD;
+import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.listener.ChartTouchListener;
+import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -107,6 +117,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -1283,25 +1294,32 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     }
 
+    private enum EntranceShowAdapterHolderType {
+        NORMAL_QUESTION(1),
+        EXAM_HISTORY(2);
+
+        private final int value;
+        private EntranceShowAdapterHolderType(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
+
     private class EntranceShowAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-
         private Context context;
         private RealmList<EntranceQuestionModel> questionModelList;
-
-//        private  String hashKey;
 
         public EntranceShowAdapter(Context context) {
             this.context = context;
             this.questionModelList = new RealmList<>();
-
-
         }
 
         public void setItems(RealmList<EntranceQuestionModel> questionModelList) {
             this.questionModelList = questionModelList;
             int i = 0;
-            int j = 0;
             for (EntranceQuestionModel item : questionModelList) {
 
 
@@ -1336,14 +1354,49 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(context).inflate(R.layout.cc_entrance_show_holder1, parent, false);
-            return new EntranceShowHolder(view);
+            if (viewType == EntranceShowAdapterHolderType.EXAM_HISTORY.getValue()) {
+                View view = LayoutInflater.from(context).inflate(R.layout.cc_entrance_show_chart_holder, parent, false);
+                return new EntranceShowChartHolder(view);
+            } else{
+                View view = LayoutInflater.from(context).inflate(R.layout.cc_entrance_show_holder1, parent, false);
+                return new EntranceShowHolder(view);
+            }
         }
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
-            final EntranceQuestionModel oneItem = this.questionModelList.get(position);
-            ((EntranceShowHolder) holder).setupHolder(oneItem, position);
+            if (holder.getClass() == EntranceShowChartHolder.class) {
+                long count = EntranceLessonExamModelHandler.getExamCount(context.getApplicationContext(),
+                        username, EntranceShowActivity.this.entranceUniqueId,
+                        EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).fullTitle,
+                        EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).order,
+                        EntranceShowActivity.this.bookletsDB.get(EntranceShowActivity.this.selectedBooklet).order);
+                Number sum = EntranceLessonExamModelHandler.getPercentageSum(context.getApplicationContext(),
+                        username, EntranceShowActivity.this.entranceUniqueId,
+                        EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).fullTitle,
+                        EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).order,
+                        EntranceShowActivity.this.bookletsDB.get(EntranceShowActivity.this.selectedBooklet).order);
+
+                double average = 0.0;
+                if (count > 0) {
+                    average = (double)sum / (double)count;
+                }
+
+                EntranceLessonExamModel lastExam = EntranceLessonExamModelHandler.getLastExam(context.getApplicationContext(),
+                        username, EntranceShowActivity.this.entranceUniqueId,
+                        EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).fullTitle,
+                        EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).order,
+                        EntranceShowActivity.this.bookletsDB.get(EntranceShowActivity.this.selectedBooklet).order);
+
+                ((EntranceShowChartHolder) holder).setupHolder(context, count, average,
+                        lastExam, EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).fullTitle,
+                        EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).order,
+                        EntranceShowActivity.this.bookletsDB.get(EntranceShowActivity.this.selectedBooklet).order);
+
+            } else if (holder.getClass() == EntranceShowHolder.class) {
+                final EntranceQuestionModel oneItem = this.questionModelList.get(position - 1);
+                ((EntranceShowHolder) holder).setupHolder(oneItem, position);
+            }
         }
 
         @Override
@@ -1353,7 +1406,16 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
         @Override
         public int getItemCount() {
-            return questionModelList.size();
+            return questionModelList.size() + 1;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            if (position == 0) {
+                return EntranceShowAdapterHolderType.EXAM_HISTORY.getValue();
+            } else {
+                return EntranceShowAdapterHolderType.NORMAL_QUESTION.getValue();
+            }
         }
 
         public void loadImages(String imageString) {
@@ -1997,6 +2059,170 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                     case None:
                         break;
                 }
+            }
+        }
+
+        private class EntranceShowChartHolder extends RecyclerView.ViewHolder {
+            private PieChart statContainer;
+            private TextView averageLabelTextView;
+            private TextView averageTextView;
+            private TextView examCountLabelTextView;
+            private TextView examCountTextView;
+            private TextView examHistoryLabelTextView;
+            private LinearLayout examHistoryContainer;
+            private Button newExamButton;
+
+            private long examCount = 0;
+
+            public EntranceShowChartHolder(View itemView) {
+                super(itemView);
+
+                statContainer = (PieChart) itemView.findViewById(R.id.itemESCH_chartContainer);
+                averageLabelTextView = (TextView) itemView.findViewById(R.id.itemESCH_averageLabelTextView);
+                averageTextView = (TextView) itemView.findViewById(R.id.itemESCH_averageTextView);
+                examCountLabelTextView = (TextView) itemView.findViewById(R.id.itemESCH_examCountLabelTextView);
+                examCountTextView = (TextView) itemView.findViewById(R.id.itemESCH_examCountTextView);
+                examHistoryLabelTextView = (TextView) itemView.findViewById(R.id.itemESCH_examsHistoryTextView);
+                examHistoryContainer = (LinearLayout) itemView.findViewById(R.id.itemESCH_examsHistoryContainer);
+                newExamButton = (Button) itemView.findViewById(R.id.itemESCH_newExamButton);
+
+                averageLabelTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                averageTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                examCountLabelTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                examCountTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                examHistoryLabelTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                newExamButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+
+                statContainer.setTransparentCircleRadius(1f);
+                statContainer.setHoleRadius(0.4f);
+                statContainer.setTransparentCircleColor(ContextCompat.getColor(context, android.R.color.transparent));
+
+                statContainer.setDescription("");
+
+                statContainer.animateXY(1, 1);
+                statContainer.getLegend().setEnabled(false);
+            }
+
+            public void setupHolder(Context context, long examCount, double examAverage,
+                                    @Nullable EntranceLessonExamModel lastExam, String lessonTitle,
+                                    int lessonOrder, int bookletOrder) {
+                double avg = (double)(Math.round((Math.round(examAverage * 10000) / 100)) * 10) / 10;
+                this.averageTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(avg));
+                this.examCountTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(examCount));
+
+                this.examCount = examCount;
+
+                if (examCount == 0) {
+                    this.statContainer.setTouchEnabled(false);
+                    this.statContainer.setCenterTextTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                    this.statContainer.setCenterTextColor(ContextCompat.getColor(context, R.color.colorBlack));
+                    this.statContainer.setCenterTextSize(13);
+                    this.statContainer.setCenterText("بدون\nسنجش");
+
+                    this.setDefaultChart(context);
+                } else {
+                    if (lastExam != null) {
+                        this.statContainer.setTouchEnabled(true);
+                        this.statContainer.setOnChartGestureListener(new OnChartGestureListener() {
+                            @Override
+                            public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+
+                            }
+
+                            @Override
+                            public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+
+                            }
+
+                            @Override
+                            public void onChartLongPressed(MotionEvent me) {
+
+                            }
+
+                            @Override
+                            public void onChartDoubleTapped(MotionEvent me) {
+
+                            }
+
+                            @Override
+                            public void onChartSingleTapped(MotionEvent me) {
+                                // TODO: create dialog to show answers and pie chart
+                            }
+
+                            @Override
+                            public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
+
+                            }
+
+                            @Override
+                            public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
+
+                            }
+
+                            @Override
+                            public void onChartTranslate(MotionEvent me, float dX, float dY) {
+
+                            }
+                        });
+
+                        String[] labels = new String[] {"", "", ""};
+                        float[] data = new float[]{
+                                lastExam.trueAnswer,
+                                lastExam.falseAnswer,
+                                lastExam.noAnswer
+                        };
+
+                        this.statContainer.setCenterTextTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+                        this.statContainer.setCenterTextColor(ContextCompat.getColor(context, R.color.colorBlack));
+                        this.statContainer.setCenterTextSize(13);
+                        this.statContainer.setCenterText("آخرین\nسنجش");
+
+                        this.setChart(labels, data);
+                    }
+                }
+
+                newExamButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        // TODO: create new exam dialog and ...
+                    }
+                });
+            }
+
+            public void setDefaultChart(Context context) {
+                ArrayList<Entry> dataEntries = new ArrayList<>();
+
+                Entry dataEntry = new Entry(1, 0);
+                dataEntries.add(dataEntry);
+
+                PieDataSet chartDataSet = new PieDataSet(dataEntries, "");
+                chartDataSet.setValueFormatter(new ChartValueNumberFormatter());
+                chartDataSet.setSelectionShift(0.0f);
+                chartDataSet.setValueTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                chartDataSet.setColors(new int[]{R.color.colorConcoughGray2}, context);
+
+                PieData chartData = new PieData(new String[]{""}, chartDataSet);
+                this.statContainer.setData(chartData);
+            }
+
+            public void setChart(String[] dataPoints, float[] values) {
+                ArrayList<Entry> dataEntries = new ArrayList<>();
+
+                for(int i=0; i < dataPoints.length; i++) {
+                    Entry dataEntry = new Entry(values[i], i);
+                    dataEntries.add(dataEntry);
+                }
+
+                PieDataSet chartDataSet = new PieDataSet(dataEntries, "");
+                chartDataSet.setValueFormatter(new ChartValueNumberFormatter());
+                chartDataSet.setSelectionShift(0.0f);
+                chartDataSet.setValueTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                chartDataSet.setColors(new int[]{R.color.colorConcoughGreen,
+                R.color.colorConcoughRedLight, R.color.colorConcoughOrange}, context);
+
+                PieData chartData = new PieData(dataPoints, chartDataSet);
+                this.statContainer.setData(chartData);
+
             }
         }
     }

@@ -115,6 +115,11 @@
     <string name="entrance_info_default_show_segment_answer">جواب</string>
     <string name="entrance_info_default_show_segment_none">هیچ کدام</string>
 
+    <string name="entrance_exam_percentage_average">میانگین</string>
+    <string name="entrance_exam_label">سنجش</string>
+    <string name="entrance_exam_new">سنجش جدید</string>
+    <string name="entrance_exam_history">تاریخچه سنجش ها</string>
+
     <string name="save">ذخیره</string>
     <string name="cancel">بی خیال</string>
     <string name="close">بستن</string>

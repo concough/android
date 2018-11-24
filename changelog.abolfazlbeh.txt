@@ -484,3 +484,15 @@ EntranceShow Last Visit Info (abolfazl.beh) - 2018-11-22
 3 - EntranceShowInfoDelegate created to trigger EntranceShowActivity about EntranceShowInfoDialog event
 4 - EntranceShowActivity modified to show new EntranceShowInfoDialog and respond to its delegates.
 5 - Some functions refactored and some bugs fixed.
+
+------------------------------------------------------------------------------------------------
+EntranceShow Header Holder (abolfazl.beh) - 2018-11-24
+
+1 - 'com.github.PhilJay:MPAndroidChart:v3.0.2' package installed to handle charts
+2 - EntranceLessonExamModel and its handler created to store entrance lesson exam per user per entrance
+3 - EntranceQuestionExamStatModel created to hold each question stats per user per entrance
+4 - EntranceLessonExamStructure created to hold lesson exam data when exam begins.
+5 - EntranceQuestionExamStatModelHandler created.
+6 - EntranceShowActivity modifications:
+    - EntranceShowChart holder created to show chart history as first child.
+    - "chartaccessory" package created to hold chart associated class. ValueNumberFormatter added to format chart number data

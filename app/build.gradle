@@ -90,6 +90,7 @@ dependencies {
     compile 'com.xenione.widgets:loupe:1.0.0'
     implementation 'net.danlew:android.joda:2.9.9.4'
     compile 'info.hoang8f:android-segmented:1.0.6'
+    compile 'com.github.PhilJay:MPAndroidChart:v2.2.4'
 }
 repositories {
     mavenCentral()
