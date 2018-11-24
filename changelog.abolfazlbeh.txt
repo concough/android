@@ -496,3 +496,9 @@ EntranceShow Header Holder (abolfazl.beh) - 2018-11-24
 6 - EntranceShowActivity modifications:
     - EntranceShowChart holder created to show chart history as first child.
     - "chartaccessory" package created to hold chart associated class. ValueNumberFormatter added to format chart number data
+
+------------------------------------------------------------------------------------------------
+Realm ModelMigration (abolfazl.beh) - 2018-11-24
+
+1 - model migration modified to version 4
+2 - Some bugs fixed

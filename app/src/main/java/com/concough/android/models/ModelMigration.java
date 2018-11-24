@@ -45,46 +45,48 @@ public class ModelMigration implements RealmMigration {
                     });
         }
 
-        if (oldVersion <= 6) {
-//            RealmObjectSchema lessonExamModel = sessionSchema.create("EntranceLessonExamModel")
-//                    .addField("uniqueId", String.class, FieldAttribute.PRIMARY_KEY)
-//                    .addField("username", String.class)
-//                    .addField("entranceUniqueId", String.class)
-//                    .addField("lessonTitle", String.class)
-//                    .addField("lessonOrder", int.class)
-//                    .addField("bookletOrder", int.class)
-//                    .addField("startedDate", Date.class)
-//                    .addField("finishedDate", Date.class)
-//                    .addField("withTime", boolean.class)
-//                    .addField("questionCount", int.class)
-//                    .addField("trueAnswer", int.class)
-//                    .addField("falseAnswer", int.class)
-//                    .addField("noAnswer", int.class)
-//                    .addField("created", Date.class)
-//                    .addField("examDuration", int.class)
-//                    .addField("examData", String.class)
-//                    .addField("percentage", double.class);
+        if (oldVersion <= 3) {
+            RealmObjectSchema lessonExamModel = sessionSchema.create("EntranceLessonExamModel")
+                    .addField("uniqueId", String.class, FieldAttribute.PRIMARY_KEY)
+                    .addField("username", String.class)
+                    .addField("entranceUniqueId", String.class)
+                    .addField("lessonTitle", String.class)
+                    .addField("lessonOrder", int.class)
+                    .addField("bookletOrder", int.class)
+                    .addField("startedDate", Date.class)
+                    .addField("finishedDate", Date.class)
+                    .addField("withTime", boolean.class)
+                    .addField("questionCount", int.class)
+                    .addField("trueAnswer", int.class)
+                    .addField("falseAnswer", int.class)
+                    .addField("noAnswer", int.class)
+                    .addField("created", Date.class)
+                    .addField("examDuration", int.class)
+                    .addField("examData", String.class)
+                    .addField("percentage", double.class);
 
-//            RealmObjectSchema questionExamStatModel = sessionSchema.create("EntranceQuestionExamStatModel")
-//                    .addField("username", String.class)
-//                    .addField("entranceUniqueId", String.class)
-//                    .addField("questionNo", int.class)
-//                    .addField("totalCount", int.class)
-//                    .addField("trueCount", int.class)
-//                    .addField("falseCount", int.class)
-//                    .addField("emptyCount", int.class)
-//                    .addField("created", Date.class)
-//                    .addField("updated", Date.class)
-//                    .addField("statData", String.class);
-//
-//            RealmObjectSchema questionCommentModel = sessionSchema.create("EntranceQuestionCommentModel")
-//                    .addField("uniqueId", String.class, FieldAttribute.PRIMARY_KEY)
-//                    .addField("username", String.class)
-//                    .addField("entranceUniqueId", String.class)
-//                    .addField("created", Date.class)
-//                    .addField("commentType", String.class)
-//                    .addField("commentData", String.class)
-//                    .addField("question", EntranceQuestionModel.class);
+            RealmObjectSchema questionExamStatModel = sessionSchema.create("EntranceQuestionExamStatModel")
+                    .addField("username", String.class)
+                    .addField("entranceUniqueId", String.class)
+                    .addField("questionNo", int.class)
+                    .addField("totalCount", int.class)
+                    .addField("trueCount", int.class)
+                    .addField("falseCount", int.class)
+                    .addField("emptyCount", int.class)
+                    .addField("created", Date.class)
+                    .addField("updated", Date.class)
+                    .addField("statData", String.class);
+
+            RealmObjectSchema entranceQuestionModel = sessionSchema.get("EntranceQuestionModel");
+
+            RealmObjectSchema questionCommentModel = sessionSchema.create("EntranceQuestionCommentModel")
+                    .addField("uniqueId", String.class, FieldAttribute.PRIMARY_KEY)
+                    .addField("username", String.class)
+                    .addField("entranceUniqueId", String.class)
+                    .addField("created", Date.class)
+                    .addField("commentType", String.class)
+                    .addField("commentData", String.class)
+                    .addRealmObjectField("question", entranceQuestionModel);
         }
     }
 }
