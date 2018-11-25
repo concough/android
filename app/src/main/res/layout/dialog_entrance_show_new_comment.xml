@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:clickable="true"
     android:focusableInTouchMode="true"
     android:id="@+id/DESNewComment_container"
+    android:background="@android:color/transparent"
     >
 
     <TextView
@@ -16,7 +17,11 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginTop="40dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="48dp"
         android:text="@string/newCommentHeaderTitle"
         android:textSize="15sp"
         android:textDirection="rtl"
@@ -30,9 +35,11 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginTop="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginLeft="8dp"
-        android:background="@color/colorWhite"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:background="@drawable/concough_border_outline_white_style"
         android:clipChildren="true"
         android:orientation="vertical"
         >
@@ -40,17 +47,18 @@
             android:id="@+id/DESNewComment_questionTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorConcoughGray3"
+            android:background="@drawable/concough_header_border_outline_gray_style"
             android:textColor="@color/colorBlack"
             android:textDirection="rtl"
-            android:textAlignment="textStart"
             android:text=""
-            android:gravity="start"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:padding="8dp"
             />
 
         <LinearLayout
             android:id="@+id/DESNewComment_lineBreakLinear1"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
             <View
@@ -93,13 +101,14 @@
         app:layout_constraintTop_toBottomOf="@id/DESNewComment_commentContainer"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginTop="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginEnd="8dp" />
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        />
 
     <Button
         android:id="@+id/DESNewComment_saveButton"
         android:layout_width="128dp"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:textColor="@color/colorWhite"
         android:background="@drawable/concough_border_outline_style"
         android:text="@string/save"
@@ -107,22 +116,24 @@
         app:layout_constraintTop_toBottomOf="@id/DESNewComment_commentContainer"
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginTop="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginStart="8dp" />
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp" />
 
     <Button
         android:id="@+id/DESNewComment_cancelButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="128dp"
+        android:layout_height="40dp"
         android:textColor="@color/colorWhite"
         android:background="@drawable/concough_border_radius_white_style"
         android:text="@string/cancel"
         android:textSize="14sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@id/DESNewComment_saveButton"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginBottom="16dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginLeft="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginBottom="8dp"
         />
 </android.support.constraint.ConstraintLayout>

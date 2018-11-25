@@ -8,6 +8,8 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import com.bumptech.glide.Glide
 import com.concough.android.concough.R
 import com.concough.android.concough.interfaces.EntranceShowInfoDelegate
@@ -40,9 +42,9 @@ class EntranceShowInfoDialog(context: Context): Dialog(context) {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(R.layout.dialog_entrance_show_info)
         window!!.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT)
+                ViewGroup.LayoutParams.WRAP_CONTENT)
 
-        ESID_defaultShowLabelTextView.typeface = FontCacheSingleton.getInstance(context.applicationContext).Bold
+        ESID_defaultShowLabelTextView.typeface = FontCacheSingleton.getInstance(context.applicationContext).Regular
         ESID_entranceOrgTextView.typeface = FontCacheSingleton.getInstance(context.applicationContext).Regular
         ESID_entranceSetTextView.typeface = FontCacheSingleton.getInstance(context.applicationContext).Bold
         ESID_entranceTypeTextView.typeface = FontCacheSingleton.getInstance(context.applicationContext).Light
@@ -58,36 +60,10 @@ class EntranceShowInfoDialog(context: Context): Dialog(context) {
         ESID_showStarredQuestionButton.typeface = FontCacheSingleton.getInstance(context.applicationContext).Regular
 
         ESID_showStarredQuestionButton.setOnClickListener {
-            this.dismiss()
             this.listener?.let {
                 this.listener!!.showStarredQuestionButtonClicked()
             }
-        }
-
-        ESID_defaultShowSegmentGroup.setOnCheckedChangeListener { radioGroup, i ->
             this.dismiss()
-            when (i) {
-                ESID_segmentNone.id -> {
-                    this.listener?.let {
-                        this.listener!!.defaultShowSegmantChanged(EntranceQuestionAnswerState.None)
-                    }
-                }
-                ESID_segmentAnswer.id -> {
-                    this.listener?.let {
-                        this.listener!!.defaultShowSegmantChanged(EntranceQuestionAnswerState.ANSWER)
-                    }
-                }
-                ESID_segmentComments.id -> {
-                    this.listener?.let {
-                        this.listener!!.defaultShowSegmantChanged(EntranceQuestionAnswerState.COMMENTS)
-                    }
-                }
-                ESID_segmentStats.id -> {
-                    this.listener?.let {
-                        this.listener!!.defaultShowSegmantChanged(EntranceQuestionAnswerState.STATS)
-                    }
-                }
-            }
         }
     }
 
@@ -105,7 +81,7 @@ class EntranceShowInfoDialog(context: Context): Dialog(context) {
             ESID_entranceTypeTextView.text = "آزمون ${entrance.entranceTypeTitle}"
             ESID_entranceSetTextView.text = "${entrance.entranceSetTitle} (${entrance.entranceGroupTitle})"
             ESID_entranceOrgTextView.text = entrance.entranceOrgTitle
-            ESID_defaultShowSegmentGroup.check(3 % segmentState.ordinal)
+            (ESID_defaultShowSegmentGroup.getChildAt(3 - segmentState.ordinal) as RadioButton).isChecked = true
 
         } else if (showType == "LessonExam" || showType == "LessonExamResult") {
             ESID_totalQuestionsTextView.text = FormatterSingleton.getInstance().NumberFormatter.format(totalQuestion)
@@ -147,6 +123,34 @@ class EntranceShowInfoDialog(context: Context): Dialog(context) {
             ESID_markedQuestionContainer.visibility = View.GONE
             ESID_examBriefTextView.visibility = View.GONE
         }
+
+        ESID_defaultShowSegmentGroup.setOnCheckedChangeListener(object: RadioGroup.OnCheckedChangeListener {
+            override fun onCheckedChanged(p0: RadioGroup?, p1: Int) {
+                when (p1) {
+                    ESID_segmentNone.id -> {
+                        this@EntranceShowInfoDialog.listener?.let {
+                            this@EntranceShowInfoDialog.listener!!.defaultShowSegmantChanged(EntranceQuestionAnswerState.None)
+                        }
+                    }
+                    ESID_segmentAnswer.id -> {
+                        this@EntranceShowInfoDialog.listener?.let {
+                            this@EntranceShowInfoDialog.listener!!.defaultShowSegmantChanged(EntranceQuestionAnswerState.ANSWER)
+                        }
+                    }
+                    ESID_segmentComments.id -> {
+                        this@EntranceShowInfoDialog.listener?.let {
+                            this@EntranceShowInfoDialog.listener!!.defaultShowSegmantChanged(EntranceQuestionAnswerState.COMMENTS)
+                        }
+                    }
+                    ESID_segmentStats.id -> {
+                        this@EntranceShowInfoDialog.listener?.let {
+                            this@EntranceShowInfoDialog.listener!!.defaultShowSegmantChanged(EntranceQuestionAnswerState.STATS)
+                        }
+                    }
+                }
+                //this@EntranceShowInfoDialog.dismiss()
+            }
+        })
     }
 
     private fun downloadImage(imageId: Int) {

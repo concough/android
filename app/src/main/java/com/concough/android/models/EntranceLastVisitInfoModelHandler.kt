@@ -51,7 +51,7 @@ class EntranceLastVisitInfoModelHandler {
                     return true
                 } catch (exc: Exception) {
 //                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
-                   // Log.d(TAG, exc.printStackTrace().toString())
+                   Log.d(TAG, exc.printStackTrace().toString())
                 }
             }
 

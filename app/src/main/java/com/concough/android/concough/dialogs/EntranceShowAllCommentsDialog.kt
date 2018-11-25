@@ -26,7 +26,7 @@ import com.google.gson.JsonParser
 import kotlinx.android.synthetic.main.dialog_entrance_show_all_comments.*
 import android.view.MotionEvent
 import android.view.GestureDetector
-
+import com.concough.android.general.AlertClass
 
 
 /**
@@ -47,7 +47,8 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(R.layout.dialog_entrance_show_all_comments)
         window!!.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT)
+                ViewGroup.LayoutParams.WRAP_CONTENT)
+        window!!.setBackgroundDrawableResource(android.R.color.transparent)
 
         DESAllComments_titleTextView.typeface = FontCacheSingleton.getInstance(context.applicationContext).Light
         DESAllComments_closeButton.typeface = FontCacheSingleton.getInstance(context.applicationContext).Bold
@@ -58,6 +59,9 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
         this.commentsAdapter = EntranceShowAllCommentsAdapter(context, arrayListOf())
         DESAllComments_recycleView.adapter = this.commentsAdapter
 
+        DESAllComments_closeButton.setOnClickListener {
+            this.dismiss()
+        }
     }
 
     public fun setupDialog(questionId: String, entranceUuniqueId: String, questionNo: Int, position: Int) {
@@ -68,15 +72,22 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
         val swipeHandler = object : SwipeToDeleteCallback(context) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder?, direction: Int) {
                 viewHolder?.let {
-                    if (viewHolder is EntranceShowAllCommentsAdapter.TextCommentHolder) {
-                        val comment = commentsAdapter!!.getItem(viewHolder.adapterPosition)
-                        if (comment != null) {
-                            if (this@EntranceShowAllCommentsDialog.listener != null) {
-                                this@EntranceShowAllCommentsDialog.listener!!.deleteComment(questionId,
-                                        questionNo, comment.uniqueId, position)
-                            }
+                    val msg = AlertClass.convertMessage("EntranceShowAction", "DeleteComment")
+                    AlertClass.showAlertMessageCustom(context, msg.title,
+                            msg.message, "بله", "خیر") {
+                        if (viewHolder is EntranceShowAllCommentsAdapter.TextCommentHolder) {
+                            val comment = commentsAdapter!!.getItem(viewHolder.adapterPosition)
+                            if (comment != null) {
+                                if (this@EntranceShowAllCommentsDialog.listener != null) {
+                                    val res = this@EntranceShowAllCommentsDialog.listener!!.deleteComment(questionId,
+                                            questionNo, comment.uniqueId, position)
 
-                            this@EntranceShowAllCommentsDialog.commentsAdapter!!.notifyItemRemoved(viewHolder.adapterPosition)
+                                    if (res) {
+                                        this@EntranceShowAllCommentsDialog.commentsAdapter!!.removeItem(viewHolder.adapterPosition)
+
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -128,7 +139,7 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
 
                 // Draw the red delete button
                 background.color = backgroundColor
-                background.setBounds(itemView.left - dX.toInt(), itemView.top, itemView.left, itemView.bottom)
+                background.setBounds(itemView.left, itemView.top, itemView.left + dX.toInt(), itemView.bottom)
                 background.draw(c)
 
                 val deleteIconTop = itemView.top + (itemHeight - intrinsicHeight) / 2
@@ -139,6 +150,7 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
 
                 deleteIcon.setBounds(deleteIconLeft.toInt(), deleteIconTop.toInt(),
                         deleteIconRight.toInt(), deleteIconBottom.toInt())
+                deleteIcon.setColorFilter(ContextCompat.getColor(itemView.context, R.color.colorWhite), PorterDuff.Mode.SRC_IN)
                 deleteIcon.draw(c)
 
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
@@ -176,6 +188,11 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
             return null
         }
 
+        public fun removeItem(position: Int) {
+            this.comments.removeAt(position)
+            this.notifyItemRemoved(position)
+        }
+
         override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder? {
             if (viewType == EntranceShowAllCommentsTypes.TEXT_COMMENT.ordinal) {
                 val view = LayoutInflater.from(context).inflate(R.layout.item_entrance_show_all_comments_dialog_cm, parent, false)
@@ -191,9 +208,9 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
             holder?.let {
-                if (holder.javaClass == TextCommentHolder::class) {
+                if (holder is TextCommentHolder) {
                     val comment = this.comments[position]
-                    (holder as TextCommentHolder).setupHolder(questionId, comment, position)
+                    holder.setupHolder(questionId, comment, position)
                 }
             }
         }

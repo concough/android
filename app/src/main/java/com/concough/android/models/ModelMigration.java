@@ -1,6 +1,7 @@
 package com.concough.android.models;
 
 import java.util.Date;
+import java.util.UUID;
 
 import io.realm.DynamicRealm;
 import io.realm.DynamicRealmObject;
@@ -87,6 +88,21 @@ public class ModelMigration implements RealmMigration {
                     .addField("commentType", String.class)
                     .addField("commentData", String.class)
                     .addRealmObjectField("question", entranceQuestionModel);
+        }
+
+        if (oldVersion <= 4) {
+            RealmObjectSchema sessionObjSchema = sessionSchema.get("EntranceLastVisitInfoModel");
+            if (sessionObjSchema.hasPrimaryKey()) {
+                sessionObjSchema.removePrimaryKey();
+            }
+            sessionObjSchema.addField("uniqueId", String.class)
+                    .transform(new RealmObjectSchema.Function() {
+                        @Override
+                        public void apply(DynamicRealmObject obj) {
+                            obj.set("uniqueId", UUID.randomUUID().toString());
+                        }
+                    });
+            sessionObjSchema.addPrimaryKey("uniqueId");
         }
     }
 }

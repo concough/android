@@ -502,3 +502,13 @@ Realm ModelMigration (abolfazl.beh) - 2018-11-24
 
 1 - model migration modified to version 4
 2 - Some bugs fixed
+
+------------------------------------------------------------------------------------------------
+Modification and Bugs Fixed (abolfazl.beh) - 2018-11-25
+
+1 - Add new field "uniqueId" as primary key to "EntranceLastVisitInfoModel" and its migration added -> schema version to 5
+2 - Many layouts modified to be more user friendly
+3 - EntranceLastVisitInfo checked and test
+4 - EntranceShow activity tested for last visit info store and restore. Also, comments add and remove checked.
+5 - EntranceShowInfo activity checked and debugged.
+6 - New alert message added to AlertClass -> to show before comment deletion

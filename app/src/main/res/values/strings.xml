@@ -103,6 +103,7 @@
 
     <string name="noCommentDefaultMessage">هنوز یادداشتی ثبت نکرده اید</string>
     <string name="moreComments">یادداشت های قبلی \u25BC</string>
+    <string name="newComment">+ یادداشت</string>
     <string name="newCommentHeaderTitle">یادداشت جدید</string>
     <string name="newCommentMaxLimitDefault">۲۵۵ کاراکتر</string>
     <string name="allCommentsHeaderTitle">یادداشت های سوال</string>

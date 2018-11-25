@@ -9,5 +9,5 @@ import com.google.gson.JsonObject
 interface EntranceShowCommentDelegate {
     fun addTextComment(questionId: String, questionNo: Int, position: Int, commentData: JsonObject): Boolean
     fun cancelComment()
-    fun deleteComment(questionId: String, questionNo: Int, commentId: String, position: Int)
+    fun deleteComment(questionId: String, questionNo: Int, commentId: String, position: Int): Boolean
 }

@@ -191,7 +191,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     private EntranceLastVisitInfoModel lastVisitInfo = null;
 
     //    private Boolean showStarredQuestions = false;
-    private ArrayList<String> bookletList;
     private ArrayList<String> dialogInfoList;
     private ArrayList<String> starredIds = new ArrayList<>();
 
@@ -316,7 +315,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
 
         dialogInfoList = new ArrayList<>();
-        bookletList = new ArrayList<>();
+        ArrayList<String> bookletList = new ArrayList<>();
 
 
         bookletAdapter = new DialogAdapter(EntranceShowActivity.this, bookletList);
@@ -359,23 +358,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         public void run() {
                             EntranceShowActivity.this.entranceShowAdapter.setItems(questionsDB);
                             EntranceShowActivity.this.entranceShowAdapter.notifyDataSetChanged();
-
-                            if (EntranceShowActivity.this.lastVisitInfo != null) {
-                                try {
-                                    int index = Integer.parseInt(EntranceShowActivity.this.lastVisitInfo.index);
-                                    if (EntranceShowActivity.this.lastVisitInfo.showType == "Show") {
-                                        if (index < EntranceShowActivity.this.entranceShowAdapter.getItemCount()) {
-                                            EntranceShowActivity.this.recyclerView.smoothScrollToPosition(index);
-                                        } else {
-                                            EntranceShowActivity.this.recyclerView.smoothScrollToPosition(0);
-                                        }
-                                    }
-                                } catch (Exception exc) {}
-
-                                EntranceShowActivity.this.lastVisitInfo = null;
-                            } else {
-                                EntranceShowActivity.this.recyclerView.smoothScrollToPosition(0);
-                            }
+                            EntranceShowActivity.this.recyclerView.smoothScrollToPosition(0);
 
                             AlertClass.hideLoadingMessage(loading);
                         }
@@ -444,6 +427,33 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 int aq = 0;
                 // TODO: compute aq for exam
 
+                // make entrance struct
+                if (EntranceShowActivity.this.entranceStruct == null) {
+                    String extraStr = EntranceShowActivity.this.entranceDB.extraData;
+                    JsonElement extraData = null;
+                    if (extraStr != null &&  !"".equals(extraStr)) {
+                        try {
+                            extraData = new JsonParser().parse(extraStr);
+                        } catch (Exception exc) {
+                            extraData = new JsonParser().parse("[]");
+                        }
+                    }
+
+                    EntranceShowActivity.this.entranceStruct = new EntranceStruct();
+                    EntranceShowActivity.this.entranceStruct.setEntranceUniqueId(EntranceShowActivity.this.entranceDB.uniqueId);
+                    EntranceShowActivity.this.entranceStruct.setEntranceLastPublished(EntranceShowActivity.this.entranceDB.lastPublished);
+                    EntranceShowActivity.this.entranceStruct.setEntranceDuration(EntranceShowActivity.this.entranceDB.duration);
+                    EntranceShowActivity.this.entranceStruct.setEntranceMonth(EntranceShowActivity.this.entranceDB.month);
+                    EntranceShowActivity.this.entranceStruct.setEntranceYear(EntranceShowActivity.this.entranceDB.year);
+                    EntranceShowActivity.this.entranceStruct.setEntranceBookletCounts(EntranceShowActivity.this.entranceDB.bookletsCount);
+                    EntranceShowActivity.this.entranceStruct.setEntranceExtraData(extraData);
+                    EntranceShowActivity.this.entranceStruct.setEntranceSetId(EntranceShowActivity.this.entranceDB.setId);
+                    EntranceShowActivity.this.entranceStruct.setEntranceSetTitle(EntranceShowActivity.this.entranceDB.set);
+                    EntranceShowActivity.this.entranceStruct.setEntranceGroupTitle(EntranceShowActivity.this.entranceDB.group);
+                    EntranceShowActivity.this.entranceStruct.setEntranceOrgTitle(EntranceShowActivity.this.entranceDB.organization);
+                    EntranceShowActivity.this.entranceStruct.setEntranceTypeTitle(EntranceShowActivity.this.entranceDB.type);
+                }
+
                 EntranceShowInfoDialog showInfoDialog = new EntranceShowInfoDialog(EntranceShowActivity.this);
                 showInfoDialog.setCancelable(true);
                 showInfoDialog.setCanceledOnTouchOutside(true);
@@ -499,7 +509,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
         texButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
-
         starredAdapter = new StarredShowAdapter(EntranceShowActivity.this);
         itemDecoration = new HeaderItemDecoration(recyclerView, starredAdapter);
 
@@ -509,8 +518,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         loadStarredQuestion();
         loadStarredQuestionRecords();
 
-        infoDialog();
-
+//        infoDialog();
+//
         EntranceOpenedCountModelHandler.update(getApplicationContext(), username, entranceUniqueId, showType);
 
         JsonObject eData = new JsonObject();
@@ -572,211 +581,211 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         super.onStop();
     }
 
-    private void infoDialog() {
-        dialogInfo = new Dialog(EntranceShowActivity.this);
-        dialogInfo = new Dialog(EntranceShowActivity.this, android.R.style.Theme_DeviceDefault_Dialog);
-        dialogInfo.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialogInfo.setCancelable(true);
-        dialogInfo.setContentView(R.layout.cc_alert_dialog_entrance_info_icon);
-        dialogInfo.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-
-
-        TextView tvEntranceTypeName = (TextView) dialogInfo.findViewById(R.id.entranceInfoIcon_typeName);
-        TextView tvEntranceGroupName = (TextView) dialogInfo.findViewById(R.id.entranceInfoIcon_groupName);
-        TextView tvEntranceExtraData = (TextView) dialogInfo.findViewById(R.id.entranceInfoIcon_extraData);
-        final Switch entranceSwitch = (Switch) dialogInfo.findViewById(R.id.entranceInfoIcon_switch);
-        final TextView buttonStarred = (TextView) dialogInfo.findViewById(R.id.entranceInfoIcon_btnStarred);
-        final TextView tvStarredCount = (TextView) dialogInfo.findViewById(R.id.entranceInfoIcon_starredCount);
-
-
-        tvEntranceTypeName.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-        tvEntranceGroupName.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-        tvEntranceExtraData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-        entranceSwitch.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-        buttonStarred.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-        tvStarredCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
-
-
-        String entranceYear = FormatterSingleton.getInstance().getNumberFormatter().format(this.entranceDB.year);
-        if (this.entranceDB.month > 0) {
-            tvEntranceTypeName.setText("آزمون " + this.entranceDB.type + " " + monthToString(this.entranceDB.month) + " " + entranceYear);
-        } else {
-            tvEntranceTypeName.setText("آزمون " + this.entranceDB.type + " " + entranceYear);
-        }
-        tvEntranceGroupName.setText(this.entranceDB.group + " (" + this.entranceDB.set + ")");
-
-
-//        String extra = "";
-//        ArrayList<String> extraArray = new ArrayList<>();
-//        JsonObject extraData = new JsonParser().parse(this.entranceDB.extraData).getAsJsonObject();
+//    private void infoDialog() {
+//        dialogInfo = new Dialog(EntranceShowActivity.this);
+//        dialogInfo = new Dialog(EntranceShowActivity.this, android.R.style.Theme_DeviceDefault_Dialog);
+//        dialogInfo.requestWindowFeature(Window.FEATURE_NO_TITLE);
+//        dialogInfo.setCancelable(true);
+//        dialogInfo.setContentView(R.layout.cc_alert_dialog_entrance_info_icon);
+//        dialogInfo.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
 //
-//        for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
-//            extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
+//
+//        TextView tvEntranceTypeName = (TextView) dialogInfo.findViewById(R.id.entranceInfoIcon_typeName);
+//        TextView tvEntranceGroupName = (TextView) dialogInfo.findViewById(R.id.entranceInfoIcon_groupName);
+//        TextView tvEntranceExtraData = (TextView) dialogInfo.findViewById(R.id.entranceInfoIcon_extraData);
+//        final Switch entranceSwitch = (Switch) dialogInfo.findViewById(R.id.entranceInfoIcon_switch);
+//        final TextView buttonStarred = (TextView) dialogInfo.findViewById(R.id.entranceInfoIcon_btnStarred);
+//        final TextView tvStarredCount = (TextView) dialogInfo.findViewById(R.id.entranceInfoIcon_starredCount);
+//
+//
+//        tvEntranceTypeName.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+//        tvEntranceGroupName.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+//        tvEntranceExtraData.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+//        entranceSwitch.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+//        buttonStarred.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+//        tvStarredCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+//
+//
+//        String entranceYear = FormatterSingleton.getInstance().getNumberFormatter().format(this.entranceDB.year);
+//        if (this.entranceDB.month > 0) {
+//            tvEntranceTypeName.setText("آزمون " + this.entranceDB.type + " " + monthToString(this.entranceDB.month) + " " + entranceYear);
+//        } else {
+//            tvEntranceTypeName.setText("آزمون " + this.entranceDB.type + " " + entranceYear);
+//        }
+//        tvEntranceGroupName.setText(this.entranceDB.group + " (" + this.entranceDB.set + ")");
+//
+//
+////        String extra = "";
+////        ArrayList<String> extraArray = new ArrayList<>();
+////        JsonObject extraData = new JsonParser().parse(this.entranceDB.extraData).getAsJsonObject();
+////
+////        for (Map.Entry<String, JsonElement> entry : extraData.entrySet()) {
+////            extraArray.add(entry.getKey() + ": " + entry.getValue().getAsString());
+////        }
+////
+////        extra = TextUtils.join(" - ", extraArray);
+//        tvEntranceExtraData.setText(this.entranceDB.organization);
+//
+//
+//        entranceSwitch.setHighlightColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGreen));
+//
+//        dialogInfo.setCanceledOnTouchOutside(true);
+//        dialogInfo.setOnShowListener(new DialogInterface.OnShowListener() {
+//            @Override
+//            public void onShow(DialogInterface dialog) {
+//                tvStarredCount.setText(String.format("%s", FormatterSingleton.getInstance().getNumberFormatter().format(EntranceShowActivity.this.globalPairListInteger)));
+//            }
+//        });
+//        dialogInfo.setOnCancelListener(new DialogInterface.OnCancelListener() {
+//            @Override
+//            public void onCancel(DialogInterface dialog) {
+//                if (entranceSwitch.isChecked()) {
+//                    EntranceShowActivity.this.defaultShowType = EntranceQuestionAnswerState.ANSWER;
+//                } else {
+//                    EntranceShowActivity.this.defaultShowType = EntranceQuestionAnswerState.None;
+//                }
+//                entranceShowAdapter.notifyDataSetChanged();
+//                starredAdapter.notifyDataSetChanged();
+//
+////                if (entranceSwitch.isChecked() != showAllAnswers) {
+////                    showAllAnswers = entranceSwitch.isChecked();
+////                    entranceShowAdapter.notifyDataSetChanged();
+////                    starredAdapter.notifyDataSetChanged();
+////                }
+//            }
+//        });
+//
+//        dialogInfo.setOnDismissListener(new DialogInterface.OnDismissListener() {
+//            @Override
+//            public void onDismiss(DialogInterface dialog) {
+//                if (entranceSwitch.isChecked()) {
+//                    EntranceShowActivity.this.defaultShowType = EntranceQuestionAnswerState.ANSWER;
+//                } else {
+//                    EntranceShowActivity.this.defaultShowType = EntranceQuestionAnswerState.None;
+//                }
+//                entranceShowAdapter.notifyDataSetChanged();
+//                starredAdapter.notifyDataSetChanged();
+//
+////                if (entranceSwitch.isChecked() != showAllAnswers) {
+////                    showAllAnswers = entranceSwitch.isChecked();
+////                    entranceShowAdapter.notifyDataSetChanged();
+////                    starredAdapter.notifyDataSetChanged();
+////                }
+//            }
+//        });
+//
+//
+//        if (showType.equals("Show")) {
+//            buttonStarred.setText("سوالات نشان شده");
+//            tvStarredCount.setVisibility(View.VISIBLE);
+//        } else {
+//            buttonStarred.setText("کلیه سوالات");
+//            tvStarredCount.setVisibility(View.INVISIBLE);
+//
 //        }
 //
-//        extra = TextUtils.join(" - ", extraArray);
-        tvEntranceExtraData.setText(this.entranceDB.organization);
-
-
-        entranceSwitch.setHighlightColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGreen));
-
-        dialogInfo.setCanceledOnTouchOutside(true);
-        dialogInfo.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialog) {
-                tvStarredCount.setText(String.format("%s", FormatterSingleton.getInstance().getNumberFormatter().format(EntranceShowActivity.this.globalPairListInteger)));
-            }
-        });
-        dialogInfo.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                if (entranceSwitch.isChecked()) {
-                    EntranceShowActivity.this.defaultShowType = EntranceQuestionAnswerState.ANSWER;
-                } else {
-                    EntranceShowActivity.this.defaultShowType = EntranceQuestionAnswerState.None;
-                }
-                entranceShowAdapter.notifyDataSetChanged();
-                starredAdapter.notifyDataSetChanged();
-
-//                if (entranceSwitch.isChecked() != showAllAnswers) {
-//                    showAllAnswers = entranceSwitch.isChecked();
-//                    entranceShowAdapter.notifyDataSetChanged();
+////        if (showAllAnswers) {
+//        if (EntranceShowActivity.this.defaultShowType == EntranceQuestionAnswerState.ANSWER) {
+//            entranceSwitch.setChecked(false);
+//        } else {
+//            entranceSwitch.setChecked(true);
+//        }
+//
+//
+//        buttonStarred.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//
+//                if (tvStarredCount.getVisibility() == View.VISIBLE) { // if must show all questions
+//
+//                    backButton.setVisibility(View.VISIBLE);
+//
+//                    showType = "Starred";
+//
+//                    loading = AlertClass.showLoadingMessage(EntranceShowActivity.this);
+//                    loading.show();
+//
+//                    buttonStarred.setText("کلیه سوالات");
+//                    tvStarredCount.setVisibility(View.INVISIBLE);
+//                    tabLayout.setVisibility(View.GONE);
+//
+//                    recyclerView.setVisibility(View.GONE);
+//                    recyclerViewStar.setVisibility(View.VISIBLE);
+//
+//                    texButton.setEnabled(false);
+//                    texButton.setTextColor(ContextCompat.getColor(getApplicationContext(), android.R.color.black));
+//
+//
+//                    recyclerViewStar.addItemDecoration(itemDecoration);
+//                    recyclerViewStar.setAdapter(starredAdapter);
+//                    starredAdapter.setItems(starredQuestions);
 //                    starredAdapter.notifyDataSetChanged();
+//                    recyclerViewStar.setLayoutManager(new StaggeredGridLayoutManager(1, 1));
+//
+//                    texButton.setText(String.format("سوالات نشان شده (%s)", FormatterSingleton.getInstance().getNumberFormatter().format(EntranceShowActivity.this.globalPairListInteger)));
+//
+//
+//                    dialogInfo.dismiss();
+//
+//                    Handler h = new Handler();
+//                    h.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            AlertClass.hideLoadingMessage(loading);
+//                        }
+//                    }, 1500);
+//
+//
+//                } else {
+//
+//                    backButton.setVisibility(View.VISIBLE);
+//
+//                    buttonStarred.setText("سوالات نشان شده");
+//                    tvStarredCount.setVisibility(View.VISIBLE);
+//                    tabLayout.setVisibility(View.VISIBLE);
+//
+//
+//                    texButton.setVisibility(View.VISIBLE);
+//                    texButton.setEnabled(true);
+//                    texButton.setTextColor(ContextCompat.getColor(getApplicationContext(), android.R.color.black));
+//
+//                    showType = "Show";
+//
+//
+//                    recyclerViewStar.setVisibility(View.GONE);
+//                    recyclerView.setVisibility(View.VISIBLE);
+//
+//                    recyclerView.setLayoutManager(new LinearLayoutManager(EntranceShowActivity.this));
+//
+//                    dialogInfo.dismiss();
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            loadLessions(0);
+////                            tabLayout.scrollTo(0, 1);
+//                        }
+//                    });
+//
+//                    Handler h = new Handler();
+//                    h.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            AlertClass.hideLoadingMessage(loading);
+//                        }
+//                    }, 1500);
+//
+//                    dialogInfo.dismiss();
 //                }
-            }
-        });
-
-        dialogInfo.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                if (entranceSwitch.isChecked()) {
-                    EntranceShowActivity.this.defaultShowType = EntranceQuestionAnswerState.ANSWER;
-                } else {
-                    EntranceShowActivity.this.defaultShowType = EntranceQuestionAnswerState.None;
-                }
-                entranceShowAdapter.notifyDataSetChanged();
-                starredAdapter.notifyDataSetChanged();
-
-//                if (entranceSwitch.isChecked() != showAllAnswers) {
-//                    showAllAnswers = entranceSwitch.isChecked();
-//                    entranceShowAdapter.notifyDataSetChanged();
-//                    starredAdapter.notifyDataSetChanged();
-//                }
-            }
-        });
-
-
-        if (showType.equals("Show")) {
-            buttonStarred.setText("سوالات نشان شده");
-            tvStarredCount.setVisibility(View.VISIBLE);
-        } else {
-            buttonStarred.setText("کلیه سوالات");
-            tvStarredCount.setVisibility(View.INVISIBLE);
-
-        }
-
-//        if (showAllAnswers) {
-        if (EntranceShowActivity.this.defaultShowType == EntranceQuestionAnswerState.ANSWER) {
-            entranceSwitch.setChecked(false);
-        } else {
-            entranceSwitch.setChecked(true);
-        }
-
-
-        buttonStarred.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-
-                if (tvStarredCount.getVisibility() == View.VISIBLE) { // if must show all questions
-
-                    backButton.setVisibility(View.VISIBLE);
-
-                    showType = "Starred";
-
-                    loading = AlertClass.showLoadingMessage(EntranceShowActivity.this);
-                    loading.show();
-
-                    buttonStarred.setText("کلیه سوالات");
-                    tvStarredCount.setVisibility(View.INVISIBLE);
-                    tabLayout.setVisibility(View.GONE);
-
-                    recyclerView.setVisibility(View.GONE);
-                    recyclerViewStar.setVisibility(View.VISIBLE);
-
-                    texButton.setEnabled(false);
-                    texButton.setTextColor(ContextCompat.getColor(getApplicationContext(), android.R.color.black));
-
-
-                    recyclerViewStar.addItemDecoration(itemDecoration);
-                    recyclerViewStar.setAdapter(starredAdapter);
-                    starredAdapter.setItems(starredQuestions);
-                    starredAdapter.notifyDataSetChanged();
-                    recyclerViewStar.setLayoutManager(new StaggeredGridLayoutManager(1, 1));
-
-                    texButton.setText(String.format("سوالات نشان شده (%s)", FormatterSingleton.getInstance().getNumberFormatter().format(EntranceShowActivity.this.globalPairListInteger)));
-
-
-                    dialogInfo.dismiss();
-
-                    Handler h = new Handler();
-                    h.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            AlertClass.hideLoadingMessage(loading);
-                        }
-                    }, 1500);
-
-
-                } else {
-
-                    backButton.setVisibility(View.VISIBLE);
-
-                    buttonStarred.setText("سوالات نشان شده");
-                    tvStarredCount.setVisibility(View.VISIBLE);
-                    tabLayout.setVisibility(View.VISIBLE);
-
-
-                    texButton.setVisibility(View.VISIBLE);
-                    texButton.setEnabled(true);
-                    texButton.setTextColor(ContextCompat.getColor(getApplicationContext(), android.R.color.black));
-
-                    showType = "Show";
-
-
-                    recyclerViewStar.setVisibility(View.GONE);
-                    recyclerView.setVisibility(View.VISIBLE);
-
-                    recyclerView.setLayoutManager(new LinearLayoutManager(EntranceShowActivity.this));
-
-                    dialogInfo.dismiss();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            loadLessions(0);
-//                            tabLayout.scrollTo(0, 1);
-                        }
-                    });
-
-                    Handler h = new Handler();
-                    h.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            AlertClass.hideLoadingMessage(loading);
-                        }
-                    }, 1500);
-
-                    dialogInfo.dismiss();
-                }
-            }
-
-        });
-
-        esetImageView = (ImageView) dialogInfo.findViewById(R.id.entranceInfoIcon_entLogo);
-
-        downloadImage(this.entranceDB.setId);
-
-    }
+//            }
+//
+//        });
+//
+//        esetImageView = (ImageView) dialogInfo.findViewById(R.id.entranceInfoIcon_entLogo);
+//
+//        downloadImage(this.entranceDB.setId);
+//
+//    }
 
     private void downloadImage(final int imageId) {
         byte[] data;
@@ -846,7 +855,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         String username = UserDefaultsSingleton.getInstance(this.getApplicationContext()).getUsername();
 
         if (this.selectedBooklet >= 0 && this.selectedLesson >= 0) {
-            if (this.showType == "Show") {
+            if ("Show".equals(this.showType)) {
                 String index = "0";
                 int row = 0;
 
@@ -872,7 +881,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                     JsonObject eData = new JsonObject();
                     eData.addProperty("uniqueId", this.entranceUniqueId);
                     eData.addProperty("bookletIndex", this.selectedBooklet);
-                    eData.addProperty("bookletString", this.bookletList.get(this.selectedBooklet));
+                    eData.addProperty("bookletString", (String) this.bookletAdapter.getItem(this.selectedBooklet));
                     eData.addProperty("lessonIndex", this.selectedLesson);
                     eData.addProperty("bookletString", this.lessonAdapter.getItem(this.selectedLesson));
                     eData.addProperty("question", this.questionsDB.get(row).number);
@@ -929,7 +938,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             this.selectedBooklet = 0;
 
             if (EntranceShowActivity.this.lastVisitInfo != null) {
-                if (EntranceShowActivity.this.lastVisitInfo.showType == "Show") {
+                if ("Show".equals(EntranceShowActivity.this.lastVisitInfo.showType)) {
                     this.selectedBooklet = EntranceShowActivity.this.lastVisitInfo.bookletIndex;
                 }
             }
@@ -970,7 +979,29 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 @Override
                 public void run() {
                     if (EntranceShowActivity.this.lastVisitInfo != null) {
-                        EntranceShowActivity.this.tabLayout.getTabAt(EntranceShowActivity.this.lastVisitInfo.lessonIndex).select();
+
+                        int lessonIndex1 = EntranceShowActivity.this.lastVisitInfo.lessonIndex;
+                        EntranceShowActivity.this.tabLayout.getTabAt(lessonIndex1).select();
+
+                        Handler h1 = new Handler();
+                        h1.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    int index = Integer.parseInt(EntranceShowActivity.this.lastVisitInfo.index);
+                                    if (EntranceShowActivity.this.lastVisitInfo.showType.equals("Show")) {
+                                        if (index < EntranceShowActivity.this.entranceShowAdapter.getItemCount()) {
+                                            EntranceShowActivity.this.recyclerView.smoothScrollToPosition(index);
+                                        } else {
+                                            EntranceShowActivity.this.recyclerView.smoothScrollToPosition(0);
+                                        }
+                                    }
+                                } catch (Exception exc) {}
+                                EntranceShowActivity.this.lastVisitInfo = null;
+
+                            }
+                        }, 5000);
+
                     } else {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                             EntranceShowActivity.this.tabLayout.getTabAt(0).select();
@@ -1099,7 +1130,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 username,
                 questionId,
                 EntranceCommentType.TEXT.getCode(),
-                commentData.getAsString());
+                commentData.toString());
 
         if (result != null) {
             JsonObject data = new JsonObject();
@@ -1129,25 +1160,34 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     }
 
     @Override
-    public void deleteComment(@NotNull String questionId, int questionNo, @NotNull String commentId, int position) {
-        JsonObject eData = new JsonObject();
-        eData.addProperty("uniqueId", this.entranceUniqueId);
-        eData.addProperty("questionNo", questionNo);
-        eData.addProperty("commentId", commentId);
+    public boolean deleteComment(@NotNull String questionId, int questionNo, @NotNull String commentId, int position) {
+        boolean result = EntranceQuestionCommentModelHandler.removeOneComment(EntranceShowActivity.this,
+                username, commentId);
 
-        this.createLog(LogTypeEnum.EntranceCommentDelete.getTitle(), eData);
+        if (result) {
 
-        if (this.showType == "Starred") {
-            this.starredAdapter.notifyItemChanged(position);
-        } else {
-            this.entranceShowAdapter.notifyItemChanged(position);
+            JsonObject eData = new JsonObject();
+            eData.addProperty("uniqueId", this.entranceUniqueId);
+            eData.addProperty("questionNo", questionNo);
+            eData.addProperty("commentId", commentId);
+
+            this.createLog(LogTypeEnum.EntranceCommentDelete.getTitle(), eData);
+
+            if (this.showType == "Starred") {
+                this.starredAdapter.notifyItemChanged(position);
+            } else {
+                this.entranceShowAdapter.notifyItemChanged(position);
+            }
         }
+
+        return result;
     }
 
     @Override
     public void showStarredQuestionButtonClicked() {
-        if (this.showType == "Show") {
-            this.showType = "Starred";
+        if ("Show".equals(showType)) {
+            EntranceShowActivity.this.saveLastVisitInfoState();
+            showType = "Starred";
 
             loading = AlertClass.showLoadingMessage(EntranceShowActivity.this);
             loading.show();
@@ -1176,8 +1216,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             }, 1500);
 
 
-        } else if (this.showType == "Starred") {
-            this.showType = "Show";
+        } else if ("Starred".equals(showType)) {
+            showType = "Show";
+            EntranceShowActivity.this.loadLastVisitInfoState();
 
             tabLayout.setVisibility(View.VISIBLE);
 
@@ -1187,12 +1228,12 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
             recyclerViewStar.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
-            recyclerView.setLayoutManager(new LinearLayoutManager(EntranceShowActivity.this));
+            recyclerView.setLayoutManager(new CustomGridLayoutManager(EntranceShowActivity.this));
 
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    loadLessions(EntranceShowActivity.this.selectedLesson);
+                    loadLessions(EntranceShowActivity.this.selectedBooklet);
                 }
             });
 
@@ -1208,10 +1249,10 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     @Override
     public void defaultShowSegmantChanged(@NotNull EntranceQuestionAnswerState state) {
-        if (this.showType == "Show" || this.showType == "Starred") {
-            this.defaultShowType = state;
+        if ("Show".equals(showType) || "Starred".equals(showType)) {
+            defaultShowType = state;
 
-            if (showType == "Show") {
+            if ("Show".equals(showType)) {
                 entranceShowAdapter.notifyDataSetChanged();
             } else {
                 starredAdapter.notifyDataSetChanged();
@@ -1240,9 +1281,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
         @Override
         public CharSequence getPageTitle(int position) {
-
             return (CharSequence) EntranceShowActivity.this.lessonAdapter.getItem(position);
-
         }
     }
 
@@ -1602,7 +1641,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 moreCommentsButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 lastCommentTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 lastCommentDateTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
-                noCommentTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                noCommentTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
 
             }
 
@@ -1613,9 +1652,13 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             public void setupHolder(final EntranceQuestionModel entranceQuestionModel, int position) {
 
                 questionNumber.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.number));
-
                 answer.setText("گزینه " + questionAnswerToString(entranceQuestionModel.answer) + " صحیح است");
-                //answer.setText("گزینه " + FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.answer) + " صحیح است");
+
+                int commentCount = (int) EntranceQuestionCommentModelHandler.getCommentsCount(context,
+                        EntranceShowActivity.this.entranceUniqueId,
+                        EntranceShowActivity.this.username,
+                        entranceQuestionModel.uniqueId);
+                showCommentsTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(commentCount));
 
                 mEntranceQuestionModel = entranceQuestionModel;
 
@@ -1999,6 +2042,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                             default:
                                 break;
                         }
+                        lastCommentContainer.setVisibility(View.VISIBLE);
                     }
 
                     this.moreCommentsButton.setVisibility(View.VISIBLE);
@@ -2077,7 +2121,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             public EntranceShowChartHolder(View itemView) {
                 super(itemView);
 
-                statContainer = (PieChart) itemView.findViewById(R.id.itemESCH_chartContainer);
+                statContainer = (PieChart) itemView.findViewById(R.id.itemESCH_statContainer);
                 averageLabelTextView = (TextView) itemView.findViewById(R.id.itemESCH_averageLabelTextView);
                 averageTextView = (TextView) itemView.findViewById(R.id.itemESCH_averageTextView);
                 examCountLabelTextView = (TextView) itemView.findViewById(R.id.itemESCH_examCountLabelTextView);
@@ -2093,9 +2137,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 examHistoryLabelTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 newExamButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
 
-                statContainer.setTransparentCircleRadius(1f);
-                statContainer.setHoleRadius(0.4f);
-                statContainer.setTransparentCircleColor(ContextCompat.getColor(context, android.R.color.transparent));
+                statContainer.setTransparentCircleRadius(100f);
+                statContainer.setHoleRadius(40f);
+                statContainer.setTransparentCircleColor(ContextCompat.getColor(context, android.R.color.white));
 
                 statContainer.setDescription("");
 
@@ -2107,7 +2151,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                                     @Nullable EntranceLessonExamModel lastExam, String lessonTitle,
                                     int lessonOrder, int bookletOrder) {
                 double avg = (double)(Math.round((Math.round(examAverage * 10000) / 100)) * 10) / 10;
-                this.averageTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(avg));
+                this.averageTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(avg) + " %");
                 this.examCountTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(examCount));
 
                 this.examCount = examCount;
@@ -2464,7 +2508,11 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 answer.setText("گزینه " + questionAnswerToString(entranceQuestionModel.answer) + " صحیح است");
 //                answer.setText("گزینه " + FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.answer) + " صحیح است");
 
-                mEntranceQuestionModel = entranceQuestionModel;
+                int commentCount = (int) EntranceQuestionCommentModelHandler.getCommentsCount(context,
+                        EntranceShowActivity.this.entranceUniqueId,
+                        EntranceShowActivity.this.username,
+                        entranceQuestionModel.uniqueId);
+                showCommentsTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(commentCount));
 
                 if (EntranceShowActivity.this.starredIds.contains(entranceQuestionModel.uniqueId)) {
                     starred = true;
@@ -2645,6 +2693,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                             default:
                                 break;
                         }
+                        lastCommentContainer.setVisibility(View.VISIBLE);
                     }
 
                     this.moreCommentsButton.setVisibility(View.VISIBLE);

@@ -298,7 +298,14 @@ class AlertClass {
                         else -> showMessage = false
                     }
                 }
-
+                "EntranceShowAction" -> {
+                    when (messageSubType) {
+                        "DeleteComment" -> {
+                            title = "پیغام"; message = "آیا از حذف یادداشت مطمئن هستید؟"
+                        }
+                        else -> showMessage = false
+                    }
+                }
                 else -> showMessage = false
 
 

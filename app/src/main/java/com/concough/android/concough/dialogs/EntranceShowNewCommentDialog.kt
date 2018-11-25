@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.support.v4.content.ContextCompat
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
@@ -37,9 +38,10 @@ class EntranceShowNewCommentDialog(context: Context): Dialog(context) {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(R.layout.dialog_entrance_show_new_comment)
         window!!.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT)
+                ViewGroup.LayoutParams.WRAP_CONTENT)
+        window!!.setBackgroundDrawableResource(android.R.color.transparent)
 
-        DESNewComment_headerTitleTextView.typeface = FontCacheSingleton.getInstance(context.applicationContext).Light
+        DESNewComment_headerTitleTextView.typeface = FontCacheSingleton.getInstance(context.applicationContext).Regular
         DESNewComment_questionTextView.typeface = FontCacheSingleton.getInstance(context.applicationContext).Regular
         DESNewComment_newEditText.typeface = FontCacheSingleton.getInstance(context.applicationContext).Light
         DESNewComment_charactersCountTextView.typeface = FontCacheSingleton.getInstance(context.applicationContext).Light
@@ -73,6 +75,16 @@ class EntranceShowNewCommentDialog(context: Context): Dialog(context) {
             }
 
         })
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        event?.let {
+            if (event.action == MotionEvent.ACTION_UP) {
+
+            }
+        }
+
+        return true
     }
 
     fun setupDialog(questionUniqueId: String, questionNo: Int, position: Int) {

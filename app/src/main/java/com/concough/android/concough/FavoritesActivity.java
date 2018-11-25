@@ -1472,24 +1472,23 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                         fav.opened = (int) openedCount;
                                         fav.questionCount = qCount;
 
-                                        FavoritesAdapter.this.notDownloaded.remove(index - FavoritesAdapter.this.purchased.size() - 2);
-                                        FavoritesAdapter.this.notifyItemRemoved(index);
+                                        notDownloaded.remove(index - FavoritesAdapter.this.purchased.size() - 2);
+                                        notifyItemRemoved(index);
 
-                                        FavoritesAdapter.this.purchased.add(fav);
-                                        FavoritesAdapter.this.DownloadCount.add(FavoritesAdapter.this.purchased.size() - 1);
-                                        FavoritesAdapter.this.notifyItemInserted(FavoritesAdapter.this.purchased.size());
+                                        purchased.add(fav);
+                                        DownloadCount.add(FavoritesAdapter.this.purchased.size() - 1);
+                                        notifyItemInserted(FavoritesAdapter.this.purchased.size());
 
-                                        uiHandler.postDelayed(new Runnable() {
+                                        FavoritesActivity.this.recycleView.smoothScrollToPosition(purchased.size());
+                                        FavoritesActivity.this.recycleView.postDelayed(new Runnable() {
                                             @Override
                                             public void run() {
-                                                RecyclerView.ViewHolder holder = FavoritesActivity.this.recycleView.findViewHolderForAdapterPosition(FavoritesAdapter.this.purchased.size());
+                                                RecyclerView.ViewHolder holder = FavoritesActivity.this.recycleView.findViewHolderForAdapterPosition(purchased.size());
                                                 if (holder.getClass() == FEntranceDownloadViewHolder.class) {
                                                     ((FEntranceDownloadViewHolder) holder).changeBackground();
                                                 }
-
-                                                FavoritesActivity.this.recycleView.smoothScrollToPosition(FavoritesAdapter.this.purchased.size());
                                             }
-                                        }, 200);
+                                        }, 1000);
                                     }
                                 }
                             }
