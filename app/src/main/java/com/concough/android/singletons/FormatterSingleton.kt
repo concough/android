@@ -13,6 +13,7 @@ class FormatterSingleton {
     private var _UTCDateFormatter: SimpleDateFormat
     private var _UTCShortDateFormatter: SimpleDateFormat
     private var _NumberFormatter: NumberFormat
+    private var _DecimalFormatter: NumberFormat
 
     companion object Factory {
         private var sharedInstance: FormatterSingleton? = null
@@ -36,7 +37,11 @@ class FormatterSingleton {
         this._UTCShortDateFormatter.timeZone = TimeZone.getTimeZone("UTS")
 
         this._NumberFormatter = NumberFormat.getNumberInstance(Locale("fa", "IR"))
-        this._NumberFormatter.isGroupingUsed = false;
+        this._NumberFormatter.isGroupingUsed = false
+
+        this._DecimalFormatter = NumberFormat.getNumberInstance(Locale("fa", "IR"))
+        this._DecimalFormatter.maximumFractionDigits = 2
+        this._DecimalFormatter.isGroupingUsed = false
 
     }
 
@@ -48,6 +53,9 @@ class FormatterSingleton {
 
     public val NumberFormatter: NumberFormat
         get() = this._NumberFormatter
+
+    public val DecimalNumberFormatter: NumberFormat
+        get() = this._DecimalFormatter
 
     public fun getPersianDateString(d: Date): String {
         val year = PersianCalendar.getPersianYear(d)

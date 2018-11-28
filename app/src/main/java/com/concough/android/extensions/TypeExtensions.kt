@@ -4,6 +4,12 @@ import com.concough.android.utils.timesAgoTranslate
 import org.joda.time.Period
 import java.util.*
 
+fun Date.diffInHourMinSec(date: Date): Array<Int> {
+    val p = Period(this.time, date.time)
+    val items = arrayOf(p.hours, p.minutes, p.seconds)
+    return items
+}
+
 fun Date.timeAgoSinceDate(lang: String, numericDates: Boolean = false): String {
     val nowD = Date()
 

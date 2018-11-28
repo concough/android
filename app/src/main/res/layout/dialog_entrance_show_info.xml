@@ -113,7 +113,7 @@
 
         </android.support.constraint.ConstraintLayout>
 
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/ESID_entranceSetImageView"
             android:layout_width="70dp"
             android:layout_height="70dp"
@@ -121,6 +121,9 @@
             app:srcCompat="@drawable/no_image"
             android:layout_marginLeft="8dp"
             android:layout_marginStart="8dp"
+            app:civ_border_color="@color/colorConcoughGray4"
+            app:civ_border_width="0.8dp"
+            app:civ_fill_color="@color/colorWhite"
             />
 
     </LinearLayout>
@@ -290,9 +293,9 @@
 
     </LinearLayout>
 
-    <android.support.constraint.ConstraintLayout
+    <LinearLayout
         android:id="@+id/ESID_examBriefContainer"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/ESID_linearLine2"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -304,6 +307,8 @@
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginBottom="16dp"
+        android:orientation="vertical"
+        android:gravity="center"
         >
 
         <LinearLayout
@@ -320,6 +325,7 @@
                 android:gravity="center">
 
                 <ImageView
+                    android:id="@+id/ESID_totalQuestionsImageView"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
                     android:src="@drawable/question_80"
@@ -347,6 +353,7 @@
                 >
 
                 <ImageView
+                    android:id="@+id/ESID_lessonExamTimerImageView"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
                     android:src="@drawable/timer2_100"
@@ -360,7 +367,6 @@
                     android:textColor="@color/colorBlack"
                     android:textSize="14sp"
                     android:layout_marginTop="8dp"
-                    android:textDirection="rtl"
                     />
             </LinearLayout>
 
@@ -374,6 +380,7 @@
             android:textSize="14sp"
             android:textDirection="rtl"
             android:gravity="center"
+            android:layout_marginTop="8dp"
             />
-    </android.support.constraint.ConstraintLayout>
+    </LinearLayout>
 </android.support.constraint.ConstraintLayout>

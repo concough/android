@@ -512,3 +512,18 @@ Modification and Bugs Fixed (abolfazl.beh) - 2018-11-25
 4 - EntranceShow activity tested for last visit info store and restore. Also, comments add and remove checked.
 5 - EntranceShowInfo activity checked and debugged.
 6 - New alert message added to AlertClass -> to show before comment deletion
+
+------------------------------------------------------------------------------------------------
+Entrance Lesson New Exam (abolfazl.beh) - 2018-11-28
+
+1 - EntranceShowInfo dialog entrance set image change to circular image.
+2 - EntranceNewLessonExam dialog created to show exam pre dialog.
+3 - EntranceLessonExam delegate class created to tigger exam related actions.
+4 - New holder created to show question in exam mode and exam result: EntranceQuestionExamHolder in EntranceShowAdapter
+5 - EntranceLessonExamResult dialog created to show exam result after user finish exam
+6 - EntranceQuestionExamStatModel modified to include primary key "uniqueId". Also ModelMigration changed -> schema version 7
+7 - Some bugs fixed
+8 - New messages added to AlertClass
+9 - diffInHourMinSec extension added to separate different parts of Date object.
+10 - New number formatter added to FormatterSingleton to show decimal numbers with maximum fraction count of 2: DecimalNumberFormatter
+

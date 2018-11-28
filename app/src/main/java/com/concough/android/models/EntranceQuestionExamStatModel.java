@@ -3,12 +3,15 @@ package com.concough.android.models;
 import java.util.Date;
 
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
  * Created by abolfazl on 11/22/18.
  */
 
 public class EntranceQuestionExamStatModel extends RealmObject {
+    @PrimaryKey
+    public String uniqueId = "";
     public String username = "";
     public String entranceUniqueId = "";
     public int questionNo = 0;

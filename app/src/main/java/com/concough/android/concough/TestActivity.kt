@@ -5,7 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
+import com.concough.android.models.EntranceLessonExamModelHandler
+import com.concough.android.models.EntranceQuestionExamStatModelHandler
+import com.concough.android.singletons.RealmSingleton
 import com.concough.android.vendor.progressHUD.KProgressHUD
+import kotlinx.android.synthetic.main.activity_test.*
 
 
 class TestActivity : AppCompatActivity() {
@@ -70,6 +74,11 @@ class TestActivity : AppCompatActivity() {
 ////
 ////            })
 //            Log.d(TAG, "")
+//        }
+
+//        testA_read_keystore.setOnClickListener {
+//            EntranceLessonExamModelHandler.deleteAllExams(applicationContext)
+//            EntranceQuestionExamStatModelHandler.deleteAllStats(applicationContext)
 //        }
     }
 

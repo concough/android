@@ -59,6 +59,9 @@ class EntranceShowInfoDialog(context: Context): Dialog(context) {
         ESID_totalQuestionsTextView.typeface = FontCacheSingleton.getInstance(context.applicationContext).Regular
         ESID_showStarredQuestionButton.typeface = FontCacheSingleton.getInstance(context.applicationContext).Regular
 
+        ESID_totalQuestionsImageView.setColorFilter(ContextCompat.getColor(context.applicationContext, R.color.colorConcoughBlue))
+        ESID_lessonExamTimerImageView.setColorFilter(ContextCompat.getColor(context.applicationContext, R.color.colorConcoughBlue))
+
         ESID_showStarredQuestionButton.setOnClickListener {
             this.listener?.let {
                 this.listener!!.showStarredQuestionButtonClicked()
@@ -112,10 +115,16 @@ class EntranceShowInfoDialog(context: Context): Dialog(context) {
                 ESID_showStarredQuestionButton.text = context.resources.getString(R.string.entrance_info_default_show_all_q)
             }
         } else if (showType == "LessonExam" || showType == "LessonExamResult") {
+            ESID_examBriefTextView.text = FormatterSingleton.getInstance().NumberFormatter.format(answeredQuestions) +
+                    " سوال از " +
+                    FormatterSingleton.getInstance().NumberFormatter.format(totalQuestion) +
+                    " سوال جواب داده اید"
+
             ESID_defaultShowContainer.visibility = View.GONE
             ESID_examBriefContainer.visibility = View.VISIBLE
             ESID_showStarredQuestionButton.visibility = View.GONE
             ESID_markedQuestionContainer.visibility = View.GONE
+            ESID_examBriefTextView.visibility = View.VISIBLE
         } else if (showType == "LessonExamHistory") {
             ESID_defaultShowContainer.visibility = View.GONE
             ESID_examBriefContainer.visibility = View.VISIBLE

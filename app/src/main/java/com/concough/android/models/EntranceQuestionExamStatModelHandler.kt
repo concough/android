@@ -82,6 +82,7 @@ class EntranceQuestionExamStatModelHandler {
                     .findFirst()
         }
 
+        @JvmStatic
         fun deleteAllStats(context: Context) {
             val items = RealmSingleton.getInstance(context).DefaultRealm
                     .where(EntranceQuestionExamStatModel::class.java).findAll()

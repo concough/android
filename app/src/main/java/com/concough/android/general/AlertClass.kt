@@ -31,6 +31,7 @@ class AlertClass {
     companion object {
         var hideLoadingLock: Int = 9
 
+        @JvmStatic
         fun convertMessage(messageType: String, messageSubType: String): Message {
             var showMessage: Boolean = true
             var title: String = ""

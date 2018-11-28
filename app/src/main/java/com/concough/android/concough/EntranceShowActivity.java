@@ -1,12 +1,9 @@
 package com.concough.android.concough;
 
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Canvas;
-import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,7 +14,6 @@ import android.os.PowerManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
-import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -32,7 +28,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
@@ -40,31 +35,28 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.QuickContactBadge;
-import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.concough.android.chartaccessory.ChartValueNumberFormatter;
+import com.concough.android.concough.dialogs.EntranceNewLessonExamDialog;
 import com.concough.android.concough.dialogs.EntranceShowAllCommentsDialog;
 import com.concough.android.concough.dialogs.EntranceShowInfoDialog;
 import com.concough.android.concough.dialogs.EntranceShowNewCommentDialog;
+import com.concough.android.concough.interfaces.EntranceLessonExamDelegate;
+import com.concough.android.concough.dialogs.EntranceLessonExamResultDialog;
 import com.concough.android.concough.interfaces.EntranceShowCommentDelegate;
 import com.concough.android.concough.interfaces.EntranceShowInfoDelegate;
 import com.concough.android.general.AlertClass;
-import com.concough.android.general.ImageMagnifier;
-import com.concough.android.general.TouchImageView;
 import com.concough.android.models.EntranceBookletModel;
 import com.concough.android.models.EntranceLastVisitInfoModel;
 import com.concough.android.models.EntranceLastVisitInfoModelHandler;
@@ -76,22 +68,20 @@ import com.concough.android.models.EntranceModelHandler;
 import com.concough.android.models.EntranceOpenedCountModelHandler;
 import com.concough.android.models.EntranceQuestionCommentModel;
 import com.concough.android.models.EntranceQuestionCommentModelHandler;
+import com.concough.android.models.EntranceQuestionExamStatModelHandler;
 import com.concough.android.models.EntranceQuestionModel;
 import com.concough.android.models.EntranceQuestionModelHandler;
 import com.concough.android.models.EntranceQuestionStarredModelHandler;
 import com.concough.android.models.EntranceStarredQuestionModel;
 import com.concough.android.models.UserLogModelHandler;
-import com.concough.android.rest.MediaRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
-import com.concough.android.singletons.MediaCacheSingleton;
 import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.EntranceCommentType;
+import com.concough.android.structures.EntranceLessonExamStructure;
 import com.concough.android.structures.EntranceQuestionAnswerState;
 import com.concough.android.structures.EntranceStruct;
-import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.LogTypeEnum;
-import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.utils.MD5Digester;
 import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.github.mikephil.charting.charts.PieChart;
@@ -111,41 +101,37 @@ import com.orhanobut.dialogplus.OnItemClickListener;
 import org.cryptonode.jncryptor.AES256JNCryptor;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 import io.realm.RealmList;
 import io.realm.RealmResults;
 import io.realm.Sort;
 import kotlin.Unit;
-import kotlin.jvm.functions.Function1;
-import kotlin.jvm.functions.Function2;
+import kotlin.jvm.functions.Function0;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.bumptech.glide.request.target.Target.SIZE_ORIGINAL;
 import static com.concough.android.concough.R.id.headerShowStarred_countEntrance;
+import static com.concough.android.extensions.TypeExtensionsKt.diffInHourMinSec;
 import static com.concough.android.extensions.TypeExtensionsKt.timeAgoSinceDate;
 import static com.concough.android.settings.ConstantsKt.getSECRET_KEY;
-import static com.concough.android.utils.DataConvertorsKt.monthToString;
 import static com.concough.android.utils.DataConvertorsKt.questionAnswerToString;
-import static com.concough.android.utils.UtilitiesKt.convertFileToByteArray;
+import static com.concough.android.utils.UtilitiesKt.spToDp;
 
 public class EntranceShowActivity extends AppCompatActivity implements Handler.Callback,
-        EntranceShowCommentDelegate, EntranceShowInfoDelegate {
+        EntranceShowCommentDelegate, EntranceShowInfoDelegate, EntranceLessonExamDelegate {
 
     private class StarredQuestionsContainer {
         public String lessionId;
@@ -168,7 +154,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     private HandlerThread starredHandlerThread = null;
     private Handler starredHandler = null;
-
+    private Timer examTimer = null;
 
     private String entranceUniqueId;
     private String showType = "Show";
@@ -189,6 +175,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     private EntranceQuestionAnswerState defaultShowType = EntranceQuestionAnswerState.None;
     private HashMap<String, EntranceQuestionAnswerState> showedAnswer = new HashMap<>();
     private EntranceLastVisitInfoModel lastVisitInfo = null;
+    private EntranceLessonExamStructure lessonExamStructure = null;
 
     //    private Boolean showStarredQuestions = false;
     private ArrayList<String> dialogInfoList;
@@ -206,7 +193,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     private ViewPager mViewPager;
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private DialogPlus dialog;
-    private Dialog dialogInfo;
+//    private Dialog dialogInfo;
     private Button texButton;
     private Button infoButton;
     private LinearLayout backButton;
@@ -214,10 +201,11 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     private RecyclerView recyclerViewStar;
     private KProgressHUD loading;
     private PowerManager.WakeLock wakeLock;
+    private ConstraintLayout timerContainer;
+    private ConstraintLayout backToDefaultContainer;
+    private TextView timerTextView;
+    private TextView examQCountTextView;
 
-    private ImageView esetImageView;
-
-    private ArrayList<String> mList;
     private StarredShowAdapter starredAdapter;
     private HeaderItemDecoration itemDecoration;
 
@@ -261,7 +249,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_entrance_show);
-
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,
                 WindowManager.LayoutParams.FLAG_SECURE);
 
@@ -271,7 +258,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         if (entranceUniqueId.equals("")) {
             finish();
         }
-
 
         this.handlerThread = new HandlerThread(HANDLE_THREAD_NAME);
         if (this.handlerThread != null) {
@@ -283,7 +269,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             this.handler = new Handler(looper, this);
         }
 
-
         this.starredHandlerThread = new HandlerThread(HANDLE_THREAD_NAME + "2");
         if (this.starredHandlerThread != null) {
             this.starredHandlerThread.start();
@@ -294,6 +279,59 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             this.starredHandler = new Handler(starredLooper, this);
         }
 
+        this.backToDefaultContainer = (ConstraintLayout) findViewById(R.id.entranceShowA_backToDefaultContainer);
+        this.timerContainer = (ConstraintLayout) findViewById(R.id.entranceShowA_timerContainer);
+        this.timerTextView = (TextView) findViewById(R.id.entranceShowA_timerTextView);
+        this.examQCountTextView = (TextView) findViewById(R.id.entranceShowA_examQCountTextView);
+        this.timerTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
+        this.examQCountTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+
+        Button backToDefaultButton = (Button) findViewById(R.id.entranceShowA_backToDefaultButton);
+        Button finishLessonExamButton = (Button) findViewById(R.id.entranceShowA_finishLessonExamButton);
+        backToDefaultButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+        finishLessonExamButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+
+        backToDefaultButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                EntranceShowActivity.this.cancelLessonExam(false);
+            }
+        });
+
+        finishLessonExamButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertClass.Message msg = AlertClass.convertMessage("ExamAction", "FinishEntranceExam");
+                if (msg.getShowMsg()) {
+                    AlertClass.showAlertMessageCustom(EntranceShowActivity.this,
+                            msg.getTitle(), msg.getMessage(),
+                            "اتمام سنجش", "دستم خورد", new Function0<Unit>() {
+
+                                @Override
+                                public Unit invoke() {
+                                    AlertClass.Message msg2 = AlertClass.convertMessage("ExamAction", "FinishEntranceExamResult");
+                                    AlertClass.showSucceessMessageCustom(EntranceShowActivity.this,
+                                            msg2.getTitle(), msg2.getMessage(),
+                                            "محاسیه نتیجه", "انصراف از سنجش",
+                                            new Function0<Unit>() {
+                                                @Override
+                                                public Unit invoke() {
+                                                    EntranceShowActivity.this.finishExam();
+                                                    return null;
+                                                }
+                                            }, new Function0<Unit>() {
+                                                @Override
+                                                public Unit invoke() {
+                                                    EntranceShowActivity.this.cancelLessonExam(true);
+                                                    return null;
+                                                }
+                                            });
+                                    return null;
+                                }
+                            });
+                }
+            }
+        });
 
         recyclerView = (RecyclerView) findViewById(R.id.entranceShowA_recycleEntranceShow);
         recyclerViewStar = (RecyclerView) findViewById(R.id.entranceShowA_recycleEntranceShowFav);
@@ -307,16 +345,11 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         recyclerView.setLayoutManager(recycleLinearLayout);
         recyclerView.setAdapter(entranceShowAdapter);
 
-
         username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
-
-
         lessonAdapter = new ArrayAdapter<String>(this, R.layout.cc_archive_listitem_tabbar);
-
 
         dialogInfoList = new ArrayList<>();
         ArrayList<String> bookletList = new ArrayList<>();
-
 
         bookletAdapter = new DialogAdapter(EntranceShowActivity.this, bookletList);
         dialogInfoAdapter = new DialogAdapter(EntranceShowActivity.this, dialogInfoList);
@@ -328,7 +361,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         mViewPager = (ViewPager) findViewById(R.id.containerViewPager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-
         //Tab
         tabLayout = (CustomTabLayout) findViewById(R.id.tabs);
 
@@ -338,8 +370,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
         tabLayout.setupWithViewPager(mViewPager);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
-
-
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -375,7 +405,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             public void onTabReselected(TabLayout.Tab tab) {
             }
         });
-
 
         bookletAdapter.setItems(new ArrayList<String>());
         int toolBarHeight = toolbar.getLayoutParams().height;
@@ -425,7 +454,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 //                dialogInfo.show();
 
                 int aq = 0;
-                // TODO: compute aq for exam
+                if (EntranceShowActivity.this.lessonExamStructure != null) {
+                    aq = EntranceShowActivity.this.lessonExamStructure.getAnswers().size();
+                }
 
                 // make entrance struct
                 if (EntranceShowActivity.this.entranceStruct == null) {
@@ -482,32 +513,22 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         texButton = (Button) mCustomView
                 .findViewById(R.id.actionBarL_dropDown);
         texButton.setText(buttonTextMaker("انتخاب کنید", false));
-
+        texButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+        texButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (dialog.isShowing()) {
+                    dialog.dismiss();
+                } else {
+                    dialog.show();
+                }
+            }
+        });
 
         if (mActionBar != null) {
             mActionBar.setCustomView(mCustomView, new ActionBar.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
             mActionBar.setDisplayShowCustomEnabled(true);
         }
-
-
-        texButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
-
-
-                } else {
-                    dialog.show();
-
-                }
-
-            }
-
-        });
-
-        texButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
         starredAdapter = new StarredShowAdapter(EntranceShowActivity.this);
         itemDecoration = new HeaderItemDecoration(recyclerView, starredAdapter);
@@ -530,7 +551,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             EntranceShowActivity.this.createLog(LogTypeEnum.EntranceShowStarred.getTitle(), eData);
         }
 
-
         if (showType.equals("Starred")) {
             tabLayout.setVisibility(View.GONE);
 
@@ -552,10 +572,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             }, 1500);
         }
 
-
         globalPairListInteger = starredIds.size();
-
-
     }
 
     @Override
@@ -787,69 +804,69 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 //
 //    }
 
-    private void downloadImage(final int imageId) {
-        byte[] data;
-        final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
-
-        File photo = new File(getApplicationContext().getFilesDir() + "/images/eset", String.valueOf(imageId));
-        if (photo.exists()) {
-            data = convertFileToByteArray(photo);
-            Log.d(TAG, "downloadImage: From File");
-        } else {
-            data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
-        }
-
-        if (data != null) {
-
-            Glide.with(EntranceShowActivity.this)
-
-                    .load(data)
-                    //.crossFade()
-                    .dontAnimate()
-                    .into(esetImageView)
-                    .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
-
-
-        } else {
-            MediaRestAPIClass.downloadEsetImage(EntranceShowActivity.this, imageId, new Function2<byte[], HTTPErrorType, Unit>() {
-                @Override
-                public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
-//                            runOnUiThread(new Runnable() {
-//                                @Override
-//                                public void run() {
-                    if (httpErrorType != HTTPErrorType.Success) {
-                        Log.d(TAG, "run: ");
-                        if (httpErrorType == HTTPErrorType.Refresh) {
-                            downloadImage(imageId);
-                        } else {
-                            esetImageView.setImageResource(R.drawable.no_image);
-                        }
-                    } else {
-                        if (url != null) {
-                            MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
-                        }
-
-                        Glide.with(EntranceShowActivity.this)
-
-                                .load(data)
-                                //.crossFade()
-                                .dontAnimate()
-                                .into(esetImageView)
-                                .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
-
-                    }
-//                                }
-//                            });
-                    return null;
-                }
-            }, new Function1<NetworkErrorType, Unit>() {
-                @Override
-                public Unit invoke(NetworkErrorType networkErrorType) {
-                    return null;
-                }
-            });
-        }
-    }
+//    private void downloadImage(final int imageId) {
+//        byte[] data;
+//        final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+//
+//        File photo = new File(getApplicationContext().getFilesDir() + "/images/eset", String.valueOf(imageId));
+//        if (photo.exists()) {
+//            data = convertFileToByteArray(photo);
+//            Log.d(TAG, "downloadImage: From File");
+//        } else {
+//            data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+//        }
+//
+//        if (data != null) {
+//
+//            Glide.with(EntranceShowActivity.this)
+//
+//                    .load(data)
+//                    //.crossFade()
+//                    .dontAnimate()
+//                    .into(esetImageView)
+//                    .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+//
+//
+//        } else {
+//            MediaRestAPIClass.downloadEsetImage(EntranceShowActivity.this, imageId, new Function2<byte[], HTTPErrorType, Unit>() {
+//                @Override
+//                public Unit invoke(final byte[] data, final HTTPErrorType httpErrorType) {
+////                            runOnUiThread(new Runnable() {
+////                                @Override
+////                                public void run() {
+//                    if (httpErrorType != HTTPErrorType.Success) {
+//                        Log.d(TAG, "run: ");
+//                        if (httpErrorType == HTTPErrorType.Refresh) {
+//                            downloadImage(imageId);
+//                        } else {
+//                            esetImageView.setImageResource(R.drawable.no_image);
+//                        }
+//                    } else {
+//                        if (url != null) {
+//                            MediaCacheSingleton.getInstance(getApplicationContext()).set(url, data);
+//                        }
+//
+//                        Glide.with(EntranceShowActivity.this)
+//
+//                                .load(data)
+//                                //.crossFade()
+//                                .dontAnimate()
+//                                .into(esetImageView)
+//                                .onLoadFailed(null, ContextCompat.getDrawable(getApplicationContext(), R.drawable.no_image));
+//
+//                    }
+////                                }
+////                            });
+//                    return null;
+//                }
+//            }, new Function1<NetworkErrorType, Unit>() {
+//                @Override
+//                public Unit invoke(NetworkErrorType networkErrorType) {
+//                    return null;
+//                }
+//            });
+//        }
+//    }
 
     private void saveLastVisitInfoState() {
         String username = UserDefaultsSingleton.getInstance(this.getApplicationContext()).getUsername();
@@ -954,7 +971,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         if (index >= 0) {
             lessonsDB = new RealmList<EntranceLessonModel>();
             RealmResults<EntranceLessonModel> lessionModel;
-
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 lessionModel = bookletsDB.get(index).lessons.sort("order", Sort.ASCENDING);
@@ -1120,6 +1136,126 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         starredAdapter.loadImages(imageStr);
     }
 
+    private void finishExam() {
+        if (EntranceShowActivity.this.examTimer != null) {
+            EntranceShowActivity.this.examTimer.cancel();
+            EntranceShowActivity.this.examTimer = null;
+        }
+
+        if (EntranceShowActivity.this.lessonExamStructure != null) {
+            this.lessonExamStructure.setFinished(new Date());
+
+            if (this.lessonExamStructure.getAnswers().size() > 0) {
+                int trueAnswer = 0;
+                int falseAnswer = 0;
+
+                HashMap<Integer, Integer> items = EntranceShowActivity.this.lessonExamStructure.getAnswers();
+                for (int item:
+                        items.keySet()) {
+                    EntranceQuestionModel q = EntranceShowActivity.this.questionsDB.get(item);
+                    if (q.answer == items.get(item)) {
+                        trueAnswer += 1;
+                    } else {
+                        falseAnswer += 1;
+                    }
+                }
+
+                this.lessonExamStructure.setTrueAnswer(trueAnswer);
+                this.lessonExamStructure.setFalseAnswer(falseAnswer);
+                this.lessonExamStructure.setNoAnswer(this.lessonExamStructure.getQCount() -
+                    this.lessonExamStructure.getAnswers().size());
+                this.lessonExamStructure.setPercentage(Double.valueOf((trueAnswer * 3) + (falseAnswer * -1)) /
+                Double.valueOf(this.lessonExamStructure.getQCount() * 3));
+
+                this.loading = AlertClass.showLoadingMessage(this);
+
+                JsonArray answersLocal = new JsonArray();
+                for (int item: items.keySet()) {
+                    JsonObject t = new JsonObject();
+                    t.addProperty("" + this.questionsDB.get(item).number, items.get(item));
+                    answersLocal.add(t);
+                }
+
+                EntranceLessonExamModelHandler.add(this, username,
+                        this.entranceUniqueId, this.lessonExamStructure, new Date(),
+                        answersLocal.toString());
+
+                for (int i = 0; i < this.questionsDB.size(); i++) {
+                    Integer ans = items.get(i);
+                    if (ans != null) {
+                        if (Arrays.binarySearch(this.translateAnswer(this.questionsDB.get(i).answer), ans) >= 0) {
+                            EntranceQuestionExamStatModelHandler.update(this,
+                                    username, entranceUniqueId,
+                                    this.questionsDB.get(i).number, 1);
+                        } else {
+                            EntranceQuestionExamStatModelHandler.update(this,
+                                    username, entranceUniqueId,
+                                    this.questionsDB.get(i).number, -1);
+                        }
+                    } else {
+                        EntranceQuestionExamStatModelHandler.update(this,
+                                username, entranceUniqueId,
+                                this.questionsDB.get(i).number, 0);
+                    }
+                }
+
+                JsonObject eData = new JsonObject();
+                eData.addProperty("uniqueId", entranceUniqueId);
+                eData.addProperty("bookletOrder", this.bookletsDB.get(this.selectedBooklet).order);
+                eData.addProperty("lessonOrder", this.lessonsDB.get(this.selectedLesson).order);
+                eData.addProperty("lessonString", this.lessonsDB.get(this.selectedLesson).fullTitle);
+                eData.addProperty("started", FormatterSingleton.getInstance().getUTCDateFormatter().format(this.lessonExamStructure.getStarted()));
+                eData.addProperty("finished", FormatterSingleton.getInstance().getUTCDateFormatter().format(this.lessonExamStructure.getFinished()));
+                eData.addProperty("qCount", this.lessonExamStructure.getQCount());
+                eData.addProperty("trueAnswer", trueAnswer);
+                eData.addProperty("falseAnswer", falseAnswer);
+                eData.addProperty("duration", this.lessonExamStructure.getDuration());
+                eData.addProperty("percentage", this.lessonExamStructure.getPercentage());
+                eData.add("answers", answersLocal);
+
+                this.createLog(LogTypeEnum.EntranceLessonExamFinished.getTitle(), eData);
+
+                AlertClass.hideLoadingMessage(this.loading);
+
+                EntranceLessonExamResultDialog dialog = new EntranceLessonExamResultDialog(EntranceShowActivity.this);
+                dialog.setCancelable(false);
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.setListener(EntranceShowActivity.this);
+                dialog.show();
+                dialog.setupDialog(EntranceShowActivity.this.lessonExamStructure);
+
+            } else {
+                EntranceShowActivity.this.cancelLessonExam(true);
+            }
+        } else {
+            EntranceShowActivity.this.cancelLessonExam(false);
+        }
+    }
+
+    public int[] translateAnswer(int answer) {
+        switch (answer) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+                return new int[] {answer};
+            case 5:
+                return new int[] {1, 2};
+            case 6:
+                return new int[] {1, 3};
+            case 7:
+                return new int[] {1, 4};
+            case 8:
+                return new int[] {2, 3};
+            case 9:
+                return new int[] {2, 4};
+            case 10:
+                return new int[] {3, 4};
+        }
+        return new int[] {};
+    }
+
     // Delegates
 
     @Override
@@ -1260,6 +1396,184 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         }
     }
 
+    @Override
+    public void startLessonExam() {
+        if(showType.equals("Show"))
+            EntranceShowActivity.this.saveLastVisitInfoState();
+
+        showType = "LessonExam";
+
+        loading = AlertClass.showMakeExamMessage(EntranceShowActivity.this);
+        loading.show();
+
+        tabLayout.setVisibility(View.GONE);
+
+        texButton.setEnabled(false);
+        texButton.setTextColor(ContextCompat.getColor(getApplicationContext(), android.R.color.black));
+        texButton.setText("سنجش درس");
+
+        backButton.setVisibility(View.INVISIBLE);
+        timerContainer.setVisibility(View.VISIBLE);
+
+        EntranceShowActivity.this.lessonExamStructure = new EntranceLessonExamStructure(
+                this.lessonsDB.get(this.selectedLesson).fullTitle,
+                this.lessonsDB.get(this.selectedLesson).order,
+                this.bookletsDB.get(this.selectedBooklet).order,
+                new Date(),
+                null,
+                this.lessonsDB.get(this.selectedLesson).qCount,
+                new HashMap<>(),
+                0, 0, 0,
+                false,
+                this.lessonsDB.get(this.selectedLesson).duration,
+                0.0
+        );
+
+        this.entranceShowAdapter.notifyDataSetChanged();
+        this.recyclerView.smoothScrollToPosition(0);
+
+        Handler h = new Handler();
+
+        TimerTask examTimerTick = new TimerTask() {
+            @Override
+            public void run() {
+                h.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Integer[] d = diffInHourMinSec(lessonExamStructure.getStarted(),
+                                new Date()); // hour, minute, second
+
+                        String s = "";
+                        if (d[0] > 0) {
+                            s += FormatterSingleton.getInstance().getNumberFormatter().format(d[0])  + " : ";
+                        }
+
+                        String m = FormatterSingleton.getInstance().getNumberFormatter().format(d[1]);
+                        if (m.length() == 1) {
+                            m = "۰" + m;
+                        }
+                        s += m + " : ";
+
+                        String se = FormatterSingleton.getInstance().getNumberFormatter().format(d[2]);
+                        if (se.length() == 1) {
+                            se = "۰" + se;
+                        }
+                        s += se;
+
+                        int factor = (d[0] * 60) + d[1];
+                        if (factor >= EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).duration) {
+                            EntranceShowActivity.this.timerTextView.setTextColor(ContextCompat.getColor(EntranceShowActivity.this, R.color.colorConcoughOrange));
+                        }
+
+                        EntranceShowActivity.this.timerTextView.setText(s);
+                    }
+                });
+            }
+        };
+
+        h.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                AlertClass.hideLoadingMessage(loading);
+
+                EntranceShowActivity.this.examTimer = new Timer(false);
+                EntranceShowActivity.this.examTimer.schedule(examTimerTick, 0, 1000);
+
+            }
+        }, 3000);
+    }
+
+    @Override
+    public void cancelLessonExam(boolean withLog) {
+        if (EntranceShowActivity.this.examTimer != null) {
+            EntranceShowActivity.this.examTimer.cancel();
+            EntranceShowActivity.this.examTimer = null;
+        }
+
+        if (withLog) {
+            if (EntranceShowActivity.this.lessonExamStructure != null) {
+                EntranceShowActivity.this.lessonExamStructure.setFinished(new Date());
+
+                int trueAnswer = 0;
+                int falseAnswer = 0;
+
+                if (EntranceShowActivity.this.lessonExamStructure.getAnswers().size() > 0) {
+                    HashMap<Integer, Integer> items = EntranceShowActivity.this.lessonExamStructure.getAnswers();
+                    for (int item:
+                         items.keySet()) {
+                        EntranceQuestionModel q = EntranceShowActivity.this.questionsDB.get(item);
+                        if (q.answer == items.get(item)) {
+                            trueAnswer += 1;
+                        } else {
+                            falseAnswer += 1;
+                        }
+                    }
+                }
+
+                JsonObject eData = new JsonObject();
+                eData.addProperty("uniqueId", entranceUniqueId);
+                eData.addProperty("bookletOrder", bookletsDB.get(selectedBooklet).order);
+                eData.addProperty("lessonString", lessonsDB.get(selectedLesson).fullTitle);
+                eData.addProperty("lessonOrder", lessonsDB.get(selectedLesson).order);
+                eData.addProperty("started", FormatterSingleton.getInstance().getUTCDateFormatter().format(lessonExamStructure.getStarted()));
+                eData.addProperty("finished", FormatterSingleton.getInstance().getUTCDateFormatter().format(lessonExamStructure.getFinished()));
+                eData.addProperty("qCount", lessonExamStructure.getQCount());
+                eData.addProperty("trueAnswer", trueAnswer);
+                eData.addProperty("falseAnswer", falseAnswer);
+                eData.addProperty("duration", lessonExamStructure.getDuration());
+
+                EntranceShowActivity.this.createLog(LogTypeEnum.EntranceLessonExamCancel.getTitle(), eData);
+            }
+        }
+
+        EntranceShowActivity.this.lessonExamStructure = null;
+        EntranceShowActivity.this.timerTextView.setText(" ");
+        EntranceShowActivity.this.examQCountTextView.setText(" ");
+
+        EntranceShowActivity.this.timerContainer.setVisibility(View.GONE);
+        EntranceShowActivity.this.backToDefaultContainer.setVisibility(View.GONE);
+
+        EntranceShowActivity.this.tabLayout.setVisibility(View.VISIBLE);
+        EntranceShowActivity.this.backButton.setVisibility(View.VISIBLE);
+
+        EntranceShowActivity.this.texButton.setVisibility(View.VISIBLE);
+        EntranceShowActivity.this.texButton.setEnabled(true);
+        EntranceShowActivity.this.texButton.setTextColor(ContextCompat.getColor(getApplicationContext(), android.R.color.black));
+
+        EntranceShowActivity.this.showType = "Show";
+        EntranceShowActivity.this.loadLastVisitInfoState();
+
+//        recyclerView.setVisibility(View.VISIBLE);
+//        recyclerView.setLayoutManager(new CustomGridLayoutManager(EntranceShowActivity.this));
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                loadLessions(EntranceShowActivity.this.selectedBooklet);
+            }
+        });
+    }
+
+    @Override
+    public void showLessonExamResult() {
+        if (EntranceShowActivity.this.examTimer != null) {
+            EntranceShowActivity.this.examTimer.cancel();
+            EntranceShowActivity.this.examTimer = null;
+        }
+
+        EntranceShowActivity.this.timerTextView.setText(" ");
+        EntranceShowActivity.this.examQCountTextView.setText(" ");
+
+        EntranceShowActivity.this.timerContainer.setVisibility(View.GONE);
+        EntranceShowActivity.this.backToDefaultContainer.setVisibility(View.VISIBLE);
+
+        EntranceShowActivity.this.showType = "LessonExamResult";
+        EntranceShowActivity.this.entranceShowAdapter.notifyDataSetChanged();
+        EntranceShowActivity.this.recyclerView.smoothScrollToPosition(0);
+
+        EntranceShowActivity.this.backButton.setVisibility(View.VISIBLE);
+    }
+
     // Normal Adapter
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -1335,7 +1649,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     private enum EntranceShowAdapterHolderType {
         NORMAL_QUESTION(1),
-        EXAM_HISTORY(2);
+        EXAM_HISTORY(2),
+        EXAM_QUESTION(3),
+        EMPTY_HOLDER(50);
 
         private final int value;
         private EntranceShowAdapterHolderType(int value) {
@@ -1396,9 +1712,15 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             if (viewType == EntranceShowAdapterHolderType.EXAM_HISTORY.getValue()) {
                 View view = LayoutInflater.from(context).inflate(R.layout.cc_entrance_show_chart_holder, parent, false);
                 return new EntranceShowChartHolder(view);
-            } else{
+            } else if (viewType == EntranceShowAdapterHolderType.NORMAL_QUESTION.getValue()){
                 View view = LayoutInflater.from(context).inflate(R.layout.cc_entrance_show_holder1, parent, false);
                 return new EntranceShowHolder(view);
+            } else if (viewType == EntranceShowAdapterHolderType.EXAM_QUESTION.getValue()) {
+                View view = LayoutInflater.from(context).inflate(R.layout.cc_entrance_show_lexam_holder, parent, false);
+                return new EntranceQuestionExamHolder(view);
+            } else {
+                View view = LayoutInflater.from(context).inflate(R.layout.cc_entrance_show_empty_holder, parent, false);
+                return new EmptyHolder(view);
             }
         }
 
@@ -1435,6 +1757,19 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             } else if (holder.getClass() == EntranceShowHolder.class) {
                 final EntranceQuestionModel oneItem = this.questionModelList.get(position - 1);
                 ((EntranceShowHolder) holder).setupHolder(oneItem, position);
+
+            } else if (holder.getClass() == EntranceQuestionExamHolder.class) {
+                final EntranceQuestionModel oneItem = this.questionModelList.get(position);
+
+                int lqn = 0;
+                if(EntranceShowActivity.this.lessonExamStructure != null) {
+                    if (EntranceShowActivity.this.lessonExamStructure.getAnswers().containsKey(position)) {
+                        lqn = EntranceShowActivity.this.lessonExamStructure.getAnswers().get(position);
+                    }
+                }
+                ((EntranceQuestionExamHolder) holder).setupHolder(oneItem,
+                        EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).qEnd,
+                        lqn, oneItem.answer , position);
             }
         }
 
@@ -1445,15 +1780,27 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
         @Override
         public int getItemCount() {
-            return questionModelList.size() + 1;
+            if (showType.equals("Show")) {
+                return questionModelList.size() + 1;
+            } else if (showType.equals("LessonExam") || showType.equals("LessonExamResult")) {
+                return questionModelList.size() + 1;
+            }
+            return 0;
         }
 
         @Override
         public int getItemViewType(int position) {
-            if (position == 0) {
-                return EntranceShowAdapterHolderType.EXAM_HISTORY.getValue();
+            if (showType.equals("Show")) {
+                if (position == 0) {
+                    return EntranceShowAdapterHolderType.EXAM_HISTORY.getValue();
+                } else {
+                    return EntranceShowAdapterHolderType.NORMAL_QUESTION.getValue();
+                }
             } else {
-                return EntranceShowAdapterHolderType.NORMAL_QUESTION.getValue();
+                if (position == this.questionModelList.size()) {
+                    return EntranceShowAdapterHolderType.EMPTY_HOLDER.getValue();
+                }
+                return EntranceShowAdapterHolderType.EXAM_QUESTION.getValue();
             }
         }
 
@@ -2106,6 +2453,406 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             }
         }
 
+        private class EntranceQuestionExamHolder extends RecyclerView.ViewHolder {
+            private TextView questionNumber;
+            private ImageView imgPreLoad;
+            private ConstraintLayout mainConstraint;
+            private ImageView img1;
+            private ImageView img2;
+            private ImageView img3;
+            private Button answer1;
+            private Button answer2;
+            private Button answer3;
+            private Button answer4;
+            private ImageView answerEraserImageView;
+            private TextView correctAnswerLabel;
+
+            private EntranceQuestionModel mEntranceQuestionModel;
+
+            public EntranceQuestionExamHolder(View itemView) {
+                super(itemView);
+
+                questionNumber = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_questionNumber);
+
+                imgPreLoad = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_imgPreLoad);
+                img1 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img1);
+                img2 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img2);
+                img3 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img3);
+                answer1 = (Button) itemView.findViewById(R.id.ccEntranceShowHolder1I_answer1Button);
+                answer2 = (Button) itemView.findViewById(R.id.ccEntranceShowHolder1I_answer2Button);
+                answer3 = (Button) itemView.findViewById(R.id.ccEntranceShowHolder1I_answer3Button);
+                answer4 = (Button) itemView.findViewById(R.id.ccEntranceShowHolder1I_answer4Button);
+                answerEraserImageView = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_eraserImageView);
+                correctAnswerLabel = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_correctAnswerTextView);
+
+                mainConstraint = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_mainConstrant);
+
+                questionNumber.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                answer1.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                answer2.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                answer3.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                answer4.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
+                correctAnswerLabel.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+            }
+
+            public void setImages() {
+                insertImage(mEntranceQuestionModel.images);
+            }
+
+            public void setupHolder(final EntranceQuestionModel entranceQuestionModel,
+                                    int lastQuestionNo,
+                                    int answered,
+                                    int correctAnswer,
+                                    int position) {
+                mEntranceQuestionModel = entranceQuestionModel;
+
+                this.resetAnswerButtons();
+
+                questionNumber.setText("سوال " +
+                        FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.number) +
+                        " از " +
+                        FormatterSingleton.getInstance().getNumberFormatter().format(lastQuestionNo)
+                );
+
+                imgPreLoad.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(@NotNull View v) {
+                        setImages();
+//                        Toast.makeText(EntranceShowActivity.this,"Refresh Clicked", Toast.LENGTH_LONG).show();
+                    }
+                });
+                mainConstraint.canScrollVertically(0);
+                setImages();
+
+                if (showType.equals("LessonExam")) {
+                    this.answerEraserImageView.setVisibility(View.VISIBLE);
+                    this.correctAnswerLabel.setVisibility(View.GONE);
+
+                    View.OnClickListener answerClickListener = new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            resetAnswerButtons();
+                            int index = 0;
+                            if (view == answer1) {
+                                index = 1;
+                            } else if (view == answer2) {
+                                index = 2;
+                            } else if (view == answer3) {
+                                index = 3;
+                            } else if (view == answer4) {
+                                index = 4;
+                            }
+
+                            if (index > 0) {
+                                setAnswerButton(index, 0);
+                            }
+
+                            if (EntranceShowActivity.this.lessonExamStructure != null) {
+                                EntranceShowActivity.this.lessonExamStructure.getAnswers().put(position, index);
+
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        EntranceShowActivity.this.examQCountTextView.setText(
+                                                FormatterSingleton.getInstance().getNumberFormatter().format(
+                                                        EntranceShowActivity.this.lessonExamStructure.getAnswers().size()
+                                                ) + "/" + FormatterSingleton.getInstance().getNumberFormatter().format(
+                                                        EntranceShowActivity.this.lessonExamStructure.getQCount()
+                                                )
+                                        );
+                                    }
+                                });
+                            }
+                        }
+                    };
+                    this.answer1.setOnClickListener(answerClickListener);
+                    this.answer2.setOnClickListener(answerClickListener);
+                    this.answer3.setOnClickListener(answerClickListener);
+                    this.answer4.setOnClickListener(answerClickListener);
+
+                    this.answerEraserImageView.setClickable(true);
+                    this.answerEraserImageView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            resetAnswerButtons();
+
+                            if (EntranceShowActivity.this.lessonExamStructure != null) {
+                                EntranceShowActivity.this.lessonExamStructure.getAnswers().remove(position);
+
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        EntranceShowActivity.this.examQCountTextView.setText(
+                                                FormatterSingleton.getInstance().getNumberFormatter().format(
+                                                        EntranceShowActivity.this.lessonExamStructure.getAnswers().size()
+                                                ) + "/" + FormatterSingleton.getInstance().getNumberFormatter().format(
+                                                        EntranceShowActivity.this.lessonExamStructure.getQCount()
+                                                )
+                                        );
+                                    }
+                                });
+                            }
+                        }
+                    });
+
+                    if (answered > 0) {
+                        this.setAnswerButton(answered, 0);
+                    }
+                } else if (showType.equals("LessonExamResult")) {
+                    this.answerEraserImageView.setVisibility(View.GONE);
+                    this.correctAnswerLabel.setVisibility(View.VISIBLE);
+
+                    this.correctAnswerLabel.setText(questionAnswerToString(correctAnswer) + " ✔");
+
+                    int[] convert = translateAnswer(correctAnswer);
+                    int i = Arrays.binarySearch(convert, answered);
+                    if (i >= 0) {
+                        this.setAnswerButton(answered, 1);
+                    } else {
+                        this.setAnswerButton(answered, -1);
+                    }
+                }
+            }
+
+            private void resetAnswerButtons() {
+                int color = ContextCompat.getColor(context, R.color.colorConcoughGray2);
+                this.answer1.setTextColor(color);
+                this.answer2.setTextColor(color);
+                this.answer3.setTextColor(color);
+                this.answer4.setTextColor(color);
+
+                Drawable d = ContextCompat.getDrawable(context, R.drawable.concough_border_radius_full_2gray_style);
+                this.answer1.setBackground(d);
+                this.answer2.setBackground(d);
+                this.answer3.setBackground(d);
+                this.answer4.setBackground(d);
+            }
+
+            private void setAnswerButton(int index, int answerState) {
+                Drawable d = ContextCompat.getDrawable(context, R.drawable.concough_border_radius_full_2gray_inverse_style);
+
+                if (answerState == 1) {
+                    d = ContextCompat.getDrawable(context, R.drawable.concough_border_radius_full_greengray_style);
+                } else if (answerState == -1) {
+                    d = ContextCompat.getDrawable(context, R.drawable.concough_border_radius_full_redgray_style);
+                }
+
+                switch (index) {
+                    case 1:
+                        this.answer1.setBackground(d);
+                        this.answer1.setTextColor(ContextCompat.getColor(context, R.color.colorWhite));
+                        break;
+                    case 2:
+                        this.answer2.setBackground(d);
+                        this.answer2.setTextColor(ContextCompat.getColor(context, R.color.colorWhite));
+                        break;
+                    case 3:
+                        this.answer3.setBackground(d);
+                        this.answer3.setTextColor(ContextCompat.getColor(context, R.color.colorWhite));
+                        break;
+                    case 4:
+                        this.answer4.setBackground(d);
+                        this.answer4.setTextColor(ContextCompat.getColor(context, R.color.colorWhite));
+                        break;
+                }
+            }
+
+            public void insertImage(String imageString) {
+                img1.setImageDrawable(null);
+                img2.setImageDrawable(null);
+                img3.setImageDrawable(null);
+
+                imgPreLoad.setVisibility(View.VISIBLE);
+
+                ArrayList<JsonObject> jsonObjects = new ArrayList<>();
+                JsonArray jsonArray = new JsonParser().parse(imageString).getAsJsonArray();
+
+                if (hashKey == null) {
+                    String hashStr = username + ":" + getSECRET_KEY();
+                    hashKey = MD5Digester.digest(hashStr);
+                }
+
+                for (JsonElement item : jsonArray) {
+                    jsonObjects.add(item.getAsJsonObject());
+                }
+
+                Collections.sort(jsonObjects, new SortedList.Callback<JsonObject>() {
+                    @Override
+                    public int compare(JsonObject o1, JsonObject o2) {
+
+                        if (o1.get("order").getAsInt() > o2.get("order").getAsInt()) {
+                            return 1;
+                        } else if (o1.get("order").getAsInt() < o2.get("order").getAsInt()) {
+                            return -1;
+                        } else {
+                            return 0;
+                        }
+                    }
+
+                    @Override
+                    public void onChanged(int position, int count) {
+
+                    }
+
+                    @Override
+                    public boolean areContentsTheSame(JsonObject oldItem, JsonObject newItem) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean areItemsTheSame(JsonObject item1, JsonObject item2) {
+                        return false;
+                    }
+
+                    @Override
+                    public void onInserted(int position, int count) {
+
+                    }
+
+                    @Override
+                    public void onRemoved(int position, int count) {
+
+                    }
+
+                    @Override
+                    public void onMoved(int fromPosition, int toPosition) {
+
+                    }
+                });
+
+                final ArrayList<byte[]> localBitmaps = new ArrayList<>();
+                for (JsonElement item : jsonObjects) {
+                    String imageId = item.getAsJsonObject().get("unique_key").getAsString();
+
+                    localBitmaps.add(imageRepo.get(imageId));
+                }
+
+                if (localBitmaps.size() >= 1) {
+                    try {
+                        final byte[] local1 = localBitmaps.get(0);
+
+                        Glide.with(EntranceShowActivity.this)
+
+                                .load(local1)
+
+                                .listener(new RequestListener<byte[], GlideDrawable>() {
+                                    @Override
+                                    public boolean onException(Exception e, byte[] model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                        return false;
+                                    }
+
+                                    @Override
+                                    public boolean onResourceReady(GlideDrawable resource, byte[] model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                        imgPreLoad.setVisibility(View.GONE);
+                                        img1.setLayoutParams(new LinearLayout.LayoutParams(MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                                        img1.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                                        img1.setVisibility(View.VISIBLE);
+                                        img1.setAdjustViewBounds(true);
+
+                                        return false;
+                                    }
+
+                                })
+                                .override(SIZE_ORIGINAL, SIZE_ORIGINAL)
+                                .crossFade()
+                                .fitCenter()
+                                .into(img1);
+
+                        img1.setVisibility(View.VISIBLE);
+                        img1.setAdjustViewBounds(true);
+
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if (localBitmaps.size() >= 2) {
+                    try {
+                        Glide.with(EntranceShowActivity.this)
+
+                                .load(localBitmaps.get(1))
+
+                                .listener(new RequestListener<byte[], GlideDrawable>() {
+                                    @Override
+                                    public boolean onException(Exception e, byte[] model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                        return false;
+                                    }
+
+                                    @Override
+                                    public boolean onResourceReady(GlideDrawable resource, byte[] model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                        imgPreLoad.setVisibility(View.GONE);
+                                        img2.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                                        img2.setVisibility(View.VISIBLE);
+                                        img2.setAdjustViewBounds(true);
+
+                                        return false;
+                                    }
+
+                                })
+
+                                .override(SIZE_ORIGINAL, SIZE_ORIGINAL)
+                                .crossFade()
+                                .fitCenter()
+
+                                .into(img2);
+
+                        img2.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                        img2.setVisibility(View.VISIBLE);
+                        img2.setAdjustViewBounds(true);
+
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if (localBitmaps.size() >= 3) {
+                    try {
+
+                        Glide.with(EntranceShowActivity.this)
+
+                                .load(localBitmaps.get(2))
+
+                                .listener(new RequestListener<byte[], GlideDrawable>() {
+                                    @Override
+                                    public boolean onException(Exception e, byte[] model, Target<GlideDrawable> target, boolean isFirstResource) {
+                                        return false;
+                                    }
+
+                                    @Override
+                                    public boolean onResourceReady(GlideDrawable resource, byte[] model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                                        imgPreLoad.setVisibility(View.GONE);
+                                        img3.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                                        img3.setVisibility(View.VISIBLE);
+                                        img3.setAdjustViewBounds(true);
+
+                                        return false;
+                                    }
+
+                                })
+
+                                .override(SIZE_ORIGINAL, SIZE_ORIGINAL)
+                                .crossFade()
+                                .fitCenter()
+                                .into(img3);
+
+                        img3.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                        img3.setVisibility(View.VISIBLE);
+                        img3.setAdjustViewBounds(true);
+
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                localBitmaps.clear();
+
+
+            }
+        }
+
         private class EntranceShowChartHolder extends RecyclerView.ViewHolder {
             private PieChart statContainer;
             private TextView averageLabelTextView;
@@ -2137,9 +2884,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 examHistoryLabelTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 newExamButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
 
-                statContainer.setTransparentCircleRadius(100f);
+                statContainer.setTransparentCircleRadius(40f);
                 statContainer.setHoleRadius(40f);
-                statContainer.setTransparentCircleColor(ContextCompat.getColor(context, android.R.color.white));
+                statContainer.setTransparentCircleColor(ContextCompat.getColor(context, android.R.color.transparent));
 
                 statContainer.setDescription("");
 
@@ -2150,8 +2897,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             public void setupHolder(Context context, long examCount, double examAverage,
                                     @Nullable EntranceLessonExamModel lastExam, String lessonTitle,
                                     int lessonOrder, int bookletOrder) {
-                double avg = (double)(Math.round((Math.round(examAverage * 10000) / 100)) * 10) / 10;
-                this.averageTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(avg) + " %");
+                //double avg = (double)(Math.round((Math.round(examAverage * 10000) / 100)) * 10) / 10;
+                this.averageTextView.setText(FormatterSingleton.getInstance().getDecimalNumberFormatter().format(examAverage * 100) + " %");
                 this.examCountTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(examCount));
 
                 this.examCount = examCount;
@@ -2160,7 +2907,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                     this.statContainer.setTouchEnabled(false);
                     this.statContainer.setCenterTextTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                     this.statContainer.setCenterTextColor(ContextCompat.getColor(context, R.color.colorBlack));
-                    this.statContainer.setCenterTextSize(13);
+                    this.statContainer.setCenterTextSize(12);
                     this.statContainer.setCenterText("بدون\nسنجش");
 
                     this.setDefaultChart(context);
@@ -2218,7 +2965,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
                         this.statContainer.setCenterTextTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                         this.statContainer.setCenterTextColor(ContextCompat.getColor(context, R.color.colorBlack));
-                        this.statContainer.setCenterTextSize(13);
+                        this.statContainer.setCenterTextSize(12);
                         this.statContainer.setCenterText("آخرین\nسنجش");
 
                         this.setChart(labels, data);
@@ -2228,7 +2975,12 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 newExamButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        // TODO: create new exam dialog and ...
+                        EntranceNewLessonExamDialog dialog = new EntranceNewLessonExamDialog(EntranceShowActivity.this);
+                        dialog.setCancelable(false);
+                        dialog.setCanceledOnTouchOutside(false);
+                        dialog.setListener(EntranceShowActivity.this);
+                        dialog.show();
+                        dialog.setupDialog();
                     }
                 });
             }
@@ -2242,6 +2994,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 PieDataSet chartDataSet = new PieDataSet(dataEntries, "");
                 chartDataSet.setValueFormatter(new ChartValueNumberFormatter());
                 chartDataSet.setSelectionShift(0.0f);
+                chartDataSet.setValueTextSize(12);
                 chartDataSet.setValueTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
                 chartDataSet.setColors(new int[]{R.color.colorConcoughGray2}, context);
 
@@ -2261,12 +3014,20 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 chartDataSet.setValueFormatter(new ChartValueNumberFormatter());
                 chartDataSet.setSelectionShift(0.0f);
                 chartDataSet.setValueTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                chartDataSet.setValueTextSize(14);
+                chartDataSet.setValueTextColor(ContextCompat.getColor(context, R.color.colorWhite));
                 chartDataSet.setColors(new int[]{R.color.colorConcoughGreen,
                 R.color.colorConcoughRedLight, R.color.colorConcoughOrange}, context);
 
                 PieData chartData = new PieData(dataPoints, chartDataSet);
                 this.statContainer.setData(chartData);
 
+            }
+        }
+
+        private class EmptyHolder extends RecyclerView.ViewHolder {
+            public EmptyHolder(View itemView) {
+                super(itemView);
             }
         }
     }

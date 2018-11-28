@@ -71,7 +71,6 @@
                         android:textColor="@color/colorBlack"
                         android:text=""
                         android:textSize="20sp"
-                        android:textDirection="rtl"
                         />
                 </LinearLayout>
 

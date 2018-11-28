@@ -104,5 +104,20 @@ public class ModelMigration implements RealmMigration {
                     });
             sessionObjSchema.addPrimaryKey("uniqueId");
         }
+
+        if (oldVersion <= 5) {
+            RealmObjectSchema sessionObjSchema = sessionSchema.get("EntranceQuestionExamStatModel");
+            if (sessionObjSchema.hasPrimaryKey()) {
+                sessionObjSchema.removePrimaryKey();
+            }
+            sessionObjSchema.addField("uniqueId", String.class)
+                    .transform(new RealmObjectSchema.Function() {
+                        @Override
+                        public void apply(DynamicRealmObject obj) {
+                            obj.set("uniqueId", UUID.randomUUID().toString());
+                        }
+                    });
+            sessionObjSchema.addPrimaryKey("uniqueId");
+        }
     }
 }

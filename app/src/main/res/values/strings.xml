@@ -120,8 +120,23 @@
     <string name="entrance_exam_label">سنجش</string>
     <string name="entrance_exam_new">سنجش جدید</string>
     <string name="entrance_exam_history">تاریخچه سنجش ها</string>
+    <string name="entrance_exam_start_new">شروع سنجش</string>
+    <string name="entrance_exam_start_new_title">سنجش بدون زمانبندی است. در هر زمان می توانید نسبت به پایان سنجش اقدام نمایید.\n\nعوض شدن رنگ تایمر به منظور اطلاع رسانی است.\n\nدر صورتی که از سنجش پشیمان گشتید بدون جواب به هیچ سوالی پایان سنجش را بزنید.</string>
+    <string name="entrance_exam_back_to_default">بازگشت به حالت عادی</string>
+    <string name="entrance_exam_finish_lesson_exam">اتمام سنجش</string>
+
+    <string name="entrance_exam_answer1">۱</string>
+    <string name="entrance_exam_answer2">۲</string>
+    <string name="entrance_exam_answer3">۳</string>
+    <string name="entrance_exam_answer4">۴</string>
+
+    <string name="entrance_exam_result_title">نتیجه سنجش</string>
+    <string name="entrance_exam_result_time_label">زمان سنجش شما:</string>
+    <string name="entrance_exam_result_percentage_label">نتیجه سنجش:</string>
+    <string name="entrance_exam_result_see_answers">مشاهده جواب ها</string>
 
     <string name="save">ذخیره</string>
     <string name="cancel">بی خیال</string>
+    <string name="cancel_nevermind">پشیمان شدم</string>
     <string name="close">بستن</string>
 </resources>
