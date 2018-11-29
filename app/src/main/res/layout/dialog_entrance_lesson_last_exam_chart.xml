@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layoutDirection="ltr"
+    android:layout_margin="0dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:orientation="vertical"
+        android:gravity="center">
+        <LinearLayout
+            android:id="@+id/DELLEChart_section1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_marginTop="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginRight="16dp"
+            >
+
+            <TextView
+                android:id="@+id/DELLEChart_titleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorWhite"
+                android:textSize="14sp"
+                android:text="@string/entrance_exam_last_title"
+                android:textAlignment="center"
+                android:gravity="center"
+                />
+            <TextView
+                android:id="@+id/DELLEChart_lessonTitleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorWhite"
+                android:textSize="16sp"
+                android:text=""
+                android:layout_marginTop="8dp"
+                android:textAlignment="center"
+                android:gravity="center"
+                />
+
+            <TextView
+                android:id="@+id/DELLEChart_lessonExamDateTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorConcoughGray"
+                android:textSize="13sp"
+                android:text=""
+                android:layout_marginTop="8dp"
+                android:textAlignment="center"
+                android:gravity="center"
+                />
+        </LinearLayout>
+
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/DELLEChart_resultPieChart"
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            app:layout_constraintTop_toBottomOf="@id/DELLEChart_section1"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_marginTop="8dp"
+            >
+        </com.github.mikephil.charting.charts.PieChart>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/DELLEChart_questionsRecycleView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/DELLEChart_resultPieChart"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginTop="24dp"
+            android:background="@color/colorConcoughBlackLight"
+            >
+
+        </android.support.v7.widget.RecyclerView>
+
+    </LinearLayout>
+
+
+    <Button
+        android:id="@+id/DELLEChart_closeButton"
+        android:layout_width="60dp"
+        android:layout_height="40dp"
+        android:text="@string/close"
+        android:textColor="@color/colorConcoughBlue"
+        android:textSize="14sp"
+        android:background="@drawable/concough_border_outline_white_full_style"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        />
+</android.support.constraint.ConstraintLayout>

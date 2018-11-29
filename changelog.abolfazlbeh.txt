@@ -527,3 +527,8 @@ Entrance Lesson New Exam (abolfazl.beh) - 2018-11-28
 9 - diffInHourMinSec extension added to separate different parts of Date object.
 10 - New number formatter added to FormatterSingleton to show decimal numbers with maximum fraction count of 2: DecimalNumberFormatter
 
+------------------------------------------------------------------------------------------------
+Entrance Last Exam Chart Dialog (abolfazl.beh) - 2018-11-29
+
+1 - EntranceLessonLastExamChartFragment dialog created to show exam details (chart, answers , ...)
+2 - FragmentDialog used to create dialogs from now on

@@ -134,6 +134,7 @@
     <string name="entrance_exam_result_time_label">زمان سنجش شما:</string>
     <string name="entrance_exam_result_percentage_label">نتیجه سنجش:</string>
     <string name="entrance_exam_result_see_answers">مشاهده جواب ها</string>
+    <string name="entrance_exam_last_title">نتیجه آخرین سنجش</string>
 
     <string name="save">ذخیره</string>
     <string name="cancel">بی خیال</string>

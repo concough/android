@@ -15,6 +15,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -48,6 +49,7 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.concough.android.chartaccessory.ChartValueNumberFormatter;
+import com.concough.android.concough.dialogs.EntranceLessonLastExamChartDialog;
 import com.concough.android.concough.dialogs.EntranceNewLessonExamDialog;
 import com.concough.android.concough.dialogs.EntranceShowAllCommentsDialog;
 import com.concough.android.concough.dialogs.EntranceShowInfoDialog;
@@ -1169,11 +1171,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
                 this.loading = AlertClass.showLoadingMessage(this);
 
-                JsonArray answersLocal = new JsonArray();
+                JsonObject answersLocal = new JsonObject();
                 for (int item: items.keySet()) {
-                    JsonObject t = new JsonObject();
-                    t.addProperty("" + this.questionsDB.get(item).number, items.get(item));
-                    answersLocal.add(t);
+                    answersLocal.addProperty("" + this.questionsDB.get(item).number, items.get(item));
                 }
 
                 EntranceLessonExamModelHandler.add(this, username,
@@ -2937,7 +2937,14 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
                             @Override
                             public void onChartSingleTapped(MotionEvent me) {
-                                // TODO: create dialog to show answers and pie chart
+                                Bundle bundle = new Bundle();
+
+                                EntranceLessonLastExamChartDialog dialog = new EntranceLessonLastExamChartDialog();
+                                dialog.setCancelable(false);
+                                dialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.zhycan_dialog_fullscreen);
+                                dialog.setVariables(EntranceShowActivity.this.entranceUniqueId,
+                                        lessonTitle, lessonOrder, bookletOrder, "LastExamChart", null);
+                                dialog.show(getSupportFragmentManager(), "EntranceLessonLastExamDialog");
                             }
 
                             @Override
