@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="8dp"
+    android:layout_marginRight="8dp"
+    android:layout_marginTop="8dp"
+    android:background="@drawable/concough_recycle_box_style_holder2_gray_archivedetail"
+    android:clipChildren="true"
+    android:layoutDirection="ltr"
+    tools:context="com.concough.android.concough.ArchiveDetailActivity">
+
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipChildren="true"
+        android:clipToPadding="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/linearLayout10"
+            android:layout_width="wrap_content"
+            android:layout_height="70dp"
+            android:layout_marginRight="0dp"
+            android:orientation="horizontal"
+            app:layout_constraintRight_toLeftOf="@id/frameLayout"
+            app:layout_constraintLeft_toRightOf="@id/constraintLayout4"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginEnd="0dp">
+
+            <View
+                android:id="@+id/view10"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@color/colorConcoughGray6" />
+        </LinearLayout>
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/frameLayout"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="@drawable/concough_recycle_box_style_holder2_gray_logo_archivedetail">
+
+                    <TextView
+                        android:id="@+id/itemELEHItem_percentageTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textColor="@color/colorConcoughBlue"
+                        android:textSize="14sp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintRight_toRightOf="parent" />
+        </android.support.constraint.ConstraintLayout>
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/constraintLayout4"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_margin="3dp"
+            android:background="@drawable/concough_recycle_box_style_holder2_white"
+            android:clipChildren="true"
+            android:clipToPadding="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/frameLayout"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/itemELEHItem_dateTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:text=""
+                android:textColor="@color/colorConcoughGray"
+                android:textSize="11sp"
+                android:textDirection="rtl"
+                android:layout_marginTop="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
+                />
+
+            <TextView
+                android:id="@+id/itemELEHItem_timeElapsedTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintBaseline_toBaselineOf="@id/itemELEHItem_dateTextView"
+                android:layout_marginRight="8dp"
+                android:layout_marginEnd="8dp"
+                android:textSize="13sp"
+                android:textColor="@color/colorBlack"
+                android:text=""
+                />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/itemELEHItem_timeElapsedTextView"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="8dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginRight="24dp"
+                    android:layout_marginEnd="24dp">
+
+                    <TextView
+                        android:id="@+id/itemELEHItem_trueAnswerTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/colorConcoughGreen"
+                        android:textSize="14sp"
+                        android:text="۰"
+                        android:layout_marginRight="4dp"
+                        android:layout_marginEnd="4dp"
+                        />
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/checked_checkbox_true_128"
+                        app:srcCompat="@drawable/checked_checkbox_true_128"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginRight="24dp"
+                    android:layout_marginEnd="24dp">
+
+                    <TextView
+                        android:id="@+id/itemELEHItem_falseAnswerTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/colorConcoughRedLight"
+                        android:textSize="14sp"
+                        android:text="۰"
+                        android:layout_marginRight="4dp"
+                        android:layout_marginEnd="4dp"
+                        />
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/close_window_false_128"
+                        app:srcCompat="@drawable/close_window_false_128"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginRight="24dp"
+                    android:layout_marginEnd="24dp">
+
+                    <TextView
+                        android:id="@+id/itemELEHItem_noAnswerTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/colorConcoughGray2"
+                        android:textSize="14sp"
+                        android:text="۰"
+                        android:layout_marginRight="4dp"
+                        android:layout_marginEnd="4dp"
+                        />
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/unchecked_checkbox_128"
+                        app:srcCompat="@drawable/unchecked_checkbox_128"
+                        />
+                </LinearLayout>
+            </LinearLayout>
+
+        </android.support.constraint.ConstraintLayout>
+
+    </android.support.constraint.ConstraintLayout>
+
+</android.support.constraint.ConstraintLayout>

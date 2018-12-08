@@ -76,7 +76,6 @@
                 android:text=""
                 android:textColor="@color/colorConcoughBlue"
                 android:textSize="14sp"
-                android:textDirection="rtl"
                 />
         </LinearLayout>
 
@@ -103,7 +102,6 @@
                 android:text=""
                 android:textColor="@color/colorConcoughBlue"
                 android:textSize="14sp"
-                android:textDirection="rtl"
                 />
         </LinearLayout>
 
@@ -185,6 +183,7 @@
             android:text=""
             android:layout_marginRight="8dp"
             android:layout_marginEnd="8dp"
+            android:textDirection="rtl"
             />
 
         <TextView

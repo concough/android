@@ -11,6 +11,7 @@ import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import com.concough.android.chartaccessory.ChartValueNumberFormatter
+import com.concough.android.concough.EntranceLessonExamHistoryActivity
 import com.concough.android.concough.R
 import com.concough.android.extensions.timeAgoSinceDate
 import com.concough.android.models.EntranceLessonExamModel
@@ -140,7 +141,6 @@ class EntranceLessonLastExamChartDialog: DialogFragment() {
             this.dismiss()
         }
 
-
         this.setupChart()
     }
 
@@ -267,7 +267,12 @@ class EntranceLessonLastExamChartDialog: DialogFragment() {
                 }
 
                 this.helpImageView.setOnClickListener {
-                    // TODO: must implement
+                    val dialog = EntranceShowPreviewDialog()
+                    dialog.isCancelable = false
+                    dialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.zhycan_dialog_fullscreen)
+                    dialog.setVariables(question)
+                    dialog.show((context as EntranceLessonExamHistoryActivity).supportFragmentManager,
+                            "EntranceLessonExamDialog")
                 }
             }
 

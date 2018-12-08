@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:background="@drawable/concough_recycle_box_style"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/itemELEHC_lineChart"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_margin="8dp" >
+    </com.github.mikephil.charting.charts.LineChart>
+</android.support.constraint.ConstraintLayout>

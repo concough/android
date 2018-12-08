@@ -76,10 +76,10 @@ class TestActivity : AppCompatActivity() {
 //            Log.d(TAG, "")
 //        }
 
-//        testA_read_keystore.setOnClickListener {
-//            EntranceLessonExamModelHandler.deleteAllExams(applicationContext)
-//            EntranceQuestionExamStatModelHandler.deleteAllStats(applicationContext)
-//        }
+        testA_read_keystore.setOnClickListener {
+            EntranceLessonExamModelHandler.deleteAllExams(applicationContext)
+            EntranceQuestionExamStatModelHandler.deleteAllStats(applicationContext)
+        }
     }
 
     override fun onStart() {

@@ -42,6 +42,7 @@ class EntranceQuestionExamStatModelHandler {
                 }
             } else {
                 val newStat = EntranceQuestionExamStatModel()
+                newStat.uniqueId = UUID.randomUUID().toString()
                 newStat.created = Date()
                 newStat.updated = Date()
                 newStat.totalCount = 1

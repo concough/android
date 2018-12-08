@@ -532,3 +532,12 @@ Entrance Last Exam Chart Dialog (abolfazl.beh) - 2018-11-29
 
 1 - EntranceLessonLastExamChartFragment dialog created to show exam details (chart, answers , ...)
 2 - FragmentDialog used to create dialogs from now on
+
+------------------------------------------------------------------------------------------------
+Entrance Lesson Exam History (abolfazl.beh) - 2018-12-08
+
+1 - EntranceShowPreviewDialog created to show question preview to user in exam history.
+2 - EntranceLessonExamHistory activity created to show lesson exam history and its charts.
+3 - EntranceShow activity --> QuestionChartPagerAdapter added to show charts for any question
+4 - Some bugs fixed.
+5 - Some UI enhanced.

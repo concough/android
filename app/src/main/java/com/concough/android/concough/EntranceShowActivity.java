@@ -19,8 +19,10 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pair;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -42,6 +44,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -70,6 +73,7 @@ import com.concough.android.models.EntranceModelHandler;
 import com.concough.android.models.EntranceOpenedCountModelHandler;
 import com.concough.android.models.EntranceQuestionCommentModel;
 import com.concough.android.models.EntranceQuestionCommentModelHandler;
+import com.concough.android.models.EntranceQuestionExamStatModel;
 import com.concough.android.models.EntranceQuestionExamStatModelHandler;
 import com.concough.android.models.EntranceQuestionModel;
 import com.concough.android.models.EntranceQuestionModelHandler;
@@ -86,10 +90,21 @@ import com.concough.android.structures.EntranceStruct;
 import com.concough.android.structures.LogTypeEnum;
 import com.concough.android.utils.MD5Digester;
 import com.concough.android.vendor.progressHUD.KProgressHUD;
+import com.github.mikephil.charting.charts.HorizontalBarChart;
+import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.LimitLine;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.formatter.YAxisValueFormatter;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.google.gson.JsonArray;
@@ -111,6 +126,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -143,13 +159,13 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     }
 
     private final static String TAG = "EntranceShowActivity";
+    private final static int ENTRANCE_LESSON_CHART_ACTIVITY = 11;
 
     private final static String ENTRANCE_UNIQUE_ID_KEY = "entranceUniqueId";
     private final static String SHOW_TYPE_KEY = "showType";
     private static final String HANDLE_THREAD_NAME = "Concough-EntranceShowActivity";
     private static final int LOAD_IMAGE = 0;
     private static final int LOAD_STARRED_IMAGE = 1;
-
 
     private HandlerThread handlerThread = null;
     private Handler handler = null;
@@ -600,7 +616,22 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         super.onStop();
     }
 
-//    private void infoDialog() {
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == ENTRANCE_LESSON_CHART_ACTIVITY) {
+            Log.d(TAG, "activity result");
+            this.starredIds.clear();
+            this.starredQuestions.clear();
+            loadStarredQuestion();
+            loadStarredQuestionRecords();
+
+            if (this.showType.equals("Show")) {
+                this.entranceShowAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+    //    private void infoDialog() {
 //        dialogInfo = new Dialog(EntranceShowActivity.this);
 //        dialogInfo = new Dialog(EntranceShowActivity.this, android.R.style.Theme_DeviceDefault_Dialog);
 //        dialogInfo.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -1931,6 +1962,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             private TextView lastCommentDateTextView;
             private LinearLayout lastCommentContainer;
 
+            private ViewPager chartViewPager;
+            private ImageView nextChartImageView;
+
             private TextView answer;
             private Boolean starred = false;
             private EntranceQuestionModel mEntranceQuestionModel;
@@ -1975,6 +2009,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 lastCommentImageView = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_lastCommentImageView);
                 noCommentTextView = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_noCommentTextView);
 
+                chartViewPager = (ViewPager) itemView.findViewById(R.id.ccEntranceShowHolder1I_chartViewPager);
+                nextChartImageView = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_nextChartImageView);
+
                 lastCommentImageView.setColorFilter(ContextCompat.getColor(context, R.color.colorConcoughGray2));
 
                 questionNumber.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
@@ -1997,6 +2034,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             }
 
             public void setupHolder(final EntranceQuestionModel entranceQuestionModel, int position) {
+                chartViewPager.setId((int) (Math.random() * 100000000));
 
                 questionNumber.setText(FormatterSingleton.getInstance().getNumberFormatter().format(entranceQuestionModel.number));
                 answer.setText("گزینه " + questionAnswerToString(entranceQuestionModel.answer) + " صحیح است");
@@ -2099,6 +2137,17 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                     }
                 });
 
+                nextChartImageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        int index = chartViewPager.getCurrentItem() + 1;
+                        if (index >= QuestionChartPagerAdapter.NUM_ITEMS) {
+                            index = 0;
+                        }
+                        chartViewPager.setCurrentItem(index, true);
+                    }
+                });
+
                 EntranceQuestionAnswerState localState = EntranceQuestionAnswerState.None;
                 if (EntranceShowActivity.this.showedAnswer.containsKey(entranceQuestionModel.uniqueId)) {
                     localState = EntranceShowActivity.this.showedAnswer.get(entranceQuestionModel.uniqueId);
@@ -2124,7 +2173,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 //                }
 
                 mainConstraint.canScrollVertically(0);
-
                 setImages();
             }
 
@@ -2446,6 +2494,17 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         showStatTextView.setTextColor(color3);
                         showStatImageView.setColorFilter(color3);
                         chartContainer.setVisibility(View.VISIBLE);
+
+                        QuestionChartPagerAdapter adapter = new QuestionChartPagerAdapter(
+                                context,
+                                username, EntranceShowActivity.this.entranceUniqueId,
+                                mEntranceQuestionModel.number);
+//                        QuestionChartPagerAdapter adapter = new QuestionChartPagerAdapter(getSupportFragmentManager(),
+//                                context,
+//                                username, EntranceShowActivity.this.entranceUniqueId,
+//                                mEntranceQuestionModel.number);
+                        this.chartViewPager.setAdapter(adapter);
+                        adapter.notifyDataSetChanged();
                         break;
                     case None:
                         break;
@@ -2937,8 +2996,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
                             @Override
                             public void onChartSingleTapped(MotionEvent me) {
-                                Bundle bundle = new Bundle();
-
                                 EntranceLessonLastExamChartDialog dialog = new EntranceLessonLastExamChartDialog();
                                 dialog.setCancelable(false);
                                 dialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.zhycan_dialog_fullscreen);
@@ -2988,6 +3045,27 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         dialog.setListener(EntranceShowActivity.this);
                         dialog.show();
                         dialog.setupDialog();
+                    }
+                });
+
+                examHistoryContainer.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (examCount > 0) {
+                            Intent intent = EntranceLessonExamHistoryActivity.getIntent(EntranceShowActivity.this,
+                                    EntranceShowActivity.this.entranceUniqueId,
+                                    EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).fullTitle,
+                                    EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).order,
+                                    EntranceShowActivity.this.bookletsDB.get(EntranceShowActivity.this.selectedBooklet).order,
+                                    EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).duration,
+                                    EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).qCount);
+
+                            startActivityForResult(intent, ENTRANCE_LESSON_CHART_ACTIVITY);
+                        } else {
+                            AlertClass.showAlertMessage(EntranceShowActivity.this,
+                                    "ExamAction", "LessonExamHistoryNotAvail",
+                                    "", null);
+                        }
                     }
                 });
             }
@@ -3204,6 +3282,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             private TextView lastCommentDateTextView;
             private LinearLayout lastCommentContainer;
 
+            private ViewPager chartViewPager;
+            private ImageView nextChartImageView;
+
             private TextView answer;
             private Boolean starred = false;
             private EntranceQuestionModel mEntranceQuestionModel;
@@ -3248,6 +3329,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 lastCommentImageView = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_lastCommentImageView);
                 noCommentTextView = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_noCommentTextView);
 
+                chartViewPager = (ViewPager) itemView.findViewById(R.id.ccEntranceShowHolder1I_chartViewPager);
+                nextChartImageView = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_nextChartImageView);
+
                 lastCommentImageView.setColorFilter(ContextCompat.getColor(context, R.color.colorConcoughGray2));
 
                 questionNumber.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
@@ -3266,6 +3350,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
 
             public void setupHolder(Object item, int position) {
+                chartViewPager.setId((int) (Math.random() * 100000000));
+
                 final EntranceQuestionModel entranceQuestionModel = (EntranceQuestionModel) item;
                 this.mEntranceQuestionModel = entranceQuestionModel;
 
@@ -3309,6 +3395,24 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                     }
                 });
 
+                showCommentsContainer.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        EntranceShowActivity.this.showedAnswer.put(entranceQuestionModel.uniqueId,
+                                EntranceQuestionAnswerState.COMMENTS);
+                        changeAnswerContainerState(EntranceQuestionAnswerState.COMMENTS);
+                    }
+                });
+
+                showStatContainer.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        EntranceShowActivity.this.showedAnswer.put(entranceQuestionModel.uniqueId,
+                                EntranceQuestionAnswerState.STATS);
+                        changeAnswerContainerState(EntranceQuestionAnswerState.STATS);
+                    }
+                });
+
                 newCommentButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -3347,7 +3451,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                     }
                 });
 
-
                 starImage.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -3360,6 +3463,17 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 //                        for (Pair<String,Integer> item: EntranceShowActivity.this.globalPairListInteger) {
 //                            if(item.first == )
 //                        }
+                    }
+                });
+
+                nextChartImageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        int index = chartViewPager.getCurrentItem() + 1;
+                        if (index >= QuestionChartPagerAdapter.NUM_ITEMS) {
+                            index = 0;
+                        }
+                        chartViewPager.setCurrentItem(index, true);
                     }
                 });
 
@@ -3520,6 +3634,14 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         showStatTextView.setTextColor(color3);
                         showStatImageView.setColorFilter(color3);
                         chartContainer.setVisibility(View.VISIBLE);
+
+                        QuestionChartPagerAdapter adapter = new QuestionChartPagerAdapter(
+                                context, username, EntranceShowActivity.this.entranceUniqueId,
+                                mEntranceQuestionModel.number);
+//                        QuestionChartPagerAdapter adapter = new QuestionChartPagerAdapter(getSupportFragmentManager(),
+//                                context, username, EntranceShowActivity.this.entranceUniqueId,
+//                                mEntranceQuestionModel.number);
+                        this.chartViewPager.setAdapter(adapter);
                         break;
                     case None:
                         break;
@@ -4053,4 +4175,246 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         boolean isHeader(int itemPosition);
     }
 
+    public static class MyValueFormatter implements YAxisValueFormatter {
+        @Override
+        public String getFormattedValue(float value, YAxis yAxis) {
+            switch ((int)value){
+                case 1: return  "درست";
+                case -1: return "نادرست";
+                default: return "بی جواب";
+            }
+        }
+    }
+
+    public static class QuestionChartPagerAdapter extends PagerAdapter {
+        private static int NUM_ITEMS = 2;
+
+        private Context context;
+        private LayoutInflater mLayoutInflater;
+
+        private String username;
+        private String entranceUniqueId;
+        private int questionNo;
+
+//        public QuestionChartPagerAdapter(FragmentManager fragmentManager, Context context, String username, String entranceUniqueId, int questionNo) {
+        public QuestionChartPagerAdapter(Context context, String username, String entranceUniqueId, int questionNo) {
+//            super(fragmentManager);
+            this.context = context;
+            this.username = username;
+            this.entranceUniqueId = entranceUniqueId;
+            this.questionNo = questionNo;
+            this.mLayoutInflater = LayoutInflater.from(context);
+        }
+
+//        @Override
+//        public Fragment getItem(int position) {
+//            if (position >= 0 && position < NUM_ITEMS)
+//                return EntranceShowQuestionChartFragment.newInstance(position, this.entranceUniqueId,
+//                        this.questionNo, this.username);
+//            return null;
+//        }
+
+        @Override
+        public int getCount() {
+            return NUM_ITEMS;
+        }
+
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+            return view == object;
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            View view = this.mLayoutInflater.inflate(R.layout.fragment_entrance_show_question_chart, container, false);
+
+            LinearLayout chartView = (LinearLayout) view.findViewById(R.id.FESQChart_container);
+            switch (position) {
+                case 0:
+                    chartView.addView(this.setupHorizontalBarChart(context,
+                            entranceUniqueId, questionNo, username));
+                    break;
+                case 1:
+                    chartView.addView(this.setupLineChart(context,
+                            entranceUniqueId, questionNo, username));
+                    break;
+            }
+
+            container.addView(view);
+            return view;
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            container.removeView((View) object);
+        }
+
+        public HorizontalBarChart setupHorizontalBarChart(Context context, String entranceUniqueId, int questionNo,
+                                            String username) {
+            EntranceQuestionExamStatModel stat = EntranceQuestionExamStatModelHandler.getByNo(context.getApplicationContext(), username,
+                    entranceUniqueId, questionNo);
+
+            HorizontalBarChart hChartView = new HorizontalBarChart(context);
+            hChartView.animateXY(1, 1);
+            hChartView.setDescription("");
+            hChartView.setDrawGridBackground(false);
+            hChartView.setGridBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
+            hChartView.setDrawBorders(false);
+            hChartView.getAxis(YAxis.AxisDependency.LEFT).setDrawAxisLine(false);
+            hChartView.getAxis(YAxis.AxisDependency.RIGHT).setDrawAxisLine(false);
+            hChartView.getAxis(YAxis.AxisDependency.LEFT).setDrawGridLines(false);
+            hChartView.getAxis(YAxis.AxisDependency.RIGHT).setDrawGridLines(false);
+            hChartView.getAxis(YAxis.AxisDependency.LEFT).setDrawLabels(false);
+            hChartView.getAxis(YAxis.AxisDependency.RIGHT).setDrawLabels(false);
+            hChartView.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+            hChartView.getXAxis().setDrawGridLines(false);
+            hChartView.getXAxis().setTypeface(FontCacheSingleton.getInstance(context.getApplicationContext()).getRegular());
+            hChartView.getXAxis().setTextSize(10.0f);
+            hChartView.getLegend().setEnabled(false);
+            hChartView.setScaleEnabled(false);
+            hChartView.setHighlightPerDragEnabled(false);
+            hChartView.setHighlightPerTapEnabled(false);
+
+            String[] labels = new String[]{"کل", "درست", "نادرست", "بی جواب"};
+            float[] data = new float[]{0.0f, 0.0f, 0.0f, 0.0f};
+
+            if (stat != null) {
+                data = new float[]{((float) stat.totalCount), (float) stat.trueCount, (float) stat.falseCount,
+                        (float) stat.emptyCount};
+            }
+
+            ArrayList<BarEntry> dataEntries = new ArrayList<>();
+            for (int i =0; i < labels.length; i++) {
+                BarEntry dEntry = new BarEntry(data[i], i);
+                dataEntries.add(dEntry);
+            }
+
+            BarDataSet chartDataSet = new BarDataSet(dataEntries, "x");
+            chartDataSet.setValueFormatter(new ChartValueNumberFormatter());
+            chartDataSet.setValueTypeface(FontCacheSingleton.getInstance(context.getApplicationContext()).getRegular());
+            chartDataSet.setValueTextSize(10.0f);
+            chartDataSet.setColors(new int[]{R.color.colorConcoughGray5,
+                    R.color.colorConcoughGreen, R.color.colorConcoughRedLight, R.color.colorConcoughOrange}, context);
+
+            BarData chartData = new BarData(labels, chartDataSet);
+            hChartView.setData(chartData);
+
+            hChartView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+            return hChartView;
+        }
+
+        public LineChart setupLineChart(Context context, String entranceUniqueId, int questionNo,
+                                        String username)  {
+            EntranceQuestionExamStatModel stat = EntranceQuestionExamStatModelHandler.getByNo(context.getApplicationContext(), username,
+                    entranceUniqueId, questionNo);
+
+            LineChart lChartView = new LineChart(context);
+            lChartView.setDescription("");
+            lChartView.animateXY(1, 1);
+            lChartView.setDrawGridBackground(false);
+            lChartView.setGridBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
+            lChartView.setDrawBorders(false);
+            lChartView.getAxis(YAxis.AxisDependency.LEFT).setDrawAxisLine(false);
+            lChartView.getAxis(YAxis.AxisDependency.RIGHT).setDrawAxisLine(false);
+            lChartView.getAxis(YAxis.AxisDependency.LEFT).setDrawGridLines(false);
+            lChartView.getAxis(YAxis.AxisDependency.RIGHT).setDrawGridLines(false);
+            lChartView.getAxis(YAxis.AxisDependency.RIGHT).setDrawLabels(false);
+            lChartView.getAxis(YAxis.AxisDependency.LEFT).setValueFormatter(new MyValueFormatter());
+            lChartView.getAxis(YAxis.AxisDependency.LEFT).setTypeface(FontCacheSingleton.getInstance(context.getApplicationContext()).getRegular());
+            lChartView.getAxis(YAxis.AxisDependency.LEFT).setTextSize(10.0f);
+            lChartView.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+            lChartView.getXAxis().setDrawGridLines(false);
+            lChartView.getXAxis().setTypeface(FontCacheSingleton.getInstance(context.getApplicationContext()).getRegular());
+            lChartView.getXAxis().setTextSize(10.0f);
+            lChartView.getXAxis().setTextColor(ContextCompat.getColor(context, R.color.colorConcoughRedLight));
+            lChartView.getLegend().setEnabled(false);
+            lChartView.setScaleEnabled(false);
+            lChartView.setHighlightPerDragEnabled(false);
+            lChartView.setHighlightPerTapEnabled(false);
+
+            LimitLine limit = new LimitLine(0.0f, "۰");
+            limit.setLineColor(ContextCompat.getColor(context, R.color.colorConcoughOrangeLight));
+            limit.enableDashedLine(10.0f, 10.0f, 10.0f);
+            limit.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
+            limit.setTypeface(FontCacheSingleton.getInstance(context.getApplicationContext()).getRegular());
+            limit.setTextSize(10.0f);
+
+            lChartView.getAxis(YAxis.AxisDependency.LEFT).removeAllLimitLines();
+            lChartView.getAxis(YAxis.AxisDependency.LEFT).addLimitLine(limit);
+            lChartView.getAxis(YAxis.AxisDependency.LEFT).setDrawLimitLinesBehindData(true);
+
+            ArrayList<String> labels = new ArrayList<>(Arrays.asList("", ""));
+            ArrayList<Float> data = new ArrayList<>(Arrays.asList(0.0f, 0.0f));
+
+            if (stat != null) {
+                String[] statDataArray = stat.statData.split(",");
+                data.clear();
+                labels.clear();
+
+                int min = 0;
+                int max = statDataArray.length;
+
+                if (statDataArray[statDataArray.length - 1].trim().equals("")) {
+                    max -= 1;
+                    if (statDataArray.length > 11) {
+                        min = max - 10;
+                    }
+                } else {
+                    if (statDataArray.length > 10) {
+                        min = max - 10;
+                    }
+                }
+
+                for (int i = min; i < max; i++) {
+                    if (!statDataArray[i].trim().equals("")) {
+                        data.add(Float.valueOf(statDataArray[i].trim()));
+                    } else {
+                        data.add(0.0f);
+                    }
+
+                    if (i == max - 1) {
+                        labels.add("سنچش آخر");
+                    } else {
+                        labels.add(FormatterSingleton.getInstance().getNumberFormatter().format(max - i));
+                    }
+                }
+
+                data.add(0.0f);
+                labels.add("");
+
+                if (data.size() <= 2) {
+                    lChartView.getAxis(YAxis.AxisDependency.LEFT).setLabelCount(2, true);
+                } else {
+                    lChartView.getAxis(YAxis.AxisDependency.LEFT).setLabelCount(3, true);
+                }
+            } else {
+                lChartView.getAxis(YAxis.AxisDependency.LEFT).setLabelCount(1, true);
+            }
+
+            ArrayList<Entry> dataEnties = new ArrayList<>();
+            for (int i = 0; i < labels.size(); i++) {
+                Entry dEntry = new Entry(data.get(i), i);
+                dataEnties.add(dEntry);
+            }
+
+            LineDataSet chartDataSet = new LineDataSet(dataEnties, "عملکرد ۱۰ سنجش اخیر");
+            chartDataSet.setValueFormatter(new ChartValueNumberFormatter());
+            chartDataSet.setValueTypeface(FontCacheSingleton.getInstance(context.getApplicationContext()).getRegular());
+            chartDataSet.setValueTextSize(10.0f);
+            chartDataSet.setColors(new int[]{R.color.colorConcoughOrange}, context);
+            chartDataSet.setDrawFilled(false);
+            chartDataSet.setCircleRadius(4.0f);
+            chartDataSet.setDrawCubic(true);
+            chartDataSet.setLineWidth(2.0f);
+            chartDataSet.setCircleColors(new int[]{R.color.colorConcoughOrange}, context);
+            chartDataSet.setDrawValues(false);
+
+            LineData chartData = new LineData(labels, Arrays.asList(chartDataSet));
+            lChartView.setData(chartData);
+
+            lChartView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+            return lChartView;
+        }
+
+    }
 }
