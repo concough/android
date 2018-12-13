@@ -18,8 +18,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:icon">
-        <service android:name="com.concough.android.downloader.EntrancePackageDownloader" />
-
+        <service android:name="com.concough.android.services.EntrancePackageDownloader" />
+        <service android:name="com.concough.android.services.SynchronizerService" />
         <!-- <receiver android:name=".StartupActivity$NetworkChangeReceiver" > -->
         <!-- <intent-filter > -->
         <!-- <action android:name="android.net.conn.CONNECTIVITY_CHANGE" /> -->

@@ -50,6 +50,7 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
     private var uniqueId: String? = null
     private var activityType: String? = null
     private var target: JsonObject? = null
+    private var isPackageBuyed: Boolean = true
 
     private var retryCounter: Int = 0
     private var selectedActivityIndex: Int = -1
@@ -104,13 +105,34 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
 
         this.entranceMultiSale = null
         this.entrances.clear()
-        this.entranceMultiDetailAdapter.setItems(this.entranceMultiSale, this.entrances)
+        this.entranceMultiDetailAdapter.setItems(this.entranceMultiSale, this.entrances, this.isPackageBuyed)
         this.entranceMultiDetailAdapter.notifyDataSetChanged()
-
-        this.getEntranceMultiSaleData()
 
         if (this.target!!.has("entrances")) {
             val entranceArray = this.target!!.get("entrances").asJsonArray
+
+            this.isPackageBuyed = true
+            val username = UserDefaultsSingleton.getInstance(applicationContext).getUsername()!!
+            for (ent in entranceArray) {
+                val entranceUniqueId = ent.asJsonObject.get("unique_key").asString
+                val isPurchased = PurchasedModelHandler.getByProductId(applicationContext, username,
+                        "Entrance", entranceUniqueId)
+                if (isPurchased == null) {
+                    this.isPackageBuyed = false
+                }
+            }
+
+//            if (this.isPackageBuyed) {
+//                val h = entranceMultiDetailA_recycle.findViewHolderForAdapterPosition(0)
+//                if (h is EntranceMultiDetailAdapter.EMDInitialHolder) {
+//                    h.configureCosts(this@EntranceMultiDetailActivity,
+//                            this@EntranceMultiDetailActivity.entranceMultiSale!!)
+//                    h.disableBuyGreen(this@EntranceMultiDetailActivity)
+//                }
+//
+//            }
+
+            this.getEntranceMultiSaleData()
 
             for (ent in entranceArray) {
                 val organization = ent.asJsonObject.get("organization").asJsonObject.get("title").asString
@@ -160,7 +182,7 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
                         entranceS, buyedCount))
             }
 
-            this.entranceMultiDetailAdapter.setItems(this.entranceMultiSale, this.entrances)
+            this.entranceMultiDetailAdapter.setItems(this.entranceMultiSale, this.entrances, this.isPackageBuyed)
             this.entranceMultiDetailAdapter.notifyDataSetChanged()
         }
     }
@@ -225,14 +247,18 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
                                             totalCost, cost)
 
                                     this@EntranceMultiDetailActivity.entranceMultiDetailAdapter.setItems(this@EntranceMultiDetailActivity.entranceMultiSale,
-                                            this@EntranceMultiDetailActivity.entrances)
+                                            this@EntranceMultiDetailActivity.entrances, this@EntranceMultiDetailActivity.isPackageBuyed)
 
                                     val h = entranceMultiDetailA_recycle.findViewHolderForAdapterPosition(0)
                                     if (h is EntranceMultiDetailAdapter.EMDInitialHolder) {
                                         h.configureCosts(this@EntranceMultiDetailActivity,
                                                 this@EntranceMultiDetailActivity.entranceMultiSale!!)
-                                        h.disableBuy(this@EntranceMultiDetailActivity,
-                                                false)
+                                        if (this@EntranceMultiDetailActivity.isPackageBuyed) {
+                                            h.disableBuyGreen(this@EntranceMultiDetailActivity)
+                                        } else {
+                                            h.disableBuy(this@EntranceMultiDetailActivity,
+                                                    false)
+                                        }
                                     }
                                     //this@EntranceMultiDetailActivity.entranceMultiDetailAdapter.notifyItemChanged(0)
 
@@ -424,6 +450,8 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
                 }
             }
 
+            this.isPackageBuyed = true
+            this.entranceMultiDetailAdapter.setPackageBuyed(this.isPackageBuyed)
             this.entranceMultiDetailAdapter.notifyDataSetChanged()
             this.downloadImages(purchasedTemp)
 
@@ -514,6 +542,7 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
         private lateinit var context: Context
         private var entranceMultiSaleStructure: EntranceMultiSaleStructure? = null
         private lateinit var entrances: ArrayList<InternalEntranceData>
+        private var isPackageBuyed = false
 
         constructor(context: Context, entranceMultiSaleStructure: EntranceMultiSaleStructure?,
                            entrances: ArrayList<InternalEntranceData>) {
@@ -523,9 +552,14 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
         }
 
         internal fun setItems(entranceMultiSaleStructure: EntranceMultiSaleStructure?,
-                              entrances: ArrayList<InternalEntranceData>) {
+                              entrances: ArrayList<InternalEntranceData>, isPackageBuyed: Boolean) {
             this.entrances = entrances
             this.entranceMultiSaleStructure = entranceMultiSaleStructure
+            this.isPackageBuyed = isPackageBuyed
+        }
+
+        internal fun setPackageBuyed(isPackageBuyed: Boolean) {
+            this.isPackageBuyed = isPackageBuyed
         }
 
         internal fun showBuyDialog() {
@@ -573,12 +607,12 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
                     (holder as EMDInitialHolder).setupHolder(this.context,
                             this.entrances.get(position).entrance,
                             count,
-                            false)
+                            false, this.isPackageBuyed)
                 } else {
                     (holder as EMDInitialHolder).setupHolder(this.context,
                             this.entrances.get(position).entrance,
                             count,
-                            true)
+                            true, this.isPackageBuyed)
                 }
 
             } else {
@@ -657,9 +691,12 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
             }
 
             fun setupHolder(context: Context, firstEntrance: EntranceStruct, entrancesCount: Int,
-                            disableBuy: Boolean) {
-                this.disableBuy(context, disableBuy)
-
+                            disableBuy: Boolean, isPackageBuyed: Boolean) {
+                if (isPackageBuyed) {
+                    this.disableBuyGreen(context)
+                } else {
+                    this.disableBuy(context, disableBuy)
+                }
                 this.entranceOrgTextView.text = firstEntrance.entranceOrgTitle
                 this.entranceTypeTextView.text = firstEntrance.entranceTypeTitle
                 this.entranceSetTextView.text = "${firstEntrance.entranceSetTitle} (${firstEntrance.entranceGroupTitle})"
@@ -728,6 +765,16 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
                     this.buyButton.setTextColor(ContextCompat.getColor(context , R.color.colorConcoughBlue))
                     this.buyButton.background = ContextCompat.getDrawable(context, R.drawable.concough_border_radius_style)
                 }
+            }
+
+            fun disableBuyGreen(context: Context) {
+                this.costContainer.visibility = View.VISIBLE
+                this.loadingProgressBar.visibility = View.INVISIBLE
+
+                this.buyButton.text = "خریداری شده"
+                this.buyButton.isEnabled = false
+                this.buyButton.setTextColor(ContextCompat.getColor(context , R.color.colorConcoughGreen))
+                this.buyButton.background = ContextCompat.getDrawable(context, R.drawable.concough_outline_green_rounded_style)
             }
 
             fun disableBuyButton(context: Context) {

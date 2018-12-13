@@ -436,6 +436,36 @@ class AlertClass {
         }
 
         @JvmStatic
+        fun showAlertMessageCustom(context: Context, title: String, message: String, yesButtonTitle: String, noButtonTitle: String, completion: (() -> Unit)?, noCompletion: (() -> Unit)?) {
+            val dialogBuilder = ZhycanNiftyDialogBuilder(context, R.style.zhycan_dialog_untran)
+
+            dialogBuilder
+                    .withTitle(title)
+                    .withMessage(message)
+                    .withDuration(500)
+                    .withMessageType("error")
+                    .withEffect(Effectstype.Slidetop)
+                    .withButton1Text(yesButtonTitle)
+                    .withButton2Text(noButtonTitle)
+                    .withTypeface(FontCacheSingleton.getInstance(context.applicationContext!!).Regular)
+                    .setMessageTypeface(FontCacheSingleton.getInstance(context.applicationContext!!).Light)
+                    .isCancelableOnTouchOutside(false)
+                    .setButton1Click(View.OnClickListener {
+                        dialogBuilder.dismiss()
+                        if (completion != null) {
+                            completion()
+                        }
+                    })
+                    .setButton2Click(View.OnClickListener {
+                        dialogBuilder.dismiss()
+                        if (noCompletion != null) {
+                            noCompletion()
+                        }
+                    })
+                    .show()
+        }
+
+        @JvmStatic
         fun showSucceessMessageCustom(context: Context, title: String, message: String, yesButtonTitle: String, noButtonTitle: String, completion: (() -> Unit)?, noCompletion: (() -> Unit)?) {
             val dialogBuilder = ZhycanNiftyDialogBuilder(context, R.style.zhycan_dialog_untran)
 

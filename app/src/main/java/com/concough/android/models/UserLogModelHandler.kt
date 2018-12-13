@@ -3,6 +3,8 @@ package com.concough.android.models
 import android.content.Context
 import com.concough.android.singletons.RealmSingleton
 import com.google.gson.JsonObject
+import io.realm.RealmResults
+import io.realm.Sort
 import java.util.*
 
 /**
@@ -34,6 +36,32 @@ class UserLogModelHandler {
             }
 
             return false
+        }
+
+        @JvmStatic
+        fun list(context: Context, username: String): RealmResults<UserLogModel> {
+            return RealmSingleton.getInstance(context).DefaultRealm.where(UserLogModel::class.java)
+                    .equalTo("username", username).findAllSorted("created", Sort.ASCENDING)
+        }
+
+        @JvmStatic
+        fun removeByUniqueId(context: Context, username: String, uniqueId: String): Boolean {
+            val items = RealmSingleton.getInstance(context).DefaultRealm.where(UserLogModel::class.java)
+                    .equalTo("username", username)
+                    .equalTo("uniqueId", uniqueId)
+                    .findAll()
+
+            if (items != null) {
+                try {
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        items.deleteAllFromRealm()
+                    }
+                } catch (exc: Exception) {
+                    return false
+                }
+            }
+
+            return true
         }
     }
 }

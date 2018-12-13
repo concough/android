@@ -21,6 +21,11 @@
 -keep class * {
     public private *;
 }
+
+#-keep public class com.github.mikephil.charting.animation.* {
+#    public protected *;
+#}
+
 -keep class com.google.gson.** { *; }
 
 -dontwarn java.nio.file.Files

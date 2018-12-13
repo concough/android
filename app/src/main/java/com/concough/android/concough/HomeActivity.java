@@ -281,11 +281,15 @@ public class HomeActivity extends BottomNavigationActivity {
 
 
 //                                            homeActivityAdapter.notifyDataSetChanged();
-                                            homeActivityAdapter.notifyItemRangeChanged(homeActivityAdapter.getItemCount()-10,10);
+//                                            homeActivityAdapter.notifyItemRangeChanged(homeActivityAdapter.getItemCount() - 10,10);
+                                            homeActivityAdapter.notifyDataSetChanged();
                                             HomeActivity.this.loading = false;
 
                                         } else {
                                             HomeActivity.this.moreFeedExist = false;
+                                            HomeActivity.this.loading = false;
+                                            homeActivityAdapter.notifyDataSetChanged();
+//                                            homeActivityAdapter.notifyItemRangeChanged(homeActivityAdapter.getItemCount() - 10,10);
                                         }
                                     }
 
@@ -437,21 +441,24 @@ public class HomeActivity extends BottomNavigationActivity {
 
                 concoughActivityStructLocal = concoughActivityStruct;
 
-                int dateNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("year").getAsInt();
-                int monthNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("month").getAsInt();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        int dateNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("year").getAsInt();
+                        int monthNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("month").getAsInt();
 
-                String datePublishString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_published").getAsString();
-                String lastUpdateString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_update").getAsString();
+                        String datePublishString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_published").getAsString();
+                        String lastUpdateString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_update").getAsString();
 
-                Date georgianDate = null;
-                String persianDateString = "";
-                String currentDateString = "";
+                        Date georgianDate = null;
+                        String persianDateString = "";
+                        String currentDateString = "";
 
-                if (null != datePublishString) {
-                    currentDateString = datePublishString;
-                } else {
-                    currentDateString = lastUpdateString;
-                }
+                        if (null != datePublishString) {
+                            currentDateString = datePublishString;
+                        } else {
+                            currentDateString = lastUpdateString;
+                        }
 
 //                try {
 //                    georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
@@ -461,29 +468,29 @@ public class HomeActivity extends BottomNavigationActivity {
 //                }
 //                dateJalali.setText(persianDateString.trim());
 
-                try {
-                    georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
-                    String timeAgo = timeAgoSinceDate(georgianDate, "fa", false);
-                    dateJalali.setText(timeAgo);
-                } catch (Exception e) {
-                    Log.d(TAG, e.getMessage());
-                }
+                        try {
+                            georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
+                            String timeAgo = timeAgoSinceDate(georgianDate, "fa", false);
+                            dateJalali.setText(timeAgo);
+                        } catch (Exception e) {
+                            Log.d(TAG, e.getMessage());
+                        }
 
-                dateYear.setText(FormatterSingleton.getInstance().getNumberFormatter().format(dateNumber));
-                dateMonth.setText(monthToString(monthNumber));
+                        dateYear.setText(FormatterSingleton.getInstance().getNumberFormatter().format(dateNumber));
+                        dateMonth.setText(monthToString(monthNumber));
 
-                JsonArray stats = concoughActivityStruct.getTarget().getAsJsonObject().get("stats").getAsJsonArray();
-                Integer sellCountInt = 0;
-                if (stats.size() > 0) {
-                    sellCountInt = stats.get(0).getAsJsonObject().get("purchased").getAsInt();
-                }
-                sellCount.setText(FormatterSingleton.getInstance().getNumberFormatter().format(sellCountInt));
+                        JsonArray stats = concoughActivityStruct.getTarget().getAsJsonObject().get("stats").getAsJsonArray();
+                        Integer sellCountInt = 0;
+                        if (stats.size() > 0) {
+                            sellCountInt = stats.get(0).getAsJsonObject().get("purchased").getAsInt();
+                        }
+                        sellCount.setText(FormatterSingleton.getInstance().getNumberFormatter().format(sellCountInt));
 
-                sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                        sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
 
-                entranceType.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString().trim());
-                entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString().trim() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString().trim() + ")");
+                        entranceType.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString().trim());
+                        entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString().trim() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString().trim() + ")");
 
 
 //                entranceLogo.setImageResource(R.drawable.no_image);
@@ -502,7 +509,10 @@ public class HomeActivity extends BottomNavigationActivity {
 //                }
 //
 //                extra = TextUtils.join(" - ", extraArray);
-                additionalData.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString().trim());
+                        additionalData.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString().trim());
+
+                    }
+                });
             }
 
             public void removeImageHandler() {
@@ -620,20 +630,22 @@ public class HomeActivity extends BottomNavigationActivity {
             }
 
             public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
-
                 concoughActivityStructLocal = concoughActivityStruct;
 
-                int yearNumber1 = concoughActivityStruct.getTarget().getAsJsonObject().get("entrances").getAsJsonArray().get(0).getAsJsonObject().get("year").getAsInt();
-                int monthNumber1 = concoughActivityStruct.getTarget().getAsJsonObject().get("entrances").getAsJsonArray().get(0).getAsJsonObject().get("month").getAsInt();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        int yearNumber1 = concoughActivityStruct.getTarget().getAsJsonObject().get("entrances").getAsJsonArray().get(0).getAsJsonObject().get("year").getAsInt();
+                        int monthNumber1 = concoughActivityStruct.getTarget().getAsJsonObject().get("entrances").getAsJsonArray().get(0).getAsJsonObject().get("month").getAsInt();
 
-                int arrayCount = concoughActivityStruct.getTarget().getAsJsonObject().get("entrances").getAsJsonArray().size();
+                        int arrayCount = concoughActivityStruct.getTarget().getAsJsonObject().get("entrances").getAsJsonArray().size();
 
-                int yearNumber2 = concoughActivityStruct.getTarget().getAsJsonObject().get("entrances").getAsJsonArray().get(arrayCount - 1).getAsJsonObject().get("year").getAsInt();
-                int monthNumber2 = concoughActivityStruct.getTarget().getAsJsonObject().get("entrances").getAsJsonArray().get(arrayCount - 1).getAsJsonObject().get("month").getAsInt();
+                        int yearNumber2 = concoughActivityStruct.getTarget().getAsJsonObject().get("entrances").getAsJsonArray().get(arrayCount - 1).getAsJsonObject().get("year").getAsInt();
+                        int monthNumber2 = concoughActivityStruct.getTarget().getAsJsonObject().get("entrances").getAsJsonArray().get(arrayCount - 1).getAsJsonObject().get("month").getAsInt();
 
-                String currentDateString = concoughActivityStruct.getTarget().getAsJsonObject().get("updated").getAsString();
+                        String currentDateString = concoughActivityStruct.getTarget().getAsJsonObject().get("updated").getAsString();
 
-                Date georgianDate = null;
+                        Date georgianDate = null;
 //                try {
 //                    georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
 //                    persianDateString = FormatterSingleton.getInstance().getPersianDateString(georgianDate);
@@ -642,20 +654,20 @@ public class HomeActivity extends BottomNavigationActivity {
 //                }
 //                dateJalali.setText(persianDateString.trim());
 
-                try {
-                    georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
-                    String timeAgo = timeAgoSinceDate(georgianDate, "fa", false);
-                    dateJalali.setText(timeAgo);
-                } catch (Exception e) {
+                        try {
+                            georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
+                            String timeAgo = timeAgoSinceDate(georgianDate, "fa", false);
+                            dateJalali.setText(timeAgo);
+                        } catch (Exception e) {
 
-                }
+                        }
 
-                firstYearTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(yearNumber1));
-                firstMonthTextView.setText(monthToString(monthNumber1));
-                lastYearTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(yearNumber2));
-                lastMonthTextView.setText(monthToString(monthNumber2));
+                        firstYearTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(yearNumber1));
+                        firstMonthTextView.setText(monthToString(monthNumber1));
+                        lastYearTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(yearNumber2));
+                        lastMonthTextView.setText(monthToString(monthNumber2));
 
-                itemCountsTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(arrayCount));
+                        itemCountsTextView.setText(FormatterSingleton.getInstance().getNumberFormatter().format(arrayCount));
 
 //                JsonArray stats = concoughActivityStruct.getTarget().getAsJsonObject().get("stats").getAsJsonArray();
 //                Integer sellCountInt = 0;
@@ -665,20 +677,23 @@ public class HomeActivity extends BottomNavigationActivity {
 //                sellCount.setText(FormatterSingleton.getInstance().getNumberFormatter().format(sellCountInt));
 //                sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
-                entranceType.setText(concoughActivityStruct.getTarget().getAsJsonObject()
-                        .get("entrances").getAsJsonArray().get(0).getAsJsonObject()
-                        .get("entrance_type").getAsJsonObject().get("title").getAsString().trim());
-                entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject()
-                        .get("entrances").getAsJsonArray().get(0).getAsJsonObject()
-                        .get("entrance_set").getAsJsonObject().get("title").getAsString().trim() +
-                        " (" +
-                        concoughActivityStruct.getTarget().getAsJsonObject()
+                        entranceType.setText(concoughActivityStruct.getTarget().getAsJsonObject()
                                 .get("entrances").getAsJsonArray().get(0).getAsJsonObject()
-                                .get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString().trim() + ")");
+                                .get("entrance_type").getAsJsonObject().get("title").getAsString().trim());
+                        entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject()
+                                .get("entrances").getAsJsonArray().get(0).getAsJsonObject()
+                                .get("entrance_set").getAsJsonObject().get("title").getAsString().trim() +
+                                " (" +
+                                concoughActivityStruct.getTarget().getAsJsonObject()
+                                        .get("entrances").getAsJsonArray().get(0).getAsJsonObject()
+                                        .get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString().trim() + ")");
 
-                additionalData.setText(concoughActivityStruct.getTarget().getAsJsonObject()
-                        .get("entrances").getAsJsonArray().get(0).getAsJsonObject()
-                        .get("organization").getAsJsonObject().get("title").getAsString().trim());
+                        additionalData.setText(concoughActivityStruct.getTarget().getAsJsonObject()
+                                .get("entrances").getAsJsonArray().get(0).getAsJsonObject()
+                                .get("organization").getAsJsonObject().get("title").getAsString().trim());
+
+                    }
+                });
             }
 
             public void removeImageHandler() {
@@ -782,47 +797,51 @@ public class HomeActivity extends BottomNavigationActivity {
             }
 
             public void setupHolder(ConcoughActivityStruct concoughActivityStruct) {
-                String datePublishString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_published").getAsString();
-                String lastUpdateString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_update").getAsString();
 
-                int dateNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("year").getAsInt();
-                int monthNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("month").getAsInt();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String datePublishString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_published").getAsString();
+                        String lastUpdateString = concoughActivityStruct.getTarget().getAsJsonObject().get("last_update").getAsString();
 
-                Date georgianDate = null;
-                String persianDateString = "";
-                String currentDateString = "";
+                        int dateNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("year").getAsInt();
+                        int monthNumber = concoughActivityStruct.getTarget().getAsJsonObject().get("month").getAsInt();
 
-                if (null != datePublishString) {
-                    currentDateString = datePublishString;
-                } else {
-                    currentDateString = lastUpdateString;
-                }
+                        Date georgianDate = null;
+                        String persianDateString = "";
+                        String currentDateString = "";
 
-                try {
-                    georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
-                    String timeAgo = timeAgoSinceDate(georgianDate, "fa", false);
-                    dateJalali.setText(timeAgo);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+                        if (null != datePublishString) {
+                            currentDateString = datePublishString;
+                        } else {
+                            currentDateString = lastUpdateString;
+                        }
 
-                dateYear.setText(FormatterSingleton.getInstance().getNumberFormatter().format(dateNumber));
-                dateMonth.setText(monthToString(monthNumber));
+                        try {
+                            georgianDate = FormatterSingleton.getInstance().getUTCDateFormatter().parse(currentDateString);
+                            String timeAgo = timeAgoSinceDate(georgianDate, "fa", false);
+                            dateJalali.setText(timeAgo);
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
 
-                JsonArray stats = concoughActivityStruct.getTarget().getAsJsonObject().get("stats").getAsJsonArray();
-                Integer sellCountInt = 0;
-                if (stats.size() > 0) {
-                    sellCountInt = stats.get(0).getAsJsonObject().get("purchased").getAsInt();
-                }
-                sellCount.setText(FormatterSingleton.getInstance().getNumberFormatter().format(sellCountInt));
-                sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
+                        dateYear.setText(FormatterSingleton.getInstance().getNumberFormatter().format(dateNumber));
+                        dateMonth.setText(monthToString(monthNumber));
+
+                        JsonArray stats = concoughActivityStruct.getTarget().getAsJsonObject().get("stats").getAsJsonArray();
+                        Integer sellCountInt = 0;
+                        if (stats.size() > 0) {
+                            sellCountInt = stats.get(0).getAsJsonObject().get("purchased").getAsInt();
+                        }
+                        sellCount.setText(FormatterSingleton.getInstance().getNumberFormatter().format(sellCountInt));
+                        sellCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
 
 
-                entranceType.setText("آزمون " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString().trim());
-                entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString().trim() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString().trim() + ")");
+                        entranceType.setText("آزمون " + concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString().trim());
+                        entranceSetGroup.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString().trim() + " (" + concoughActivityStruct.getTarget().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString().trim() + ")");
 
-                int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
-                downloadImage(imageId);
+                        int imageId = concoughActivityStruct.getTarget().getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
+                        downloadImage(imageId);
 
 //                String s;
 //                s = concoughActivityStruct.getTarget().getAsJsonObject().get("extra_data").getAsString();
@@ -836,7 +855,9 @@ public class HomeActivity extends BottomNavigationActivity {
 //                }
 //
 //                extra = TextUtils.join(" - ", extraArray);
-                additionalData.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString().trim());
+                        additionalData.setText(concoughActivityStruct.getTarget().getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString().trim());
+                    }
+                });
             }
 
             private void downloadImage(final int imageId) {

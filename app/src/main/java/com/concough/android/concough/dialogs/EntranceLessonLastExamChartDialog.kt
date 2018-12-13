@@ -151,9 +151,9 @@ class EntranceLessonLastExamChartDialog: DialogFragment() {
                 this.localExamRecord.noAnswer.toFloat())
 
         DELLEChart_resultPieChart.setCenterTextTypeface(FontCacheSingleton.getInstance(activity.applicationContext).Regular)
-        DELLEChart_resultPieChart.setCenterTextColor(ContextCompat.getColor(context, R.color.colorBlack))
+        DELLEChart_resultPieChart.setCenterTextColor(ContextCompat.getColor(context, R.color.colorWhite))
         DELLEChart_resultPieChart.setCenterTextSize(14f)
-        DELLEChart_resultPieChart.centerText = "${FormatterSingleton.getInstance().DecimalNumberFormatter.format(this.localExamRecord.percentage)} %"
+        DELLEChart_resultPieChart.centerText = "${FormatterSingleton.getInstance().DecimalNumberFormatter.format(this.localExamRecord.percentage * 100)} %"
 
         val dataEntries = ArrayList<Entry>()
 
@@ -166,13 +166,13 @@ class EntranceLessonLastExamChartDialog: DialogFragment() {
         chartDataSet.valueFormatter = ChartValueNumberFormatter()
         chartDataSet.selectionShift = 0.0f
         chartDataSet.valueTypeface = FontCacheSingleton.getInstance(activity.applicationContext).Regular
-        chartDataSet.valueTextSize = 15f
+        chartDataSet.valueTextSize = 13f
         chartDataSet.valueTextColor = ContextCompat.getColor(context, R.color.colorWhite)
         chartDataSet.setColors(intArrayOf(R.color.colorConcoughGreen, R.color.colorConcoughRedLight, R.color.colorConcoughOrange), context)
 
         val chartData = PieData(labels, chartDataSet)
         DELLEChart_resultPieChart.data = chartData
-        DELLEChart_resultPieChart.animateXY(1, 1)
+        DELLEChart_resultPieChart.animateXY(2000, 2000)
     }
 
     private class EntranceLessonExamAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder> {

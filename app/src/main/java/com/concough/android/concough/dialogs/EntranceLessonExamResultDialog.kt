@@ -92,7 +92,7 @@ class EntranceLessonExamResultDialog(context: Context): Dialog(context) {
         DELEResult_resultExamTimeTextView.text = s
 
 //        val avg = (Math.round((Math.round(entranceLessonExamStruct.percentage * 10000) / 100).toFloat()) * 10).toDouble() / 10
-        DELEResult_resultExamPercentageTextView.text = "${FormatterSingleton.getInstance().DecimalNumberFormatter.format(entranceLessonExamStruct.percentage * 100)} درصد"
+        DELEResult_resultExamPercentageTextView.text = "${FormatterSingleton.getInstance().DecimalNumberFormatter.format(entranceLessonExamStruct.percentage * 100)} %"
 
         DELEResult_trueAnswerTextView.text = FormatterSingleton.getInstance().NumberFormatter.format(entranceLessonExamStruct.trueAnswer)
         DELEResult_falseAnswerTextView.text = FormatterSingleton.getInstance().NumberFormatter.format(entranceLessonExamStruct.falseAnswer)

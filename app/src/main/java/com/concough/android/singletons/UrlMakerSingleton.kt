@@ -23,6 +23,7 @@ class UrlMakerSingleton private constructor() {
     private val _product_class_name = PRODUCT_CLASS_NAME
     private val _device_class_name = DEVICE_CLASS_NAME
     private val _wallet_class_name = WALLET_CLASS_NAME
+    private val _userlog_class_name = USERLOG_CLASS_NAME
 
     companion object Factory {
         private var sharedInstance: UrlMakerSingleton? = null
@@ -422,4 +423,12 @@ class UrlMakerSingleton private constructor() {
         return this.getWalletUrl(functionName)
     }
 
+    fun getUserLogSyncUpUrl(): String? {
+        var fullPath: String? = null
+
+        if (OAUTH_METHOD == "jwt") {
+            fullPath = "${this._base_url}${this._api_version}/${this._jwt_prefix}/${this._userlog_class_name}/"
+        }
+        return fullPath
+    }
 }

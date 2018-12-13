@@ -78,6 +78,7 @@
             android:textColor="@color/colorBlack"
             android:inputType="textMultiLine"
             android:scrollbars="vertical"/>
+
         <TextView
             android:id="@+id/DESNewComment_newCommentErrorTextView"
             android:layout_width="match_parent"
@@ -88,6 +89,10 @@
             android:gravity="start"
             android:textColor="@color/colorBlack"
             android:textSize="12sp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginEnd="4dp"
             />
     </LinearLayout>
 

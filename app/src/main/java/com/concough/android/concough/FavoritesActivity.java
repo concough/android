@@ -25,7 +25,11 @@ import android.widget.TextView;
 
 import com.baoyz.widget.PullRefreshLayout;
 import com.bumptech.glide.Glide;
-import com.concough.android.downloader.EntrancePackageDownloader;
+import com.concough.android.models.EntranceLastVisitInfoModelHandler;
+import com.concough.android.models.EntranceLessonExamModelHandler;
+import com.concough.android.models.EntranceQuestionCommentModelHandler;
+import com.concough.android.models.EntranceQuestionExamStatModelHandler;
+import com.concough.android.services.EntrancePackageDownloader;
 import com.concough.android.general.AlertClass;
 import com.concough.android.models.EntranceLessonModel;
 import com.concough.android.models.EntranceLessonModelHandler;
@@ -44,6 +48,7 @@ import com.concough.android.singletons.DownloaderSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.singletons.MediaCacheSingleton;
+import com.concough.android.singletons.NotificationSingleton;
 import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.EntrancePurchasedStruct;
 import com.concough.android.structures.EntranceStruct;
@@ -57,13 +62,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Console;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -178,9 +178,9 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
         buttonDetail.imageSource = R.drawable.edit;
         buttonDetailArrayList.add(buttonDetail);
 
-        buttonDetail = new ButtonDetail();
-        buttonDetail.imageSource = R.drawable.download_cloud;
-        buttonDetailArrayList.add(buttonDetail);
+//        buttonDetail = new ButtonDetail();
+//        buttonDetail.imageSource = R.drawable.download_cloud;
+//        buttonDetailArrayList.add(buttonDetail);
 
         super.createActionBar("کتابخانه من", false, buttonDetailArrayList);
 
@@ -209,15 +209,15 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                         break;
                     }
 
-                    case R.drawable.download_cloud: {
-                        if (FavoritesActivity.this.handler != null) {
-                            Message msg = FavoritesActivity.this.handler.obtainMessage(SYNC_WITH_SERVER);
-                            msg.setTarget(new Handler(FavoritesActivity.this.getMainLooper()));
-
-                            FavoritesActivity.this.handler.sendMessage(msg);
-                        }
-                        break;
-                    }
+//                    case R.drawable.download_cloud: {
+//                        if (FavoritesActivity.this.handler != null) {
+//                            Message msg = FavoritesActivity.this.handler.obtainMessage(SYNC_WITH_SERVER);
+//                            msg.setTarget(new Handler(FavoritesActivity.this.getMainLooper()));
+//
+//                            FavoritesActivity.this.handler.sendMessage(msg);
+//                        }
+//                        break;
+//                    }
                 }
             }
 
@@ -269,6 +269,11 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                 new ArrayList<>());
         recycleView.setAdapter(favAdapter);
 
+        this.loadData();
+        //this.loadLessonData();
+    }
+
+    public void reloadData() {
         this.loadData();
         //this.loadLessonData();
     }
@@ -1445,7 +1450,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                             String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
                             if (username != null) {
                                 FavoriteItem item = FavoritesAdapter.this.notDownloaded.get(index - FavoritesAdapter.this.purchased.size() - 2);
-                                if (item.type == "Entrance") {
+                                if (item.type.equals("Entrance")) {
                                     PurchasedModel p = PurchasedModelHandler.getByProductId(getApplicationContext(), username, item.type, item.uniqueId);
                                     if (p != null) {
                                         EntrancePurchasedStruct ps = new EntrancePurchasedStruct();
@@ -1583,7 +1588,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                                         FormatterSingleton.getInstance().getNumberFormatter().format(entranceS.getEntranceYear()) + "\n" +
                                                                         entranceS.getEntranceSetTitle() + " (" + entranceS.getEntranceGroupTitle() + ")";
 
-                                                                // TODO: create local notification
+                                                                NotificationSingleton.getInstance(FavoritesActivity.this).simpleNotification(message, subMassage);
                                                             }
 
                                                             FEntranceNotDownloadViewHolder.this.onDownloadFinished(true, index);
@@ -2023,6 +2028,10 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                             EntrancePackageHandler.removePackage(getApplicationContext(), username, favoriteItem.uniqueId);
                                             EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, favoriteItem.uniqueId);
                                             EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, favoriteItem.uniqueId);
+                                            EntranceLastVisitInfoModelHandler.removeByEntranceId(getApplicationContext(), username, favoriteItem.uniqueId);
+                                            EntranceQuestionCommentModelHandler.removeAllCommentOfEntrance(getApplicationContext(), username, favoriteItem.uniqueId);
+                                            EntranceLessonExamModelHandler.removeAllExamsByEntranceId(getApplicationContext(), username, favoriteItem.uniqueId);
+                                            EntranceQuestionExamStatModelHandler.removeAllStatsByEntranceId(getApplicationContext(), username, favoriteItem.uniqueId);
 
                                             DownloadCount.remove(index);
                                             favAdapter.notifyItemRemoved(index);

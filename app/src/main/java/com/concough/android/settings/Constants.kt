@@ -31,6 +31,7 @@ val PRODUCT_CLASS_NAME = "product"
 val BASKET_CLASS_NAME = "basket"
 val DEVICE_CLASS_NAME = "device"
 val WALLET_CLASS_NAME = "wallet"
+val USERLOG_CLASS_NAME = "userlog"
 val JWT_URL_PREFIX = "j"
 
 // Connection settings
@@ -82,3 +83,10 @@ val SECRET_KEY: String
 // Downloader Settings
 val DOWNLOAD_IMAGE_COUNT = 15
 val CONNECTION_MAX_RETRY = 5
+val DOWNLOADER_QUEUE_COUNT = 4
+
+// Sync Settings
+val SYNC_LIST = arrayOf("FAVOURITES", "LOCK", "WALLET", "CHECK_VERSION")
+val SYNC_INTERVAL = 10 * 60
+val SYNC_LOG_INTERVAL = 1 * 60
+val SYNC_LOG_LIMIT = 10

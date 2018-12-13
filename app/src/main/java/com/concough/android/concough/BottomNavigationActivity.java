@@ -134,7 +134,7 @@ public class BottomNavigationActivity extends TopNavigationActivity {
 
         Drawable menuIcon = menuItem.getIcon();
         int tempColor = ResourcesCompat.getColor(getResources(), color, null);
-        menuIcon.setColorFilter(tempColor, PorterDuff.Mode.SRC_ATOP);
+        menuIcon.setColorFilter(tempColor, PorterDuff.Mode.SRC_IN);
 
         menuItem.setTitle(styledMenuTitle);
         menuItem.setIcon(menuIcon);

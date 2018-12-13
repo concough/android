@@ -37,7 +37,8 @@
                 android:text="TextView"
                 android:textAlignment="textEnd"
                 android:textColor="@android:color/black"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                tools:ignore="RtlCompat" />
 
             <TextView
                 android:id="@+id/archiveDetailHolder1L_code"
@@ -47,7 +48,8 @@
                 android:text="TextView"
                 android:textAlignment="textEnd"
                 android:textColor="@android:color/black"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                android:gravity="end" />
 
             <TextView
                 android:id="@+id/archiveDetailHolder1L_count"
@@ -57,7 +59,8 @@
                 android:text="TextView"
                 android:textAlignment="textEnd"
                 android:textColor="@color/colorConcoughGray"
-                android:textSize="11sp" />
+                android:textSize="11sp"
+                android:gravity="end" />
         </LinearLayout>
 
         <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"

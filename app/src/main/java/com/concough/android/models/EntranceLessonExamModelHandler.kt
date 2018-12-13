@@ -114,5 +114,47 @@ class EntranceLessonExamModelHandler {
                 RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
         }
+
+        @JvmStatic
+        fun removeAllExamsByEntranceId(context: Context, username: String, entranceUniqueId: String): Boolean {
+            val items = RealmSingleton.getInstance(context).DefaultRealm.where(EntranceLessonExamModel::class.java)
+                    .equalTo("username", username)
+                    .equalTo("entranceUniqueId", entranceUniqueId)
+                    .findAll()
+
+            try {
+                RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                    items.deleteAllFromRealm()
+                }
+//                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                return true
+            } catch (exc: Exception) {
+                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+            }
+
+            return false
+        }
+
+        @JvmStatic
+        fun removeAllExamsByUsername(context: Context, username: String): Boolean {
+            val items = RealmSingleton.getInstance(context).DefaultRealm.where(EntranceLessonExamModel::class.java)
+                    .equalTo("username", username)
+                    .findAll()
+
+            try {
+                RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                    items.deleteAllFromRealm()
+                }
+//                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                return true
+            } catch (exc: Exception) {
+                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+            }
+
+            return false
+        }
+
     }
 }

@@ -29,7 +29,10 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.concough.android.concough.dialogs.EntranceBuyDialog;
 import com.concough.android.concough.interfaces.ProductBuyDelegate;
-import com.concough.android.downloader.EntrancePackageDownloader;
+import com.concough.android.models.EntranceOpenedCountModelHandler;
+import com.concough.android.models.EntranceQuestionModelHandler;
+import com.concough.android.models.EntranceQuestionStarredModelHandler;
+import com.concough.android.services.EntrancePackageDownloader;
 import com.concough.android.general.AlertClass;
 import com.concough.android.models.EntranceModel;
 import com.concough.android.models.EntranceModelHandler;
@@ -46,6 +49,7 @@ import com.concough.android.singletons.DownloaderSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.singletons.MediaCacheSingleton;
+import com.concough.android.singletons.NotificationSingleton;
 import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.EntrancePurchasedStruct;
 import com.concough.android.structures.EntranceSaleStruct;
@@ -68,7 +72,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.UUID;
 
 import io.realm.RealmResults;
@@ -1648,8 +1651,6 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        AlertClass.hideLoadingMessage(loadingProgress);
-
                         if (httpErrorType == HTTPErrorType.Success) {
                             AlertClass.hideLoadingMessage(loadingProgress);
                             EntranceDetailActivity.this.retryCounter = 0;
@@ -1678,7 +1679,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                         } else {
                             if (httpErrorType == HTTPErrorType.Refresh) {
                                 if (EntranceDetailActivity.this.handler != null) {
-                                    EntranceDetailActivity.this.handler.sendMessage(message);
+                                    Message msg = EntranceDetailActivity.this.handler.obtainMessage(CREATE_WALLET);
+                                    EntranceDetailActivity.this.handler.sendMessage(msg);
                                 } else {
                                     AlertClass.hideLoadingMessage(loadingProgress);
                                 }
@@ -1688,7 +1690,8 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                     EntranceDetailActivity.this.retryCounter += 1;
 
                                     if (EntranceDetailActivity.this.handler != null) {
-                                        EntranceDetailActivity.this.handler.sendMessage(message);
+                                        Message msg = EntranceDetailActivity.this.handler.obtainMessage(CREATE_WALLET);
+                                        EntranceDetailActivity.this.handler.sendMessage(msg);
                                     } else {
                                         AlertClass.hideLoadingMessage(loadingProgress);
                                     }
@@ -1713,31 +1716,37 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
         }, new Function1<NetworkErrorType, Unit>() {
             @Override
             public Unit invoke(final NetworkErrorType networkErrorType){
-                if (EntranceDetailActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
-                    EntranceDetailActivity.this.retryCounter += 1;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (EntranceDetailActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                            EntranceDetailActivity.this.retryCounter += 1;
 
-                    if (EntranceDetailActivity.this.handler != null) {
-                        EntranceDetailActivity.this.handler.sendMessage(message);
-                    } else {
-                        AlertClass.hideLoadingMessage(loadingProgress);
-                    }
+                            if (EntranceDetailActivity.this.handler != null) {
+                                Message msg = EntranceDetailActivity.this.handler.obtainMessage(CREATE_WALLET);
+                                EntranceDetailActivity.this.handler.sendMessage(msg);
+                            } else {
+                                AlertClass.hideLoadingMessage(loadingProgress);
+                            }
 
-                } else {
-                    EntranceDetailActivity.this.retryCounter = 0;
-                    AlertClass.hideLoadingMessage(loadingProgress);
+                        } else {
+                            EntranceDetailActivity.this.retryCounter = 0;
+                            AlertClass.hideLoadingMessage(loadingProgress);
 
-                    switch (networkErrorType) {
-                        case NoInternetAccess:
-                        case HostUnreachable: {
-                            AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                            break;
+                            switch (networkErrorType) {
+                                case NoInternetAccess:
+                                case HostUnreachable: {
+                                    AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                    break;
+                                }
+                                default: {
+                                    AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                    break;
+                                }
+                            }
                         }
-                        default: {
-                            AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                            break;
-                        }
                     }
-                }
+                });
                 return null;
             }
         });
@@ -2404,7 +2413,6 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                                 EntranceDetailActivity.this.handler.sendMessage(msg);
                                             }
 
-
                                             JsonObject eData = new JsonObject();
                                             eData.addProperty("uniqueId", entranceUniqueId);
                                             EntranceDetailActivity.this.createLog(LogTypeEnum.EntranceDownload.getTitle(), eData);
@@ -2508,6 +2516,25 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                                         changeToDownloadState(count);
                                         DownloaderSingleton.getInstance().setDownloaderStarted(entranceUniqueId);
                                         downloader.downloadPackageImages(f);
+                                    } else {
+                                        PurchasedModelHandler.setIsDownloadedTrue(getApplicationContext(),
+                                                username,
+                                                entranceUniqueId, "Entrance");
+                                        EntranceModel em = EntranceModelHandler.getByUsernameAndId(getApplicationContext(),
+                                                username,
+                                                entranceUniqueId);
+
+                                        if (em != null) {
+                                            String message = "دانلود آزمون به اتمام رسید";
+                                            String subMassage = EntranceDetailActivity.this.entrance.getEntranceTypeTitle() + " " +
+                                                    monthToString(EntranceDetailActivity.this.entrance.getEntranceMonth()) + " " +
+                                                    FormatterSingleton.getInstance().getNumberFormatter().format(EntranceDetailActivity.this.entrance.getEntranceYear()) + "\n" +
+                                                    EntranceDetailActivity.this.entrance.getEntranceSetTitle() + " (" + EntranceDetailActivity.this.entrance.getEntranceGroupTitle() + ")";
+
+                                            NotificationSingleton.getInstance(EntranceDetailActivity.this).simpleNotification(message, subMassage);
+                                        }
+
+
                                     }
                                 }
                             } else {
@@ -2541,6 +2568,42 @@ public class EntranceDetailActivity extends BottomNavigationActivity implements 
                 });
 
             }
+
+            private void onDownloadFinished(boolean result) {
+                if (result) {
+                    uiHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            DownloaderSingleton.getInstance().removeDownloader(EntranceDetailActivity.this.entrance.getEntranceUniqueId());
+
+                            if (EntranceDetailActivity.this.handler != null) {
+                                Message msg = EntranceDetailActivity.this.handler.obtainMessage(UPDATE_USER_PURCHASE_DATE);
+                                msg.setTarget(new Handler(EntranceDetailActivity.this.getMainLooper()));
+
+                                EntranceDetailActivity.this.handler.sendMessage(msg);
+                            }
+
+                            JsonObject eData = new JsonObject();
+                            eData.addProperty("uniqueId", EntranceDetailActivity.this.entrance.getEntranceUniqueId());
+                            EntranceDetailActivity.this.createLog(LogTypeEnum.EntranceDownload.getTitle(), eData);
+
+                            String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+                            AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "ActionResult", "DownloadSuccess", "success", null);
+                        }
+                    });
+                } else {
+                    uiHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            DownloaderSingleton.getInstance().removeDownloader(EntranceDetailActivity.this.entrance.getEntranceUniqueId());
+                            AlertClass.showTopMessage(EntranceDetailActivity.this, findViewById(R.id.container), "ActionResult", "DownloadFailed", "error", null);
+                            EntranceDetailActivity.this.state = EntranceVCStateEnum.Purchased;
+                            EntranceDetailActivity.this.stateMachine();
+                        }
+                    });
+                }
+            }
+
 
             public void changeToDownloadState(int total) {
                 this.downloadButton.setVisibility(View.GONE);

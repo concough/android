@@ -1,5 +1,6 @@
 package com.concough.android.concough.dialogs
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.graphics.*
@@ -10,6 +11,7 @@ import android.support.v4.view.GestureDetectorCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.util.Log
 import android.util.TypedValue
 import android.view.*
 import android.widget.TextView
@@ -27,6 +29,9 @@ import kotlinx.android.synthetic.main.dialog_entrance_show_all_comments.*
 import android.view.MotionEvent
 import android.view.GestureDetector
 import com.concough.android.general.AlertClass
+import io.realm.RealmResults
+import kotlinx.android.synthetic.main.cc_entrance_lesson_exam_history_chart.*
+import kotlinx.android.synthetic.main.dialog_entrance_lesson_last_exam_chart.*
 
 
 /**
@@ -56,7 +61,7 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
         val layoutManager = LinearLayoutManager(context)
         DESAllComments_recycleView.layoutManager = layoutManager
 
-        this.commentsAdapter = EntranceShowAllCommentsAdapter(context, arrayListOf())
+        this.commentsAdapter = EntranceShowAllCommentsAdapter(context)
         DESAllComments_recycleView.adapter = this.commentsAdapter
 
         DESAllComments_closeButton.setOnClickListener {
@@ -69,12 +74,16 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
         DESAllComments_titleTextView.text = context.getString(R.string.allCommentsHeaderTitle) + " " +
                 FormatterSingleton.getInstance().NumberFormatter.format(questionNo)
 
+
+        var itemTouchHelper: ItemTouchHelper? = null
+
         val swipeHandler = object : SwipeToDeleteCallback(context) {
+            @SuppressLint("LongLogTag")
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder?, direction: Int) {
                 viewHolder?.let {
                     val msg = AlertClass.convertMessage("EntranceShowAction", "DeleteComment")
                     AlertClass.showAlertMessageCustom(context, msg.title,
-                            msg.message, "بله", "خیر") {
+                            msg.message, "بله", "خیر", {
                         if (viewHolder is EntranceShowAllCommentsAdapter.TextCommentHolder) {
                             val comment = commentsAdapter!!.getItem(viewHolder.adapterPosition)
                             if (comment != null) {
@@ -89,12 +98,17 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
                                 }
                             }
                         }
+                    }) {
+//                        Log.d(TAG, "no action")
+//                        itemTouchHelper!!.attachToRecyclerView(DELLEChart_questionsRecycleView)
+//
+                        this@EntranceShowAllCommentsDialog.commentsAdapter!!.notifyItemChanged(viewHolder.adapterPosition)
                     }
                 }
             }
         }
 
-        val itemTouchHelper = ItemTouchHelper(swipeHandler)
+        itemTouchHelper = ItemTouchHelper(swipeHandler)
         itemTouchHelper.attachToRecyclerView(DESAllComments_recycleView)
 
         this.importComments(entranceUuniqueId, questionId)
@@ -106,7 +120,7 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
                 entranceUuniqueId, username!!, questionId)
 
         this.commentsAdapter?.let {
-            this.commentsAdapter!!.setItems(questionId, ArrayList(comments))
+            this.commentsAdapter!!.setItems(questionId, comments)
         }
     }
 
@@ -168,15 +182,14 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
 
     private class EntranceShowAllCommentsAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private lateinit var questionId: String
-        private var comments: ArrayList<EntranceQuestionCommentModel>
+        private lateinit var comments: RealmResults<EntranceQuestionCommentModel>
         private var context: Context
 
-        constructor(context: Context, comments: ArrayList<EntranceQuestionCommentModel>) {
+        constructor(context: Context) {
             this.context = context
-            this.comments = comments
         }
 
-        public fun setItems(questionId: String, comments: ArrayList<EntranceQuestionCommentModel>) {
+        public fun setItems(questionId: String, comments: RealmResults<EntranceQuestionCommentModel>) {
             this.questionId = questionId
             this.comments = comments
         }

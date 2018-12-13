@@ -24,6 +24,7 @@ import com.concough.android.general.AlertClass;
 import com.concough.android.rest.ProfileRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
+import com.concough.android.singletons.SynchronizationSingleton;
 import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.GradeType;
 import com.concough.android.structures.HTTPErrorType;
@@ -388,6 +389,9 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
                                             UserDefaultsSingleton.getInstance(getApplicationContext()).createProfile(params[0].getFirstname(), params[0].getLastname(), params[0].getGrade(), params[0].getGradeString(),
                                                     params[0].getGender(), params[0].getBirthday(), modified);
 
+                                            // Start Synchronizer
+                                            SynchronizationSingleton.getInstance(getApplicationContext()).startSynchronizer();
+
                                             Intent i = HomeActivity.newIntent(SignupMoreInfo3Activity.this);
                                             startActivity(i);
                                             SignupMoreInfo3Activity.this.finish();
@@ -406,9 +410,7 @@ public class SignupMoreInfo3Activity extends TopNavigationActivity {
                                             break;
                                         }
                                     }
-
                                 }
-
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new PostProfileTask().execute(params);
                             } else {

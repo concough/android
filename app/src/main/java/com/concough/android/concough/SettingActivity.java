@@ -28,8 +28,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.concough.android.general.AlertClass;
+import com.concough.android.models.EntranceLastVisitInfoModelHandler;
+import com.concough.android.models.EntranceLessonExamModelHandler;
 import com.concough.android.models.EntranceOpenedCountModelHandler;
 import com.concough.android.models.EntrancePackageHandler;
+import com.concough.android.models.EntranceQuestionCommentModelHandler;
+import com.concough.android.models.EntranceQuestionExamStatModelHandler;
 import com.concough.android.models.EntranceQuestionStarredModelHandler;
 import com.concough.android.models.PurchasedModel;
 import com.concough.android.models.PurchasedModelHandler;
@@ -38,6 +42,7 @@ import com.concough.android.rest.ProfileRestAPIClass;
 import com.concough.android.singletons.DeviceInformationSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
+import com.concough.android.singletons.SynchronizationSingleton;
 import com.concough.android.singletons.TokenHandlerSingleton;
 import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.GradeType;
@@ -161,6 +166,9 @@ public class SettingActivity extends BottomNavigationActivity {
         super.createActionBar("تنظیمات", false, buttonDetailArrayList);
     }
 
+    public void reloadForSync() {
+        SettingActivity.this.recycleAdapter.notifyDataSetChanged();
+    }
 
     private class AlertDialogCustomize extends ArrayAdapter<String> {
         private ArrayList<String> objects;
@@ -529,6 +537,9 @@ public class SettingActivity extends BottomNavigationActivity {
 
                                         // navigate to startup
                                         if (!params[0]) {
+                                            // Stop Synchronization
+                                            SynchronizationSingleton.getInstance(getApplicationContext()).stopSynchronizer();
+
                                             Intent intent = StartupActivity.newIntent(SettingActivity.this);
                                             SettingActivity.this.startActivity(intent);
                                             SettingActivity.this.finish();
@@ -550,9 +561,11 @@ public class SettingActivity extends BottomNavigationActivity {
 
                                 if (params[0]) {
                                     String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+                                    SynchronizationSingleton.getInstance(getApplicationContext()).stopSynchronizer();
                                     if (KeyChainAccessProxy.getInstance(getApplicationContext()).clearAllValue() && UserDefaultsSingleton.getInstance(getApplicationContext()).clearAll()) {
                                         TokenHandlerSingleton.getInstance(getApplicationContext()).invalidateTokens();
                                         DeviceInformationSingleton.getInstance(getApplicationContext()).clearAll(username);
+
                                         Intent i = StartupActivity.newIntent(getApplicationContext());
                                         startActivity(i);
                                         finish();
@@ -603,9 +616,11 @@ public class SettingActivity extends BottomNavigationActivity {
 
                                 if (params[0]) {
                                     String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+                                    SynchronizationSingleton.getInstance(getApplicationContext()).stopSynchronizer();
                                     if (KeyChainAccessProxy.getInstance(getApplicationContext()).clearAllValue() && UserDefaultsSingleton.getInstance(getApplicationContext()).clearAll()) {
                                         TokenHandlerSingleton.getInstance(getApplicationContext()).invalidateTokens();
                                         DeviceInformationSingleton.getInstance(getApplicationContext()).clearAll(username);
+
                                         Intent i = StartupActivity.newIntent(getApplicationContext());
                                         startActivity(i);
                                         finish();
@@ -664,7 +679,6 @@ public class SettingActivity extends BottomNavigationActivity {
             return value;
         }
     }
-
 
     private class RecycleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private Context context;
@@ -839,12 +853,15 @@ public class SettingActivity extends BottomNavigationActivity {
                                                 SettingActivity.this.deletePurchaseData(item.productUniqueId, username);
 
                                                 if (PurchasedModelHandler.resetDownloadFlags(getApplicationContext(), username, item.id)) {
-                                                    if (item.productType == "Entrance") {
+                                                    if (item.productType.equals("Entrance")) {
                                                         EntrancePackageHandler.removePackage(getApplicationContext(), username, item.productUniqueId);
                                                         EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, item.productUniqueId);
                                                         EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, item.productUniqueId);
 
-                                                        // TODO: EntranceQuestionCommentModelHandler delete all comments of entrance
+                                                        EntranceLastVisitInfoModelHandler.removeByUsername(getApplicationContext(), username);
+                                                        EntranceQuestionCommentModelHandler.removeAllCommentOfUsername(getApplicationContext(), username);
+                                                        EntranceLessonExamModelHandler.removeAllExamsByUsername(getApplicationContext(), username);
+                                                        EntranceQuestionExamStatModelHandler.removeAllStatsByUsername(getApplicationContext(), username);
                                                     }
                                                 }
                                             }

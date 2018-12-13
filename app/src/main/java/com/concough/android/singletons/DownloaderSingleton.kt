@@ -6,7 +6,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import android.util.Log
-import com.concough.android.downloader.EntrancePackageDownloader
+import com.concough.android.services.EntrancePackageDownloader
 
 
 /**

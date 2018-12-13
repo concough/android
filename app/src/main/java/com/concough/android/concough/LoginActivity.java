@@ -32,6 +32,7 @@ import com.concough.android.singletons.DeviceInformationSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.singletons.MediaCacheSingleton;
+import com.concough.android.singletons.SynchronizationSingleton;
 import com.concough.android.singletons.TokenHandlerSingleton;
 import com.concough.android.singletons.UserDefaultsSingleton;
 import com.concough.android.structures.EntranceStruct;
@@ -203,10 +204,6 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private void getLockedStatus() {
-        new LockStatusTask().execute();
-    }
-
     private void getProfile() {
         new GetProfileTask().execute();
     }
@@ -252,12 +249,15 @@ public class LoginActivity extends AppCompatActivity {
                                                     }
 
                                                     if (UserDefaultsSingleton.getInstance(getApplicationContext()).hasProfile()) {
+//
+//                                                        LoginActivity.this.syncWithServer();
 
-                                                        LoginActivity.this.syncWithServer();
-
-//                                                        Intent homeIntent = HomeActivity.newIntent(LoginActivity.this);
-//                                                        startActivity(homeIntent);
-//                                                        finish();
+                                                        // Start Sync Server
+                                                        SynchronizationSingleton.getInstance(LoginActivity.this).startSynchronizer();
+                                                        // Navigate to Home Activity
+                                                        Intent homeIntent = HomeActivity.newIntent(LoginActivity.this);
+                                                        startActivity(homeIntent);
+                                                        finish();
 
                                                     } else {
                                                         // Profile not created
@@ -465,6 +465,9 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    private void getLockedStatus() {
+        new LockStatusTask().execute();
+    }
 
     private class LockStatusTask extends AsyncTask<Void, Void, Void> {
 
@@ -614,343 +617,343 @@ public class LoginActivity extends AppCompatActivity {
         }
 
     }
-
-
-    private void syncWithServer() {
-        new SyncWithServerTask().execute();
-    }
-
-    private class SyncWithServerTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (!isFinishing()) {
-                        if (loadingProgress == null) {
-                            loadingProgress = AlertClass.showLoadingMessage(LoginActivity.this);
-                            loadingProgress.show();
-                        } else {
-                            if (!loadingProgress.isShowing()) {
-                                //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
-                                loadingProgress.show();
-                            }
-                        }
-                    }
-
-                }
-            });
-
-            PurchasedRestAPIClass.getPurchasedList(getApplicationContext(), new Function2<JsonElement, HTTPErrorType, Unit>() {
-                @Override
-                public Unit invoke(final JsonElement jsonElement, final HTTPErrorType httpErrorType) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            AlertClass.hideLoadingMessage(loadingProgress);
-
-                            if (httpErrorType != HTTPErrorType.Success) {
-                                if (httpErrorType == HTTPErrorType.Refresh) {
-                                    new SyncWithServerTask().execute();
-                                } else {
-                                    if (LoginActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
-                                        LoginActivity.this.retryCounter += 1;
-                                        new SyncWithServerTask().execute();
-                                    } else {
-                                        LoginActivity.this.retryCounter = 0;
-                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
-                                    }
-                                }
-                            } else {
-                                LoginActivity.this.retryCounter = 0;
-                                if (jsonElement != null) {
-                                    String status = jsonElement.getAsJsonObject().get("status").getAsString();
-                                    switch (status) {
-                                        case "OK":
-                                            try {
-                                                ArrayList<Integer> purchasedId = new ArrayList<Integer>();
-                                                JsonArray records = jsonElement.getAsJsonObject().get("records").getAsJsonArray();
-                                                String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
-                                                if (username != null) {
-                                                    for (JsonElement record : records) {
-                                                        int id = record.getAsJsonObject().get("id").getAsInt();
-                                                        int downloaded = record.getAsJsonObject().get("downloaded").getAsInt();
-                                                        String createdStr = record.getAsJsonObject().get("created").getAsString();
-                                                        Date created = FormatterSingleton.getInstance().getUTCDateFormatter().parse(createdStr);
-
-                                                        JsonElement target = record.getAsJsonObject().get("target");
-                                                        String targetType = target.getAsJsonObject().get("product_type").getAsString();
-
-                                                        if (PurchasedModelHandler.getByUsernameAndId(getApplicationContext(), username, id) != null) {
-                                                            PurchasedModelHandler.updateDownloadTimes(getApplicationContext(), username, id, downloaded);
-
-                                                            if ("Entrance".equals(targetType)) {
-                                                                String uniqueId = target.getAsJsonObject().get("unique_key").getAsString();
-                                                                if (EntranceModelHandler.getByUsernameAndId(getApplicationContext(), username, uniqueId) == null) {
-                                                                    String org = target.getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString();
-                                                                    String type = target.getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString();
-                                                                    String setName = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString();
-                                                                    String group = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString();
-                                                                    int setId = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
-                                                                    int bookletsCount = target.getAsJsonObject().get("booklets_count").getAsInt();
-                                                                    int duration = target.getAsJsonObject().get("duration").getAsInt();
-                                                                    int year = target.getAsJsonObject().get("year").getAsInt();
-                                                                    int month = target.getAsJsonObject().get("month").getAsInt();
-
-                                                                    String extraStr = target.getAsJsonObject().get("extra_data").getAsString();
-                                                                    JsonElement extraData = null;
-                                                                    if (extraStr != null && !"".equals(extraStr)) {
-                                                                        try {
-                                                                            extraData = new JsonParser().parse(extraStr);
-                                                                        } catch (Exception exc) {
-                                                                            extraData = new JsonParser().parse("[]");
-                                                                        }
-                                                                    }
-
-                                                                    String lastPublishedStr = target.getAsJsonObject().get("last_published").getAsString();
-                                                                    Date lastPublished = FormatterSingleton.getInstance().getUTCDateFormatter().parse(lastPublishedStr);
-
-                                                                    EntranceStruct entrance = new EntranceStruct();
-                                                                    entrance.setEntranceSetId(setId);
-                                                                    entrance.setEntranceSetTitle(setName);
-                                                                    entrance.setEntranceOrgTitle(org);
-                                                                    entrance.setEntranceLastPublished(lastPublished);
-                                                                    entrance.setEntranceBookletCounts(bookletsCount);
-                                                                    entrance.setEntranceDuration(duration);
-                                                                    entrance.setEntranceExtraData(extraData);
-                                                                    entrance.setEntranceGroupTitle(group);
-                                                                    entrance.setEntranceTypeTitle(type);
-                                                                    entrance.setEntranceUniqueId(uniqueId);
-                                                                    entrance.setEntranceYear(year);
-                                                                    entrance.setEntranceMonth(month);
-
-                                                                    EntranceModelHandler.add(getApplicationContext(), username, entrance);
-
-                                                                }
-                                                            }
-                                                        } else {
-
-                                                            if ("Entrance".equals(targetType)) {
-                                                                String uniqueId = target.getAsJsonObject().get("unique_key").getAsString();
-
-                                                                if (PurchasedModelHandler.add(getApplicationContext(), id, username, false, downloaded, false, targetType, uniqueId, created)) {
-                                                                    String org = target.getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString();
-                                                                    String type = target.getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString();
-                                                                    String setName = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString();
-                                                                    String group = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString();
-                                                                    int setId = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
-                                                                    int bookletsCount = target.getAsJsonObject().get("booklets_count").getAsInt();
-                                                                    int duration = target.getAsJsonObject().get("duration").getAsInt();
-                                                                    int year = target.getAsJsonObject().get("year").getAsInt();
-                                                                    int month = target.getAsJsonObject().get("month").getAsInt();
-
-                                                                    String extraStr = target.getAsJsonObject().get("extra_data").getAsString();
-                                                                    JsonElement extraData = null;
-                                                                    if (extraStr != null &&  !"".equals(extraStr)) {
-                                                                        try {
-                                                                            extraData = new JsonParser().parse(extraStr);
-                                                                        } catch (Exception exc) {
-                                                                            extraData = new JsonParser().parse("[]");
-                                                                        }
-                                                                    }
-
-                                                                    String lastPublishedStr = target.getAsJsonObject().get("last_published").getAsString();
-                                                                    Date lastPublished = FormatterSingleton.getInstance().getUTCDateFormatter().parse(lastPublishedStr);
-
-                                                                    if (EntranceModelHandler.getByUsernameAndId(getApplicationContext(), username, uniqueId) == null) {
-                                                                        EntranceStruct entrance = new EntranceStruct();
-                                                                        entrance.setEntranceSetId(setId);
-                                                                        entrance.setEntranceSetTitle(setName);
-                                                                        entrance.setEntranceOrgTitle(org);
-                                                                        entrance.setEntranceLastPublished(lastPublished);
-                                                                        entrance.setEntranceBookletCounts(bookletsCount);
-                                                                        entrance.setEntranceDuration(duration);
-                                                                        entrance.setEntranceExtraData(extraData);
-                                                                        entrance.setEntranceGroupTitle(group);
-                                                                        entrance.setEntranceTypeTitle(type);
-                                                                        entrance.setEntranceUniqueId(uniqueId);
-                                                                        entrance.setEntranceYear(year);
-                                                                        entrance.setEntranceMonth(month);
-
-                                                                        EntranceModelHandler.add(getApplicationContext(), username, entrance);
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-
-                                                        purchasedId.add(id);
-                                                    }
-
-                                                    Integer[] dat = new Integer[purchasedId.size()];
-                                                    for (int i = 0; i < purchasedId.size(); i++) {
-                                                        dat[i] = purchasedId.get(i);
-                                                    }
-
-                                                    RealmResults<PurchasedModel> deletedItems = PurchasedModelHandler.getAllPurchasedNotIn(getApplicationContext(), username, dat);
-                                                    if (deletedItems.size() > 0) {
-                                                        for (PurchasedModel pm : deletedItems) {
-                                                            LoginActivity.this.deletePurchaseData(pm.productUniqueId);
-
-                                                            if ("Entrance".equals(pm.productType)) {
-                                                                if (EntranceModelHandler.removeById(getApplicationContext(), username, pm.productUniqueId)) {
-                                                                    //EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
-                                                                    EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
-                                                                    PurchasedModelHandler.removeById(getApplicationContext(), username, pm.id);
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-
-                                                    //RealmResults<PurchasedModel> purchasedIn = PurchasedModelHandler.getAllPurchasedIn(BasketCheckoutActivity.this, username, purchasedIds);
-
-                                                    purchasedIds(dat);
-                                                }
-                                            } catch (Exception exc) {
-                                                Log.d(TAG, exc.getLocalizedMessage());
-                                            }
-                                            break;
-                                        case "Error":
-                                            String errorType = jsonElement.getAsJsonObject().get("error_type").getAsString();
-                                            switch (errorType) {
-                                                case "EmptyArray":
-                                                    String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
-                                                    if (username != null) {
-                                                        RealmResults<PurchasedModel> items = PurchasedModelHandler.getAllPurchased(getApplicationContext(), username);
-
-                                                        for (PurchasedModel pm : items) {
-                                                            LoginActivity.this.deletePurchaseData(pm.productUniqueId);
-
-                                                            if ("Entrance".equals(pm.productType)) {
-                                                                if (EntranceModelHandler.removeById(getApplicationContext(), username, pm.productUniqueId)) {
-                                                                    EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
-                                                                    EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
-                                                                    PurchasedModelHandler.removeById(getApplicationContext(), username, pm.id);
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-
-                                                    break;
-                                                default:
-                                                    break;
-                                            }
-                                            break;
-                                    }
-                                }
-
-                                Intent homeIntent = HomeActivity.newIntent(LoginActivity.this);
-                                startActivity(homeIntent);
-                                finish();
-                            }
-
-                        }
-                    });
-                    return null;
-                }
-            }, new Function1<NetworkErrorType, Unit>() {
-                @Override
-                public Unit invoke(final NetworkErrorType networkErrorType) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            AlertClass.hideLoadingMessage(loadingProgress);
-
-                            if (LoginActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
-                                LoginActivity.this.retryCounter += 1;
-                                new SyncWithServerTask().execute();
-                            } else {
-                                LoginActivity.this.retryCounter = 0;
-
-                                if (networkErrorType != null) {
-                                    switch (networkErrorType) {
-                                        case NoInternetAccess:
-                                        case HostUnreachable: {
-                                            AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
-                                            break;
-                                        }
-                                        default: {
-                                            AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
-                                            break;
-                                        }
-
-                                    }
-                                }
-                                Intent homeIntent = HomeActivity.newIntent(LoginActivity.this);
-                                startActivity(homeIntent);
-                                finish();
-                            }
-                        }
-                    });
-                    return null;
-                }
-            });
-
-            return null;
-        }
-    }
-
-
-    private void deletePurchaseData(String uniqueId) {
-        File f = new File(LoginActivity.this.getFilesDir(), uniqueId);
-        if (f.exists() && f.isDirectory()) {
-//                                String[] children = f.list();
-            for (File fc : f.listFiles()) {
-                fc.delete();
-            }
-            boolean rd = f.delete();
-        }
-
-    }
-
-    private void purchasedIds(Integer[] ids) {
-        String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
-
-        RealmResults<PurchasedModel> purchasedIn = PurchasedModelHandler.getAllPurchasedIn(getApplicationContext(), username, ids);
-        if (purchasedIn != null) {
-            for (PurchasedModel purchasedModel : purchasedIn) {
-                if (purchasedModel.productType.equals("Entrance")) {
-                    EntranceModel entranceModel = EntranceModelHandler.getByUsernameAndId(getApplicationContext(), username, purchasedModel.productUniqueId);
-                    if (entranceModel != null) {
-                        downloadImage(entranceModel.setId);
-                    }
-                }
-            }
-        }
-    }
-
-
-
-    private void downloadImage(final int imageId) {
-        final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
-
-        if (url != null) {
-            byte[]  data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
-            if (data != null) {
-
-                File folder = new File(getApplicationContext().getFilesDir(),"images");
-                File folder2 = new File(getApplicationContext().getFilesDir()+"/images","eset");
-                if (!folder.exists()) {
-                    folder.mkdir();
-                    folder2.mkdir();
-                }
-
-                File photo=new File(getApplicationContext().getFilesDir()+"/images/eset", String.valueOf(imageId));
-                if (photo.exists()) {
-                    photo.delete();
-                }
-
-                try {
-                    FileOutputStream fos=new FileOutputStream(photo.getPath());
-
-                    fos.write(data);
-                    fos.close();
-                }
-                catch (java.io.IOException e) {
-                    Log.e("PictureDemo", "Exception in photoCallback", e);
-                }
-            }
-        }
-
-    }
+//
+//
+//    private void syncWithServer() {
+//        new SyncWithServerTask().execute();
+//    }
+//
+//    private class SyncWithServerTask extends AsyncTask<Void, Void, Void> {
+//
+//        @Override
+//        protected Void doInBackground(Void... params) {
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    if (!isFinishing()) {
+//                        if (loadingProgress == null) {
+//                            loadingProgress = AlertClass.showLoadingMessage(LoginActivity.this);
+//                            loadingProgress.show();
+//                        } else {
+//                            if (!loadingProgress.isShowing()) {
+//                                //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+//                                loadingProgress.show();
+//                            }
+//                        }
+//                    }
+//
+//                }
+//            });
+//
+//            PurchasedRestAPIClass.getPurchasedList(getApplicationContext(), new Function2<JsonElement, HTTPErrorType, Unit>() {
+//                @Override
+//                public Unit invoke(final JsonElement jsonElement, final HTTPErrorType httpErrorType) {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            AlertClass.hideLoadingMessage(loadingProgress);
+//
+//                            if (httpErrorType != HTTPErrorType.Success) {
+//                                if (httpErrorType == HTTPErrorType.Refresh) {
+//                                    new SyncWithServerTask().execute();
+//                                } else {
+//                                    if (LoginActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+//                                        LoginActivity.this.retryCounter += 1;
+//                                        new SyncWithServerTask().execute();
+//                                    } else {
+//                                        LoginActivity.this.retryCounter = 0;
+//                                        AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+//                                    }
+//                                }
+//                            } else {
+//                                LoginActivity.this.retryCounter = 0;
+//                                if (jsonElement != null) {
+//                                    String status = jsonElement.getAsJsonObject().get("status").getAsString();
+//                                    switch (status) {
+//                                        case "OK":
+//                                            try {
+//                                                ArrayList<Integer> purchasedId = new ArrayList<Integer>();
+//                                                JsonArray records = jsonElement.getAsJsonObject().get("records").getAsJsonArray();
+//                                                String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+//                                                if (username != null) {
+//                                                    for (JsonElement record : records) {
+//                                                        int id = record.getAsJsonObject().get("id").getAsInt();
+//                                                        int downloaded = record.getAsJsonObject().get("downloaded").getAsInt();
+//                                                        String createdStr = record.getAsJsonObject().get("created").getAsString();
+//                                                        Date created = FormatterSingleton.getInstance().getUTCDateFormatter().parse(createdStr);
+//
+//                                                        JsonElement target = record.getAsJsonObject().get("target");
+//                                                        String targetType = target.getAsJsonObject().get("product_type").getAsString();
+//
+//                                                        if (PurchasedModelHandler.getByUsernameAndId(getApplicationContext(), username, id) != null) {
+//                                                            PurchasedModelHandler.updateDownloadTimes(getApplicationContext(), username, id, downloaded);
+//
+//                                                            if ("Entrance".equals(targetType)) {
+//                                                                String uniqueId = target.getAsJsonObject().get("unique_key").getAsString();
+//                                                                if (EntranceModelHandler.getByUsernameAndId(getApplicationContext(), username, uniqueId) == null) {
+//                                                                    String org = target.getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString();
+//                                                                    String type = target.getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString();
+//                                                                    String setName = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString();
+//                                                                    String group = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString();
+//                                                                    int setId = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
+//                                                                    int bookletsCount = target.getAsJsonObject().get("booklets_count").getAsInt();
+//                                                                    int duration = target.getAsJsonObject().get("duration").getAsInt();
+//                                                                    int year = target.getAsJsonObject().get("year").getAsInt();
+//                                                                    int month = target.getAsJsonObject().get("month").getAsInt();
+//
+//                                                                    String extraStr = target.getAsJsonObject().get("extra_data").getAsString();
+//                                                                    JsonElement extraData = null;
+//                                                                    if (extraStr != null && !"".equals(extraStr)) {
+//                                                                        try {
+//                                                                            extraData = new JsonParser().parse(extraStr);
+//                                                                        } catch (Exception exc) {
+//                                                                            extraData = new JsonParser().parse("[]");
+//                                                                        }
+//                                                                    }
+//
+//                                                                    String lastPublishedStr = target.getAsJsonObject().get("last_published").getAsString();
+//                                                                    Date lastPublished = FormatterSingleton.getInstance().getUTCDateFormatter().parse(lastPublishedStr);
+//
+//                                                                    EntranceStruct entrance = new EntranceStruct();
+//                                                                    entrance.setEntranceSetId(setId);
+//                                                                    entrance.setEntranceSetTitle(setName);
+//                                                                    entrance.setEntranceOrgTitle(org);
+//                                                                    entrance.setEntranceLastPublished(lastPublished);
+//                                                                    entrance.setEntranceBookletCounts(bookletsCount);
+//                                                                    entrance.setEntranceDuration(duration);
+//                                                                    entrance.setEntranceExtraData(extraData);
+//                                                                    entrance.setEntranceGroupTitle(group);
+//                                                                    entrance.setEntranceTypeTitle(type);
+//                                                                    entrance.setEntranceUniqueId(uniqueId);
+//                                                                    entrance.setEntranceYear(year);
+//                                                                    entrance.setEntranceMonth(month);
+//
+//                                                                    EntranceModelHandler.add(getApplicationContext(), username, entrance);
+//
+//                                                                }
+//                                                            }
+//                                                        } else {
+//
+//                                                            if ("Entrance".equals(targetType)) {
+//                                                                String uniqueId = target.getAsJsonObject().get("unique_key").getAsString();
+//
+//                                                                if (PurchasedModelHandler.add(getApplicationContext(), id, username, false, downloaded, false, targetType, uniqueId, created)) {
+//                                                                    String org = target.getAsJsonObject().get("organization").getAsJsonObject().get("title").getAsString();
+//                                                                    String type = target.getAsJsonObject().get("entrance_type").getAsJsonObject().get("title").getAsString();
+//                                                                    String setName = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("title").getAsString();
+//                                                                    String group = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("group").getAsJsonObject().get("title").getAsString();
+//                                                                    int setId = target.getAsJsonObject().get("entrance_set").getAsJsonObject().get("id").getAsInt();
+//                                                                    int bookletsCount = target.getAsJsonObject().get("booklets_count").getAsInt();
+//                                                                    int duration = target.getAsJsonObject().get("duration").getAsInt();
+//                                                                    int year = target.getAsJsonObject().get("year").getAsInt();
+//                                                                    int month = target.getAsJsonObject().get("month").getAsInt();
+//
+//                                                                    String extraStr = target.getAsJsonObject().get("extra_data").getAsString();
+//                                                                    JsonElement extraData = null;
+//                                                                    if (extraStr != null &&  !"".equals(extraStr)) {
+//                                                                        try {
+//                                                                            extraData = new JsonParser().parse(extraStr);
+//                                                                        } catch (Exception exc) {
+//                                                                            extraData = new JsonParser().parse("[]");
+//                                                                        }
+//                                                                    }
+//
+//                                                                    String lastPublishedStr = target.getAsJsonObject().get("last_published").getAsString();
+//                                                                    Date lastPublished = FormatterSingleton.getInstance().getUTCDateFormatter().parse(lastPublishedStr);
+//
+//                                                                    if (EntranceModelHandler.getByUsernameAndId(getApplicationContext(), username, uniqueId) == null) {
+//                                                                        EntranceStruct entrance = new EntranceStruct();
+//                                                                        entrance.setEntranceSetId(setId);
+//                                                                        entrance.setEntranceSetTitle(setName);
+//                                                                        entrance.setEntranceOrgTitle(org);
+//                                                                        entrance.setEntranceLastPublished(lastPublished);
+//                                                                        entrance.setEntranceBookletCounts(bookletsCount);
+//                                                                        entrance.setEntranceDuration(duration);
+//                                                                        entrance.setEntranceExtraData(extraData);
+//                                                                        entrance.setEntranceGroupTitle(group);
+//                                                                        entrance.setEntranceTypeTitle(type);
+//                                                                        entrance.setEntranceUniqueId(uniqueId);
+//                                                                        entrance.setEntranceYear(year);
+//                                                                        entrance.setEntranceMonth(month);
+//
+//                                                                        EntranceModelHandler.add(getApplicationContext(), username, entrance);
+//                                                                    }
+//                                                                }
+//                                                            }
+//                                                        }
+//
+//                                                        purchasedId.add(id);
+//                                                    }
+//
+//                                                    Integer[] dat = new Integer[purchasedId.size()];
+//                                                    for (int i = 0; i < purchasedId.size(); i++) {
+//                                                        dat[i] = purchasedId.get(i);
+//                                                    }
+//
+//                                                    RealmResults<PurchasedModel> deletedItems = PurchasedModelHandler.getAllPurchasedNotIn(getApplicationContext(), username, dat);
+//                                                    if (deletedItems.size() > 0) {
+//                                                        for (PurchasedModel pm : deletedItems) {
+//                                                            LoginActivity.this.deletePurchaseData(pm.productUniqueId);
+//
+//                                                            if ("Entrance".equals(pm.productType)) {
+//                                                                if (EntranceModelHandler.removeById(getApplicationContext(), username, pm.productUniqueId)) {
+//                                                                    //EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
+//                                                                    EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
+//                                                                    PurchasedModelHandler.removeById(getApplicationContext(), username, pm.id);
+//                                                                }
+//                                                            }
+//                                                        }
+//                                                    }
+//
+//                                                    //RealmResults<PurchasedModel> purchasedIn = PurchasedModelHandler.getAllPurchasedIn(BasketCheckoutActivity.this, username, purchasedIds);
+//
+//                                                    purchasedIds(dat);
+//                                                }
+//                                            } catch (Exception exc) {
+//                                                Log.d(TAG, exc.getLocalizedMessage());
+//                                            }
+//                                            break;
+//                                        case "Error":
+//                                            String errorType = jsonElement.getAsJsonObject().get("error_type").getAsString();
+//                                            switch (errorType) {
+//                                                case "EmptyArray":
+//                                                    String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+//                                                    if (username != null) {
+//                                                        RealmResults<PurchasedModel> items = PurchasedModelHandler.getAllPurchased(getApplicationContext(), username);
+//
+//                                                        for (PurchasedModel pm : items) {
+//                                                            LoginActivity.this.deletePurchaseData(pm.productUniqueId);
+//
+//                                                            if ("Entrance".equals(pm.productType)) {
+//                                                                if (EntranceModelHandler.removeById(getApplicationContext(), username, pm.productUniqueId)) {
+//                                                                    EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
+//                                                                    EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, pm.productUniqueId);
+//                                                                    PurchasedModelHandler.removeById(getApplicationContext(), username, pm.id);
+//                                                                }
+//                                                            }
+//                                                        }
+//                                                    }
+//
+//                                                    break;
+//                                                default:
+//                                                    break;
+//                                            }
+//                                            break;
+//                                    }
+//                                }
+//
+//                                Intent homeIntent = HomeActivity.newIntent(LoginActivity.this);
+//                                startActivity(homeIntent);
+//                                finish();
+//                            }
+//
+//                        }
+//                    });
+//                    return null;
+//                }
+//            }, new Function1<NetworkErrorType, Unit>() {
+//                @Override
+//                public Unit invoke(final NetworkErrorType networkErrorType) {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            AlertClass.hideLoadingMessage(loadingProgress);
+//
+//                            if (LoginActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+//                                LoginActivity.this.retryCounter += 1;
+//                                new SyncWithServerTask().execute();
+//                            } else {
+//                                LoginActivity.this.retryCounter = 0;
+//
+//                                if (networkErrorType != null) {
+//                                    switch (networkErrorType) {
+//                                        case NoInternetAccess:
+//                                        case HostUnreachable: {
+//                                            AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+//                                            break;
+//                                        }
+//                                        default: {
+//                                            AlertClass.showTopMessage(LoginActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+//                                            break;
+//                                        }
+//
+//                                    }
+//                                }
+//                                Intent homeIntent = HomeActivity.newIntent(LoginActivity.this);
+//                                startActivity(homeIntent);
+//                                finish();
+//                            }
+//                        }
+//                    });
+//                    return null;
+//                }
+//            });
+//
+//            return null;
+//        }
+//    }
+//
+//
+//    private void deletePurchaseData(String uniqueId) {
+//        File f = new File(LoginActivity.this.getFilesDir(), uniqueId);
+//        if (f.exists() && f.isDirectory()) {
+////                                String[] children = f.list();
+//            for (File fc : f.listFiles()) {
+//                fc.delete();
+//            }
+//            boolean rd = f.delete();
+//        }
+//
+//    }
+//
+//    private void purchasedIds(Integer[] ids) {
+//        String username = UserDefaultsSingleton.getInstance(getApplicationContext()).getUsername();
+//
+//        RealmResults<PurchasedModel> purchasedIn = PurchasedModelHandler.getAllPurchasedIn(getApplicationContext(), username, ids);
+//        if (purchasedIn != null) {
+//            for (PurchasedModel purchasedModel : purchasedIn) {
+//                if (purchasedModel.productType.equals("Entrance")) {
+//                    EntranceModel entranceModel = EntranceModelHandler.getByUsernameAndId(getApplicationContext(), username, purchasedModel.productUniqueId);
+//                    if (entranceModel != null) {
+//                        downloadImage(entranceModel.setId);
+//                    }
+//                }
+//            }
+//        }
+//    }
+//
+//
+//
+//    private void downloadImage(final int imageId) {
+//        final String url = MediaRestAPIClass.makeEsetImageUrl(imageId);
+//
+//        if (url != null) {
+//            byte[]  data = MediaCacheSingleton.getInstance(getApplicationContext()).get(url);
+//            if (data != null) {
+//
+//                File folder = new File(getApplicationContext().getFilesDir(),"images");
+//                File folder2 = new File(getApplicationContext().getFilesDir()+"/images","eset");
+//                if (!folder.exists()) {
+//                    folder.mkdir();
+//                    folder2.mkdir();
+//                }
+//
+//                File photo=new File(getApplicationContext().getFilesDir()+"/images/eset", String.valueOf(imageId));
+//                if (photo.exists()) {
+//                    photo.delete();
+//                }
+//
+//                try {
+//                    FileOutputStream fos=new FileOutputStream(photo.getPath());
+//
+//                    fos.write(data);
+//                    fos.close();
+//                }
+//                catch (java.io.IOException e) {
+//                    Log.e("PictureDemo", "Exception in photoCallback", e);
+//                }
+//            }
+//        }
+//
+//    }
 }

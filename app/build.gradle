@@ -16,6 +16,7 @@ android {
         applicationId "com.concough.android.concough"
         minSdkVersion 16
         targetSdkVersion 25
+        multiDexEnabled true
         versionCode 10
         versionName "1.8"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -91,6 +92,7 @@ dependencies {
     implementation 'net.danlew:android.joda:2.9.9.4'
     compile 'info.hoang8f:android-segmented:1.0.6'
     compile 'com.github.PhilJay:MPAndroidChart:v2.2.4'
+    compile 'com.android.support:multidex:1.0.3'
 }
 repositories {
     mavenCentral()

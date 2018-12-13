@@ -1,10 +1,9 @@
-package com.concough.android.downloader
+package com.concough.android.services
 
 import android.app.*
 import android.content.Context
 import android.content.Intent
-import android.os.Binder
-import android.os.IBinder
+import android.os.*
 import android.support.v4.app.NotificationCompat
 import android.util.Base64
 import android.util.Log
@@ -18,10 +17,12 @@ import com.concough.android.models.PurchasedModelHandler
 import com.concough.android.rest.EntranceRestAPIClass
 import com.concough.android.rest.MediaRestAPIClass
 import com.concough.android.settings.CONNECTION_MAX_RETRY
+import com.concough.android.settings.DOWNLOADER_QUEUE_COUNT
 import com.concough.android.settings.DOWNLOAD_IMAGE_COUNT
 import com.concough.android.settings.SECRET_KEY
 import com.concough.android.singletons.DownloaderSingleton
 import com.concough.android.singletons.FormatterSingleton
+import com.concough.android.singletons.NotificationSingleton
 import com.concough.android.singletons.UserDefaultsSingleton
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
@@ -34,6 +35,7 @@ import org.jetbrains.anko.runOnUiThread
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
+import java.util.concurrent.locks.Lock
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.collections.LinkedHashMap
@@ -42,7 +44,13 @@ import kotlin.collections.LinkedHashMap
 /**
  * Created by abolfazl on 7/30/17.
  */
-class EntrancePackageDownloader : Service() {
+class EntrancePackageDownloader : Service(), Handler.Callback {
+
+    private enum class DownloadState {
+        CREATED, STARTED, FINISHED, FAILED
+    }
+    private data class DownloadPartsStruct(var ids: HashMap<String, String>, var state: DownloadState)
+
     interface EntrancePackageDownloaderListener {
         fun onDownloadProgress(count: Int)
         fun onDownloadprogressForViewHolder(count: Int, totalCount: Int, index: Int)
@@ -75,7 +83,6 @@ class EntrancePackageDownloader : Service() {
     private var context: Context? = null
     var listener: EntrancePackageDownloaderListener? = null
 
-
     private var entranceUniqueId: String = ""
     private var imageList: LinkedHashMap<String, String> = LinkedHashMap()
     private var questionsList: LinkedHashMap<String, ArrayList<Pair<String, Boolean>>> = LinkedHashMap()
@@ -83,17 +90,34 @@ class EntrancePackageDownloader : Service() {
     private var username: String = ""
     private var indexPath: Int? = null
     private var retryCounter: Int = 0
+    private lateinit var saveDirectory: File
 
-    private var notificationBuilder: NotificationCompat.Builder? = null
-    private var notificationManager: NotificationManager? = null
-    private var currentNotificationID: Int = 0
+    private var downloadParts: ArrayList<ArrayList<DownloadPartsStruct>> = ArrayList()
+    private var operationQueueArray: ArrayList<HandlerThread> = ArrayList()
+    private var lock: Any = Any()
 
-    public var DownloadCount: Number = 0
+    public var DownloadCount: Int = 0
         get
         private set
 
-    fun onHandleIntent(intent: Intent?) {
+    public var DownloadedCount: Int = 0
+        get
+        private set
+
+    override fun handleMessage(message: Message?): Boolean {
+        message?.let {
+            when (message.what) {
+                0 -> {
+                    val data = message.data
+                    val queueId = data.getInt("QUEUE_ID")
+
+                    processNextMulti2(saveDirectory, queueId)
+                }
+            }
+        }
+        return true
     }
+
 
     public fun initialize(context: Context, entranceUniqueId: String, vcType: String, username: String, index: Int) {
         this.context = context
@@ -101,9 +125,6 @@ class EntrancePackageDownloader : Service() {
         this.vcType = vcType
         this.username = username
         this.indexPath = index
-
-        notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?
-
     }
 
     public fun registerActivity(context: Context, vcType: String, index: Int) {
@@ -136,6 +157,7 @@ class EntrancePackageDownloader : Service() {
                         }
                     }
                     this.DownloadCount = this.imageList.count()
+                    this.DownloadedCount = 0
                     return true
 
                 } catch (exc: Exception) {
@@ -147,13 +169,66 @@ class EntrancePackageDownloader : Service() {
         return false
     }
 
-    public fun downloadPackageImages(saveDirectory: File) {
-//        processNext(saveDirectory)
-        processNextMulti(saveDirectory)
+    public fun downloadPackageImages() {
+        for ( i in 0 until DOWNLOADER_QUEUE_COUNT) {
+            val handler = Handler(this.operationQueueArray[i].looper, this)
+            val msg = handler.obtainMessage(0)
+
+            val bundle = Bundle()
+            bundle.putInt("QUEUE_ID", i)
+            msg.data = bundle
+
+            handler.sendMessage(msg)
+        }
     }
 
-    public fun getCurrentDate(): Date {
-        return Calendar.getInstance().time
+    public fun downloadPackageImages(saveDirectory: File) {
+//        processNext(saveDirectory)
+//        processNextMulti(saveDirectory)
+
+        this.saveDirectory = saveDirectory
+
+        for (item in this.operationQueueArray) {
+            item.quit()
+        }
+        this.operationQueueArray.clear()
+        for (i in 0 until DOWNLOADER_QUEUE_COUNT) {
+            this.operationQueueArray.add(HandlerThread("Downloader$i"))
+            this.operationQueueArray[i].start()
+        }
+
+        this.downloadParts.clear()
+        for (i in 0 until DOWNLOADER_QUEUE_COUNT) {
+            this.downloadParts.add(ArrayList())
+        }
+
+        val partsCount = (this.imageList.size / DOWNLOAD_IMAGE_COUNT) + 1
+
+        var index = 0
+        for (i in 0 until partsCount) {
+            var ids = HashMap<String, String>()
+            for (j in 1..DOWNLOAD_IMAGE_COUNT) {
+                if (imageList.count() > 0) {
+                    val itemKey = imageList.keys.toList()[0]
+                    val itemValue = imageList[itemKey]
+                    imageList.remove(itemKey)
+
+                    ids[itemKey] = itemValue!!
+                } else {
+                    break
+                }
+            }
+
+            if (ids.size > 0) {
+                this.downloadParts[index].add(DownloadPartsStruct(ids, DownloadState.CREATED))
+
+                index += 1
+                if (index == DOWNLOADER_QUEUE_COUNT)
+                    index = 0
+            }
+        }
+
+        this.downloadPackageImages()
     }
 
     private fun processNext(saveDirectory: File) {
@@ -178,7 +253,7 @@ class EntrancePackageDownloader : Service() {
                             val subMessage = " ${entrance.type} سال ${year} " + "\n" +
                                     "${entrance.set} (${entrance.group})"
 
-                            simpleNotification(message, subMessage)
+                            NotificationSingleton.getInstance(context!!).simpleNotification(message, subMessage)
                         }
 
                         if (vcType == "ED") {
@@ -207,63 +282,72 @@ class EntrancePackageDownloader : Service() {
         }
     }
 
-    private fun processNextMulti(saveDirectory: File) {
-        var ids: LinkedHashMap<String, String> = LinkedHashMap()
-        for(i in 1..DOWNLOAD_IMAGE_COUNT) {
-            if (imageList.count() > 0) {
-                val itemKey = imageList.keys.toList().get(0)
-                val itemValue = imageList.get(itemKey)
-                imageList.remove(itemKey)
+//    private fun processNextMulti(saveDirectory: File) {
+//        var ids: LinkedHashMap<String, String> = LinkedHashMap()
+//        for(i in 1..DOWNLOAD_IMAGE_COUNT) {
+//            if (imageList.count() > 0) {
+//                val itemKey = imageList.keys.toList().get(0)
+//                val itemValue = imageList.get(itemKey)
+//                imageList.remove(itemKey)
+//
+//                ids[itemKey] = itemValue!!
+//            } else {
+//                break
+//            }
+//        }
+//
+//        if (ids.count() > 0) {
+//            downloadMultiImage(saveDirectory, ids)
+//        } else {
+//            runOnUiThread {
+//                if (verifyDownload()) {
+//                    // ok --> downloaded successfully
+//                    try {
+//                        PurchasedModelHandler.setIsDownloadedTrue(context!!.applicationContext, username, entranceUniqueId, "Entrance")
+//                        DownloaderSingleton.getInstance().setDownloaderFinished(entranceUniqueId)
+//
+//                        val entrance = EntranceModelHandler.getByUsernameAndId(context!!.applicationContext, username, entranceUniqueId)
+//                        if (entrance != null) {
+//                            val year = FormatterSingleton.getInstance().NumberFormatter.format(entrance.year)
+//                            val month = monthToString(entrance.month)
+//                            val message= "دانلود آزمون به اتمام رسید"
+//                            val subMessage =" ${entrance.type} ${month} ${year} " +"\n" +
+//                                    "${entrance.set} (${entrance.group})"
+//
+//                            simpleNotification(message,subMessage)
+//                        }
+//
+//                        if (vcType == "ED") {
+//                            if (listener != null) {
+//                                listener!!.onDownloadImagesFinished(true)
+//                            }
+//                        } else if (vcType == "F") {
+//                            if (listener != null) {
+//                                listener!!.onDownloadImagesFinishedForViewHolder(true, indexPath!!)
+//                            }
+//                        }
+//                    } catch (exc: Exception) {
+//                    }
+//                } else {
+//                    if (vcType == "ED") {
+//                        if (listener != null) {
+//                            listener!!.onDownloadImagesFinished(false)
+//                        }
+//                    } else if (vcType == "F") {
+//                        if (listener != null) {
+//                            listener!!.onDownloadImagesFinishedForViewHolder(false, indexPath!!)
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
-                ids[itemKey] = itemValue!!
-            } else {
+    private fun processNextMulti2(saveDirectory: File, queueId: Int) {
+        for (i in 0 until this.downloadParts[queueId].size) {
+            if (this.downloadParts[queueId][i].state == DownloadState.CREATED) {
+                this.downloadMultiImage(saveDirectory, this.downloadParts[queueId][i].ids, queueId, i)
                 break
-            }
-        }
-
-        if (ids.count() > 0) {
-            downloadMultiImage(saveDirectory, ids)
-        } else {
-            runOnUiThread {
-                if (verifyDownload()) {
-                    // ok --> downloaded successfully
-                    try {
-                        PurchasedModelHandler.setIsDownloadedTrue(context!!.applicationContext, username, entranceUniqueId, "Entrance")
-                        DownloaderSingleton.getInstance().setDownloaderFinished(entranceUniqueId)
-
-                        val entrance = EntranceModelHandler.getByUsernameAndId(context!!.applicationContext, username, entranceUniqueId)
-                        if (entrance != null) {
-                            val year = FormatterSingleton.getInstance().NumberFormatter.format(entrance.year)
-                            val month = monthToString(entrance.month)
-                            val message= "دانلود آزمون به اتمام رسید"
-                            val subMessage =" ${entrance.type} ${month} ${year} " +"\n" +
-                                    "${entrance.set} (${entrance.group})"
-
-                            simpleNotification(message,subMessage)
-                        }
-
-                        if (vcType == "ED") {
-                            if (listener != null) {
-                                listener!!.onDownloadImagesFinished(true)
-                            }
-                        } else if (vcType == "F") {
-                            if (listener != null) {
-                                listener!!.onDownloadImagesFinishedForViewHolder(true, indexPath!!)
-                            }
-                        }
-                    } catch (exc: Exception) {
-                    }
-                } else {
-                    if (vcType == "ED") {
-                        if (listener != null) {
-                            listener!!.onDownloadImagesFinished(false)
-                        }
-                    } else if (vcType == "F") {
-                        if (listener != null) {
-                            listener!!.onDownloadImagesFinishedForViewHolder(false, indexPath!!)
-                        }
-                    }
-                }
             }
         }
     }
@@ -372,28 +456,50 @@ class EntrancePackageDownloader : Service() {
 
     }
 
-    public fun downloadMultiImage(saveDirectory: File, ids: HashMap<String, String>) {
+    public fun downloadMultiImage(saveDirectory: File, ids: HashMap<String, String>,
+                                  queueId: Int, itemId: Int) {
+        this.downloadParts[queueId][itemId].state = DownloadState.STARTED
+
         doAsync {
             MediaRestAPIClass.downloadEntranceQuestionBulkImages(applicationContext, entranceUniqueId, ids.keys.toTypedArray(), completion = { data, error ->
                 runOnUiThread {
                     if (error != HTTPErrorType.Success) {
                         if (error == HTTPErrorType.Refresh) {
-                            downloadMultiImage(saveDirectory, ids)
+                            this@EntrancePackageDownloader.downloadParts[queueId][itemId].state = DownloadState.CREATED
+                            val handler = Handler(this@EntrancePackageDownloader.operationQueueArray[queueId].looper, this@EntrancePackageDownloader)
+                            val msg = handler.obtainMessage(0)
+
+                            val bundle = Bundle()
+                            bundle.putInt("QUEUE_ID", queueId)
+                            msg.data = bundle
+
+                            handler.sendMessage(msg)
+
                         } else {
                             if (this@EntrancePackageDownloader.retryCounter < CONNECTION_MAX_RETRY) {
                                 this@EntrancePackageDownloader.retryCounter += 1
-                                downloadMultiImage(saveDirectory, ids)
+
+                                this@EntrancePackageDownloader.downloadParts[queueId][itemId].state = DownloadState.CREATED
+                                val handler = Handler(this@EntrancePackageDownloader.operationQueueArray[queueId].looper, this@EntrancePackageDownloader)
+                                val msg = handler.obtainMessage(0)
+
+                                val bundle = Bundle()
+                                bundle.putInt("QUEUE_ID", queueId)
+                                msg.data = bundle
+
+                                handler.sendMessage(msg)
                             } else {
                                 this@EntrancePackageDownloader.retryCounter = 0
-                                if (vcType == "ED") {
-                                    if (listener != null) {
-                                        listener?.onDownloadPaused()
-                                    }
-                                } else if (vcType == "F") {
-                                    if (listener != null) {
-                                        listener?.onDownloadPausedForViewHolder(indexPath!!)
-                                    }
-                                }
+//                                if (vcType == "ED") {
+//                                    if (listener != null) {
+//                                        listener?.onDownloadPaused()
+//                                    }
+//                                } else if (vcType == "F") {
+//                                    if (listener != null) {
+//                                        listener?.onDownloadPausedForViewHolder(indexPath!!)
+//                                    }
+//                                }
+                                this@EntrancePackageDownloader.downloadParts[queueId][itemId].state = DownloadState.FAILED
                             }
                         }
                     } else {
@@ -454,14 +560,21 @@ class EntrancePackageDownloader : Service() {
                                 }
                             }
 
+                                this@EntrancePackageDownloader.downloadParts[queueId][itemId].state = DownloadState.FINISHED
 
-                                if (vcType == "ED") {
+                                synchronized(this@EntrancePackageDownloader.lock) {
+                                    this@EntrancePackageDownloader.DownloadedCount += DOWNLOAD_IMAGE_COUNT
+                                }
+
+                            if (vcType == "ED") {
                                     if (listener != null) {
-                                        listener!!.onDownloadProgress(imageList.count())
+                                        listener!!.onDownloadProgress(this@EntrancePackageDownloader.DownloadCount - this@EntrancePackageDownloader.DownloadedCount)
                                     }
                                 } else if (vcType == "F") {
                                     if (listener != null) {
-                                        listener!!.onDownloadprogressForViewHolder(imageList.count(), DownloadCount as Int, indexPath!!)
+                                        listener!!.onDownloadprogressForViewHolder(
+                                                this@EntrancePackageDownloader.DownloadCount - this@EntrancePackageDownloader.DownloadedCount,
+                                                DownloadCount, indexPath!!)
                                     }
                                 }
                             qs_strings=""
@@ -473,14 +586,36 @@ class EntrancePackageDownloader : Service() {
 
                         }
                     }
-                    processNextMulti(saveDirectory)
+
+                    this@EntrancePackageDownloader.checkDownloadStatus()
+
+                    val handler = Handler(this@EntrancePackageDownloader.operationQueueArray[queueId].looper, this@EntrancePackageDownloader)
+                    val msg = handler.obtainMessage(0)
+
+                    val bundle = Bundle()
+                    bundle.putInt("QUEUE_ID", queueId)
+                    msg.data = bundle
+
+                    handler.sendMessage(msg)
+
+//                    processNextMulti(saveDirectory)
                 }
 
             }, failure = { error ->
                 runOnUiThread {
                     if (this@EntrancePackageDownloader.retryCounter < CONNECTION_MAX_RETRY) {
                         this@EntrancePackageDownloader.retryCounter += 1
-                        downloadMultiImage(saveDirectory, ids)
+
+                        this@EntrancePackageDownloader.downloadParts[queueId][itemId].state = DownloadState.CREATED
+                        val handler = Handler(this@EntrancePackageDownloader.operationQueueArray[queueId].looper, this@EntrancePackageDownloader)
+                        val msg = handler.obtainMessage(0)
+
+                        val bundle = Bundle()
+                        bundle.putInt("QUEUE_ID", queueId)
+                        msg.data = bundle
+
+                        handler.sendMessage(msg)
+
                     } else {
                         this@EntrancePackageDownloader.retryCounter = 0
                         if (error != null) {
@@ -498,6 +633,7 @@ class EntrancePackageDownloader : Service() {
                             }
                         }
 
+                        this@EntrancePackageDownloader.downloadParts[queueId][itemId].state = DownloadState.FAILED
                         if (vcType == "ED") {
                             if (listener != null) {
                                 listener?.onDownloadPaused()
@@ -514,9 +650,67 @@ class EntrancePackageDownloader : Service() {
 
     }
 
+    private fun checkDownloadStatus() {
+        runOnUiThread {
+            if (verifyDownload()) {
+                // ok --> downloaded successfully
+                try {
+                    PurchasedModelHandler.setIsDownloadedTrue(context!!.applicationContext, username, entranceUniqueId, "Entrance")
+                    DownloaderSingleton.getInstance().setDownloaderFinished(entranceUniqueId)
+
+                    val entrance = EntranceModelHandler.getByUsernameAndId(context!!.applicationContext, username, entranceUniqueId)
+                    if (entrance != null) {
+                        val year = FormatterSingleton.getInstance().NumberFormatter.format(entrance.year)
+                        val month = monthToString(entrance.month)
+                        val message= "دانلود آزمون به اتمام رسید"
+                        val subMessage =" ${entrance.type} $month $year " +"\n" +
+                                "${entrance.set} (${entrance.group})"
+
+                        NotificationSingleton.getInstance(applicationContext).simpleNotification(message, subMessage)
+                    }
+
+                    if (vcType == "ED") {
+                        if (listener != null) {
+                            listener!!.onDownloadImagesFinished(true)
+                        }
+                    } else if (vcType == "F") {
+                        if (listener != null) {
+                            listener!!.onDownloadImagesFinishedForViewHolder(true, indexPath!!)
+                        }
+                    }
+                } catch (exc: Exception) {
+                }
+            } else {
+                var status: ArrayList<DownloadState> = ArrayList()
+                for (item in this@EntrancePackageDownloader.downloadParts) {
+                    for (item2 in item) {
+                        status.add(item2.state)
+                    }
+                }
+
+                if (status.contains(DownloadState.CREATED) || status.contains(DownloadState.STARTED)) {
+                } else if (status.contains(DownloadState.FAILED)) {
+                    if (vcType == "ED") {
+                        if (listener != null) {
+                            listener!!.onDownloadPaused()
+                            listener!!.onDownloadImagesFinished(false)
+                        }
+                    } else if (vcType == "F") {
+                        if (listener != null) {
+                            listener!!.onDownloadPausedForViewHolder(indexPath!!)
+                            listener!!.onDownloadImagesFinishedForViewHolder(false, indexPath!!)
+                        }
+                    }
+
+                }
+            }
+
+        }
+    }
+
     fun verifyDownload(): Boolean {
         try {
-            val questions = EntranceQuestionModelHandler.getQuestionsNotDownloaded(context?.applicationContext!!, username, entranceUniqueId)
+            val questions = EntranceQuestionModelHandler.getQuestionsNotDownloaded(applicationContext, username, entranceUniqueId)
             if (questions?.count()!! > 0) {
                 return false
             }
@@ -570,6 +764,7 @@ class EntrancePackageDownloader : Service() {
                                                 imageList = result.images
                                                 questionsList = result.questionList
                                                 DownloadCount = imageList.count()
+                                                DownloadedCount = 0
 
                                                 completion(true, indexPath)
 
@@ -651,33 +846,5 @@ class EntrancePackageDownloader : Service() {
         }
 
         completion(false, null)
-    }
-
-    private fun sendNotification() {
-        val notificationIntent = Intent(this@EntrancePackageDownloader, FavoritesActivity::class.java)
-        val contentIntent = PendingIntent.getActivity(this@EntrancePackageDownloader, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-
-//        notificationBuilder = NotificationCompat.Builder(this@EntrancePackageDownloader)
-        notificationBuilder?.setContentIntent(contentIntent)
-
-        val notification = notificationBuilder!!.build()
-        notification.flags = notification.flags or Notification.FLAG_AUTO_CANCEL
-        notification.defaults = notification.defaults or Notification.DEFAULT_SOUND
-        currentNotificationID++
-        var notificationId: Int = currentNotificationID
-        if (notificationId == Integer.MAX_VALUE - 1) {
-            notificationId = 0
-        }
-        notificationManager?.notify(notificationId, notification)
-    }
-
-    private fun simpleNotification(message: String, subMessage: String) {
-        notificationBuilder = NotificationCompat
-                .Builder(this)
-                .setContentTitle(message)
-                .setContentText(subMessage)
-                .setSmallIcon(R.drawable.logo_white_transparent_notification)
-
-        sendNotification()
     }
 }

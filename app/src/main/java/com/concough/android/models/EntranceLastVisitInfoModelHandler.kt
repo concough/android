@@ -66,5 +66,46 @@ class EntranceLastVisitInfoModelHandler {
                     .equalTo("showType", showType)
                     .findFirst()
         }
+
+        @JvmStatic
+        fun removeByEntranceId(context: Context, username: String, uniqueId: String): Boolean {
+            val items = RealmSingleton.getInstance(context).DefaultRealm.where(EntranceLastVisitInfoModel::class.java)
+                    .equalTo("username", username)
+                    .equalTo("entranceUniqueId", uniqueId)
+                    .findAll()
+
+            try {
+                RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                    items.deleteAllFromRealm()
+                }
+//                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                return true
+            } catch (exc: Exception) {
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                    Log.d(TAG, exc.printStackTrace().toString())
+            }
+
+            return false
+        }
+
+        @JvmStatic
+        fun removeByUsername(context: Context, username: String): Boolean {
+            val items = RealmSingleton.getInstance(context).DefaultRealm.where(EntranceLastVisitInfoModel::class.java)
+                    .equalTo("username", username).findAll()
+
+                try {
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        items.deleteAllFromRealm()
+                    }
+//                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                    return true
+                } catch (exc: Exception) {
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                    Log.d(TAG, exc.printStackTrace().toString())
+                }
+            return false
+        }
     }
 }

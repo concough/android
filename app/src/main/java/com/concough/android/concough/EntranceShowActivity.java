@@ -146,6 +146,7 @@ import static com.concough.android.extensions.TypeExtensionsKt.diffInHourMinSec;
 import static com.concough.android.extensions.TypeExtensionsKt.timeAgoSinceDate;
 import static com.concough.android.settings.ConstantsKt.getSECRET_KEY;
 import static com.concough.android.utils.DataConvertorsKt.questionAnswerToString;
+import static com.concough.android.utils.UtilitiesKt.dpToPx;
 import static com.concough.android.utils.UtilitiesKt.spToDp;
 
 public class EntranceShowActivity extends AppCompatActivity implements Handler.Callback,
@@ -437,6 +438,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                EntranceShowActivity.this.selectedBooklet = position;
                                 loadLessions(position);
 //                                tabLayout.scrollTo(0, 1);
                             }
@@ -614,6 +616,12 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     protected void onStop() {
         saveLastVisitInfoState();
         super.onStop();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (!this.showType.equals("LessonExam"))
+            super.onBackPressed();
     }
 
     @Override
@@ -1450,7 +1458,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 this.lessonsDB.get(this.selectedLesson).fullTitle,
                 this.lessonsDB.get(this.selectedLesson).order,
                 this.bookletsDB.get(this.selectedBooklet).order,
-                new Date(),
+                null,
                 null,
                 this.lessonsDB.get(this.selectedLesson).qCount,
                 new HashMap<>(),
@@ -1471,32 +1479,34 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 h.post(new Runnable() {
                     @Override
                     public void run() {
-                        Integer[] d = diffInHourMinSec(lessonExamStructure.getStarted(),
-                                new Date()); // hour, minute, second
+                        if (lessonExamStructure.getStarted() != null) {
+                            Integer[] d = diffInHourMinSec(lessonExamStructure.getStarted(),
+                                    new Date()); // hour, minute, second
 
-                        String s = "";
-                        if (d[0] > 0) {
-                            s += FormatterSingleton.getInstance().getNumberFormatter().format(d[0])  + " : ";
+                            String s = "";
+                            if (d[0] > 0) {
+                                s += FormatterSingleton.getInstance().getNumberFormatter().format(d[0]) + " : ";
+                            }
+
+                            String m = FormatterSingleton.getInstance().getNumberFormatter().format(d[1]);
+                            if (m.length() == 1) {
+                                m = "۰" + m;
+                            }
+                            s += m + " : ";
+
+                            String se = FormatterSingleton.getInstance().getNumberFormatter().format(d[2]);
+                            if (se.length() == 1) {
+                                se = "۰" + se;
+                            }
+                            s += se;
+
+                            int factor = (d[0] * 60) + d[1];
+                            if (factor >= EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).duration) {
+                                EntranceShowActivity.this.timerTextView.setTextColor(ContextCompat.getColor(EntranceShowActivity.this, R.color.colorConcoughOrange));
+                            }
+
+                            EntranceShowActivity.this.timerTextView.setText(s);
                         }
-
-                        String m = FormatterSingleton.getInstance().getNumberFormatter().format(d[1]);
-                        if (m.length() == 1) {
-                            m = "۰" + m;
-                        }
-                        s += m + " : ";
-
-                        String se = FormatterSingleton.getInstance().getNumberFormatter().format(d[2]);
-                        if (se.length() == 1) {
-                            se = "۰" + se;
-                        }
-                        s += se;
-
-                        int factor = (d[0] * 60) + d[1];
-                        if (factor >= EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).duration) {
-                            EntranceShowActivity.this.timerTextView.setTextColor(ContextCompat.getColor(EntranceShowActivity.this, R.color.colorConcoughOrange));
-                        }
-
-                        EntranceShowActivity.this.timerTextView.setText(s);
                     }
                 });
             }
@@ -1506,12 +1516,12 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             @Override
             public void run() {
                 AlertClass.hideLoadingMessage(loading);
-
-                EntranceShowActivity.this.examTimer = new Timer(false);
-                EntranceShowActivity.this.examTimer.schedule(examTimerTick, 0, 1000);
-
+                lessonExamStructure.setStarted(new Date());
             }
         }, 3000);
+
+        EntranceShowActivity.this.examTimer = new Timer(false);
+        EntranceShowActivity.this.examTimer.scheduleAtFixedRate(examTimerTick, 3000, 1000);
     }
 
     @Override
@@ -2949,7 +2959,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
                 statContainer.setDescription("");
 
-                statContainer.animateXY(1, 1);
+                statContainer.animateXY(1000, 1000);
                 statContainer.getLegend().setEnabled(false);
             }
 
@@ -4226,22 +4236,27 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            View view = this.mLayoutInflater.inflate(R.layout.fragment_entrance_show_question_chart, container, false);
 
-            LinearLayout chartView = (LinearLayout) view.findViewById(R.id.FESQChart_container);
             switch (position) {
                 case 0:
-                    chartView.addView(this.setupHorizontalBarChart(context,
-                            entranceUniqueId, questionNo, username));
-                    break;
+                    View view = this.mLayoutInflater.inflate(R.layout.fragment_entrance_show_question_chart2, container, false);
+                    HorizontalBarChart chart = (HorizontalBarChart) view.findViewById(R.id.FESQChart_chart);
+                    this.setupHorizontalBarChart(context, chart,
+                            entranceUniqueId, questionNo, username);
+                    container.addView(view);
+                    return view;
+
                 case 1:
-                    chartView.addView(this.setupLineChart(context,
-                            entranceUniqueId, questionNo, username));
-                    break;
+                    View view1 = this.mLayoutInflater.inflate(R.layout.fragment_entrance_show_question_chart, container, false);
+                    LineChart chart1 = (LineChart) view1.findViewById(R.id.FESQChart_chart);
+
+                    this.setupLineChart(context, chart1,
+                            entranceUniqueId, questionNo, username);
+                    container.addView(view1);
+                    return view1;
             }
 
-            container.addView(view);
-            return view;
+            return null;
         }
 
         @Override
@@ -4249,13 +4264,14 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             container.removeView((View) object);
         }
 
-        public HorizontalBarChart setupHorizontalBarChart(Context context, String entranceUniqueId, int questionNo,
+        public HorizontalBarChart setupHorizontalBarChart(Context context, HorizontalBarChart hChartView,
+                                                          String entranceUniqueId, int questionNo,
                                             String username) {
             EntranceQuestionExamStatModel stat = EntranceQuestionExamStatModelHandler.getByNo(context.getApplicationContext(), username,
                     entranceUniqueId, questionNo);
 
-            HorizontalBarChart hChartView = new HorizontalBarChart(context);
-            hChartView.animateXY(1, 1);
+            //HorizontalBarChart hChartView = new HorizontalBarChart(context);
+            hChartView.animateXY(1500, 1500);
             hChartView.setDescription("");
             hChartView.setDrawGridBackground(false);
             hChartView.setGridBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
@@ -4299,18 +4315,20 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             BarData chartData = new BarData(labels, chartDataSet);
             hChartView.setData(chartData);
 
-            hChartView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+            LinearLayout.LayoutParams l = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+            l.setMargins(dpToPx(4, context), dpToPx(4, context), dpToPx(4, context), dpToPx(4, context));
+            hChartView.setLayoutParams(l);
             return hChartView;
         }
 
-        public LineChart setupLineChart(Context context, String entranceUniqueId, int questionNo,
+        public LineChart setupLineChart(Context context, LineChart lChartView, String entranceUniqueId, int questionNo,
                                         String username)  {
             EntranceQuestionExamStatModel stat = EntranceQuestionExamStatModelHandler.getByNo(context.getApplicationContext(), username,
                     entranceUniqueId, questionNo);
 
-            LineChart lChartView = new LineChart(context);
+            //LineChart lChartView = new LineChart(context);
             lChartView.setDescription("");
-            lChartView.animateXY(1, 1);
+            lChartView.animateXY(1500, 1500);
             lChartView.setDrawGridBackground(false);
             lChartView.setGridBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent));
             lChartView.setDrawBorders(false);
@@ -4325,9 +4343,12 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             lChartView.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
             lChartView.getXAxis().setDrawGridLines(false);
             lChartView.getXAxis().setTypeface(FontCacheSingleton.getInstance(context.getApplicationContext()).getRegular());
-            lChartView.getXAxis().setTextSize(10.0f);
+            lChartView.getXAxis().setTextSize(6.0f);
             lChartView.getXAxis().setTextColor(ContextCompat.getColor(context, R.color.colorConcoughRedLight));
             lChartView.getLegend().setEnabled(false);
+            lChartView.getLegend().setTypeface(FontCacheSingleton.getInstance(context.getApplicationContext()).getLight());
+            lChartView.getLegend().setTextSize(12.0f);
+
             lChartView.setScaleEnabled(false);
             lChartView.setHighlightPerDragEnabled(false);
             lChartView.setHighlightPerTapEnabled(false);
@@ -4373,7 +4394,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                     }
 
                     if (i == max - 1) {
-                        labels.add("سنچش آخر");
+                        labels.add("سنجش آخر");
                     } else {
                         labels.add(FormatterSingleton.getInstance().getNumberFormatter().format(max - i));
                     }
@@ -4382,7 +4403,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 data.add(0.0f);
                 labels.add("");
 
-                if (data.size() <= 2) {
+                if (data.size() <= 3) {
                     lChartView.getAxis(YAxis.AxisDependency.LEFT).setLabelCount(2, true);
                 } else {
                     lChartView.getAxis(YAxis.AxisDependency.LEFT).setLabelCount(3, true);
@@ -4400,7 +4421,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             LineDataSet chartDataSet = new LineDataSet(dataEnties, "عملکرد ۱۰ سنجش اخیر");
             chartDataSet.setValueFormatter(new ChartValueNumberFormatter());
             chartDataSet.setValueTypeface(FontCacheSingleton.getInstance(context.getApplicationContext()).getRegular());
-            chartDataSet.setValueTextSize(10.0f);
+            chartDataSet.setValueTextSize(8.0f);
             chartDataSet.setColors(new int[]{R.color.colorConcoughOrange}, context);
             chartDataSet.setDrawFilled(false);
             chartDataSet.setCircleRadius(4.0f);
@@ -4409,10 +4430,12 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             chartDataSet.setCircleColors(new int[]{R.color.colorConcoughOrange}, context);
             chartDataSet.setDrawValues(false);
 
-            LineData chartData = new LineData(labels, Arrays.asList(chartDataSet));
+            LineData chartData = new LineData(labels, Collections.singletonList(chartDataSet));
             lChartView.setData(chartData);
 
-            lChartView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+            LinearLayout.LayoutParams l = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+            l.setMargins(dpToPx(8, context), dpToPx(8, context), dpToPx(8, context), dpToPx(8, context));
+            lChartView.setLayoutParams(l);
             return lChartView;
         }
 

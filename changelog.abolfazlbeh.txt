@@ -541,3 +541,18 @@ Entrance Lesson Exam History (abolfazl.beh) - 2018-12-08
 3 - EntranceShow activity --> QuestionChartPagerAdapter added to show charts for any question
 4 - Some bugs fixed.
 5 - Some UI enhanced.
+
+------------------------------------------------------------------------------------------------
+Synchronization Singleton (abolfazl.beh) - 2018-12-13
+
+1 - EntranceDetailActivity --> create wallet rest call fixed
+2 - "downloader" package renamed to "services"
+3 - EntranceMultiDetail activity buy process fixed.
+4 - All Charts view and some errors fixed.
+5 - Synchronization Singleton created to sync data with remote server. It uses "SynchronizerService" to sync data.
+6 - All "syncWithServer" methods deleted. Also Check lock removed from Startup activity. all logs synced with server and removed
+7 - Notification Singleton created to refactor notification mechanism.
+8 - EntrancePackageDownloader modified to be parallel downloader
+9 - UserLogRestAPIClass created to handle rest calls of log.
+10 - Some bugs fixed and UI Enhancement.
+

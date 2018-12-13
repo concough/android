@@ -413,6 +413,8 @@ class EntranceLessonExamHistoryActivity : TopNavigationActivity() {
                     if (i == 10)
                         break
                 }
+
+                data.reverse()
                 holder.setupHolder(labels, data)
             } else if (holder is EntranceLessonExamHistoryChart2ViewHolder) {
                 val labels = ArrayList<String>()
@@ -427,6 +429,7 @@ class EntranceLessonExamHistoryActivity : TopNavigationActivity() {
                     if (i == 10)
                         break
                 }
+                data.reverse()
                 holder.setupHolder(labels, data)
             }
         }
@@ -444,7 +447,7 @@ class EntranceLessonExamHistoryActivity : TopNavigationActivity() {
 
             init {
                 this.chartView.setDescription("")
-                this.chartView.animateXY(1, 2)
+                this.chartView.animateXY(2000, 2000)
                 this.chartView.setDrawGridBackground(false)
                 this.chartView.setGridBackgroundColor(ContextCompat.getColor(itemView.context, android.R.color.transparent))
                 this.chartView.setDrawBorders(false)
@@ -501,7 +504,7 @@ class EntranceLessonExamHistoryActivity : TopNavigationActivity() {
 
             init {
                 this.chartView.setDescription("")
-                this.chartView.animateXY(1, 2)
+                this.chartView.animateXY(2000, 2000)
                 this.chartView.setDrawGridBackground(false)
                 this.chartView.setGridBackgroundColor(ContextCompat.getColor(itemView.context, android.R.color.transparent))
                 this.chartView.setDrawBorders(false)
@@ -543,6 +546,7 @@ class EntranceLessonExamHistoryActivity : TopNavigationActivity() {
                     limit.labelPosition = LimitLine.LimitLabelPosition.LEFT_BOTTOM
                     limit.typeface = FontCacheSingleton.getInstance(context.applicationContext).Light
                     limit.textSize = 10.0f
+                    limit.lineWidth = 2.0f
 
                     this.chartView.getAxis(YAxis.AxisDependency.LEFT).removeAllLimitLines()
                     this.chartView.getAxis(YAxis.AxisDependency.LEFT).addLimitLine(limit)
