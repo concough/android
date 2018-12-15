@@ -858,10 +858,10 @@ public class SettingActivity extends BottomNavigationActivity {
                                                         EntranceQuestionStarredModelHandler.removeByEntranceId(getApplicationContext(), username, item.productUniqueId);
                                                         EntranceOpenedCountModelHandler.removeByEntranceId(getApplicationContext(), username, item.productUniqueId);
 
-                                                        EntranceLastVisitInfoModelHandler.removeByUsername(getApplicationContext(), username);
-                                                        EntranceQuestionCommentModelHandler.removeAllCommentOfUsername(getApplicationContext(), username);
-                                                        EntranceLessonExamModelHandler.removeAllExamsByUsername(getApplicationContext(), username);
-                                                        EntranceQuestionExamStatModelHandler.removeAllStatsByUsername(getApplicationContext(), username);
+                                                        EntranceLastVisitInfoModelHandler.removeByEntranceId(getApplicationContext(), username, item.productUniqueId);
+                                                        EntranceQuestionCommentModelHandler.removeAllCommentOfEntrance(getApplicationContext(), username, item.productUniqueId);
+                                                        EntranceLessonExamModelHandler.removeAllExamsByEntranceId(getApplicationContext(), username, item.productUniqueId);
+                                                        EntranceQuestionExamStatModelHandler.removeAllStatsByEntranceId(getApplicationContext(), username, item.productUniqueId);
                                                     }
                                                 }
                                             }

@@ -38,7 +38,7 @@ class EntranceQuestionExamStatModelHandler {
 //                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                     return true
                 } catch (exc: Exception) {
-                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
                 }
             } else {
                 val newStat = EntranceQuestionExamStatModel()
@@ -66,7 +66,7 @@ class EntranceQuestionExamStatModelHandler {
 //                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                     return true
                 } catch (exc: Exception) {
-                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
                 }
             }
 
@@ -95,7 +95,7 @@ class EntranceQuestionExamStatModelHandler {
 //                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
 //                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
             } catch (exc: Exception) {
-                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
         }
 
@@ -115,7 +115,7 @@ class EntranceQuestionExamStatModelHandler {
 //                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return true
             } catch (exc: Exception) {
-                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
 
             return false
@@ -136,7 +136,7 @@ class EntranceQuestionExamStatModelHandler {
 //                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return true
             } catch (exc: Exception) {
-                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
 
             return false

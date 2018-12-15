@@ -73,7 +73,7 @@ class DeviceInformationModelHandler {
 //                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                     return true
                 } catch (exc: Exception) {
-                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+                    //RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
                 }
             }
             return false

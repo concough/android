@@ -556,3 +556,8 @@ Synchronization Singleton (abolfazl.beh) - 2018-12-13
 9 - UserLogRestAPIClass created to handle rest calls of log.
 10 - Some bugs fixed and UI Enhancement.
 
+------------------------------------------------------------------------------------------------
+Some Bugs Fixed (abolfazl.beh) - 2018-12-15
+
+1 - SettingsActivity delete data fixed.
+2 - All models handler checked and if any cancelExecution call on Realm exist --> commented

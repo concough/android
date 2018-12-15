@@ -37,7 +37,7 @@ class EntranceQuestionCommentModelHandler {
 //                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                     return comment
                 } catch (exc: Exception) {
-                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
                 }
             }
 
@@ -91,7 +91,7 @@ class EntranceQuestionCommentModelHandler {
 //                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                     return true
                 } catch (exc: Exception) {
-                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
                 }
             }
 
@@ -114,7 +114,7 @@ class EntranceQuestionCommentModelHandler {
 //                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return true
             } catch (exc: Exception) {
-                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
 
             return false
@@ -135,7 +135,7 @@ class EntranceQuestionCommentModelHandler {
 //                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return true
             } catch (exc: Exception) {
-                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
 
             return false

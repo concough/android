@@ -45,7 +45,7 @@ class EntranceLessonExamModelHandler {
 //                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return true
             } catch (exc: Exception) {
-                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
 
             return false
@@ -111,7 +111,7 @@ class EntranceLessonExamModelHandler {
 //                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
 //                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
             } catch (exc: Exception) {
-                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
         }
 
@@ -130,7 +130,7 @@ class EntranceLessonExamModelHandler {
 //                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return true
             } catch (exc: Exception) {
-                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
 
             return false
@@ -150,7 +150,7 @@ class EntranceLessonExamModelHandler {
 //                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return true
             } catch (exc: Exception) {
-                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
 
             return false
