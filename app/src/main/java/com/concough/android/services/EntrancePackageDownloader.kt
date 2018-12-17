@@ -723,7 +723,6 @@ class EntrancePackageDownloader : Service(), Handler.Callback {
     fun downloadInitialData(completion: (result: Boolean, indexPath: Int?) -> Unit) {
         doAsync {
             EntranceRestAPIClass.getEntrancePackageDataInit(context?.applicationContext!!, entranceUniqueId, completion = { data, error ->
-                runOnUiThread {
                     if (error != HTTPErrorType.Success) {
                         if (error == HTTPErrorType.Refresh) {
                             downloadInitialData(completion)
@@ -734,7 +733,9 @@ class EntrancePackageDownloader : Service(), Handler.Callback {
                             } else {
                                 this@EntrancePackageDownloader.retryCounter = 0
                                 if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
-                                    AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                                    runOnUiThread {
+                                        AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "HTTPError", error.toString(), "error", null)
+                                    }
                                 }
                             }
                         }
@@ -759,19 +760,20 @@ class EntrancePackageDownloader : Service(), Handler.Callback {
                                             val content = JsonParser().parse(originalText)
                                             val initData = content.asJsonObject.get("init")
 
-                                            val result = EntrancePackageHandler.savePackage(applicationContext, username!!, entranceUniqueId, initData)
-                                            if (result.status) {
-                                                imageList = result.images
-                                                questionsList = result.questionList
-                                                DownloadCount = imageList.count()
-                                                DownloadedCount = 0
+                                            runOnUiThread {
+                                                val result = EntrancePackageHandler.savePackage(applicationContext, username!!, entranceUniqueId, initData)
+                                                if (result.status) {
+                                                    imageList = result.images
+                                                    questionsList = result.questionList
+                                                    DownloadCount = imageList.count()
+                                                    DownloadedCount = 0
 
-                                                completion(true, indexPath)
+                                                    completion(true, indexPath)
 
-                                            } else {
-                                                EntrancePackageHandler.removePackage(applicationContext, username!!, entranceUniqueId)
+                                                } else {
+                                                    EntrancePackageHandler.removePackage(applicationContext, username!!, entranceUniqueId)
+                                                }
                                             }
-
 
                                             Log.d(TAG, "testing")
                                         } catch (exc: Exception) {
@@ -784,7 +786,9 @@ class EntrancePackageDownloader : Service(), Handler.Callback {
                                         when (errorType) {
                                             "PackageNotExist", "EntranceNotExist" -> {
                                                 if (this@EntrancePackageDownloader.context != null && this@EntrancePackageDownloader.context is Activity) {
-                                                    AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "EntranceResult", "EntranceNotExist", "error", null)
+                                                    runOnUiThread {
+                                                        AlertClass.showTopMessage(this@EntrancePackageDownloader.context!!, (context as Activity).findViewById(R.id.container), "EntranceResult", "EntranceNotExist", "error", null)
+                                                    }
                                                 }
 
                                                 if (vcType == "ED") {
@@ -805,7 +809,6 @@ class EntrancePackageDownloader : Service(), Handler.Callback {
                         }
 
                     }
-                }
 
             }, failure = { error ->
                 runOnUiThread {

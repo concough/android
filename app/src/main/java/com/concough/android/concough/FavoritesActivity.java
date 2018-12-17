@@ -152,7 +152,7 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
             @Override
             public void onRefresh() {
                 // start refresh
-                FavoritesActivity.this.loadData();
+                FavoritesActivity.this.reloadData();
             }
         });
 
@@ -1597,24 +1597,31 @@ public class FavoritesActivity extends BottomNavigationActivity implements Handl
                                                 } else {
                                                     if (FEntranceNotDownloadViewHolder.this.downloader != null) {
                                                         FEntranceNotDownloadViewHolder.this.downloader.initialize(FavoritesActivity.this, entranceS.getEntranceUniqueId(), "F", username, index);
+
                                                         FEntranceNotDownloadViewHolder.this.downloader.downloadInitialData(new Function2<Boolean, Integer, Unit>() {
                                                             @Override
                                                             public Unit invoke(Boolean aBoolean, Integer integer) {
                                                                 if (aBoolean) {
-                                                                    boolean valid2 = PurchasedModelHandler.setIsLocalDBCreatedTrue(getApplicationContext(), username, entranceS.getEntranceUniqueId(), "Entrance");
-                                                                    if (valid2) {
+                                                                    runOnUiThread(new Runnable() {
+                                                                        @Override
+                                                                        public void run() {
+                                                                            boolean valid2 = PurchasedModelHandler.setIsLocalDBCreatedTrue(getApplicationContext(), username, entranceS.getEntranceUniqueId(), "Entrance");
+                                                                            if (valid2) {
 //                                                    String newDir = context.getFilesDir().getPath().concat(entranceUniqueId);
-                                                                        String newDir = username + "_" + entranceS.getEntranceUniqueId();
-                                                                        File f = new File(context.getFilesDir(), newDir);
-                                                                        boolean d = f.mkdir();
-                                                                        Integer count = (Integer) FEntranceNotDownloadViewHolder.this.downloader.getDownloadCount();
+                                                                                String newDir = username + "_" + entranceS.getEntranceUniqueId();
+                                                                                File f = new File(context.getFilesDir(), newDir);
+                                                                                boolean d = f.mkdir();
+                                                                                Integer count = (Integer) FEntranceNotDownloadViewHolder.this.downloader.getDownloadCount();
 
-                                                                        changeToDownlaodState(count);
-                                                                        isDownloadingProgressBar.setVisibility(View.VISIBLE);
-                                                                        DownloaderSingleton.getInstance().setDownloaderStarted(entranceS.getEntranceUniqueId());
-                                                                        FEntranceNotDownloadViewHolder.this.downloader.downloadPackageImages(f);
+                                                                                changeToDownlaodState(count);
+                                                                                isDownloadingProgressBar.setVisibility(View.VISIBLE);
+                                                                                DownloaderSingleton.getInstance().setDownloaderStarted(entranceS.getEntranceUniqueId());
+                                                                                FEntranceNotDownloadViewHolder.this.downloader.downloadPackageImages(f);
 
-                                                                    }
+                                                                            }
+
+                                                                        }
+                                                                    });
                                                                 }
                                                                 return null;
                                                             }

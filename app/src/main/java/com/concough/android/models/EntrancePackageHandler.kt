@@ -119,14 +119,14 @@ class EntrancePackageHandler {
                 } else {
                     return EntrancePackageResult(false, LinkedHashMap(), LinkedHashMap())
                 }
-                Log.d(TAG, entrance.toString())
-                Log.d(TAG, entrance.booklets[0].toString())
-
-                Log.d(TAG, entrance.booklets[0].lessons[0].toString())
-                Log.d(TAG, entrance.booklets[0].lessons[0].questions.toString())
+//                Log.d(TAG, entrance.toString())
+//                Log.d(TAG, entrance.booklets[0].toString())
+//
+//                Log.d(TAG, entrance.booklets[0].lessons[0].toString())
+//                Log.d(TAG, entrance.booklets[0].lessons[0].questions.toString())
             } catch (exc: Exception) {
 //                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
-                Log.d(TAG, exc.message)
+//                Log.d(TAG, exc.message)
                 return EntrancePackageResult(false, LinkedHashMap(), LinkedHashMap())
             }
 

@@ -561,3 +561,6 @@ Some Bugs Fixed (abolfazl.beh) - 2018-12-15
 
 1 - SettingsActivity delete data fixed.
 2 - All models handler checked and if any cancelExecution call on Realm exist --> commented
+
+------------------------------------------------------------------------------------------------
+Some Bugs Fixed (abolfazl.beh) - 2018-12-17
