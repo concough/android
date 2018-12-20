@@ -202,7 +202,6 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
         }
 
         public fun removeItem(position: Int) {
-            this.comments.removeAt(position)
             this.notifyItemRemoved(position)
         }
 

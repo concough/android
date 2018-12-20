@@ -564,3 +564,12 @@ Some Bugs Fixed (abolfazl.beh) - 2018-12-15
 
 ------------------------------------------------------------------------------------------------
 Some Bugs Fixed (abolfazl.beh) - 2018-12-17
+
+------------------------------------------------------------------------------------------------
+Update compileSdkVersion (abolfazl.beh) - 2018-12-20
+
+1 - "compileSdkVersion" and "targetSdkVersion" updated to 26
+2 - "buildToolsVersion" updated to "28.0.3"
+3 - "app.gradle" all compile keyword changed to implementation
+4 - New plugins added to gradle "kotlin-kapt", because "realm" not worked well after update
+5 - EntranceShowAllCommentsDialog on delete comment fixed and bugs removed
