@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.concough.android.settings.CONNECT_TIMEOUT
 import com.concough.android.settings.READ_TIMEOUT
+import com.concough.android.singletons.RetrofitSSLClientSingleton
 import com.concough.android.singletons.TokenHandlerSingleton
 import com.concough.android.singletons.UrlMakerSingleton
 import com.concough.android.structures.HTTPErrorType
@@ -45,12 +46,8 @@ class ActivityRestAPIClass {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
                     Log.d("HEADER REST:",headers.toString())
 
-                    val okHttpClient = OkHttpClient.Builder()
-                            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
-                            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
-                            .build()
-
-                    val Obj = Retrofit.Builder().client(okHttpClient).baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+                    val client = RetrofitSSLClientSingleton.getInstance().getBuilder().build()
+                    val Obj = Retrofit.Builder().baseUrl(fullPath).client(client).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
                     val request = profile.get(url = fullPath, headers = headers!!)
 

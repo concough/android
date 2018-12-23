@@ -1,14 +1,20 @@
 package com.concough.android.tokenservice
 
+import android.os.Build
 import android.util.Log
 import com.concough.android.rest.AuthRestAPIClass
+import com.concough.android.singletons.RetrofitSSLClientSingleton
 import com.concough.android.singletons.UrlMakerSingleton
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
+import com.concough.android.utils.TLSSocketFactory
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
+import okhttp3.ConnectionSpec
+import okhttp3.OkHttpClient
 import okhttp3.ResponseBody
+import okhttp3.TlsVersion
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -18,6 +24,9 @@ import retrofit2.http.Body
 import retrofit2.http.HeaderMap
 import retrofit2.http.POST
 import retrofit2.http.Url
+import java.lang.Exception
+import javax.net.ssl.SSLContext
+import javax.net.ssl.X509TrustManager
 
 /**
  * Created by abolfazl on 7/5/17.
@@ -40,7 +49,8 @@ class JwtAdapter {
             val headers = hashMapOf("Content-Type" to "application/json",
                     "Accept" to "application/json")
 
-            val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+            val client = RetrofitSSLClientSingleton.getInstance().getBuilder().build()
+            val Obj = Retrofit.Builder().baseUrl(fullPath).client(client).addConverterFactory(GsonConverterFactory.create()).build()
             val auth = Obj.create(JwtAdapter.JwtAdapterService::class.java)
             val request = auth.request(fullPath, parameters, headers)
 
@@ -80,7 +90,8 @@ class JwtAdapter {
             val headers = hashMapOf("Content-Type" to "application/json",
                     "Accept" to "application/json")
 
-            val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+            val client = RetrofitSSLClientSingleton.getInstance().getBuilder().build()
+            val Obj = Retrofit.Builder().baseUrl(fullPath).client(client).addConverterFactory(GsonConverterFactory.create()).build()
             val auth = Obj.create(JwtAdapter.JwtAdapterService::class.java)
             val request = auth.request(fullPath, parameters, headers)
 
@@ -120,7 +131,8 @@ class JwtAdapter {
             val headers = hashMapOf("Content-Type" to "application/json",
                     "Accept" to "application/json")
 
-            val Obj = Retrofit.Builder().baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+            val client = RetrofitSSLClientSingleton.getInstance().getBuilder().build()
+            val Obj = Retrofit.Builder().baseUrl(fullPath).client(client).addConverterFactory(GsonConverterFactory.create()).build()
             val auth = Obj.create(JwtAdapter.JwtAdapterService::class.java)
             val request = auth.request(fullPath, parameters, headers)
 

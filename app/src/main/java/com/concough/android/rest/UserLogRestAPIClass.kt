@@ -4,6 +4,7 @@ import android.content.Context
 import android.provider.Settings
 import com.concough.android.settings.CONNECT_TIMEOUT
 import com.concough.android.settings.READ_TIMEOUT
+import com.concough.android.singletons.RetrofitSSLClientSingleton
 import com.concough.android.singletons.TokenHandlerSingleton
 import com.concough.android.singletons.UrlMakerSingleton
 import com.concough.android.structures.HTTPErrorType
@@ -36,11 +37,6 @@ class UserLogRestAPIClass {
                 if (authenticated && error == HTTPErrorType.Success) {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
 
-                    val okHttpClient = OkHttpClient.Builder()
-                            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
-                            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
-                            .build()
-
                     val androidId = Settings.Secure.getString(context.applicationContext.contentResolver,
                             Settings.Secure.ANDROID_ID)
 
@@ -48,7 +44,8 @@ class UserLogRestAPIClass {
                             "device_unique_id" to androidId,
                             "data" to data)
 
-                    val Obj = Retrofit.Builder().client(okHttpClient).baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+                    val client = RetrofitSSLClientSingleton.getInstance().getBuilder().build()
+                    val Obj = Retrofit.Builder().baseUrl(fullPath).client(client).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
                     val request = profile.post(url = fullPath, body = parameters, headers = headers!!)
 

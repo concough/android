@@ -573,3 +573,11 @@ Update compileSdkVersion (abolfazl.beh) - 2018-12-20
 3 - "app.gradle" all compile keyword changed to implementation
 4 - New plugins added to gradle "kotlin-kapt", because "realm" not worked well after update
 5 - EntranceShowAllCommentsDialog on delete comment fixed and bugs removed
+
+------------------------------------------------------------------------------------------------
+Rest Call SSL Corrected (abolfazl.beh) - 2018-12-24
+
+1 - TLS version 1.2 not supported in android api 16 through 20, so tsl socket factory (TLSSocketFactory) created to handle this:
+    - Also RetrofitSSLClientSingleton class created to make ready the okhttpclient builder and return it base on new tsl class
+    - All rest api classes modified to use this new singleton to make client
+2 - Some bugs fixed

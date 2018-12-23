@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.ImageView
 import com.concough.android.settings.CONNECT_TIMEOUT
 import com.concough.android.settings.READ_TIMEOUT
+import com.concough.android.singletons.RetrofitSSLClientSingleton
 import com.concough.android.singletons.TokenHandlerSingleton
 import com.concough.android.singletons.UrlMakerSingleton
 import com.concough.android.structures.HTTPErrorType
@@ -37,12 +38,8 @@ class MediaRestAPIClass {
                 if (authenticated && error == HTTPErrorType.Success) {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
 
-                    val okHttpClient = OkHttpClient.Builder()
-                            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
-                            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
-                            .build()
-
-                    val Obj = Retrofit.Builder().client(okHttpClient).baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+                    val client = RetrofitSSLClientSingleton.getInstance().getBuilder().build()
+                    val Obj = Retrofit.Builder().baseUrl(fullPath).client(client).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
                     val request = profile.get(url = fullPath, headers = headers!!)
 
@@ -166,12 +163,8 @@ class MediaRestAPIClass {
                 if (authenticated && error == HTTPErrorType.Success) {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
 
-                    val okHttpClient = OkHttpClient.Builder()
-                            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
-                            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
-                            .build()
-
-                    val Obj = Retrofit.Builder().client(okHttpClient).baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+                    val client = RetrofitSSLClientSingleton.getInstance().getBuilder().build()
+                    val Obj = Retrofit.Builder().baseUrl(fullPath).client(client).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
                     val request = profile.get(url = fullPath, headers = headers!!)
 
@@ -238,12 +231,8 @@ class MediaRestAPIClass {
                     }
                     val parameters: HashMap<String, Any> = hashMapOf("ids" to query)
 
-                    val okHttpClient = OkHttpClient.Builder()
-                            .readTimeout(READ_TIMEOUT+30, TimeUnit.SECONDS)
-                            .connectTimeout(CONNECT_TIMEOUT+30, TimeUnit.SECONDS)
-                            .build()
-
-                    val Obj = Retrofit.Builder().client(okHttpClient).baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+                    val client = RetrofitSSLClientSingleton.getInstance().getBuilder().build()
+                    val Obj = Retrofit.Builder().baseUrl(fullPath).client(client).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
                     val request = profile.getWithParams(fullPath, parameters, headers!!)
 

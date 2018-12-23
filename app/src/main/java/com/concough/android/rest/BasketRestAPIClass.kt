@@ -3,6 +3,7 @@ package com.concough.android.rest
 import android.content.Context
 import com.concough.android.settings.CONNECT_TIMEOUT
 import com.concough.android.settings.READ_TIMEOUT
+import com.concough.android.singletons.RetrofitSSLClientSingleton
 import com.concough.android.singletons.TokenHandlerSingleton
 import com.concough.android.singletons.UrlMakerSingleton
 import com.concough.android.structures.HTTPErrorType
@@ -35,12 +36,8 @@ class BasketRestAPIClass {
                 if (authenticated && error == HTTPErrorType.Success) {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
 
-                    val okHttpClient = OkHttpClient.Builder()
-                            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
-                            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
-                            .build()
-
-                    val Obj = Retrofit.Builder().client(okHttpClient).baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+                    val client = RetrofitSSLClientSingleton.getInstance().getBuilder().build()
+                    val Obj = Retrofit.Builder().baseUrl(fullPath).client(client).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
                     val request = profile.get(url = fullPath, headers = headers!!)
 
@@ -94,12 +91,8 @@ class BasketRestAPIClass {
                 if (authenticated && error == HTTPErrorType.Success) {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
 
-                    val okHttpClient = OkHttpClient.Builder()
-                            .readTimeout(READ_TIMEOUT,TimeUnit.SECONDS)
-                            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
-                            .build()
-
-                    val Obj = Retrofit.Builder().client(okHttpClient).baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+                    val client = RetrofitSSLClientSingleton.getInstance().getBuilder().build()
+                    val Obj = Retrofit.Builder().baseUrl(fullPath).client(client).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
                     val request = profile.post(url = fullPath, body = HashMap<String, Any>(), headers = headers!!)
 
@@ -157,12 +150,8 @@ class BasketRestAPIClass {
                     val parameters: HashMap<String, Any> = hashMapOf("product_id" to productId,
                             "product_type" to productType)
 
-                    val okHttpClient = OkHttpClient.Builder()
-                            .readTimeout(READ_TIMEOUT,TimeUnit.SECONDS)
-                            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
-                            .build()
-
-                    val Obj = Retrofit.Builder().client(okHttpClient).baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+                    val client = RetrofitSSLClientSingleton.getInstance().getBuilder().build()
+                    val Obj = Retrofit.Builder().baseUrl(fullPath).client(client).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
                     val request = profile.put(url = fullPath, body = parameters, headers = headers!!)
 
@@ -216,12 +205,8 @@ class BasketRestAPIClass {
                 if (authenticated && error == HTTPErrorType.Success) {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
 
-                    val okHttpClient = OkHttpClient.Builder()
-                            .readTimeout(READ_TIMEOUT,TimeUnit.SECONDS)
-                            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
-                            .build()
-
-                    val Obj = Retrofit.Builder().client(okHttpClient).baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+                    val client = RetrofitSSLClientSingleton.getInstance().getBuilder().build()
+                    val Obj = Retrofit.Builder().baseUrl(fullPath).client(client).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
                     val request = profile.delete(url = fullPath, headers = headers!!)
 
@@ -275,12 +260,8 @@ class BasketRestAPIClass {
                 if (authenticated && error == HTTPErrorType.Success) {
                     val headers = TokenHandlerSingleton.getInstance(context).getHeader()
 
-                    val okHttpClient = OkHttpClient.Builder()
-                            .readTimeout(READ_TIMEOUT,TimeUnit.SECONDS)
-                            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
-                            .build()
-
-                    val Obj = Retrofit.Builder().client(okHttpClient).baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+                    val client = RetrofitSSLClientSingleton.getInstance().getBuilder().build()
+                    val Obj = Retrofit.Builder().baseUrl(fullPath).client(client).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
                     val request = profile.post(url = fullPath, body = HashMap<String, Any>(), headers = headers!!)
 
@@ -339,12 +320,8 @@ class BasketRestAPIClass {
                     val parameters: HashMap<String, Any> = hashMapOf("basket_id" to bid,
                             "authority_id" to aid)
 
-                    val okHttpClient = OkHttpClient.Builder()
-                            .readTimeout(READ_TIMEOUT,TimeUnit.SECONDS)
-                            .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
-                            .build()
-
-                    val Obj = Retrofit.Builder().client(okHttpClient).baseUrl(fullPath).addConverterFactory(GsonConverterFactory.create()).build()
+                    val client = RetrofitSSLClientSingleton.getInstance().getBuilder().build()
+                    val Obj = Retrofit.Builder().baseUrl(fullPath).client(client).addConverterFactory(GsonConverterFactory.create()).build()
                     val profile = Obj.create(RestAPIService::class.java)
                     val request = profile.post(url = fullPath, body = parameters, headers = headers!!)
 
