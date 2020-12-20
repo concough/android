@@ -11,26 +11,26 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.os.PowerManager;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.constraint.ConstraintLayout;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.util.Pair;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.util.SortedList;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import com.google.android.material.tabs.TabLayout;
+
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.core.content.ContextCompat;
+import androidx.core.util.Pair;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.SortedList;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
@@ -44,7 +44,6 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -126,7 +125,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -147,7 +145,6 @@ import static com.concough.android.extensions.TypeExtensionsKt.timeAgoSinceDate;
 import static com.concough.android.settings.ConstantsKt.getSECRET_KEY;
 import static com.concough.android.utils.DataConvertorsKt.questionAnswerToString;
 import static com.concough.android.utils.UtilitiesKt.dpToPx;
-import static com.concough.android.utils.UtilitiesKt.spToDp;
 
 public class EntranceShowActivity extends AppCompatActivity implements Handler.Callback,
         EntranceShowCommentDelegate, EntranceShowInfoDelegate, EntranceLessonExamDelegate {
@@ -599,8 +596,11 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
     protected void onResume() {
         super.onResume();
         PowerManager powerManager = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
-        this.wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "My Lock");
-        wakeLock.acquire();
+        //this.wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+        this.wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Concough:MyLock");
+        if (this.wakeLock != null) {
+            wakeLock.acquire(3600 * 1000);
+        }
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
@@ -626,6 +626,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == ENTRANCE_LESSON_CHART_ACTIVITY) {
             Log.d(TAG, "activity result");
             this.starredIds.clear();
@@ -1041,23 +1042,20 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         EntranceShowActivity.this.tabLayout.getTabAt(lessonIndex1).select();
 
                         Handler h1 = new Handler();
-                        h1.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    int index = Integer.parseInt(EntranceShowActivity.this.lastVisitInfo.index);
-                                    if (EntranceShowActivity.this.lastVisitInfo.showType.equals("Show")) {
-                                        if (index < EntranceShowActivity.this.entranceShowAdapter.getItemCount()) {
-                                            EntranceShowActivity.this.recyclerView.smoothScrollToPosition(index);
-                                        } else {
-                                            EntranceShowActivity.this.recyclerView.smoothScrollToPosition(0);
-                                        }
+                        h1.postDelayed(() -> {
+                            try {
+                                int index1 = Integer.parseInt(EntranceShowActivity.this.lastVisitInfo.index);
+                                if (EntranceShowActivity.this.lastVisitInfo.showType.equals("Show")) {
+                                    if (index1 < EntranceShowActivity.this.entranceShowAdapter.getItemCount()) {
+                                        EntranceShowActivity.this.recyclerView.smoothScrollToPosition(index1);
+                                    } else {
+                                        EntranceShowActivity.this.recyclerView.smoothScrollToPosition(0);
                                     }
-                                } catch (Exception exc) {}
-                                EntranceShowActivity.this.lastVisitInfo = null;
+                                }
+                            } catch (Exception exc) {}
+                            EntranceShowActivity.this.lastVisitInfo = null;
 
-                            }
-                        }, 5000);
+                        }, 2000);
 
                     } else {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
@@ -1073,7 +1071,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
     private void loadQuestions(int index) {
         if (index >= 0) {
-            questionsDB = new RealmList<EntranceQuestionModel>();
+            questionsDB = new RealmList<>();
             RealmResults<EntranceQuestionModel> questionModel = lessonsDB.get(index).questions.sort("number", Sort.ASCENDING);
             questionsDB.addAll(questionModel.subList(0, questionModel.size()));
         }
@@ -1370,6 +1368,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             tabLayout.setVisibility(View.GONE);
 
             recyclerView.setVisibility(View.GONE);
+            entranceShowAdapter.notifyDataSetChanged();
+
             recyclerViewStar.setVisibility(View.VISIBLE);
 
             texButton.setEnabled(false);
@@ -1512,12 +1512,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             }
         };
 
-        h.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                AlertClass.hideLoadingMessage(loading);
-                lessonExamStructure.setStarted(new Date());
-            }
+        h.postDelayed(() -> {
+            AlertClass.hideLoadingMessage(loading);
+            lessonExamStructure.setStarted(new Date());
         }, 3000);
 
         EntranceShowActivity.this.examTimer = new Timer(false);
@@ -1670,7 +1667,7 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
         public View getView(int position, View convertView, ViewGroup parent) {
 
             View v = LayoutInflater.from(EntranceShowActivity.this.getApplicationContext()).inflate(R.layout.cc_archive_listitem_archive, null);
-            TextView tv = (TextView) v.findViewById(R.id.text1);
+            TextView tv = v.findViewById(R.id.text1);
             tv.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
             tv.setText(mArrayList.get(position));
 
@@ -1925,7 +1922,6 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                             imageRepo.put(imageId, i);
 
                             i = null;
-
                             buffer = null;
 
                         } catch (Exception e) {
@@ -2064,12 +2060,10 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 }
                 changeStarredState(starred);
 
-                showAnswerContainer.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        EntranceShowActivity.this.showedAnswer.put(entranceQuestionModel.uniqueId,
-                                EntranceQuestionAnswerState.ANSWER);
-                        changeAnswerContainerState(EntranceQuestionAnswerState.ANSWER);
+                showAnswerContainer.setOnClickListener(v -> {
+                    EntranceShowActivity.this.showedAnswer.put(entranceQuestionModel.uniqueId,
+                            EntranceQuestionAnswerState.ANSWER);
+                    changeAnswerContainerState(EntranceQuestionAnswerState.ANSWER);
 
 //                        if (!EntranceShowActivity.this.showedAnsweresIds.contains(entranceQuestionModel.uniqueId)) {
 //                            EntranceShowActivity.this.showedAnsweresIds.add(entranceQuestionModel.uniqueId);
@@ -2077,85 +2071,63 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 //                            answerLabel.setTextColor(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
 //                            answerLabelCheckbox.setColorFilter(ContextCompat.getColor(getApplicationContext(), R.color.colorConcoughGray4));
 //                        }
-                    }
                 });
 
-                showCommentsContainer.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        EntranceShowActivity.this.showedAnswer.put(entranceQuestionModel.uniqueId,
-                                EntranceQuestionAnswerState.COMMENTS);
-                        changeAnswerContainerState(EntranceQuestionAnswerState.COMMENTS);
-                    }
+                showCommentsContainer.setOnClickListener(view -> {
+                    EntranceShowActivity.this.showedAnswer.put(entranceQuestionModel.uniqueId,
+                            EntranceQuestionAnswerState.COMMENTS);
+                    changeAnswerContainerState(EntranceQuestionAnswerState.COMMENTS);
                 });
 
-                showStatContainer.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        EntranceShowActivity.this.showedAnswer.put(entranceQuestionModel.uniqueId,
-                                EntranceQuestionAnswerState.STATS);
-                        changeAnswerContainerState(EntranceQuestionAnswerState.STATS);
-                    }
+                showStatContainer.setOnClickListener(view -> {
+                    EntranceShowActivity.this.showedAnswer.put(entranceQuestionModel.uniqueId,
+                            EntranceQuestionAnswerState.STATS);
+                    changeAnswerContainerState(EntranceQuestionAnswerState.STATS);
                 });
 
-                newCommentButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        EntranceShowNewCommentDialog dialog = new EntranceShowNewCommentDialog(EntranceShowActivity.this);
-                        dialog.setCancelable(false);
-                        dialog.setCanceledOnTouchOutside(false);
-                        dialog.setListener(EntranceShowActivity.this);
-                        dialog.show();
-                        dialog.setupDialog(entranceQuestionModel.uniqueId,
-                                entranceQuestionModel.number,
-                                position);
+                newCommentButton.setOnClickListener(view -> {
+                    EntranceShowNewCommentDialog dialog = new EntranceShowNewCommentDialog(EntranceShowActivity.this);
+                    dialog.setCancelable(false);
+                    dialog.setCanceledOnTouchOutside(false);
+                    dialog.setListener(EntranceShowActivity.this);
+                    dialog.show();
+                    dialog.setupDialog(entranceQuestionModel.uniqueId,
+                            entranceQuestionModel.number,
+                            position);
 
-                    }
                 });
 
-                moreCommentsButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        EntranceShowAllCommentsDialog dialog = new EntranceShowAllCommentsDialog(EntranceShowActivity.this);
-                        dialog.setCancelable(false);
-                        dialog.setCanceledOnTouchOutside(false);
-                        dialog.setListener(EntranceShowActivity.this);
-                        dialog.show();
-                        dialog.setupDialog(entranceQuestionModel.uniqueId,
-                                entranceUniqueId,
-                                entranceQuestionModel.number,
-                                position);
-                    }
+                moreCommentsButton.setOnClickListener(view -> {
+                    EntranceShowAllCommentsDialog dialog = new EntranceShowAllCommentsDialog(EntranceShowActivity.this);
+                    dialog.setCancelable(false);
+                    dialog.setCanceledOnTouchOutside(false);
+                    dialog.setListener(EntranceShowActivity.this);
+                    dialog.show();
+                    dialog.setupDialog(entranceQuestionModel.uniqueId,
+                            entranceUniqueId,
+                            entranceQuestionModel.number,
+                            position);
                 });
 
-                imgPreLoad.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(@NotNull View v) {
-                        setImages();
+                imgPreLoad.setOnClickListener(v -> {
+                    setImages();
 //                        Toast.makeText(EntranceShowActivity.this,"Refresh Clicked", Toast.LENGTH_LONG).show();
-                    }
                 });
 
-                starImage.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        starred = !starred;
-                        changeStarredState(starred);
-                        addStarQuestionId(entranceQuestionModel.uniqueId, entranceQuestionModel.number, starred);
-                        EntranceShowActivity.this.loadStarredQuestionRecords();
-                        globalPairListInteger = starredIds.size();
-                    }
+                starImage.setOnClickListener(v -> {
+                    starred = !starred;
+                    changeStarredState(starred);
+                    addStarQuestionId(entranceQuestionModel.uniqueId, entranceQuestionModel.number, starred);
+                    EntranceShowActivity.this.loadStarredQuestionRecords();
+                    globalPairListInteger = starredIds.size();
                 });
 
-                nextChartImageView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        int index = chartViewPager.getCurrentItem() + 1;
-                        if (index >= QuestionChartPagerAdapter.NUM_ITEMS) {
-                            index = 0;
-                        }
-                        chartViewPager.setCurrentItem(index, true);
+                nextChartImageView.setOnClickListener(view -> {
+                    int index = chartViewPager.getCurrentItem() + 1;
+                    if (index >= QuestionChartPagerAdapter.NUM_ITEMS) {
+                        index = 0;
                     }
+                    chartViewPager.setCurrentItem(index, true);
                 });
 
                 EntranceQuestionAnswerState localState = EntranceQuestionAnswerState.None;
@@ -2541,20 +2513,20 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             public EntranceQuestionExamHolder(View itemView) {
                 super(itemView);
 
-                questionNumber = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_questionNumber);
+                questionNumber = itemView.findViewById(R.id.ccEntranceShowHolder1I_questionNumber);
 
-                imgPreLoad = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_imgPreLoad);
-                img1 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img1);
-                img2 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img2);
-                img3 = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_img3);
-                answer1 = (Button) itemView.findViewById(R.id.ccEntranceShowHolder1I_answer1Button);
-                answer2 = (Button) itemView.findViewById(R.id.ccEntranceShowHolder1I_answer2Button);
-                answer3 = (Button) itemView.findViewById(R.id.ccEntranceShowHolder1I_answer3Button);
-                answer4 = (Button) itemView.findViewById(R.id.ccEntranceShowHolder1I_answer4Button);
-                answerEraserImageView = (ImageView) itemView.findViewById(R.id.ccEntranceShowHolder1I_eraserImageView);
-                correctAnswerLabel = (TextView) itemView.findViewById(R.id.ccEntranceShowHolder1I_correctAnswerTextView);
+                imgPreLoad = itemView.findViewById(R.id.ccEntranceShowHolder1I_imgPreLoad);
+                img1 = itemView.findViewById(R.id.ccEntranceShowHolder1I_img1);
+                img2 = itemView.findViewById(R.id.ccEntranceShowHolder1I_img2);
+                img3 = itemView.findViewById(R.id.ccEntranceShowHolder1I_img3);
+                answer1 = itemView.findViewById(R.id.ccEntranceShowHolder1I_answer1Button);
+                answer2 = itemView.findViewById(R.id.ccEntranceShowHolder1I_answer2Button);
+                answer3 = itemView.findViewById(R.id.ccEntranceShowHolder1I_answer3Button);
+                answer4 = itemView.findViewById(R.id.ccEntranceShowHolder1I_answer4Button);
+                answerEraserImageView = itemView.findViewById(R.id.ccEntranceShowHolder1I_eraserImageView);
+                correctAnswerLabel = itemView.findViewById(R.id.ccEntranceShowHolder1I_correctAnswerTextView);
 
-                mainConstraint = (ConstraintLayout) itemView.findViewById(R.id.ccEntranceShowHolder1I_mainConstrant);
+                mainConstraint = itemView.findViewById(R.id.ccEntranceShowHolder1I_mainConstrant);
 
                 questionNumber.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 answer1.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
@@ -2583,12 +2555,9 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                         FormatterSingleton.getInstance().getNumberFormatter().format(lastQuestionNo)
                 );
 
-                imgPreLoad.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(@NotNull View v) {
-                        setImages();
+                imgPreLoad.setOnClickListener(v -> {
+                    setImages();
 //                        Toast.makeText(EntranceShowActivity.this,"Refresh Clicked", Toast.LENGTH_LONG).show();
-                    }
                 });
                 mainConstraint.canScrollVertically(0);
                 setImages();
@@ -2597,41 +2566,38 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                     this.answerEraserImageView.setVisibility(View.VISIBLE);
                     this.correctAnswerLabel.setVisibility(View.GONE);
 
-                    View.OnClickListener answerClickListener = new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            resetAnswerButtons();
-                            int index = 0;
-                            if (view == answer1) {
-                                index = 1;
-                            } else if (view == answer2) {
-                                index = 2;
-                            } else if (view == answer3) {
-                                index = 3;
-                            } else if (view == answer4) {
-                                index = 4;
-                            }
+                    View.OnClickListener answerClickListener = view -> {
+                        resetAnswerButtons();
+                        int index = 0;
+                        if (view == answer1) {
+                            index = 1;
+                        } else if (view == answer2) {
+                            index = 2;
+                        } else if (view == answer3) {
+                            index = 3;
+                        } else if (view == answer4) {
+                            index = 4;
+                        }
 
-                            if (index > 0) {
-                                setAnswerButton(index, 0);
-                            }
+                        if (index > 0) {
+                            setAnswerButton(index, 0);
+                        }
 
-                            if (EntranceShowActivity.this.lessonExamStructure != null) {
-                                EntranceShowActivity.this.lessonExamStructure.getAnswers().put(position, index);
+                        if (EntranceShowActivity.this.lessonExamStructure != null) {
+                            EntranceShowActivity.this.lessonExamStructure.getAnswers().put(position, index);
 
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        EntranceShowActivity.this.examQCountTextView.setText(
-                                                FormatterSingleton.getInstance().getNumberFormatter().format(
-                                                        EntranceShowActivity.this.lessonExamStructure.getAnswers().size()
-                                                ) + "/" + FormatterSingleton.getInstance().getNumberFormatter().format(
-                                                        EntranceShowActivity.this.lessonExamStructure.getQCount()
-                                                )
-                                        );
-                                    }
-                                });
-                            }
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    EntranceShowActivity.this.examQCountTextView.setText(
+                                            FormatterSingleton.getInstance().getNumberFormatter().format(
+                                                    EntranceShowActivity.this.lessonExamStructure.getAnswers().size()
+                                            ) + "/" + FormatterSingleton.getInstance().getNumberFormatter().format(
+                                                    EntranceShowActivity.this.lessonExamStructure.getQCount()
+                                            )
+                                    );
+                                }
+                            });
                         }
                     };
                     this.answer1.setOnClickListener(answerClickListener);
@@ -2648,18 +2614,13 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                             if (EntranceShowActivity.this.lessonExamStructure != null) {
                                 EntranceShowActivity.this.lessonExamStructure.getAnswers().remove(position);
 
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        EntranceShowActivity.this.examQCountTextView.setText(
-                                                FormatterSingleton.getInstance().getNumberFormatter().format(
-                                                        EntranceShowActivity.this.lessonExamStructure.getAnswers().size()
-                                                ) + "/" + FormatterSingleton.getInstance().getNumberFormatter().format(
-                                                        EntranceShowActivity.this.lessonExamStructure.getQCount()
-                                                )
-                                        );
-                                    }
-                                });
+                                runOnUiThread(() -> EntranceShowActivity.this.examQCountTextView.setText(
+                                        FormatterSingleton.getInstance().getNumberFormatter().format(
+                                                EntranceShowActivity.this.lessonExamStructure.getAnswers().size()
+                                        ) + "/" + FormatterSingleton.getInstance().getNumberFormatter().format(
+                                                EntranceShowActivity.this.lessonExamStructure.getQCount()
+                                        )
+                                ));
                             }
                         }
                     });
@@ -2937,14 +2898,14 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
             public EntranceShowChartHolder(View itemView) {
                 super(itemView);
 
-                statContainer = (PieChart) itemView.findViewById(R.id.itemESCH_statContainer);
-                averageLabelTextView = (TextView) itemView.findViewById(R.id.itemESCH_averageLabelTextView);
-                averageTextView = (TextView) itemView.findViewById(R.id.itemESCH_averageTextView);
-                examCountLabelTextView = (TextView) itemView.findViewById(R.id.itemESCH_examCountLabelTextView);
-                examCountTextView = (TextView) itemView.findViewById(R.id.itemESCH_examCountTextView);
-                examHistoryLabelTextView = (TextView) itemView.findViewById(R.id.itemESCH_examsHistoryTextView);
-                examHistoryContainer = (LinearLayout) itemView.findViewById(R.id.itemESCH_examsHistoryContainer);
-                newExamButton = (Button) itemView.findViewById(R.id.itemESCH_newExamButton);
+                statContainer = itemView.findViewById(R.id.itemESCH_statContainer);
+                averageLabelTextView = itemView.findViewById(R.id.itemESCH_averageLabelTextView);
+                averageTextView = itemView.findViewById(R.id.itemESCH_averageTextView);
+                examCountLabelTextView = itemView.findViewById(R.id.itemESCH_examCountLabelTextView);
+                examCountTextView = itemView.findViewById(R.id.itemESCH_examCountTextView);
+                examHistoryLabelTextView = itemView.findViewById(R.id.itemESCH_examsHistoryTextView);
+                examHistoryContainer = itemView.findViewById(R.id.itemESCH_examsHistoryContainer);
+                newExamButton = itemView.findViewById(R.id.itemESCH_newExamButton);
 
                 averageLabelTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getLight());
                 averageTextView.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
@@ -3046,36 +3007,30 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                     }
                 }
 
-                newExamButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        EntranceNewLessonExamDialog dialog = new EntranceNewLessonExamDialog(EntranceShowActivity.this);
-                        dialog.setCancelable(false);
-                        dialog.setCanceledOnTouchOutside(false);
-                        dialog.setListener(EntranceShowActivity.this);
-                        dialog.show();
-                        dialog.setupDialog();
-                    }
+                newExamButton.setOnClickListener(view -> {
+                    EntranceNewLessonExamDialog dialog = new EntranceNewLessonExamDialog(EntranceShowActivity.this);
+                    dialog.setCancelable(false);
+                    dialog.setCanceledOnTouchOutside(false);
+                    dialog.setListener(EntranceShowActivity.this);
+                    dialog.show();
+                    dialog.setupDialog();
                 });
 
-                examHistoryContainer.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (examCount > 0) {
-                            Intent intent = EntranceLessonExamHistoryActivity.getIntent(EntranceShowActivity.this,
-                                    EntranceShowActivity.this.entranceUniqueId,
-                                    EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).fullTitle,
-                                    EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).order,
-                                    EntranceShowActivity.this.bookletsDB.get(EntranceShowActivity.this.selectedBooklet).order,
-                                    EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).duration,
-                                    EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).qCount);
+                examHistoryContainer.setOnClickListener(view -> {
+                    if (examCount > 0) {
+                        Intent intent = EntranceLessonExamHistoryActivity.getIntent(EntranceShowActivity.this,
+                                EntranceShowActivity.this.entranceUniqueId,
+                                EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).fullTitle,
+                                EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).order,
+                                EntranceShowActivity.this.bookletsDB.get(EntranceShowActivity.this.selectedBooklet).order,
+                                EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).duration,
+                                EntranceShowActivity.this.lessonsDB.get(EntranceShowActivity.this.selectedLesson).qCount);
 
-                            startActivityForResult(intent, ENTRANCE_LESSON_CHART_ACTIVITY);
-                        } else {
-                            AlertClass.showAlertMessage(EntranceShowActivity.this,
-                                    "ExamAction", "LessonExamHistoryNotAvail",
-                                    "", null);
-                        }
+                        startActivityForResult(intent, ENTRANCE_LESSON_CHART_ACTIVITY);
+                    } else {
+                        AlertClass.showAlertMessage(EntranceShowActivity.this,
+                                "ExamAction", "LessonExamHistoryNotAvail",
+                                "", null);
                     }
                 });
             }
@@ -3158,10 +3113,10 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
                 lesson.lessionTitle = item.lessionTitle;
                 lesson.count = item.count;
 
-                mPairList.add(new Pair<String, Object>("h", lesson));
+                mPairList.add(new Pair<>("h", lesson));
 
                 for (EntranceQuestionModel item2 : item.questions) {
-                    mPairList.add(new Pair<String, Object>("q", item2));
+                    mPairList.add(new Pair<>("q", item2));
                     mPairListInteger.add(new Pair<>(item2.uniqueId, i));
                 }
 
@@ -3239,8 +3194,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
             public HeaderHolder(View itemView) {
                 super(itemView);
-                tv = (TextView) itemView.findViewById(R.id.headerShowStarred_headerTitle);
-                tvCount = (TextView) itemView.findViewById(headerShowStarred_countEntrance);
+                tv = itemView.findViewById(R.id.headerShowStarred_headerTitle);
+                tvCount = itemView.findViewById(headerShowStarred_countEntrance);
 
                 tv.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
                 tvCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
@@ -3894,8 +3849,8 @@ public class EntranceShowActivity extends AppCompatActivity implements Handler.C
 
         @Override
         public void bindHeaderData(View header, int headerPosition) {
-            TextView tv = (TextView) header.findViewById(R.id.headerShowStarred_headerTitle);
-            TextView tvCount = (TextView) header.findViewById(headerShowStarred_countEntrance);
+            TextView tv = header.findViewById(R.id.headerShowStarred_headerTitle);
+            TextView tvCount = header.findViewById(headerShowStarred_countEntrance);
             tv.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
             tvCount.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
             Lessions temp = (Lessions) mPairList.get(headerPosition).second;

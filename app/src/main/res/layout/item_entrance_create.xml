@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item_entrance_create"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginLeft="4dp"
+    android:layout_marginStart="4dp"
     android:layout_marginRight="4dp"
+    android:layout_marginEnd="4dp"
     android:layout_marginTop="4dp"
     android:background="@drawable/concough_recycle_box_style"
     android:layoutDirection="ltr">
@@ -67,6 +69,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
         android:layoutDirection="rtl"
         android:text="@string/itemEntranceCreateI_S_concourText"
@@ -86,7 +89,7 @@
         android:layout_marginTop="8dp"
         android:gravity="center"
         android:layoutDirection="rtl"
-        android:text="-"
+        android:text=""
         android:textDirection="rtl"
         android:textColor="@android:color/black"
         android:textSize="14sp"
@@ -103,7 +106,7 @@
         android:layout_marginTop="8dp"
         android:gravity="center"
         android:layoutDirection="rtl"
-        android:text="-"
+        android:text=""
         android:textColor="@android:color/black"
         android:textDirection="rtl"
         android:textSize="15sp"
@@ -123,7 +126,7 @@
         android:layout_marginBottom="4dp"
         android:gravity="center"
         android:layoutDirection="rtl"
-        android:text="-"
+        android:text=""
         android:textColor="@color/colorConcoughGray5"
         android:textSize="12sp"
         app:layout_constraintHorizontal_bias="0.0"
@@ -157,7 +160,7 @@
 
     </LinearLayout>
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -221,7 +224,7 @@
                 android:layout_marginLeft="4dp"
                 android:layout_weight="1"
                 android:layoutDirection="rtl"
-                android:text="220"
+                android:text=""
                 android:textColor="@color/colorConcoughGreen"
                 android:textSize="14sp"
                 android:layout_marginStart="4dp" />
@@ -234,7 +237,7 @@
                 app:srcCompat="@drawable/cloud_100" />
 
         </LinearLayout>
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

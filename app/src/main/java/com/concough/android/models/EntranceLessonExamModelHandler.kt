@@ -60,8 +60,8 @@ class EntranceLessonExamModelHandler {
                     .equalTo("lessonOrder", lessonOrder)
                     .equalTo("lessonTitle", lessonTitle)
                     .equalTo("bookletOrder", bookletOrder)
-                    .findAllSorted("created", Sort.DESCENDING)
-                    .firstOrNull()
+                    .sort("created", Sort.DESCENDING)
+                    .findFirst()
         }
 
         @JvmStatic
@@ -73,7 +73,7 @@ class EntranceLessonExamModelHandler {
                     .equalTo("lessonOrder", lessonOrder)
                     .equalTo("lessonTitle", lessonTitle)
                     .equalTo("bookletOrder", bookletOrder)
-                    .findAllSorted("created", Sort.DESCENDING)
+                    .sort("created", Sort.DESCENDING).findAll()
         }
 
         @JvmStatic

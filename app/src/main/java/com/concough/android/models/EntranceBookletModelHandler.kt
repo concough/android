@@ -47,7 +47,7 @@ class EntranceBookletModelHandler {
             return RealmSingleton.getInstance(context).DefaultRealm.where(EntranceBookletModel::class.java)
                     .equalTo("entrance.username", username)
                     .equalTo("entrance.uniqueId", uniqueId)
-                    .findAllSorted("order", Sort.ASCENDING)
+                    .sort("order", Sort.ASCENDING).findAll()
         }
     }
 }

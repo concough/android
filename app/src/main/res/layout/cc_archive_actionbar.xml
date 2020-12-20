@@ -10,7 +10,7 @@
     android:padding="0dp">
 
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@null">
@@ -30,8 +30,8 @@
             android:background="@null"
             android:elevation="0dp"
             android:foregroundGravity="center_vertical|center"
-            android:text="Button"
-            android:textSize="16dp"
+            android:text=""
+            android:textSize="16sp"
 
 
             app:layout_constraintLeft_toLeftOf="parent"
@@ -43,6 +43,7 @@
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp"
             android:layout_marginTop="18dp"
             android:background="@drawable/recurring_appointment_100"
             android:backgroundTint="@color/colorConcoughBlue"
@@ -55,6 +56,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="14dp"
             android:orientation="horizontal"
             android:visibility="gone"
@@ -64,18 +66,22 @@
             app:layout_constraintVertical_bias="0.0">
 
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/actionBar_constraintIcon0"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:paddingRight="2dp">
+                android:paddingLeft="0dp"
+                android:paddingStart="0dp"
+                android:paddingRight="2dp"
+                android:paddingEnd="2dp">
 
                 <ImageView
                     android:id="@+id/actionBarIcon0"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:layout_marginLeft="8dp"
+                    android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:background="@drawable/buy_icon"
                     android:backgroundTint="@color/colorConcoughBlue"
@@ -89,7 +95,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
                     android:layout_marginLeft="24dp"
+                    android:layout_marginStart="24dp"
                     android:layout_marginRight="0dp"
+                    android:layout_marginEnd="0dp"
                     android:layout_marginTop="0dp"
                     android:background="@drawable/concough_badge_red_style"
                     android:gravity="center_vertical"
@@ -98,7 +106,7 @@
                     android:paddingLeft="6dp"
                     android:paddingRight="6dp"
                     android:paddingStart="6dp"
-                    android:text="5"
+                    android:text="0"
                     android:textAlignment="center"
                     android:textColor="@android:color/white"
                     android:textSize="10sp"
@@ -108,13 +116,13 @@
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintVertical_bias="0.0" />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
 
         </LinearLayout>
 
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
 </RelativeLayout>

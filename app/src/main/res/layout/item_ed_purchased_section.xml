@@ -8,7 +8,7 @@
     android:textDirection="ltr"
     android:orientation="vertical">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/EDItem_purchased_section_inner_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -27,6 +27,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp"
             android:layout_marginTop="8dp"
             android:gravity="center"
             android:orientation="horizontal"
@@ -60,7 +61,7 @@
                 android:layout_marginRight="4dp"
                 android:layout_weight="1"
                 android:gravity="end"
-                android:text="TextView"
+                android:text=""
                 android:textAlignment="textEnd"
                 android:textColor="@color/colorConcoughBlueDark"
                 android:textDirection="rtl"
@@ -80,6 +81,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
@@ -142,6 +144,7 @@
 
             android:layout_marginBottom="4dp"
             android:layout_marginRight="16dp"
+            android:layout_marginEnd="16dp"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toRightOf="parent" />
@@ -178,5 +181,5 @@
                 android:textDirection="rtl"
                 android:textSize="12sp" />
         </LinearLayout>
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

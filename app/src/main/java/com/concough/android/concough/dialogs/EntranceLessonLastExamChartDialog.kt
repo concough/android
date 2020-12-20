@@ -3,10 +3,10 @@ package com.concough.android.concough.dialogs
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.fragment.app.DialogFragment
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
@@ -46,26 +46,26 @@ class EntranceLessonLastExamChartDialog: DialogFragment() {
     private var bookletOrder: Int = 0
     private lateinit var whoCalled: String
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        inflater?.let {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        inflater.let {
             return inflater.inflate(R.layout.dialog_entrance_lesson_last_exam_chart, container, false)
         }
         return null
     }
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        DELLEChart_titleTextView.typeface = FontCacheSingleton.getInstance(activity.applicationContext).Light
-        DELLEChart_lessonTitleTextView.typeface = FontCacheSingleton.getInstance(activity.applicationContext).Bold
-        DELLEChart_lessonExamDateTextView.typeface = FontCacheSingleton.getInstance(activity.applicationContext).Regular
-        DELLEChart_closeButton.typeface = FontCacheSingleton.getInstance(activity.applicationContext).Regular
+        DELLEChart_titleTextView.typeface = FontCacheSingleton.getInstance(activity!!.applicationContext).Light
+        DELLEChart_lessonTitleTextView.typeface = FontCacheSingleton.getInstance(activity!!.applicationContext).Bold
+        DELLEChart_lessonExamDateTextView.typeface = FontCacheSingleton.getInstance(activity!!.applicationContext).Regular
+        DELLEChart_closeButton.typeface = FontCacheSingleton.getInstance(activity!!.applicationContext).Regular
 
-        DELLEChart_resultPieChart.setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent))
+        DELLEChart_resultPieChart.setBackgroundColor(ContextCompat.getColor(context!!, android.R.color.transparent))
         DELLEChart_resultPieChart.transparentCircleRadius = 40f
         DELLEChart_resultPieChart.holeRadius = 40f
-        DELLEChart_resultPieChart.setTransparentCircleColor(ContextCompat.getColor(context, android.R.color.transparent))
-        DELLEChart_resultPieChart.setHoleColor(ContextCompat.getColor(context, android.R.color.transparent))
+        DELLEChart_resultPieChart.setTransparentCircleColor(ContextCompat.getColor(context!!, android.R.color.transparent))
+        DELLEChart_resultPieChart.setHoleColor(ContextCompat.getColor(context!!, android.R.color.transparent))
 
         DELLEChart_resultPieChart.setDescription("")
         DELLEChart_resultPieChart.legend.isEnabled = false
@@ -85,7 +85,7 @@ class EntranceLessonLastExamChartDialog: DialogFragment() {
     }
 
     override fun onResume() {
-        dialog.window!!.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+        dialog!!.window!!.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT)
         super.onResume()
     }
@@ -103,11 +103,11 @@ class EntranceLessonLastExamChartDialog: DialogFragment() {
 
     private fun setupDialog() {
 
-        val username = UserDefaultsSingleton.getInstance(activity.applicationContext).getUsername()
+        val username = UserDefaultsSingleton.getInstance(activity!!.applicationContext).getUsername()
         DELLEChart_lessonTitleTextView.text = this.lessonTitle
 
         if (whoCalled != "ExamHistory") {
-            val lastExam = EntranceLessonExamModelHandler.getLastExam(activity.applicationContext,
+            val lastExam = EntranceLessonExamModelHandler.getLastExam(activity!!.applicationContext,
                     username!!, entranceUniqueId, lessonTitle, lessonOrder, bookletOrder)
 
             if (lastExam != null) {
@@ -119,7 +119,7 @@ class EntranceLessonLastExamChartDialog: DialogFragment() {
 
         DELLEChart_lessonExamDateTextView.text = this.localExamRecord.created.timeAgoSinceDate("fa", true)
 
-        val lesson = EntranceLessonModelHandler.getOneLessonByTitleAndOrder(activity.applicationContext,
+        val lesson = EntranceLessonModelHandler.getOneLessonByTitleAndOrder(activity!!.applicationContext,
                 username!!, this.entranceUniqueId, this.lessonTitle, this.lessonOrder)
 
         val parser = JsonParser()
@@ -128,7 +128,7 @@ class EntranceLessonLastExamChartDialog: DialogFragment() {
         val layoutManager = LinearLayoutManager(context)
         DELLEChart_questionsRecycleView.layoutManager = layoutManager
 
-        this.questionAdapter = EntranceLessonExamAdapter(this.context, listOf(), answers, this.whoCalled)
+        this.questionAdapter = EntranceLessonExamAdapter(this.context!!, listOf(), answers, this.whoCalled)
         DELLEChart_questionsRecycleView.adapter = this.questionAdapter
 
         if (lesson != null) {
@@ -150,8 +150,8 @@ class EntranceLessonLastExamChartDialog: DialogFragment() {
                 this.localExamRecord.falseAnswer.toFloat(),
                 this.localExamRecord.noAnswer.toFloat())
 
-        DELLEChart_resultPieChart.setCenterTextTypeface(FontCacheSingleton.getInstance(activity.applicationContext).Regular)
-        DELLEChart_resultPieChart.setCenterTextColor(ContextCompat.getColor(context, R.color.colorWhite))
+        DELLEChart_resultPieChart.setCenterTextTypeface(FontCacheSingleton.getInstance(activity!!.applicationContext).Regular)
+        DELLEChart_resultPieChart.setCenterTextColor(ContextCompat.getColor(context!!, R.color.colorWhite))
         DELLEChart_resultPieChart.setCenterTextSize(14f)
         DELLEChart_resultPieChart.centerText = "${FormatterSingleton.getInstance().DecimalNumberFormatter.format(this.localExamRecord.percentage * 100)} %"
 
@@ -165,9 +165,9 @@ class EntranceLessonLastExamChartDialog: DialogFragment() {
         val chartDataSet = PieDataSet(dataEntries, "")
         chartDataSet.valueFormatter = ChartValueNumberFormatter()
         chartDataSet.selectionShift = 0.0f
-        chartDataSet.valueTypeface = FontCacheSingleton.getInstance(activity.applicationContext).Regular
+        chartDataSet.valueTypeface = FontCacheSingleton.getInstance(activity!!.applicationContext).Regular
         chartDataSet.valueTextSize = 13f
-        chartDataSet.valueTextColor = ContextCompat.getColor(context, R.color.colorWhite)
+        chartDataSet.valueTextColor = ContextCompat.getColor(context!!, R.color.colorWhite)
         chartDataSet.setColors(intArrayOf(R.color.colorConcoughGreen, R.color.colorConcoughRedLight, R.color.colorConcoughOrange), context)
 
         val chartData = PieData(labels, chartDataSet)
@@ -192,7 +192,7 @@ class EntranceLessonLastExamChartDialog: DialogFragment() {
             this.questions = questions
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
             val view = LayoutInflater.from(context).inflate(R.layout.item_entrance_lesson_exam_chart_dialog_q, parent, false)
             return QuestionAnswerHolder(view)
         }
@@ -201,8 +201,8 @@ class EntranceLessonLastExamChartDialog: DialogFragment() {
             return this.questions.size
         }
 
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
-            holder?.let {
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            holder.let {
                 if (holder is QuestionAnswerHolder) {
                     val question = this.questions[position]
 

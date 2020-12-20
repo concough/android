@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -12,7 +12,7 @@
     tools:context="com.concough.android.concough.ArchiveDetailActivity">
 
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
 
@@ -21,7 +21,7 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/frameLayout"
             android:layout_width="70dp"
             android:layout_height="70dp"
@@ -55,7 +55,7 @@
 
                 </FrameLayout>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/archiveDetailHolder2L_constrantRight"
                     android:layout_width="70dp"
                     android:layout_height="70dp"
@@ -74,7 +74,7 @@
                         android:layout_marginRight="8dp"
                         android:layout_marginStart="8dp"
                         android:layout_marginTop="8dp"
-                        android:text="TextView"
+                        android:text=""
                         android:textSize="12sp"
                         app:layout_constraintLeft_toLeftOf="parent"
                         app:layout_constraintRight_toRightOf="parent"
@@ -90,7 +90,7 @@
                         android:layout_marginRight="8dp"
                         android:layout_marginStart="8dp"
                         android:layout_marginTop="8dp"
-                        android:text="TextView"
+                        android:text=""
                         android:textColor="@color/colorConcoughBlue"
                         android:textSize="14sp"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -98,14 +98,14 @@
                         app:layout_constraintRight_toRightOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/archiveDetailHolder2L_typeText" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
             </RelativeLayout>
 
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout4"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -125,11 +125,11 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginTop="8dp"
-                android:text="TextView"
+                android:text=""
                 android:textSize="11sp"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <LinearLayout
             android:id="@+id/archiveDetailHolder2L_countTextLinear"
@@ -137,6 +137,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="2dp"
             android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp"
             android:orientation="horizontal"
             android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -146,9 +147,9 @@
                 android:id="@+id/archiveDetailHolder2L_countText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
+                android:layout_gravity="center_vertical|end"
                 android:layout_weight="1"
-                android:text="TextView"
+                android:text=""
                 android:textAlignment="textEnd"
                 android:textColor="@color/colorConcoughGreen"
                 android:textDirection="rtl"
@@ -161,6 +162,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_marginLeft="4dp"
+                android:layout_marginStart="4dp"
                 android:layout_weight="1"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintRight_toRightOf="@+id/constraintLayout4"
@@ -173,6 +175,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="2dp"
             android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
             android:gravity="center_vertical|center"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -180,10 +183,10 @@
 
             <TextView
                 android:id="@+id/archiveDetailHolder2L_dateJalali"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="TextView"
+                android:text=""
                 android:textColor="@color/colorConcoughGray"
                 android:textSize="11sp" />
 
@@ -195,6 +198,6 @@
 
         </LinearLayout>
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="4dp"
     android:layout_marginRight="32dp"
+    android:layout_marginEnd="32dp"
     android:layoutDirection="ltr"
     android:background="@drawable/concough_setting_border_top_bottom"
     android:paddingBottom="8dp">
@@ -38,6 +39,7 @@
         android:layout_width="57dp"
         android:layout_height="27dp"
         android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="12dp"
         android:background="@drawable/concough_border_radius_style"
         android:text="ویرایش"
@@ -46,4 +48,4 @@
         app:layout_constraintBaseline_toBaselineOf="@+id/settingUsereEditL_type"
         app:layout_constraintLeft_toLeftOf="parent" />
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

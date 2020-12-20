@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/FItem_entrance_not_downloaded"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layoutDirection="ltr">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/concough_recycle_box_style"
@@ -19,7 +19,7 @@
         android:layout_marginBottom="8dp"
         >
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/FItem_entrance_not_downloaded_inner_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -53,7 +53,7 @@
 
             <TextView
                 android:id="@+id/FItem_entrance_delete_text"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
                 android:layout_marginRight="4dp"
@@ -111,8 +111,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:gravity="right"
-                    android:text="TextView"
+                    android:gravity="start"
+                    android:text=""
                     android:textAlignment="gravity"
                     android:textColor="@android:color/black"
                     android:textDirection="rtl"
@@ -123,8 +123,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:gravity="right"
-                    android:text="TextView"
+                    android:gravity="start"
+                    android:text=""
                     android:textAlignment="gravity"
                     android:textColor="@android:color/black"
                     android:textDirection="rtl"
@@ -134,8 +134,8 @@
                     android:id="@+id/FItem_entrance_extra_data"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="right"
-                    android:text="TextView"
+                    android:gravity="start"
+                    android:text=""
                     android:textAlignment="gravity"
                     android:textColor="@color/colorConcoughGray2"
                     android:textDirection="rtl"
@@ -143,8 +143,8 @@
 
         </LinearLayout>
 
-    </android.support.constraint.ConstraintLayout>
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
     <ImageView
         android:id="@+id/FItem_entrance_set_image"
         android:layout_width="80dp"
@@ -156,4 +156,4 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/no_image"
         android:layout_marginEnd="16dp" />
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

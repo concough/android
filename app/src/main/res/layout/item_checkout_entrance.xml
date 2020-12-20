@@ -10,7 +10,7 @@
     android:background="@android:color/white"
     android:orientation="vertical">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/CK_entrance_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -33,7 +33,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:layout_weight="1"
@@ -44,8 +44,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:gravity="right"
-                    android:text="test"
+                    android:gravity="end"
+                    android:text=""
                     android:textAlignment="gravity"
                     android:textColor="@android:color/black" />
 
@@ -53,7 +53,7 @@
                     android:id="@+id/CK_entrance_group_label"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="right"
+                    android:gravity="end"
                     android:text=""
                     android:textAlignment="gravity"
                     android:textColor="@color/colorConcoughGray2" />
@@ -196,5 +196,5 @@
 
         </LinearLayout>
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

@@ -17,15 +17,11 @@ import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.widget.ImageView;
-
-import com.concough.android.concough.EntranceShowActivity;
-import com.concough.android.concough.TopNavigationActivity;
 
 /**
  * Created by noman on 9/14/15.
  */
-public class ImageMagnifier extends android.support.v7.widget.AppCompatImageView {
+public class ImageMagnifier extends androidx.appcompat.widget.AppCompatImageView {
     private PointF zoomPos;
     private boolean zooming = false;
     private Matrix matrix;

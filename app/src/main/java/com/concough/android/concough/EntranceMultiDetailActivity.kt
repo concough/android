@@ -5,10 +5,10 @@ import android.content.Intent
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
-import android.support.v4.widget.ContentLoadingProgressBar
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.core.content.ContextCompat
+import androidx.core.widget.ContentLoadingProgressBar
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -586,7 +586,7 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
 
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
             if (viewType == EntranceMultiDetailHolderType.ENTRANCE_MULTI_INITIAL.getValue()) {
                 val view = LayoutInflater.from(context).inflate(R.layout.item_entrancemulti_initial, parent, false)
                 return EMDInitialHolder(view)
@@ -596,7 +596,7 @@ class EntranceMultiDetailActivity : BottomNavigationActivity(), ProductBuyDelega
             }
         }
 
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
             if (position == 0) {
                 var count = 0
                 this.entrances.let {

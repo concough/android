@@ -4,7 +4,7 @@ import android.app.Dialog
 import android.content.Context
 import android.graphics.PorterDuff
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
+import androidx.core.content.ContextCompat
 import android.view.ViewGroup
 import android.view.Window
 import com.concough.android.concough.R

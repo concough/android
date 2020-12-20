@@ -1,6 +1,7 @@
 package com.concough.android.models
 
 import android.content.Context
+import android.util.Log
 import com.concough.android.singletons.RealmSingleton
 import com.concough.android.structures.EntranceStruct
 import java.util.*
@@ -40,6 +41,7 @@ class EntranceModelHandler {
 //                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return true
             } catch (exc: Exception) {
+                Log.d("cscsdcds", exc.message)
 //                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
 

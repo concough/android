@@ -9,7 +9,7 @@
     android:layoutDirection="ltr"
     tools:context="com.concough.android.concough.EntranceMultiDetailActivity">
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/entranceMultiDetailA_recycle"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -20,9 +20,9 @@
         android:layout_weight="1"
         android:background="@drawable/concough_bottom_line_gray3">
 
-    </android.support.v7.widget.RecyclerView>
+    </androidx.recyclerview.widget.RecyclerView>
 
-    <android.support.design.widget.BottomNavigationView
+    <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

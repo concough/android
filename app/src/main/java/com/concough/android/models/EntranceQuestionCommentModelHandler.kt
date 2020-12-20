@@ -51,7 +51,7 @@ class EntranceQuestionCommentModelHandler {
                     .equalTo("username", username)
                     .equalTo("entranceUniqueId", entranceUniqueId)
                     .equalTo("question.uniqueId", questionId)
-                    .findAllSorted("created", Sort.DESCENDING)
+                    .sort("created", Sort.DESCENDING).findAll()
         }
 
         @JvmStatic
@@ -61,7 +61,7 @@ class EntranceQuestionCommentModelHandler {
                     .equalTo("username", username)
                     .equalTo("entranceUniqueId", entranceUniqueId)
                     .equalTo("question.uniqueId", questionId)
-                    .findAllSorted("created", Sort.DESCENDING).firstOrNull()
+                    .sort("created", Sort.DESCENDING).findFirst()
         }
 
         @JvmStatic

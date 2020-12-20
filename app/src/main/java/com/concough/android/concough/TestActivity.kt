@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import com.concough.android.models.EntranceLessonExamModelHandler
 import com.concough.android.models.EntranceQuestionExamStatModelHandler
 import com.concough.android.singletons.RealmSingleton

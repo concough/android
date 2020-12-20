@@ -4,7 +4,7 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.os.*
-import android.support.v4.app.NotificationCompat
+import androidx.core.app.NotificationCompat
 import android.util.Base64
 import android.util.Log
 import com.concough.android.concough.FavoritesActivity

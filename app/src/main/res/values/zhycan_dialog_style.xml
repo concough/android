@@ -16,7 +16,7 @@
     <!-- From: file:/E:/GitHub/NiftyDialog/NiftyDialogEffects/library/src/main/res/values/dimens.xml -->
     <eat-comment />
 
-    <dimen name="dialog_padding">25dp</dimen>
+    <dimen name="dialog_padding">24dp</dimen>
     <!-- From: file:/E:/GitHub/NiftyDialog/NiftyDialogEffects/library/src/main/res/values/styles.xml -->
     <eat-comment />
 

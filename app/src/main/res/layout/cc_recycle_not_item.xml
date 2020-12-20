@@ -23,7 +23,7 @@
         android:layout_marginRight="32dp"
         android:layout_marginTop="4dp"
         android:textDirection="rtl"
-        android:text="TextView"
+        android:text=""
         android:textAlignment="center"
         android:textSize="15sp" />
 </LinearLayout>

@@ -163,20 +163,21 @@ class PurchasedModelHandler {
 
         @JvmStatic
         fun getAllPurchased(context: Context, username: String): RealmResults<PurchasedModel>? {
+            var realm = RealmSingleton.getInstance(context).DefaultRealm
             return RealmSingleton.getInstance(context).DefaultRealm.where(PurchasedModel::class.java)
-                    .equalTo("username", username).findAllSorted("created", Sort.DESCENDING)
+                    .equalTo("username", username).sort("created", Sort.DESCENDING).findAll()
         }
 
         @JvmStatic
         fun getAllPurchasedNotIn(context: Context, username: String, ids: Array<Int>): RealmResults<PurchasedModel>? {
             return RealmSingleton.getInstance(context).DefaultRealm.where(PurchasedModel::class.java)
-                    .equalTo("username", username).beginGroup().not().`in`("id", ids).endGroup().findAllSorted("created", Sort.DESCENDING)
+                    .equalTo("username", username).beginGroup().not().`in`("id", ids).endGroup().sort("created", Sort.DESCENDING).findAll()
         }
 
         @JvmStatic
         fun getAllPurchasedIn(context: Context, username: String, ids: Array<Int>): RealmResults<PurchasedModel>? {
             return RealmSingleton.getInstance(context).DefaultRealm.where(PurchasedModel::class.java)
-                    .equalTo("username", username).beginGroup().`in`("id", ids).endGroup().findAllSorted("created", Sort.DESCENDING)
+                    .equalTo("username", username).beginGroup().`in`("id", ids).endGroup().sort("created", Sort.DESCENDING).findAll()
         }
 
 

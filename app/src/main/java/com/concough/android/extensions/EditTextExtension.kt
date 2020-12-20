@@ -10,30 +10,30 @@ import android.widget.EditText
  * Created by FaridM on 12/24/2017.
  */
 
-fun EditText.DirectionFix(): Unit {
+fun EditText.DirectionFix() {
     val localText = this
-    if (localText.text.toString().length > 0) {
+    if (localText.text.isNotEmpty()) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            localText.setTextDirection(View.TEXT_DIRECTION_LTR)
-            localText.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START)
+            localText.textDirection = View.TEXT_DIRECTION_LTR
+            localText.textAlignment = View.TEXT_ALIGNMENT_TEXT_START
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                localText.setTextDirection(View.TEXT_DIRECTION_LTR)
-                localText.setGravity(Gravity.START)
+                localText.textDirection = View.TEXT_DIRECTION_LTR
+                localText.gravity = Gravity.START
             } else {
-                localText.setGravity(Gravity.START)
+                localText.gravity = Gravity.START
             }
         }
     } else {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            localText.setTextDirection(View.TEXT_DIRECTION_RTL)
-            localText.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START)
+            localText.textDirection = View.TEXT_DIRECTION_RTL
+            localText.textAlignment = View.TEXT_ALIGNMENT_TEXT_END
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                localText.setTextDirection(View.TEXT_DIRECTION_LTR)
-                localText.setGravity(Gravity.END)
+                localText.textDirection = View.TEXT_DIRECTION_LTR
+                localText.gravity = Gravity.END
             } else {
-                localText.setGravity(Gravity.END)
+                localText.gravity = Gravity.END
             }
         }
     }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,7 +7,7 @@
     android:layoutDirection="ltr"
     tools:context="com.concough.android.concough.ArchiveDetailActivity">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
 
         android:id="@+id/constraintLayout2"
         android:layout_width="0dp"
@@ -21,7 +21,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="8dp"
-            android:gravity="top|right"
+            android:layout_marginEnd="8dp"
+            android:gravity="top|end"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="@+id/settingUserInfoL_userImage"
             app:layout_constraintRight_toLeftOf="@+id/settingUserInfoL_userImage"
@@ -33,8 +34,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:gravity="right"
-                android:text="TextView"
+                android:gravity="end"
+                android:text=""
                 android:textAlignment="textEnd"
                 android:textColor="@android:color/black"
                 android:textSize="14sp"
@@ -45,7 +46,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:text="TextView"
+                android:text=""
                 android:textAlignment="textEnd"
                 android:textColor="@android:color/black"
                 android:textSize="12sp"
@@ -55,15 +56,14 @@
                 android:id="@+id/archiveDetailHolder1L_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-
-                android:text="TextView"
+                android:text=""
                 android:textAlignment="textEnd"
                 android:textColor="@color/colorConcoughGray"
                 android:textSize="11sp"
                 android:gravity="end" />
         </LinearLayout>
 
-        <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+        <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/settingUserInfoL_userImage"
             android:layout_width="80dp"
             android:layout_height="80dp"
@@ -82,6 +82,6 @@
             app:layout_constraintVertical_bias="1.0"
             app:srcCompat="@drawable/no_image_placeholder" />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

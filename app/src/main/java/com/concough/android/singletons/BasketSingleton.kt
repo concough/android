@@ -601,7 +601,7 @@ class BasketSingleton : Handler.Callback {
 
         val productId = bundle.getString("PRODUCT_ID")
         val productType = bundle.getString("TYPE")
-        val target: Any = bundle.getSerializable("TARGET")
+        val target: Any = bundle.getSerializable("TARGET") as Any
         val position: Int = bundle.getInt("POSITION")
 
 //        var loadingProgress: KProgressHUD? = AlertClass.showLoadingMessage(context!!)
@@ -635,10 +635,10 @@ class BasketSingleton : Handler.Callback {
                                             if (targetProductType == productType && targetProductUnjqueKey == productId) {
                                                 synchronized(this@BasketSingleton.sales) {
                                                     if (this@BasketSingleton.findSaleById(saleId) == null) {
-                                                        this@BasketSingleton.sales.add(SaleItem(saleId, created, cost, target, productType))
+                                                        this@BasketSingleton.sales.add(SaleItem(saleId, created!!, cost, target, productType))
                                                         this@BasketSingleton.totalCost += cost
                                                     } else if (this@BasketSingleton.findSaleById(saleId)!! < 0) {
-                                                        this@BasketSingleton.sales.add(SaleItem(saleId, created, cost, target, productType))
+                                                        this@BasketSingleton.sales.add(SaleItem(saleId, created!!, cost, target, productType))
                                                         this@BasketSingleton.totalCost += cost
                                                     }
                                                 }

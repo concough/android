@@ -16,7 +16,7 @@
         android:paddingLeft="15dp"
         android:paddingRight="15dp">
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
@@ -51,8 +51,8 @@
                     android:id="@+id/entranceInfoIcon_typeName"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="right|start"
-                    android:text="TextView"
+                    android:gravity="end|start"
+                    android:text=""
                     android:maxLines="2"
                     android:lines="1"
                     android:textColor="@android:color/black"
@@ -62,8 +62,8 @@
                     android:id="@+id/entranceInfoIcon_groupName"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="right|start"
-                    android:text="TextView"
+                    android:gravity="end|start"
+                    android:text=""
                     android:textColor="@android:color/black"
                     android:textDirection="rtl"
                     android:textSize="12sp" />
@@ -72,14 +72,14 @@
                     android:id="@+id/entranceInfoIcon_extraData"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="right|start"
+                    android:gravity="end|start"
                     android:lines="2"
-                    android:text="TextView"
+                    android:text=""
                     android:textColor="@color/colorConcoughGray"
                     android:textDirection="rtl"
                     android:textSize="11sp" />
             </LinearLayout>
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <Switch
             android:id="@+id/entranceInfoIcon_switch"
@@ -98,7 +98,7 @@
             android:textDirection="rtl"
             android:textSize="13sp" />
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
@@ -111,6 +111,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:layout_marginLeft="8dp"
+                android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/concough_badge_green_style"
                 android:gravity="center_vertical"
@@ -120,7 +121,7 @@
                 android:paddingRight="8dp"
                 android:paddingStart="8dp"
                 android:paddingTop="0dp"
-                android:text="10"
+                android:text="0"
                 android:textColor="@android:color/white"
                 android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -132,15 +133,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="0dp"
+                android:layout_marginEnd="0dp"
                 android:layout_marginTop="0dp"
                 android:background="@android:color/transparent"
-                android:gravity="right|center_vertical|start"
+                android:gravity="end|center_vertical|start"
                 android:text="سوالات نشان شده"
                 android:textColor="@color/colorConcoughBlue"
                 android:textSize="13sp"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>
 

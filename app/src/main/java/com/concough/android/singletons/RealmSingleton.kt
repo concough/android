@@ -37,7 +37,13 @@ class RealmSingleton {
 
     private constructor(context: Context) {
         Realm.init(context)
-        val config = RealmConfiguration.Builder().schemaVersion(6).migration(ModelMigration()).encryptionKey(SECRET_KEY.toByteArray().copyOfRange(0,64)).build()
+        val config = RealmConfiguration.Builder()
+                .schemaVersion(6)
+                .migration(ModelMigration())
+                .encryptionKey(SECRET_KEY.toByteArray().copyOfRange(0,64))
+                .allowQueriesOnUiThread(true)
+                .allowWritesOnUiThread(true)
+                .build()
 
         try {
             this.realm = Realm.getInstance(config)

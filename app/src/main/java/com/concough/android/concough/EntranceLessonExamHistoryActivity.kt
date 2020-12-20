@@ -4,10 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.fragment.app.DialogFragment
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -215,7 +215,7 @@ class EntranceLessonExamHistoryActivity : TopNavigationActivity() {
             this.examList = examList
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
             if (viewType == EntranceLessonExamHistoryHolderType.LESSON_EXAM_HISTORY_HEADER.value) {
                 val view = LayoutInflater.from(this.context).inflate(R.layout.item_favorite_header, parent, false)
                 return HeaderViewHeader(view)
@@ -234,24 +234,26 @@ class EntranceLessonExamHistoryActivity : TopNavigationActivity() {
             return 0
         }
 
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
             if (holder is HeaderViewHeader) {
                 holder.setupHolder("تمام سنجش ها")
             } else if (holder is HistoryItemViewHolder) {
                 val item = this.examList[position - 2]
-                holder.setupHolder(item.percentage, item.trueAnswer, item.falseAnswer, item.noAnswer,
-                        item.created, item.startedDate, item.finishedDate)
-                holder.itemView.setOnClickListener {
-                    val dialog = EntranceLessonLastExamChartDialog()
-                    dialog.isCancelable = false
-                    dialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.zhycan_dialog_fullscreen)
-                    dialog.setVariables( (context as EntranceLessonExamHistoryActivity).entranceUniqueId,
-                            (context as EntranceLessonExamHistoryActivity).lessonTitle,
-                            (context as EntranceLessonExamHistoryActivity).lessonOrder,
-                            (context as EntranceLessonExamHistoryActivity).bookletOrder,
-                            "ExamHistory", item)
+                if (item != null) {
+                    holder.setupHolder(item.percentage, item.trueAnswer, item.falseAnswer, item.noAnswer,
+                            item.created, item.startedDate, item.finishedDate)
+                    holder.itemView.setOnClickListener {
+                        val dialog = EntranceLessonLastExamChartDialog()
+                        dialog.isCancelable = false
+                        dialog.setStyle(DialogFragment.STYLE_NORMAL, R.style.zhycan_dialog_fullscreen)
+                        dialog.setVariables( (context as EntranceLessonExamHistoryActivity).entranceUniqueId,
+                                (context as EntranceLessonExamHistoryActivity).lessonTitle,
+                                (context as EntranceLessonExamHistoryActivity).lessonOrder,
+                                (context as EntranceLessonExamHistoryActivity).bookletOrder,
+                                "ExamHistory", item)
 
-                    dialog.show((context as EntranceLessonExamHistoryActivity).supportFragmentManager, "EntranceLessonExamDialog")
+                        dialog.show((context as EntranceLessonExamHistoryActivity).supportFragmentManager, "EntranceLessonExamDialog")
+                    }
                 }
             } else if (holder is HistoryChartViewHolder) {
                 holder.setupHolder(context, this.examList)
@@ -368,7 +370,7 @@ class EntranceLessonExamHistoryActivity : TopNavigationActivity() {
         }
 
         // MARK: Methods
-        override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
             if (viewType == EntranceLessonExamHistoryChartHolderType.LESSON_EXAM_HISTORY_CHART_1.value) {
                 val view = LayoutInflater.from(this.context).inflate(R.layout.cc_entrance_lesson_exam_history_chart_bar, parent, false)
 
@@ -399,7 +401,7 @@ class EntranceLessonExamHistoryActivity : TopNavigationActivity() {
             return 0
         }
 
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
             if (holder is EntranceLessonExamHistoryChart1ViewHolder) {
                 val labels = ArrayList<String>()
                 val data  = ArrayList<ArrayList<Float>>()

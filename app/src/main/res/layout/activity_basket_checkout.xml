@@ -9,7 +9,7 @@
     android:layoutDirection="ltr"
     tools:context="com.concough.android.concough.BasketCheckoutActivity">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:background="@android:color/white">
@@ -42,21 +42,21 @@
             app:layout_constraintBaseline_toBaselineOf="@+id/basketCheckoutA_cost_label"
             app:layout_constraintLeft_toLeftOf="parent"
             tools:layout_editor_absoluteY="8dp" />
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
     <com.baoyz.widget.PullRefreshLayout
         android:id="@+id/basketCheckoutA_swipeRefreshLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/basketCheckoutA_recycle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
 >
 
 
-        </android.support.v7.widget.RecyclerView>
+        </androidx.recyclerview.widget.RecyclerView>
 
     </com.baoyz.widget.PullRefreshLayout>
 
@@ -74,7 +74,7 @@
     </Button>
 
 
-    <android.support.design.widget.BottomNavigationView
+    <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -82,7 +82,7 @@ class EntranceQuestionModelHandler {
             return RealmSingleton.getInstance(context).DefaultRealm.where(EntranceQuestionModel::class.java)
                     .equalTo("entrance.username", username)
                     .equalTo("entrance.uniqueId", entranceId)
-                    .findAllSorted("number", Sort.ASCENDING)
+                    .sort("number", Sort.ASCENDING).findAll()
         }
 
         @JvmStatic
@@ -90,7 +90,7 @@ class EntranceQuestionModelHandler {
             return RealmSingleton.getInstance(context).DefaultRealm.where(EntranceQuestionModel::class.java)
                     .equalTo("entrance.uniqueId", entranceId)
                     .equalTo("entrance.username", username)
-                    .`in`("uniqueId", questions).findAllSorted("number", Sort.ASCENDING)
+                    .`in`("uniqueId", questions).sort("number", Sort.ASCENDING).findAll()
         }
 
         @JvmStatic
@@ -98,7 +98,7 @@ class EntranceQuestionModelHandler {
             return RealmSingleton.getInstance(context).DefaultRealm.where(EntranceQuestionModel::class.java)
                     .equalTo("entrance.username", username)
                     .equalTo("entrance.uniqueId", entranceId)
-                    .equalTo("isDownloaded", false).findAllSorted("number", Sort.ASCENDING)
+                    .equalTo("isDownloaded", false).sort("number", Sort.ASCENDING).findAll()
         }
 
         @JvmStatic

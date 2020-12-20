@@ -41,7 +41,7 @@ class UserLogModelHandler {
         @JvmStatic
         fun list(context: Context, username: String): RealmResults<UserLogModel> {
             return RealmSingleton.getInstance(context).DefaultRealm.where(UserLogModel::class.java)
-                    .equalTo("username", username).findAllSorted("created", Sort.ASCENDING)
+                    .equalTo("username", username).sort("created", Sort.ASCENDING).findAll()
         }
 
         @JvmStatic

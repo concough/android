@@ -87,7 +87,7 @@ class SynchronizationSingleton private constructor(context: Context) {
 
     public fun stopSynchronizer() {
         if(this.shouldUnbind) {
-            this.context!!.unbindService(this.connection)
+            this.context!!.unbindService(this.connection!!)
             this.shouldUnbind = false
         }
     }

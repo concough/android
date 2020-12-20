@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/colorWhite">
 
     <ImageView
@@ -12,8 +12,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginTop="8dp"
-        />
+        android:layout_marginTop="8dp" />
 
     <TextView
         android:id="@+id/itemEMI_entranceTypeTextView"
@@ -26,8 +25,7 @@
         app:layout_constraintTop_toBottomOf="@id/itemEMI_logoImageView"
         android:layout_marginTop="16dp"
         android:layoutDirection="rtl"
-        android:textDirection="rtl"
-        />
+        android:textDirection="rtl" />
 
     <TextView
         android:id="@+id/itemEMI_entranceSetTextView"
@@ -57,7 +55,7 @@
         android:textDirection="rtl"
         />
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/itemEMI_buyContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -117,16 +115,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center"
-                >
+                android:gravity="center">
 
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     app:srcCompat="@drawable/coins_96"
                     android:layout_marginRight="8dp"
-                    android:layout_marginEnd="8dp"
-                    />
+                    android:layout_marginEnd="8dp" />
 
                 <TextView
                     android:id="@+id/itemEMI_costValueTextView"
@@ -152,16 +148,14 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center"
-                android:layout_marginTop="8dp"
-                >
+                android:layout_marginTop="8dp">
 
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     app:srcCompat="@drawable/coins_96"
                     android:layout_marginRight="8dp"
-                    android:layout_marginEnd="8dp"
-                    />
+                    android:layout_marginEnd="8dp" />
 
                 <TextView
                     android:id="@+id/itemEMI_payCostValueTextView"
@@ -170,8 +164,7 @@
                     android:textColor="@color/colorConcoughBlue"
                     android:textSize="13sp"
                     android:layout_marginRight="8dp"
-                    android:layout_marginEnd="8dp"
-                    />
+                    android:layout_marginEnd="8dp" />
 
                 <TextView
                     android:id="@+id/itemEMI_payCostLableTextView"
@@ -179,12 +172,11 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/colorConcoughGray2"
                     android:textSize="13sp"
-                    android:text="پرداخت:"
-                    />
+                    android:text="پرداخت:" />
             </LinearLayout>
 
         </LinearLayout>
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
         android:id="@+id/itemEMI_lineBreakLinear"
@@ -216,6 +208,8 @@
         android:layout_marginTop="16dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:text="آزمون"
         android:textSize="13sp"
         android:textColor="@color/colorConcoughGray5"
@@ -243,4 +237,4 @@
             android:layout_height="1dp"
             android:background="@color/colorConcoughGray4" />
     </LinearLayout>
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

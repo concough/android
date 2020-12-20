@@ -1,10 +1,10 @@
 package com.concough.android.concough.dialogs
 
 import android.app.Dialog
-import android.support.v4.app.DialogFragment
+import androidx.fragment.app.DialogFragment
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
-import android.support.v7.util.SortedList
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.SortedList
 import android.util.Base64
 import android.view.*
 import android.widget.ImageView
@@ -46,21 +46,21 @@ class EntranceShowPreviewDialog: DialogFragment() {
     private var username: String = ""
     private var imageRepo: HashMap<String, ByteArray> = hashMapOf()
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        inflater?.let {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        inflater.let {
             return inflater.inflate(R.layout.dialog_entrance_show_perview, container, false)
         }
         return null
     }
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        this.username = UserDefaultsSingleton.getInstance(activity.applicationContext).getUsername()!!
+        this.username = UserDefaultsSingleton.getInstance(activity!!.applicationContext).getUsername()!!
 
-        DESPreview_questionNumberTextView.typeface = FontCacheSingleton.getInstance(activity.applicationContext).Light
-        DESPreview_answerTextView.typeface = FontCacheSingleton.getInstance(activity.applicationContext).Regular
-        DESPreview_closeButton.typeface = FontCacheSingleton.getInstance(activity.applicationContext).Regular
+        DESPreview_questionNumberTextView.typeface = FontCacheSingleton.getInstance(activity!!.applicationContext).Light
+        DESPreview_answerTextView.typeface = FontCacheSingleton.getInstance(activity!!.applicationContext).Regular
+        DESPreview_closeButton.typeface = FontCacheSingleton.getInstance(activity!!.applicationContext).Regular
 
         DESPreview_closeButton.setOnClickListener {
             this.dismiss()
@@ -81,9 +81,9 @@ class EntranceShowPreviewDialog: DialogFragment() {
     }
 
     override fun onResume() {
-        dialog.window!!.setFlags(WindowManager.LayoutParams.FLAG_SECURE,
+        dialog!!.window!!.setFlags(WindowManager.LayoutParams.FLAG_SECURE,
                 WindowManager.LayoutParams.FLAG_SECURE)
-        dialog.window!!.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+        dialog!!.window!!.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT)
         super.onResume()
     }
@@ -96,7 +96,7 @@ class EntranceShowPreviewDialog: DialogFragment() {
         DESPreview_questionNumberTextView.text = "سوال ${FormatterSingleton.getInstance().NumberFormatter.format(this.question.number)}"
         DESPreview_answerTextView.text = "گزینه ${questionAnswerToString(this.question.answer)} درست است"
 
-        val starQ = EntranceQuestionStarredModelHandler.get(activity.applicationContext,
+        val starQ = EntranceQuestionStarredModelHandler.get(activity!!.applicationContext,
                 this.username, this.question.entrance.uniqueId, this.question.uniqueId)
         if (starQ != null) {
             this.starred = true
@@ -110,10 +110,10 @@ class EntranceShowPreviewDialog: DialogFragment() {
     private fun changeStarState() {
         if (this.starred) {
             DESPreview_star.setImageResource(R.drawable.bookmark_filled)
-            DESPreview_star.setColorFilter(ContextCompat.getColor(activity.applicationContext, R.color.colorConcoughRedLight))
+            DESPreview_star.setColorFilter(ContextCompat.getColor(activity!!.applicationContext, R.color.colorConcoughRedLight))
         } else {
             DESPreview_star.setImageResource(R.drawable.bookmark_empty)
-            DESPreview_star.setColorFilter(ContextCompat.getColor(activity.applicationContext, R.color.colorConcoughGray2))
+            DESPreview_star.setColorFilter(ContextCompat.getColor(activity!!.applicationContext, R.color.colorConcoughGray2))
         }
     }
 
@@ -121,7 +121,7 @@ class EntranceShowPreviewDialog: DialogFragment() {
         if (this.starred) {
             val id = this.question.entrance.uniqueId
             if (id != null) {
-                if (EntranceQuestionStarredModelHandler.remove(activity.applicationContext, username, id, questionId)) {
+                if (EntranceQuestionStarredModelHandler.remove(activity!!.applicationContext, username, id, questionId)) {
                     val eData = JsonObject()
                     eData.addProperty("uniqueId", id)
                     eData.addProperty("questionNo", questionNumber)
@@ -133,7 +133,7 @@ class EntranceShowPreviewDialog: DialogFragment() {
         } else {
             val id = this.question.entrance.uniqueId
             if (id != null) {
-                if (EntranceQuestionStarredModelHandler.add(activity.applicationContext, username, id, questionId)) {
+                if (EntranceQuestionStarredModelHandler.add(activity!!.applicationContext, username, id, questionId)) {
                     val eData = JsonObject()
                     eData.addProperty("uniqueId", id)
                     eData.addProperty("questionNo", questionNumber)
@@ -154,7 +154,7 @@ class EntranceShowPreviewDialog: DialogFragment() {
         val createdUtc = calendar.time
 
         try {
-            UserLogModelHandler.add(activity.applicationContext, username, uniqueId, createdUtc, logType, extraData)
+            UserLogModelHandler.add(activity!!.applicationContext, username, uniqueId, createdUtc, logType, extraData)
         } catch (exc: Exception) {
         }
     }
@@ -209,7 +209,7 @@ class EntranceShowPreviewDialog: DialogFragment() {
 
         val entranceUniqueId = this.question.entrance.uniqueId
         var finalPath = username + "_" + entranceUniqueId
-        val f = File(activity.filesDir, finalPath)
+        val f = File(activity!!.filesDir, finalPath)
         if (!f.exists()) {
             finalPath = entranceUniqueId
         }
@@ -219,7 +219,7 @@ class EntranceShowPreviewDialog: DialogFragment() {
             if (!this.imageRepo.containsKey(imageId)) {
                 val filePath = "$finalPath/$imageId"
 
-                val file = File(activity.filesDir, filePath)
+                val file = File(activity!!.filesDir, filePath)
                 if (file.exists()) {
                     try {
                         var buffer: ByteArray? = ByteArray(file.length().toInt())
@@ -305,7 +305,7 @@ class EntranceShowPreviewDialog: DialogFragment() {
 
         if (localBitmaps.size >= 1) {
             try {
-                Glide.with(this)
+                Glide.with(this.activity)
                         .load(localBitmaps[0])
                         .listener(object : RequestListener<ByteArray, GlideDrawable> {
                             override fun onException(e: Exception, model: ByteArray, target: Target<GlideDrawable>, isFirstResource: Boolean): Boolean {
@@ -341,7 +341,7 @@ class EntranceShowPreviewDialog: DialogFragment() {
 
         if (localBitmaps.size >= 2) {
             try {
-                Glide.with(this)
+                Glide.with(this.activity)
                         .load(localBitmaps[1])
                         .listener(object : RequestListener<ByteArray, GlideDrawable> {
                             override fun onException(e: Exception, model: ByteArray, target: Target<GlideDrawable>, isFirstResource: Boolean): Boolean {
@@ -379,7 +379,7 @@ class EntranceShowPreviewDialog: DialogFragment() {
         if (localBitmaps.size >= 3) {
             try {
 
-                Glide.with(this)
+                Glide.with(this.activity)
                         .load(localBitmaps[2])
                         .listener(object : RequestListener<ByteArray, GlideDrawable> {
                             override fun onException(e: Exception, model: ByteArray, target: Target<GlideDrawable>, isFirstResource: Boolean): Boolean {

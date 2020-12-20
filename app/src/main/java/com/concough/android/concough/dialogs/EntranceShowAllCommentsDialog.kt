@@ -6,11 +6,11 @@ import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
-import android.support.v4.view.GestureDetectorCompat
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.helper.ItemTouchHelper
+import androidx.core.content.ContextCompat
+import androidx.core.view.GestureDetectorCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.ItemTouchHelper
 import android.util.Log
 import android.util.TypedValue
 import android.view.*
@@ -28,6 +28,7 @@ import com.google.gson.JsonParser
 import kotlinx.android.synthetic.main.dialog_entrance_show_all_comments.*
 import android.view.MotionEvent
 import android.view.GestureDetector
+import android.widget.LinearLayout
 import com.concough.android.general.AlertClass
 import io.realm.RealmResults
 import kotlinx.android.synthetic.main.cc_entrance_lesson_exam_history_chart.*
@@ -79,7 +80,7 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
 
         val swipeHandler = object : SwipeToDeleteCallback(context) {
             @SuppressLint("LongLogTag")
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder?, direction: Int) {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 viewHolder?.let {
                     val msg = AlertClass.convertMessage("EntranceShowAction", "DeleteComment")
                     AlertClass.showAlertMessageCustom(context, msg.title,
@@ -134,12 +135,12 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
             xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
         }
 
-        override fun onMove(recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?, target: RecyclerView.ViewHolder?): Boolean {
+        override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
             return false
         }
 
-        override fun onChildDraw(c: Canvas?, recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
-            viewHolder?.let {
+        override fun onChildDraw(c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
+            viewHolder.let {
                 val itemView = viewHolder.itemView
                 val itemHeight = itemView.bottom - itemView.top
                 val isCanceled = dX == 0f && !isCurrentlyActive
@@ -162,7 +163,7 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
                 val deleteIconRight = itemView.left + deleteIconMargin + intrinsicWidth
                 val deleteIconBottom = deleteIconTop + intrinsicHeight
 
-                deleteIcon.setBounds(deleteIconLeft.toInt(), deleteIconTop.toInt(),
+                deleteIcon!!.setBounds(deleteIconLeft.toInt(), deleteIconTop.toInt(),
                         deleteIconRight.toInt(), deleteIconBottom.toInt())
                 deleteIcon.setColorFilter(ContextCompat.getColor(itemView.context, R.color.colorWhite), PorterDuff.Mode.SRC_IN)
                 deleteIcon.draw(c)
@@ -205,24 +206,25 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
             this.notifyItemRemoved(position)
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder? {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
             if (viewType == EntranceShowAllCommentsTypes.TEXT_COMMENT.ordinal) {
                 val view = LayoutInflater.from(context).inflate(R.layout.item_entrance_show_all_comments_dialog_cm, parent, false)
                 return TextCommentHolder(view)
             }
 
-            return null
+            val view = LayoutInflater.from(context).inflate(R.layout.cc_entrance_show_empty_holder, parent, false)
+            return EmptyHolder(view)
         }
 
         override fun getItemCount(): Int {
             return this.comments.size
         }
 
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
-            holder?.let {
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            holder.let {
                 if (holder is TextCommentHolder) {
                     val comment = this.comments[position]
-                    holder.setupHolder(questionId, comment, position)
+                    holder.setupHolder(questionId, comment!!, position)
                 }
             }
         }
@@ -234,6 +236,8 @@ class EntranceShowAllCommentsDialog(context: Context): Dialog(context) {
         override fun getItemId(position: Int): Long {
             return super.getItemId(position)
         }
+
+        private inner class EmptyHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
         public class TextCommentHolder: RecyclerView.ViewHolder {
             private var commentTextView: TextView

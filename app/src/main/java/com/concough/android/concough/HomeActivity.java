@@ -6,12 +6,10 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,7 +44,6 @@ import kotlin.jvm.functions.Function2;
 import kotlin.jvm.functions.Function3;
 
 import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
-import static com.concough.android.settings.SupportAbilitiesKt.getSUPPORT_ACTIVITY_TYPES;
 import static com.concough.android.settings.SupportAbilitiesKt.isSupportActivityTypes;
 import static com.concough.android.utils.DataConvertorsKt.monthToString;
 import static com.concough.android.extensions.TypeExtensionsKt.timeAgoSinceDate;

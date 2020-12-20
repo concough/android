@@ -17,18 +17,18 @@
             android:layout_weight="1"
             android:layout_height="0dp">
 
-                <android.support.v7.widget.RecyclerView
+                <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/homeA_recycle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@color/colorConcoughGrayBackground">
 
 
-                </android.support.v7.widget.RecyclerView>
+                </androidx.recyclerview.widget.RecyclerView>
 
         </com.baoyz.widget.PullRefreshLayout>
 
-        <android.support.design.widget.BottomNavigationView
+        <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/navigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

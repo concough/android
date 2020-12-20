@@ -2,10 +2,10 @@ package com.concough.android.concough;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.support.design.widget.TabLayout;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.widget.AppCompatTextView;
+import com.google.android.material.tabs.TabLayout;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.widget.AppCompatTextView;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
 

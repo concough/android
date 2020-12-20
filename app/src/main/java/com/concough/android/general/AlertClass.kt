@@ -2,7 +2,7 @@ package com.concough.android.general
 
 import android.content.Context
 import android.graphics.Color
-import android.support.design.widget.Snackbar
+import com.google.android.material.snackbar.Snackbar
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -385,7 +385,7 @@ class AlertClass {
         fun showAlertMessage(context: Context, messageType: String, messageSubType: String, type: String, completion: (() -> Unit)?) {
             val dialogBuilder = ZhycanNiftyDialogBuilder(context, R.style.zhycan_dialog_untran)
 
-            val (title, message, showMessasge) = AlertClass.convertMessage(messageType, messageSubType)
+            val (title, message, showMessasge) = convertMessage(messageType, messageSubType)
 
             if (showMessasge) {
                 dialogBuilder
@@ -497,7 +497,7 @@ class AlertClass {
 
         @JvmStatic
         fun showTopMessage(context: Context, view: View, messageType: String, messageSubType: String, type: String, completion: (() -> Unit)?) {
-            val (_, message, showMessasge) = AlertClass.convertMessage(messageType, messageSubType)
+            val (_, message, showMessasge) = convertMessage(messageType, messageSubType)
 
             if (showMessasge) {
                 val snack = Snackbar.make(view, "", Snackbar.LENGTH_LONG)
@@ -509,7 +509,7 @@ class AlertClass {
                     "warning" -> layout.setBackgroundColor(context.resources.getColor(R.color.colorConcoughYellow))
                     else -> layout.setBackgroundColor(context.resources.getColor(R.color.colorConcoughGray4))
                 }
-                val textView = layout.findViewById(android.support.design.R.id.snackbar_text) as TextView
+                val textView = layout.findViewById(com.google.android.material.R.id.snackbar_text) as TextView
                 textView.visibility = View.INVISIBLE
 
                 // Inflate our custom view

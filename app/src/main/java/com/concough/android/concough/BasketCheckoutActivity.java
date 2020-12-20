@@ -6,10 +6,10 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,7 +37,6 @@ import com.concough.android.structures.EntranceStruct;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.vendor.progressHUD.KProgressHUD;
-import com.google.gson.JsonElement;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -46,7 +45,6 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import io.realm.RealmResults;
 import kotlin.Unit;

@@ -154,7 +154,7 @@ class SynchronizerService: Service(), Handler.Callback {
                 val item = items[i]
 
                 val parser = JsonParser()
-                val extraData = parser.parse(item.extraData).asJsonObject
+                val extraData = parser.parse(item!!.extraData).asJsonObject
 
                 val d = hashMapOf("uniqueId" to item.uniqueId,
                         "logType" to item.logType,

@@ -3,7 +3,7 @@ package com.concough.android.concough.dialogs
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
+import androidx.core.content.ContextCompat
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.MotionEvent
@@ -77,10 +77,9 @@ class EntranceShowNewCommentDialog(context: Context): Dialog(context) {
         })
     }
 
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        event?.let {
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        event.let {
             if (event.action == MotionEvent.ACTION_UP) {
-
             }
         }
 

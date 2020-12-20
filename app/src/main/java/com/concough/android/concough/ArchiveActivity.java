@@ -2,27 +2,25 @@ package com.concough.android.concough;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.RequiresApi;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.util.LayoutDirection;
+import androidx.annotation.RequiresApi;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.tabs.TabLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.core.content.ContextCompat;
+import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.app.ActionBar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
+
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -43,7 +41,6 @@ import com.concough.android.extensions.RotateViewExtensions;
 import com.concough.android.general.AlertClass;
 import com.concough.android.rest.ArchiveRestAPIClass;
 import com.concough.android.rest.MediaRestAPIClass;
-import com.concough.android.singletons.BasketSingleton;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.singletons.FormatterSingleton;
 import com.concough.android.singletons.MediaCacheSingleton;
@@ -51,7 +48,6 @@ import com.concough.android.structures.ArchiveEsetDetailStruct;
 import com.concough.android.structures.ArchiveEsetStructs;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
-import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -61,10 +57,8 @@ import com.orhanobut.dialogplus.OnItemClickListener;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -161,7 +155,7 @@ public class ArchiveActivity extends BottomNavigationActivity {
         tabLayout.setupWithViewPager(mViewPager);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
 
-        tabLayout.setTabGravity(Gravity.LEFT);
+        tabLayout.setTabGravity(TabLayout.GRAVITY_START);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             tabLayout.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
         }
