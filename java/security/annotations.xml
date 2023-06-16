@@ -1,0 +1,5 @@
+<root>
+    <item name='java.security.NoSuchAlgorithmException'>
+        <annotation name='java.lang.Deprecated' />
+    </item>
+</root>

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ccEntranceShowHolder1I_mainConstrant"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="0dp"
+    android:layoutDirection="ltr"
+    tools:context="com.concough.android.concough.ArchiveDetailActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        >
+
+        <LinearLayout
+            android:id="@+id/ccEntranceShowHolder1I_questionContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/concough_recycle_box_style"
+            android:orientation="vertical"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentStart="true">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/ccEntranceShowHolder1I_constrant"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <View
+                    android:id="@+id/ccEntranceShowHolder1I_questionArrow"
+                    android:layout_width="24dp"
+                    android:layout_height="16dp"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    android:layout_marginRight="-8dp"
+                    android:layout_marginEnd="-8dp"
+                    android:background="@drawable/concough_left_arrow_blue_style"
+                    />
+
+                <TextView
+                    android:id="@+id/ccEntranceShowHolder1I_questionNumber"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical|center_horizontal|center"
+                    android:text=""
+                    android:textAlignment="center"
+                    android:textColor="@color/colorConcoughBlue"
+                    android:textSize="14sp"
+                    app:layout_constraintRight_toLeftOf="@id/ccEntranceShowHolder1I_questionArrow"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <LinearLayout
+                android:id="@+id/ccEntranceShowHolder1I_linearQuestionsImage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="2dp"
+                android:layout_marginRight="2dp"
+                android:layout_marginTop="16dp"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/ccEntranceShowHolder1I_constrant">
+
+                <ImageView
+                    android:id="@+id/ccEntranceShowHolder1I_imgPreLoad"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:cropToPadding="true"
+                    android:foregroundGravity="center_horizontal"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/loading_glass"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/ccEntranceShowHolder1I_img1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitCenter" />
+
+                <ImageView
+                    android:id="@+id/ccEntranceShowHolder1I_img2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitCenter" />
+
+                <ImageView
+                    android:id="@+id/ccEntranceShowHolder1I_img3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:adjustViewBounds="false"
+                    android:scaleType="fitCenter" />
+            </LinearLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/ccEntranceShowHolder1I_constraintAnswer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:paddingBottom="8dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/ccEntranceShowHolder1I_linearQuestionsImage">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="8dp"
+                    android:gravity="center"
+                    >
+
+                    <ImageView
+                        android:id="@+id/ccEntranceShowHolder1I_eraserImageView"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/eraser_128"
+                        app:srcCompat="@drawable/eraser_128"
+                        android:layout_marginRight="8dp"
+                        android:layout_marginLeft="8dp"
+                        />
+
+                    <TextView
+                        android:id="@+id/ccEntranceShowHolder1I_correctAnswerTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textSize="16sp"
+                        android:textColor="@color/colorConcoughGreen"
+                        />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="28dp"
+                    android:orientation="horizontal"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginEnd="8dp"
+                    >
+
+                    <Button
+                        android:id="@+id/ccEntranceShowHolder1I_answer1Button"
+                        android:layout_width="50dp"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/colorConcoughGray2"
+                        android:textSize="15sp"
+                        android:background="@drawable/concough_border_radius_full_2gray_style"
+                        android:text="@string/entrance_exam_answer1"
+                        android:layout_marginRight="16dp"
+                        android:layout_marginEnd="16dp"
+                        />
+
+                    <Button
+                        android:id="@+id/ccEntranceShowHolder1I_answer2Button"
+                        android:layout_width="50dp"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/colorConcoughGray2"
+                        android:textSize="15sp"
+                        android:background="@drawable/concough_border_radius_full_2gray_style"
+                        android:text="@string/entrance_exam_answer2"
+                        android:layout_marginRight="16dp"
+                        android:layout_marginEnd="16dp"
+                        />
+                    <Button
+                        android:id="@+id/ccEntranceShowHolder1I_answer3Button"
+                        android:layout_width="50dp"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/colorConcoughGray2"
+                        android:textSize="15sp"
+                        android:background="@drawable/concough_border_radius_full_2gray_style"
+                        android:text="@string/entrance_exam_answer3"
+                        android:layout_marginRight="16dp"
+                        android:layout_marginEnd="16dp"
+                        />
+                    <Button
+                        android:id="@+id/ccEntranceShowHolder1I_answer4Button"
+                        android:layout_width="50dp"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/colorConcoughGray2"
+                        android:textSize="15sp"
+                        android:background="@drawable/concough_border_radius_full_2gray_style"
+                        android:text="@string/entrance_exam_answer4"
+                        />
+
+                </LinearLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+
+
+    </RelativeLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

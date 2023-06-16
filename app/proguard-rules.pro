@@ -15,3 +15,20 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+-ignorewarnings
+
+-keep class * {
+    public private *;
+}
+
+#-keep public class com.github.mikephil.charting.animation.* {
+#    public protected *;
+#}
+
+-keep class com.google.gson.** { *; }
+
+-dontwarn java.nio.file.Files
+-dontwarn java.nio.file.Path
+-dontwarn java.nio.file.OpenOption
+-dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement

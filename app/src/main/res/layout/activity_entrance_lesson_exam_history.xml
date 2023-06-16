@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:id="@+id/container"
+    android:layoutDirection="ltr"
+    tools:context="com.concough.android.concough.ArchiveDetailActivity">
+
+    <com.baoyz.widget.PullRefreshLayout
+        android:id="@+id/EntranceLessonExamHistoryA_swipeRefreshLayout"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="0dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/EntranceLessonExamHistoryA_recycleView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="0dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            android:layout_marginTop="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/concough_bottom_line_gray3">
+
+        </androidx.recyclerview.widget.RecyclerView>
+    </com.baoyz.widget.PullRefreshLayout>
+</LinearLayout>

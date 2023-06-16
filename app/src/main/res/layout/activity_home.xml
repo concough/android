@@ -1,33 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_home"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.concough.android.concough.HomeActivity"
-    android:background="@color/colorConcoughGrayBackground">
+    android:layout_marginBottom="0dp"
+    android:orientation="vertical"
+    android:layoutDirection="ltr"
+    tools:context="com.concough.android.concough.HomeActivity">
 
 
         <com.baoyz.widget.PullRefreshLayout
             android:id="@+id/homeA_swipeRefreshLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_weight="1"
+            android:layout_height="0dp">
 
-                <android.support.v7.widget.RecyclerView
+                <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/homeA_recycle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@color/colorConcoughGrayBackground">
 
 
-                </android.support.v7.widget.RecyclerView>
+                </androidx.recyclerview.widget.RecyclerView>
 
         </com.baoyz.widget.PullRefreshLayout>
 
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/navigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layoutDirection="ltr"
+            android:background="@android:color/white"
+            app:itemTextColor="@drawable/concough_navigation_style"
+            app:itemIconTint="@drawable/concough_navigation_style"
+            app:menu="@menu/navigation"
+            />
 
 
-
-
-
-
-</RelativeLayout>
+</LinearLayout>

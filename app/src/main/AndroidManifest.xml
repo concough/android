@@ -1,76 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.concough.android.concough">
 
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
+        android:name=".MainApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:largeHeap="true"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        tools:replace="android:icon">
+        <service android:name="com.concough.android.services.EntrancePackageDownloader" />
+        <service android:name="com.concough.android.services.SynchronizerService" />
+        <!-- <receiver android:name=".StartupActivity$NetworkChangeReceiver" > -->
+        <!-- <intent-filter > -->
+        <!-- <action android:name="android.net.conn.CONNECTIVITY_CHANGE" /> -->
+        <!-- <action android:name="android.net.wifi.WIFI_STATE_CHANGED" /> -->
+        <!-- </intent-filter> -->
+        <!-- </receiver> -->
         <activity
             android:name=".StartupActivity"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan">
-
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
-            <!-- <intent-filter> -->
-            <!-- <action android:name="android.intent.action.MAIN" /> -->
-
-
-            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
-            <!-- </intent-filter> -->
         </activity>
-        <activity android:name=".LoginActivity" />
+        <activity
+            android:name=".LoginActivity"
+            android:screenOrientation="portrait" />
 
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity android:name=".SignupActivity" />
-        <activity android:name=".SignupCodeActivity" />
-        <activity android:name=".SignupMoreInfo1Activity" />
-        <activity android:name=".SignupMoreInfo2Activity" />
-        <activity android:name=".SignupMoreInfo3Activity" />
-        <activity android:name=".HomeActivity" />
-        <!--<activity android:name=".TestActivity">-->
+        <activity
+            android:name=".SignupActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SignupCodeActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SignupMoreInfo1Activity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SignupMoreInfo2Activity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SignupMoreInfo3Activity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".HomeActivity"
+            android:screenOrientation="portrait" />
 
-            <!-- <intent-filter> -->
-            <!-- <action android:name="android.intent.action.MAIN" /> -->
+        <!-- <activity android:name=".TestActivity"> -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="android.intent.action.MAIN" /> -->
+        <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+        <!-- </intent-filter> -->
+        <!-- </activity> -->
 
+        <activity
+            android:name=".ForgotPasswordActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ResetPasswordActivity"
+            android:screenOrientation="portrait">
 
             <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
             <!-- </intent-filter> -->
-        <!--</activity>-->
-        <activity android:name=".ForgotPasswordActivity" />
-        <activity android:name=".ResetPasswordActivity">
-
-
-             <!--<category android:name="android.intent.category.LAUNCHER" />-->
-             <!--</intent-filter>-->
         </activity>
         <activity
             android:name=".ArchiveActivity"
-            android:theme="@style/AppThemeArchiveActionBar">
-
-
-
-        </activity>
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ArchiveDetailActivity"
-            android:theme="@style/AppThemeArchiveDetailActionBar">
+            android:screenOrientation="portrait"
+            android:theme="@style/AppThemeArchiveDetailActionBar" />
+        <activity
+            android:name=".SettingActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ErrorReportActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan|stateVisible" />
+        <activity
+            android:name=".SettingsWebViewActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".BottomNavigationActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppThemeArchiveActionBar" />
+        <activity
+            android:name=".EntranceDetailActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppThemeArchiveActionBar" />
+        <activity
+            android:name=".BasketCheckoutActivity"
+            android:exported="true"
+            android:screenOrientation="portrait">
 
+            <!-- <intent-filter> -->
+            <!-- <data android:scheme="concough" /> -->
+            <!-- <action android:name="android.intent.action.VIEW" /> -->
+            <!-- </intent-filter> -->
 
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
 
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="concough.zhycan.com"
+                    android:scheme="concough" />
+            </intent-filter>
         </activity>
+        <activity
+            android:name=".FavoritesActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SettingChangePasswordActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan|stateVisible" />
+        <activity
+            android:name=".EntranceShowActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".TopNavigationActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".EntranceMultiDetailActivity" />
+        <activity android:name=".EntranceLessonExamHistoryActivity"></activity>
     </application>
 
 </manifest>

@@ -1,16 +1,14 @@
 package com.concough.android.singletons
 
 import android.content.Context
-import android.icu.util.Calendar
+import android.util.Log
 import com.concough.android.settings.*
 import com.concough.android.structures.HTTPErrorType
 import com.concough.android.structures.NetworkErrorType
 import com.concough.android.tokenservice.JwtAdapter
 import com.concough.android.utils.JwtHandler
 import com.concough.android.utils.KeyChainAccessProxy
-import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.HashMap
 
 /**
  * Created by abolfazl on 7/4/17.
@@ -26,13 +24,14 @@ class TokenHandlerSingleton {
     private var _expiresIn: Date? = null
 
     private var _context: Context
+    private val EXPIRE_TIME_FOR_REFRESH_TOKEN: Long = 40000
 
 
     companion object Factory {
-        private var sharedInstance : TokenHandlerSingleton? = null
+        private var sharedInstance: TokenHandlerSingleton? = null
 
         @JvmStatic
-        fun  getInstance(context: Context): TokenHandlerSingleton {
+        fun getInstance(context: Context): TokenHandlerSingleton {
             if (sharedInstance == null)
                 sharedInstance = TokenHandlerSingleton(context)
 
@@ -60,9 +59,15 @@ class TokenHandlerSingleton {
             if (expiresIn != "") {
                 this._expiresIn = FormatterSingleton.getInstance().UTCDateFormatter.parse(expiresIn)
             }
+//            } else {
+//                this._expiresIn = Date()
+//            }
             if (lastTime != "") {
                 this._lastTime = FormatterSingleton.getInstance().UTCDateFormatter.parse(lastTime)
             }
+//            } else {
+//                this._lastTime = Date()
+//            }
 
             if (tokenType != "") this._tokenType = tokenType
         }
@@ -73,6 +78,7 @@ class TokenHandlerSingleton {
             JwtAdapter.token(username = this._username!!, password = this._password!!, completion = { data, statusCode, error ->
                 if (statusCode == 200) {
                     if (data != null) {
+                        Log.d("TOKEN", data.toString())
                         val token = data.get("token").asString
                         if (token != "") {
                             this._token = token
@@ -97,9 +103,9 @@ class TokenHandlerSingleton {
 
                         }
                     }
-                    completion(HTTPErrorType.UnKnown)
+                } else {
+                    completion(HTTPErrorType.toType(statusCode))
                 }
-                completion(error)
             }, failure = { error ->
                 failure(error)
             })
@@ -109,8 +115,10 @@ class TokenHandlerSingleton {
     public fun refreshToken(completion: (error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit) {
         if (this._oauthMethod == "jwt") {
             JwtAdapter.refreshToken(token = this._token!!, completion = { data, statusCode, error ->
+                Log.d("refreshToken Status" , statusCode.toString())
                 if (statusCode == 200) {
                     if (data != null) {
+                        Log.d("TOKEN2", data.toString())
                         val token = data.get("token").asString
                         if (token != "") {
                             this._token = token
@@ -122,22 +130,22 @@ class TokenHandlerSingleton {
                                 this._lastTime = payload.issuedAt
                                 this._expiresIn = payload.expiresAt
 
-                                KeyChainAccessProxy.getInstance(this._context).setValueAsString(OAUTH_LAST_ACCESS_KEY, FormatterSingleton.getInstance().UTCDateFormatter.format(this._lastTime))
-                                KeyChainAccessProxy.getInstance(this._context).setValueAsString(OAUTH_EXPIRES_IN_KEY, FormatterSingleton.getInstance().UTCDateFormatter.format(this._expiresIn))
+                                KeyChainAccessProxy.getInstance(this._context).setValueAsString(OAUTH_TOKEN_KEY, token)
+                                KeyChainAccessProxy.getInstance(this._context).setValueAsString(OAUTH_TOKEN_TYPE_KEY, this._tokenType!!)
+
+                                if (this._lastTime != null) KeyChainAccessProxy.getInstance(this._context).setValueAsString(OAUTH_LAST_ACCESS_KEY, FormatterSingleton.getInstance().UTCDateFormatter.format(this._lastTime))
+                                if (this._expiresIn != null) KeyChainAccessProxy.getInstance(this._context).setValueAsString(OAUTH_EXPIRES_IN_KEY, FormatterSingleton.getInstance().UTCDateFormatter.format(this._expiresIn))
 
                                 completion(HTTPErrorType.Success)
+
                             } catch (exc: Exception) {
-
+                                Log.d("TokenHandler", exc.toString())
                             }
-
-                            KeyChainAccessProxy.getInstance(this._context).setValueAsString(OAUTH_TOKEN_KEY, token)
-                            KeyChainAccessProxy.getInstance(this._context).setValueAsString(OAUTH_TOKEN_TYPE_KEY, this._tokenType!!)
-
                         }
                     }
-                    completion(HTTPErrorType.UnKnown)
+                } else {
+                    completion(HTTPErrorType.toType(statusCode))
                 }
-                completion(error)
             }, failure = { error ->
                 failure(error)
             })
@@ -166,7 +174,7 @@ class TokenHandlerSingleton {
             val map = hashMapOf<String, String>("Authorization" to "${this._tokenType} ${this._token}")
             return map
         }
-        return  null
+        return null
     }
 
     public fun isAuthorized(): Boolean {
@@ -180,7 +188,7 @@ class TokenHandlerSingleton {
         return (this._username != null && this._password != null)
     }
 
-    public fun assureAuthorized(refresh: Boolean = false, completion: (authenticated: Boolean, error: HTTPErrorType?) -> Unit,  failure: (error: NetworkErrorType?) -> Unit) {
+    public fun assureAuthorized(refresh: Boolean = false, completion: (authenticated: Boolean, error: HTTPErrorType?) -> Unit, failure: (error: NetworkErrorType?) -> Unit) {
         if (this.isAuthorized()) {
             if (refresh) {
                 this.refreshToken(completion = { error ->
@@ -188,51 +196,62 @@ class TokenHandlerSingleton {
                         completion(true, error)
                     } else {
                         if (error == HTTPErrorType.BadRequest || error == HTTPErrorType.ServerInternalError) {
-                            this.authorize(completion = {error ->
+                            this.authorize(completion = { error ->
                                 if (error == HTTPErrorType.Success) completion(true, error)
                                 else {
-                                        UserDefaultsSingleton.getInstance(_context).clearAll()
-                                        KeyChainAccessProxy.getInstance(this._context).clearAllValue()
-                                        completion(false, error)
+                                    Log.d("TokenHandler", "ERORR on assure CLEAR!! " + error)
+//                                    UserDefaultsSingleton.getInstance(_context.applicationContext).clearAll()
+//                                    KeyChainAccessProxy.getInstance(_context.applicationContext).clearAllValue()
+                                    completion(false, error)
                                 }
-                            }, failure = {error ->
+                            }, failure = { error ->
                                 failure(error)
                             })
+                        } else {
                             completion(false, error)
                         }
                     }
-                }, failure = {error ->
+                }, failure = { error ->
                     failure(error)
                 })
             } else {
 //                if (this._lastTime != null && this._expiresIn != null) {
                 if (this._expiresIn != null) {
-                    if (Date() > this._expiresIn) {
-                        this.refreshToken(completion = {error ->
+
+                    val date = Date();
+                    val u = this._expiresIn!!.time - date.time
+
+                    if (u <= EXPIRE_TIME_FOR_REFRESH_TOKEN) {
+                        this.refreshToken(completion = { error ->
                             if (error == HTTPErrorType.Success) {
                                 completion(true, error)
                             } else {
                                 if (error == HTTPErrorType.BadRequest || error == HTTPErrorType.ServerInternalError) {
-                                    this.authorize(completion = {error ->
+                                    this.authorize(completion = { error ->
                                         if (error == HTTPErrorType.Success) completion(true, error)
                                         else {
-                                            UserDefaultsSingleton.getInstance(_context).clearAll()
-                                            KeyChainAccessProxy.getInstance(this._context).clearAllValue()
+                                            Log.d("TokenHandler", "ERORR2 on ELSE assure CLEAR!! " + error)
+
+//                                            UserDefaultsSingleton.getInstance(_context).clearAll()
+//                                            KeyChainAccessProxy.getInstance(this._context).clearAllValue()
                                             completion(false, error)
                                         }
-                                    }, failure = {error ->
+                                    }, failure = { error ->
                                         failure(error)
                                     })
+                                } else {
                                     completion(false, error)
                                 }
                             }
-                        }, failure = {error ->
+                        }, failure = { error ->
                             failure(error)
 
                         })
                     } else {
                         completion(true, HTTPErrorType.Success)
                     }
+                } else {
+                    completion(false, null)
                 }
             }
 
@@ -244,7 +263,7 @@ class TokenHandlerSingleton {
                     } else {
                         completion(false, error)
                     }
-                }, failure = {error ->
+                }, failure = { error ->
                     failure(error)
                 })
             } else {

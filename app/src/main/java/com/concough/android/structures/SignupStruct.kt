@@ -15,12 +15,16 @@ class SignupMoreInfoStruct(): Serializable {
     var firstname: String? = null
     var lastname: String? = null
     var grade: String? = null
+    var gradeString: String? = null
     var gender: String? = null
     var birthday: Date? = null
 }
 
-enum class Gender(value: String) {
-    Male("M"), Female("F"), Other("O")
+enum class Gender(val value: String) {
+    Male("M"), Female("F"), Other("O");
+
+    override fun toString(): String = value
+
 }
 
 enum class GradeType(value: String) {
@@ -29,6 +33,7 @@ enum class GradeType(value: String) {
     companion object Factory{
         val allValues = arrayOf(BE, ME)
 
+        @JvmStatic
         fun selectWithString(value: String): GradeType {
             when(value) {
                 "ME" -> return ME

@@ -61,3 +61,194 @@ Edited Home activity and add pull refresh (faridM)
 
     1 - Aded 'com.baoyz.pullrefreshlayout:library:1.2.0'
     2 - Some changes on HomeActivity Layout
+
+=================================================================================
+
+Archive Activity (faridM)
+
+    1 - refresh button aded + Animations
+    2 - aded RotateViewExtensions for make refresh button animation
+    3 - aded "anim" Folder for add "concough_rotate.xml" file for use animations
+    4 - aded "recurring_appointment_100.png" icon for use in Archive_Activity
+    5 - "cc_archivedetail_actionbar.xml" , "cc_archive_listitem_tabbar.xml" , "cc_archive_listitem_details.xml" , "cc_archive_listitem_archive.xml" , "cc_archive_actionbar.xml"
+
+=================================================================================
+
+
+Finished Archive Detail Activity (faridM)
+
+
+    1 - Aded Layouts "concough_border_radius_archivedetail_style.xml" , "concough_gray_color_filter.xml" , "concough_recycle_box_style_holder2_gray.xml" , "concough_recycle_box_style_holder2_white.xml"
+    2 - Some Changes on "ArchiveActivity" , "ArchiveDetailActivty" , "HomaActivity"
+    3 - Some Layouts aded "cc_archivedetail_holder1.xml"  , "cc_archivedetail_holder2"
+    4 - Aded "/" at the end of "next" URL > UrlMakerSingleton
+
+
+
+=================================================================================
+
+
+Setting Activity (faridM)
+
+    1 - Aded 5 layouts "cc_setting_link_arrow.xml", "cc_setting_link_blue.xml", "cc_setting_useredit.xml", "cc_setting_userinfo.xml", "activity_setting.xml"
+    2 - Aded drawable icons and items:
+        "about_filled_100.png", "bug_filled_100.png", "concough_setting_border_top_bottom.xml", "housekeeping_100.png",
+        "ic_info_black_24dp.xml", "ic_notifications_black_24dp.xml", "ic_sync_black_24dp.xml", "invite_filled_100.png",
+        "logout_rounded_filled_100.png", "password_filled_100.png"
+
+    3 - Aded newIntent method on StartupActivity
+
+    Fixed
+        1 - Left to right on login activity fix
+
+
+
+=================================================================================
+
+Setting Change password  (faridM)
+
+    1 - change password problems
+    2 - create Entrance Show Activity
+
+
+    Fixed
+        1 - Login Activity alignment fix
+        2 - change font size of setting menu
+
+
+
+=================================================================================
+
+Edit and add some problems (faridM)
+
+ 1 - Some Changes To Activities:
+            PulltoRefresh
+            Custom action bar function
+            Aded error alerts
+            Fail error messages
+            Download image failure, change image to default
+            Aded badge icon and 2 other icons on navigation button
+            Make "downloadImage" function for load images
+            Modified Some Layouts and Drawables
+
+ 2 - Aded or Modified Files
+            archive_icon.png
+            back_icon.png
+            buy_icon.png
+            checkmark.png
+            download_cloud.png
+            edit.png
+            help_icon.png
+            info_icon.png
+            loading_glass.gif
+
+
+=================================================================================
+
+Refactors  (faridM)
+
+ 1 - Bottom Navigation jump on reset passwords and report bug solved (Adjust pan on manifest)
+ 2 - Grade change on setting activity fixed
+ 3 - Aded share button with images and text to setting activity
+ 4 - Fixed problem on recycleview basket remove
+ 5 - load basket on start activity before home load
+ 6 - badge onclick problem on archive activity
+ 7 - aded spinner loading for download
+ 8 - Change color of icon of archive activity on finish
+ 9 - add FLAG_ACTIVITY_NO_ANIMATION on button navigation to avoid animation
+ 10 - bottom navigation return false if current item menu reselected
+ 11 - reduce sizes of loading, change icons of share, help
+ 12 - Aded all alerts
+ 13 - Removed Loading from BasketSingleton > handleLoadBasketItems
+
+
+==================================================================================
+
+Refactor 2 (faridM)
+
+ 1 - Setting Activity layout changes
+ 2 - create MediaCacheSingleton
+ 3 - change downloadImage() function of all activities for LruCache
+ 4 - SignupStruct aded GradeString
+ 5 - SignupInfo3 and other activities that contains GradeType struct -> Adapter changed to Async
+ 6 - resolve problem of back button on entrance_show
+ 7 - logstatus aded to LoginActivity
+ 8 - aded Network Utils
+ 9 - DeviceInformationSingleton adeds
+
+
+==================================================================================
+
+Video and Colors optimize (faridM)
+
+ 1 - solved movie pause problem
+ 2 - aded new video
+ 3 - change drawable layouts of startActivity buttons
+ 4 - changed color of black view on startup activity
+ 5 - changed font decoration of buttons
+
+
+==================================================================================
+
+Debug 1 (faridM)
+
+ 1- EntranceDetailActivity fix extra data entranceDownload
+ 2- fix change password setting string
+ 3- change notification icon to concough logo transparent
+ 4- create icon from logo for concough
+ 5- aded mobile number after name of user on setting activity
+ 6- change text of lock error - another device
+ 7- add loading dialog on Add and Remove basket
+ 8- aded isFinishing to all loadings
+ 9- change  "lock" to force from DeviceRestApi because of not refreshing after change password
+10- onClick for EntranceShow not loaded event load
+11- change password activity aded current password and related conditions
+12- new function  for hide loading and disable buttons on ResetPasswordActivity
+13-Change some texts on AlertClass
+14-okHttpClient fixed timeout time for send sms for avoid network error
+15-SignupCodeActivity / SignupActivity some changes on send code and other processes
+
+
+==================================================================================
+
+Debug 2 (faridM)
+
+ 1- fix layout problems with other brands - remove all start and end margins
+ 2- fix direction of textfields
+ 3- fix download progress on back to Detail
+
+
+==================================================================================
+
+
+Debug 3 (faridM)
+
+ 1- remove reverse groups on archive-activity
+ 2- 2 time click on back exit on TopNavigationActivity
+ 3- refreshBasket() aded BasketCheckoutActivity  pull to refresh
+ 4- aded try catch for OnBackClicked() because of google play error report
+ 5- change minimum length of password to 4
+
+
+==================================================================================
+
+Debug 4 (faridM) - 1/15/2018
+
+ 1- Fixed left to right of some texts direction
+ 2- Fixed number of Starred entrances when clicked from Favorite Activity
+ 3- Fixed Continue download in favorite activity
+
+
+==================================================================================
+
+Debug 5 (faridM) 31-1-2018
+
+ 1- Fix all Loading Show
+ 2- Change Some labels
+
+==================================================================================
+
+Debug 6 (faridM) 21-2-2018
+
+ 1- Fix all problems with HudProgress
+ 2- Add MemoryUtilities checked

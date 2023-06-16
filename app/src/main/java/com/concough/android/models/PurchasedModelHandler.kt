@@ -1,9 +1,7 @@
 package com.concough.android.models
 
 import android.content.Context
-import com.concough.android.singletons.BasketSingleton
 import com.concough.android.singletons.RealmSingleton
-import io.realm.RealmQuery
 import io.realm.RealmResults
 import io.realm.Sort
 import java.util.*
@@ -31,11 +29,15 @@ class PurchasedModelHandler {
             purchased.downloadTimes = downloadTimes
 
             try {
-                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(purchased)
-                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                    RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(purchased)
+                }
+//                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return true
-            } catch (exc: Exception) {}
+            } catch (exc: Exception) {
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+            }
 
             return false
         }
@@ -48,11 +50,15 @@ class PurchasedModelHandler {
 
             if (purchased != null) {
                 try {
-                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                    purchased.deleteFromRealm()
-                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        purchased.deleteFromRealm()
+                    }
+//                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                     return true
-                } catch (exc: Exception) {}
+                } catch (exc: Exception) {
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+                }
             }
 
             return false
@@ -64,13 +70,17 @@ class PurchasedModelHandler {
             val purchased = this.getByProductId(context, username, productType, productId)
             if (purchased != null) {
                 try {
-                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                    purchased.isDownloaded = true
-                    purchased.isImageDownloaded = true
-                    RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(purchased)
-                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        purchased.isDownloaded = true
+                        purchased.isImageDownloaded = true
+                        RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(purchased)
+                    }
+//                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                     return true
-                } catch (exc: Exception) {}
+                } catch (exc: Exception) {
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+                }
             }
 
             return false
@@ -82,12 +92,16 @@ class PurchasedModelHandler {
             val purchased = this.getByProductId(context, username, productType, productId)
             if (purchased != null) {
                 try {
-                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                    purchased.isLocalDBCreated = true
-                    RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(purchased)
-                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        purchased.isLocalDBCreated = true
+                        RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(purchased)
+                    }
+//                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                     return true
-                } catch (exc: Exception) {}
+                } catch (exc: Exception) {
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+                }
             }
 
             return false
@@ -109,12 +123,16 @@ class PurchasedModelHandler {
             val purchased = this.getByUsernameAndId(context, username, id)
             if (purchased != null) {
                 try {
-                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                    purchased.downloadTimes = newDownloadTimes
-                    RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(purchased)
-                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        purchased.downloadTimes = newDownloadTimes
+                        RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(purchased)
+                    }
+//                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                     return true
-                } catch (exc: Exception) {}
+                } catch (exc: Exception) {
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+                }
             }
 
             return false
@@ -126,14 +144,18 @@ class PurchasedModelHandler {
             val purchased = this.getByUsernameAndId(context, username, id)
             if (purchased != null) {
                 try {
-                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                    purchased.isDownloaded = false
-                    purchased.isImageDownloaded = false
-                    purchased.isLocalDBCreated = false
-                    RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(purchased)
-                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        purchased.isDownloaded = false
+                        purchased.isImageDownloaded = false
+                        purchased.isLocalDBCreated = false
+                        RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(purchased)
+                    }
+//                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                     return true
-                } catch (exc: Exception) {}
+                } catch (exc: Exception) {
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+                }
             }
 
             return false
@@ -141,15 +163,23 @@ class PurchasedModelHandler {
 
         @JvmStatic
         fun getAllPurchased(context: Context, username: String): RealmResults<PurchasedModel>? {
+            var realm = RealmSingleton.getInstance(context).DefaultRealm
             return RealmSingleton.getInstance(context).DefaultRealm.where(PurchasedModel::class.java)
-                    .equalTo("username", username).findAllSorted("created", Sort.DESCENDING)
+                    .equalTo("username", username).sort("created", Sort.DESCENDING).findAll()
         }
 
         @JvmStatic
         fun getAllPurchasedNotIn(context: Context, username: String, ids: Array<Int>): RealmResults<PurchasedModel>? {
             return RealmSingleton.getInstance(context).DefaultRealm.where(PurchasedModel::class.java)
-                    .equalTo("username", username).beginGroup().not().`in`("id", ids).endGroup().findAllSorted("created", Sort.DESCENDING)
+                    .equalTo("username", username).beginGroup().not().`in`("id", ids).endGroup().sort("created", Sort.DESCENDING).findAll()
         }
+
+        @JvmStatic
+        fun getAllPurchasedIn(context: Context, username: String, ids: Array<Int>): RealmResults<PurchasedModel>? {
+            return RealmSingleton.getInstance(context).DefaultRealm.where(PurchasedModel::class.java)
+                    .equalTo("username", username).beginGroup().`in`("id", ids).endGroup().sort("created", Sort.DESCENDING).findAll()
+        }
+
 
         @JvmStatic
         fun getByProductId(context: Context, username: String, productType: String, productId: String): PurchasedModel? {

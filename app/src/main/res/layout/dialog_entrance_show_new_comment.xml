@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+   android:id="@+id/DESNewComment_container"
+    android:background="@android:color/transparent"
+    >
+
+    <TextView
+        android:id="@+id/DESNewComment_headerTitleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorConcoughGray"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="48dp"
+        android:text="@string/newCommentHeaderTitle"
+        android:textSize="15sp"
+        android:textDirection="rtl"
+        />
+
+    <LinearLayout
+        android:id="@+id/DESNewComment_commentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/DESNewComment_headerTitleTextView"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:background="@drawable/concough_border_outline_white_style"
+        android:clipChildren="true"
+        android:orientation="vertical"
+        >
+        <TextView
+            android:id="@+id/DESNewComment_questionTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/concough_header_border_outline_gray_style"
+            android:textColor="@color/colorBlack"
+            android:textDirection="rtl"
+            android:text=""
+            android:gravity="center"
+            android:textAlignment="center"
+            android:padding="8dp"
+            />
+
+        <LinearLayout
+            android:id="@+id/DESNewComment_lineBreakLinear1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/colorConcoughGray4" />
+
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/DESNewComment_newEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:ems="10"
+            android:maxLength="255"
+            android:textDirection="rtl"
+            android:gravity="start"
+            android:textColor="@color/colorBlack"
+            android:inputType="textMultiLine"
+            android:scrollbars="vertical"/>
+
+        <TextView
+            android:id="@+id/DESNewComment_newCommentErrorTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textDirection="rtl"
+            android:textAlignment="textStart"
+            android:text=""
+            android:gravity="start"
+            android:textColor="@color/colorBlack"
+            android:textSize="12sp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginEnd="4dp"
+            />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/DESNewComment_charactersCountTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/newCommentMaxLimitDefault"
+        android:textColor="@color/colorWhite"
+        android:textSize="12sp"
+        app:layout_constraintTop_toBottomOf="@id/DESNewComment_commentContainer"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        />
+
+    <Button
+        android:id="@+id/DESNewComment_saveButton"
+        android:layout_width="128dp"
+        android:layout_height="40dp"
+        android:textColor="@color/colorWhite"
+        android:background="@drawable/concough_border_outline_style"
+        android:text="@string/save"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/DESNewComment_commentContainer"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp" />
+
+    <Button
+        android:id="@+id/DESNewComment_cancelButton"
+        android:layout_width="128dp"
+        android:layout_height="40dp"
+        android:textColor="@color/colorWhite"
+        android:background="@drawable/concough_border_radius_white_style"
+        android:text="@string/cancel"
+        android:textSize="14sp"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@id/DESNewComment_saveButton"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginBottom="8dp"
+        />
+</androidx.constraintlayout.widget.ConstraintLayout>

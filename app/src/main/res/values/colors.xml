@@ -7,16 +7,44 @@
 
     <!-- Concough Colors -->
     <color name="colorConcoughBlue">#007aff</color>
+    <color name="colorConcoughBlueLight">#b3007aff</color>
+    <color name="colorConcoughBlueDark">#032055</color>
     <color name="colorConcoughRed">#960000</color>
     <color name="colorConcoughRedLight">#DD0000</color>
     <color name="colorConcoughGreen">#008000</color>
+    <color name="colorConcoughGreenLight">#b3008000</color>
+    <color name="colorConcoughGrayDiasable">#75f7f7f7</color>
+    <color name="colorConcoughYellow">#e6b903</color>
     <color name="colorConcoughGray">#b7b7b7</color>
     <color name="colorConcoughGray2">#575757</color>
+    <color name="colorConcoughGray5">#878787</color>
     <color name="colorConcoughGray3">#f7f7f7</color>
     <color name="colorConcoughGray4">#e9e9e9</color>
+    <color name="colorConcoughGray6">#dddddd</color>
+
+    <color name="colorConcoughGrayBlue">#2A417F</color>
+    <color name="colorConcoughGrayBlueLight">#802A417F</color>
+    <color name="colorConcoughOrange">#FFBB3C</color>
+    <color name="colorConcoughOrangeLight">#64ffbb3c</color>
+    <color name="colorConcoughYellow2">#FFFDE6</color>
+    <color name="colorConcoughPurple">#D457D4</color>
 
     <color name="colorConcoughGrayBackground">#f6f6f6</color>
     <color name="colorConcoughBorderWhite">#cccccc</color>
-    <color name="colorConcoughShadow">#d8d8d8</color>
+
+    <color name="colorConcoughVideoIntro">#99000000</color>
+
+
+    <color name="colorConcoughHolder2Box">#EEEEEE</color>
+
+
+
+    <color name="colorWhite">#ffffff</color>
+    <color name="colorBlack">#000000</color>
+    <color name="colorConcoughBlackLight">#b3000000</color>
+    <color name="colorWhiteAlpha">#aaffffff</color>
+
+    <color name="kprogresshud_default_color">#b1000000</color>
+    <color name="kprogresshud_grey_color">#449E9E9E</color>
 
 </resources>

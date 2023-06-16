@@ -12,8 +12,9 @@ import io.realm.annotations.PrimaryKey;
 
 public class EntranceModel extends RealmObject {
     @PrimaryKey
-    public String uniqueId = "";
+    public String pUniqueId = "";
 
+    public String uniqueId = "";
     public String username = "";
     public String type = "";
     public String organization = "";
@@ -23,9 +24,10 @@ public class EntranceModel extends RealmObject {
     public String extraData = "";
     public int bookletsCount = 0;
     public int year = 0;
+    public int month = 0;
     public int duration = 0;
     public Date lastPublished = new Date();
 
-    public RealmList<EntranceBookletModel> booklets;
+    public RealmList<EntranceBookletModel> booklets = new RealmList<>();
 
 }

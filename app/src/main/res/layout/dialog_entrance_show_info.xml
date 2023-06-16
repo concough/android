@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorWhite"
+    android:layoutDirection="ltr" >
+
+    <LinearLayout
+        android:id="@+id/ESID_section1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="top"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginLeft="8dp" >
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            >
+
+            <LinearLayout
+                android:id="@+id/ESID_extraInfoContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="top"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginTop="8dp">
+
+                <LinearLayout
+                    android:id="@+id/ESID_markedQuestionContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/bookmark_book_80"
+                        app:srcCompat="@drawable/bookmark_book_80"
+                        android:layout_marginBottom="4dp"
+                        />
+
+                    <TextView
+                        android:id="@+id/ESID_markedCountTextView"
+                        android:textDirection="rtl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="14sp"
+                        android:text="۰"
+                        android:textColor="@color/colorConcoughRed"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ESID_entranceYearContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_marginLeft="24dp"
+                    android:layout_marginStart="24dp"
+                    >
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/calendar_100"
+                        app:srcCompat="@drawable/calendar_100"
+                        android:layout_marginBottom="4dp"
+                        />
+
+                    <TextView
+                        android:id="@+id/ESID_entranceYearTextView"
+                        android:textDirection="rtl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp"
+                        android:text="تیر ۱۳۹۵"
+                        android:textColor="@color/colorBlack"
+                        />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/ESID_showStarredQuestionButton"
+                android:layout_width="120dp"
+                android:layout_height="30dp"
+                android:textColor="@color/colorConcoughBlue"
+                android:background="@drawable/concough_border_radius_style"
+                android:textSize="13sp"
+                android:text="@string/favorite_entrance_open_starred"
+                app:layout_constraintTop_toBottomOf="@id/ESID_extraInfoContainer"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/ESID_entranceSetImageView"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/no_image"
+            app:srcCompat="@drawable/no_image"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            app:civ_border_color="@color/colorConcoughGray4"
+            app:civ_border_width="0.8dp"
+            app:civ_fill_color="@color/colorWhite"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ESID_linearLine1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/ESID_section1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorConcoughGray3" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ESID_section2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="end"
+        app:layout_constraintTop_toBottomOf="@id/ESID_linearLine1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginEnd="16dp"
+        >
+
+        <TextView
+            android:id="@+id/ESID_entranceSetTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorBlack"
+            android:textSize="14sp"
+            android:gravity="start"
+            android:textAlignment="textStart"
+            android:textDirection="rtl"
+            />
+        <TextView
+            android:id="@+id/ESID_entranceTypeTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/colorBlack"
+            android:textSize="12sp"
+            android:gravity="start"
+            android:textAlignment="textStart"
+            android:textDirection="rtl"
+            />
+        <TextView
+            android:id="@+id/ESID_entranceOrgTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/colorConcoughGray2"
+            android:textSize="12sp"
+            android:gravity="start"
+            android:textAlignment="textStart"
+            android:textDirection="rtl"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ESID_linearLine2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/ESID_section2"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorConcoughGray4" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ESID_defaultShowContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/ESID_linearLine2"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="16dp"
+        >
+
+        <TextView
+            android:id="@+id/ESID_defaultShowLabelTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorConcoughGray"
+            android:textSize="12sp"
+            android:text="@string/entrance_info_default_show"
+            />
+
+            <info.hoang8f.android.segmented.SegmentedGroup
+                android:id="@+id/ESID_defaultShowSegmentGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                app:sc_border_width="1dp"
+                app:sc_corner_radius="5dp"
+                app:sc_tint_color="@color/colorConcoughGreen"
+                app:sc_checked_text_color="@color/colorWhite"
+                >
+
+                <RadioButton
+                    android:id="@+id/ESID_segmentStats"
+                    style="@style/RadioButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:text="@string/entrance_info_default_show_segment_stats"/>
+
+                <RadioButton
+                    android:id="@+id/ESID_segmentComments"
+                    style="@style/RadioButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:text="@string/entrance_info_default_show_segment_comments"/>
+
+                <RadioButton
+                    android:id="@+id/ESID_segmentAnswer"
+                    style="@style/RadioButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:text="@string/entrance_info_default_show_segment_answer"/>
+
+                <RadioButton
+                    android:id="@+id/ESID_segmentNone"
+                    style="@style/RadioButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:text="@string/entrance_info_default_show_segment_none"/>
+
+            </info.hoang8f.android.segmented.SegmentedGroup>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ESID_examBriefContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/ESID_linearLine2"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="16dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        >
+
+        <LinearLayout
+            android:id="@+id/ESID_section3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="top">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageView
+                    android:id="@+id/ESID_totalQuestionsImageView"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/question_80"
+                    app:srcCompat="@drawable/question_80"
+                    />
+
+                <TextView
+                    android:id="@+id/ESID_totalQuestionsTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="14sp"
+                    android:layout_marginTop="8dp"
+                    android:textDirection="rtl"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginLeft="32dp"
+                android:layout_marginStart="32dp"
+                >
+
+                <ImageView
+                    android:id="@+id/ESID_lessonExamTimerImageView"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/timer2_100"
+                    app:srcCompat="@drawable/timer2_100"
+                    />
+
+                <TextView
+                    android:id="@+id/ESID_lessonExamTimerTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="14sp"
+                    android:layout_marginTop="8dp"
+                    />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/ESID_examBriefTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorConcoughGreen"
+            android:textSize="14sp"
+            android:textDirection="rtl"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

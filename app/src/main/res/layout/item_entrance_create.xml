@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item_entrance_create"
     android:layout_width="match_parent"
-    android:layout_height="280dp"
+    android:layout_height="wrap_content"
     android:layout_marginLeft="4dp"
+    android:layout_marginStart="4dp"
     android:layout_marginRight="4dp"
+    android:layout_marginEnd="4dp"
     android:layout_marginTop="4dp"
-    android:background="@drawable/concough_recycle_box_style">
+    android:background="@drawable/concough_recycle_box_style"
+    android:layoutDirection="ltr">
 
 
     <ImageView
@@ -23,34 +26,56 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/app_dropbox_icon" />
+        app:srcCompat="@drawable/no_image_placeholder" />
 
-    <TextView
-        android:id="@+id/itemEntranceCreateI_dateTopLeft"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:layout_marginLeft="8dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
         android:background="@drawable/concough_border_radius_style"
-        android:paddingLeft="6dp"
-        android:paddingRight="6dp"
-        android:textColor="@color/colorConcoughBlue"
-        android:textSize="16sp"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp">
+        <TextView
+            android:id="@+id/itemEntranceCreateI_dateYear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layoutDirection="rtl"
+            android:textColor="@color/colorConcoughBlue"
+            android:textSize="15sp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginStart="4dp" />
+
+        <TextView
+            android:id="@+id/itemEntranceCreateI_dateMonth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layoutDirection="rtl"
+            android:textColor="@color/colorConcoughBlueLight"
+            android:textSize="14sp" />
+
+
+    </LinearLayout>
+
 
     <TextView
         android:id="@+id/itemEntranceCreateI_concourText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:layoutDirection="rtl"
         android:text="@string/itemEntranceCreateI_S_concourText"
-        android:textSize="16sp"
+        android:textColor="@color/colorConcoughGray"
+        android:textSize="14sp"
         app:layout_constraintRight_toRightOf="parent"
-
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -63,7 +88,9 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:gravity="center"
-        android:text="-"
+        android:layoutDirection="rtl"
+        android:text=""
+        android:textDirection="rtl"
         android:textColor="@android:color/black"
         android:textSize="14sp"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -74,14 +101,14 @@
         android:id="@+id/itemEntranceCreateI_entranceSetGroup"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:gravity="center"
-        android:text="-"
+        android:layoutDirection="rtl"
+        android:text=""
         android:textColor="@android:color/black"
+        android:textDirection="rtl"
         android:textSize="15sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -96,9 +123,11 @@
         android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="12dp"
+        android:layout_marginBottom="4dp"
         android:gravity="center"
-        android:text="-"
-        android:textColor="@color/colorConcoughGray"
+        android:layoutDirection="rtl"
+        android:text=""
+        android:textColor="@color/colorConcoughGray5"
         android:textSize="12sp"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -113,9 +142,10 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/itemEntranceCreateI_additionalData"
         app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent">
 
@@ -130,7 +160,7 @@
 
     </LinearLayout>
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -146,31 +176,31 @@
             android:id="@+id/itemEntranceCreateI_clockLenearLeft"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
             android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:gravity="center_vertical|center"
+            android:gravity="center"
             android:orientation="horizontal"
-            android:padding="3dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginStart="8dp">
 
             <TextView
                 android:id="@+id/itemEntranceCreateI_dateJalali"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="4dp"
-                android:text="TextView"
+                android:layout_weight="1"
+                android:layoutDirection="rtl"
+                android:text=""
                 android:textColor="@color/colorConcoughGray"
-                android:textSize="12sp" />
+                android:textDirection="rtl"
+                android:textSize="12sp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginStart="4dp" />
 
             <ImageView
                 android:id="@+id/itemEntranceCreateI_clock"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:layout_weight="1"
                 app:srcCompat="@drawable/clock_100" />
 
         </LinearLayout>
@@ -179,25 +209,25 @@
             android:id="@+id/itemEntranceCreateI_clockLenearRight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
-            android:layout_marginTop="8dp"
             android:orientation="horizontal"
-            android:padding="3dp"
+            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginEnd="8dp">
 
             <TextView
                 android:id="@+id/itemEntranceCreateI_sellCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="4dp"
+                android:layout_marginLeft="4dp"
                 android:layout_weight="1"
-                android:text="220"
+                android:layoutDirection="rtl"
+                android:text=""
                 android:textColor="@color/colorConcoughGreen"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:layout_marginStart="4dp" />
 
             <ImageView
                 android:id="@+id/itemEntranceCreateI_cloud"
@@ -207,7 +237,7 @@
                 app:srcCompat="@drawable/cloud_100" />
 
         </LinearLayout>
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

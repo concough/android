@@ -3,29 +3,34 @@ package com.concough.android.concough;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.concough.android.general.AlertClass;
 import com.concough.android.rest.AuthRestAPIClass;
 import com.concough.android.singletons.FontCacheSingleton;
 import com.concough.android.structures.HTTPErrorType;
 import com.concough.android.structures.NetworkErrorType;
 import com.concough.android.structures.SignupStruct;
+import com.concough.android.vendor.progressHUD.KProgressHUD;
 import com.google.gson.JsonObject;
 
 import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 
 import static com.concough.android.extensions.ValidatorExtensionsKt.isValidPhoneNumber;
+import static com.concough.android.extensions.EditTextExtensionKt.DirectionFix;
+import static com.concough.android.settings.ConstantsKt.getCONNECTION_MAX_RETRY;
 
 public class ForgotPasswordActivity extends AppCompatActivity {
 
@@ -33,6 +38,32 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     private Button loginButton;
     private EditText usernameEdittext;
     private SignupStruct signupStruct;
+    private KProgressHUD loadingProgress;
+
+    private String send_type = "sms";
+    private String oldNumber = "";
+    private String newNumber = "";
+    private Integer retryCounter = 0;
+
+    public void setSend_type(String send_type) {
+        this.send_type = send_type;
+
+        switch (send_type) {
+            case "call":
+                sendCodeButton.setText("ارسال کد از طریق تماس");
+                sendCodeButton.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.concough_border_outline_red_style));
+                sendCodeButton.setEnabled(true);
+                break;
+            case "sms":
+                sendCodeButton.setText("ارسال کد");
+                sendCodeButton.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.concough_border_outline_style));
+                break;
+            case "":
+                sendCodeButton.setText("فردا سعی نمایید...");
+                sendCodeButton.setBackground(ContextCompat.getDrawable(getApplicationContext(),R.drawable.concough_border_outline_gray_style));
+                break;
+        }
+    }
 
     public static Intent newIntent(Context packageContext) {
         Intent i = new Intent(packageContext, ForgotPasswordActivity.class);
@@ -62,6 +93,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         sendCodeButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getBold());
         loginButton.setTypeface(FontCacheSingleton.getInstance(getApplicationContext()).getRegular());
 
+        DirectionFix(usernameEdittext);
 
         usernameEdittext.addTextChangedListener(new TextWatcher() {
             @Override
@@ -71,28 +103,24 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().length() > 0) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-//                        usernameEdittext.setTextAlignment((View.LAYOUT_DIRECTION_LTR));
-                        usernameEdittext.setTextDirection(View.TEXT_DIRECTION_LTR);
-                        usernameEdittext.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-                    } else {
-                        usernameEdittext.setGravity(Gravity.END);
-
-                    }
-                } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        usernameEdittext.setTextDirection(View.TEXT_DIRECTION_RTL);
-                        usernameEdittext.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
-                    } else {
-                        usernameEdittext.setGravity(Gravity.START);
-                    }
-                }
+              DirectionFix(usernameEdittext);
             }
 
             @Override
             public void afterTextChanged(Editable s) {
+                String username = usernameEdittext.getText().toString().trim();
+                if(isValidPhoneNumber(username)){
+                    if(username.startsWith("0"))
+                        username=username.substring(1);
 
+                    username = "98" + username;
+
+                    newNumber = username;
+                    if(!oldNumber.equals(newNumber)) {
+                        setSend_type("sms");
+                        oldNumber= newNumber;
+                    }
+                }
             }
         });
 
@@ -107,6 +135,8 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                     username = "98" + username;
 
                     ForgotPasswordActivity.this.forgotPassword(username);
+                } else {
+                    AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "Form", "PhoneVerifyWrong", "error", null);
                 }
             }
         });
@@ -130,13 +160,19 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(final String... params) {
-            AuthRestAPIClass.forgotPassword(params[0], new Function2<JsonObject, HTTPErrorType, Unit>() {
+
+
+            AuthRestAPIClass.forgotPassword(params[0], send_type, new Function2<JsonObject, HTTPErrorType, Unit>() {
                 @Override
                 public Unit invoke(final JsonObject jsonObject, final HTTPErrorType httpErrorType) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
                             if (httpErrorType == HTTPErrorType.Success) {
+                                ForgotPasswordActivity.this.retryCounter = 0;
                                 if (jsonObject != null) {
                                     String status = jsonObject.get("status").getAsString();
                                     switch (status) {
@@ -156,8 +192,35 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                                                 String errorType = jsonObject.get("error_type").getAsString();
                                                 switch (errorType) {
                                                     case "UserNotExist":
-                                                        // TODO: Show error message eith msgType = "AuthProfile"
+                                                        AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "AuthProfile", errorType, "error", null);
                                                         break;
+                                                    case "SMSSendError":
+                                                    case "CallSendError": {
+                                                        AlertClass.showAlertMessage(ForgotPasswordActivity.this, "AuthProfile", errorType, "error", null);
+                                                        break;
+                                                    }
+                                                    case "ExceedToday": {
+                                                        AlertClass.showAlertMessage(ForgotPasswordActivity.this, "AuthProfile", errorType, "error", new Function0<Unit>() {
+                                                            @Override
+                                                            public Unit invoke() {
+                                                                ForgotPasswordActivity.this.setSend_type("call");
+                                                                return null;
+                                                            }
+                                                        });
+                                                        break;
+                                                    }
+                                                    case "ExceedCallToday": {
+                                                        AlertClass.showAlertMessage(ForgotPasswordActivity.this, "AuthProfile", errorType, "error", new Function0<Unit>() {
+                                                            @Override
+                                                            public Unit invoke() {
+                                                                ForgotPasswordActivity.this.setSend_type("");
+                                                                sendCodeButton.setEnabled(false);
+                                                                sendCodeButton.setBackgroundColor(ActivityCompat.getColor(ForgotPasswordActivity.this, R.color.colorConcoughGray2));
+                                                                return null;
+                                                            }
+                                                });
+                                                        break;
+                                                    }
                                                     default:
                                                         break;
                                                 }
@@ -170,7 +233,14 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                             } else if (httpErrorType == HTTPErrorType.Refresh) {
                                 new ForgotPasswordTask().execute(params);
                             } else {
-                                // TODO: show error with msgType = "HTTPError" and error
+                                if (ForgotPasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                    ForgotPasswordActivity.this.retryCounter += 1;
+
+                                    new ForgotPasswordTask().execute(params);
+                                } else {
+                                    ForgotPasswordActivity.this.retryCounter = 0;
+                                    AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "HTTPError", httpErrorType.toString(), "error", null);
+                                }
                             }
                         }
                     });
@@ -183,20 +253,29 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO: hide loading
-                            if (networkErrorType != null) {
-                                switch (networkErrorType) {
-                                    case HostUnreachable:
-                                    case NoInternetAccess:
-                                        // TODO: Show error message "NetworkError" with type = "error"
-                                        break;
-                                    default:
-                                        // TODO: Show error message "NetworkError" with type = ""
-                                        break;
+
+                            AlertClass.hideLoadingMessage(loadingProgress);
+
+                            if (ForgotPasswordActivity.this.retryCounter < getCONNECTION_MAX_RETRY()) {
+                                ForgotPasswordActivity.this.retryCounter += 1;
+
+                                new ForgotPasswordTask().execute(params);
+                            } else {
+                                ForgotPasswordActivity.this.retryCounter = 0;
+                                if (networkErrorType != null) {
+                                    switch (networkErrorType) {
+                                        case NoInternetAccess:
+                                        case HostUnreachable: {
+                                            AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "error", null);
+                                            break;
+                                        }
+                                        default: {
+                                            AlertClass.showTopMessage(ForgotPasswordActivity.this, findViewById(R.id.container), "NetworkError", networkErrorType.name(), "", null);
+                                            break;
+                                        }
+                                    }
                                 }
                             }
-
-
                         }
                     });
                     return null;
@@ -210,7 +289,18 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            // TODO: show loading
+            if (!isFinishing()) {
+                if (loadingProgress == null) {
+                    loadingProgress = AlertClass.showLoadingMessage(ForgotPasswordActivity.this);
+                    loadingProgress.show();
+                } else {
+                    if (!loadingProgress.isShowing()) {
+                        //loadingProgress = AlertClass.showLoadingMessage(HomeActivity.this);
+                        loadingProgress.show();
+                    }
+                }
+            }
         }
+
     }
 }

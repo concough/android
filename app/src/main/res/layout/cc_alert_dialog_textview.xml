@@ -8,10 +8,11 @@
     android:textColor="@color/colorConcoughBlue"
     android:gravity="center"
     android:layout_gravity="center"
+    android:textDirection="rtl"
     android:textAlignment="center"
     android:paddingTop="20dp"
     android:paddingBottom="20dp"
-    android:textSize="16dp"
+    android:textSize="16sp"
     >
 
 </TextView>

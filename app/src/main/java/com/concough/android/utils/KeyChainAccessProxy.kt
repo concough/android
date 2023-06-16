@@ -39,7 +39,7 @@ class KeyChainAccessProxy {
     }
 
     public fun getValueAsString(key: String): String {
-        return this.prefs.getString(key, "")
+        return this.prefs.getString(key, "")!!
     }
 
     public fun setValueAsInt(key: String, value: Int): Boolean {

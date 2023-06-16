@@ -1,6 +1,7 @@
 package com.concough.android.models
 
 import android.content.Context
+import android.util.Log
 import com.concough.android.singletons.RealmSingleton
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -11,27 +12,28 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
+import kotlin.collections.LinkedHashMap
 
 /**
  * Created by abolfazl on 7/12/17.
  */
 class EntrancePackageHandler {
-    data class EntrancePackageResult(var status: Boolean, var images: HashMap<String, String>, var questionList: HashMap<String, ArrayList<Pair<String, Boolean>>>)
+    data class EntrancePackageResult(var status: Boolean, var images: LinkedHashMap<String, String>, var questionList: LinkedHashMap<String, ArrayList<Pair<String, Boolean>>>)
 
     companion object Factory {
         val TAG: String = "EntrancePackageHandler"
 
         @JvmStatic
         fun savePackage(context: Context, username: String, entranceUniqueId: String, initData: JsonElement): EntrancePackageResult {
-            var localImage: HashMap<String, String> = HashMap()
-            var localList: HashMap<String, ArrayList<Pair<String, Boolean>>> = HashMap()
+            var localImage: LinkedHashMap<String, String> = LinkedHashMap()
+            var localList: LinkedHashMap<String, ArrayList<Pair<String, Boolean>>> = LinkedHashMap()
 
             try {
                 val entrance = EntranceModelHandler.getByUsernameAndId(context, username, entranceUniqueId)
                 if (entrance != null) {
-                    val bookletArray = initData.asJsonObject.get("entrance").asJsonObject.get("booklets").asJsonArray
+                    val bookletArray = initData.asJsonObject.get("entrance.booklets").asJsonArray
                     for (item in bookletArray) {
-                        val count = item.asJsonObject.get("lessons").asJsonObject.get("count").asInt
+                        val count = item.asJsonObject.get("lessons.count").asInt
                         val title = item.asJsonObject.get("title").asString
                         val duration = item.asJsonObject.get("duration").asInt
                         val isOptional = item.asJsonObject.get("is_optional").asBoolean
@@ -40,9 +42,9 @@ class EntrancePackageHandler {
 
                         val booklet = EntranceBookletModelHandler.add(context, uniqueId, title, count, duration, isOptional, order)
                         if (booklet != null) {
-                            RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                            entrance.booklets.add(booklet)
-                            RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+//                            RealmSingleton.getInstance(context).DefaultRealm.refresh()
+//                            RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                            RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
 
                             val lessonArray = item.asJsonObject.get("lessons").asJsonArray
                             for (item2 in lessonArray) {
@@ -57,29 +59,29 @@ class EntrancePackageHandler {
 
                                 val lesson = EntranceLessonModelHandler.add(context, lUniqueId, ltitle, fullTitle, qStart, qEnd, qCount, lorder, lduration)
                                 if (lesson != null) {
-                                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                                    booklet.lessons.add(lesson)
-                                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+//                                    RealmSingleton.getInstance(context).DefaultRealm.refresh()
+
+//                                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
 
                                     val questionsArray = item2.asJsonObject.get("questions").asJsonArray
                                     for (qitem in questionsArray) {
                                         val answer = qitem.asJsonObject.get("answer_key").asInt
                                         val number = qitem.asJsonObject.get("number").asInt
-                                        val images = qitem.asJsonObject.get("images").asJsonObject.toString()
+                                        val images = qitem.asJsonObject.get("images").toString()
                                         val qUniqueId = UUID.randomUUID().toString()
 
-                                        val question = EntranceQuestionModelHandler.add(context, uniqueId, number, answer, images, false, entrance)
+                                        val question = EntranceQuestionModelHandler.add(context, qUniqueId, number, answer, images, false, entrance)
 
                                         if (question != null) {
-                                            RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                                            lesson.questions.add(question)
-                                            RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+//                                            RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                                            RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
 
                                             val imagesArray = JsonParser().parse(images).asJsonArray
                                             if (imagesArray != null) {
                                                 for (item3 in imagesArray) {
                                                     val imageUniqueId = item3.asJsonObject.get("unique_key").asString
-                                                    localImage.put(qUniqueId, imageUniqueId)
+                                                    localImage.put(imageUniqueId, qUniqueId)
                                                     if (localList.get(qUniqueId) == null) {
                                                         localList.put(qUniqueId, ArrayList<Pair<String, Boolean>>())
                                                     }
@@ -87,26 +89,47 @@ class EntrancePackageHandler {
                                                     localList.get(qUniqueId)?.add(Pair(imageUniqueId, false))
                                                 }
                                             } else {
-                                                return EntrancePackageResult(false, HashMap(), HashMap())
+                                                return EntrancePackageResult(false, LinkedHashMap(), LinkedHashMap())
                                             }
+                                            RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                                                lesson.questions.add(question)
+                                            }
+
                                         } else {
-                                            return EntrancePackageResult(false, HashMap(), HashMap())
+                                            return EntrancePackageResult(false, LinkedHashMap(), LinkedHashMap())
                                         }
                                     }
+
+                                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                                        booklet.lessons.add(lesson)
+                                    }
+
                                 } else {
-                                    return EntrancePackageResult(false, HashMap(), HashMap())
+                                    return EntrancePackageResult(false, LinkedHashMap(), LinkedHashMap())
                                 }
                             }
+
+                            RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                                entrance.booklets.add(booklet)
+                            }
                         } else {
-                            return EntrancePackageResult(false, HashMap(), HashMap())
+                            return EntrancePackageResult(false, LinkedHashMap(), LinkedHashMap())
                         }
                     }
                 } else {
-                    return EntrancePackageResult(false, HashMap(), HashMap())
+                    return EntrancePackageResult(false, LinkedHashMap(), LinkedHashMap())
                 }
+//                Log.d(TAG, entrance.toString())
+//                Log.d(TAG, entrance.booklets[0].toString())
+//
+//                Log.d(TAG, entrance.booklets[0].lessons[0].toString())
+//                Log.d(TAG, entrance.booklets[0].lessons[0].questions.toString())
             } catch (exc: Exception) {
-                return EntrancePackageResult(false, HashMap(), HashMap())
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+//                Log.d(TAG, exc.message)
+                return EntrancePackageResult(false, LinkedHashMap(), LinkedHashMap())
             }
+
 
             return EntrancePackageResult(true, localImage, localList)
         }
@@ -116,25 +139,34 @@ class EntrancePackageHandler {
             try {
                 val entrance = EntranceModelHandler.getByUsernameAndId(context, username, entranceUniqueId)
                 if (entrance != null) {
-                    val booklets = entrance.booklets
-                    for (booklet in booklets) {
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        val booklets = entrance.booklets
+                        for (booklet in booklets) {
 
-                        val lessons = booklet.lessons
-                        for (lesson in lessons) {
-                            RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                            lesson.questions.deleteAllFromRealm()
-                            RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                            val lessons = booklet.lessons
+                            for (lesson in lessons) {
+                                val questions = lesson.questions
+
+                                questions.deleteAllFromRealm()
+//                            RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                            RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                            }
+
+//                            RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                                lessons.deleteAllFromRealm()
+//                            }
+//                        RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                        RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                         }
 
-                        RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                        lessons.deleteAllFromRealm()
-                        RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+//                        RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                            booklets.deleteAllFromRealm()
+//                        }
                     }
-
-                    booklets.deleteAllFromRealm()
                 }
-
             } catch (exc: Exception) {
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+                Log.d(TAG, exc.message)
                 return false
             }
 

@@ -1,6 +1,7 @@
 package com.concough.android.models
 
 import android.content.Context
+import android.util.Log
 import com.concough.android.singletons.RealmSingleton
 import com.concough.android.structures.EntranceStruct
 import java.util.*
@@ -18,7 +19,8 @@ class EntranceModelHandler {
             val entrance = EntranceModel()
             entrance.bookletsCount = e.entranceBookletCounts!!
             entrance.duration = e.entranceDuration!!
-            entrance.extraData = e.entranceExtraData?.asJsonObject.toString()
+            if (e.entranceExtraData != null)
+                entrance.extraData = e.entranceExtraData?.asJsonObject.toString()
             entrance.group = e.entranceGroupTitle!!
             entrance.lastPublished = e.entranceLastPublished!!
             entrance.organization = e.entranceOrgTitle!!
@@ -27,14 +29,20 @@ class EntranceModelHandler {
             entrance.type = e.entranceTypeTitle!!
             entrance.uniqueId = e.entranceUniqueId!!
             entrance.year = e.entranceYear!!
+            entrance.month = e.entranceMonth!!
             entrance.username = username
+            entrance.pUniqueId = "$username-${e.entranceUniqueId!!}"
 
             try {
-                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(entrance)
-                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                    RealmSingleton.getInstance(context).DefaultRealm.copyToRealmOrUpdate(entrance)
+                }
+//                RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                 return true
             } catch (exc: Exception) {
+                Log.d("cscsdcds", exc.message)
+//                RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
             }
 
             return false
@@ -64,11 +72,15 @@ class EntranceModelHandler {
 
             if (entrance != null) {
                 try {
-                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
-                    entrance.deleteFromRealm()
-                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
+                    RealmSingleton.getInstance(context).DefaultRealm.executeTransaction {
+                        entrance.deleteFromRealm()
+                    }
+//                    RealmSingleton.getInstance(context).DefaultRealm.beginTransaction()
+//                    RealmSingleton.getInstance(context).DefaultRealm.commitTransaction()
                     return true
-                } catch (exc: Exception) {}
+                } catch (exc: Exception) {
+//                    RealmSingleton.getInstance(context).DefaultRealm.cancelTransaction()
+                }
 
                 return true
             }

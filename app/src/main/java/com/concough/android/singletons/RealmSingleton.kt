@@ -2,12 +2,20 @@ package com.concough.android.singletons
 
 import android.content.Context
 import android.util.Log
-import io.realm.Realm
-import io.realm.RealmConfiguration
+import com.concough.android.models.ModelMigration
+import com.concough.android.settings.SECRET_KEY
+import io.realm.*
+import io.realm.DynamicRealmObject
+import io.realm.RealmObjectSchema
+import io.realm.FieldAttribute
+
+
+
 
 /**
  * Created by abolfazl on 7/12/17.
  */
+
 class RealmSingleton {
     private var realm: Realm? = null
 
@@ -21,12 +29,22 @@ class RealmSingleton {
             if (sharedInstance == null)
                 sharedInstance = RealmSingleton(context)
 
+
+
             return sharedInstance!!
         }
     }
 
     private constructor(context: Context) {
-        val config = RealmConfiguration.Builder().build()
+        Realm.init(context)
+        val config = RealmConfiguration.Builder()
+                .schemaVersion(6)
+                .migration(ModelMigration())
+                .encryptionKey(SECRET_KEY.toByteArray().copyOfRange(0,64))
+                .allowQueriesOnUiThread(true)
+                .allowWritesOnUiThread(true)
+                .build()
+
         try {
             this.realm = Realm.getInstance(config)
 
@@ -34,6 +52,7 @@ class RealmSingleton {
             Log.d(TAG, folderPath)
 
         } catch (exc: Exception) {
+            Log.d(TAG, exc.toString())
         }
     }
 

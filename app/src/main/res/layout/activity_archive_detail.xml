@@ -1,110 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:id="@+id/container"
+    android:layoutDirection="ltr"
     tools:context="com.concough.android.concough.ArchiveDetailActivity">
 
+    <com.baoyz.widget.PullRefreshLayout
+        android:id="@+id/homeA_swipeRefreshLayout"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="0dp">
 
-    <android.support.constraint.ConstraintLayout
-
-        android:id="@+id/constraintLayout2"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:background="@drawable/concough_bottom_line_gray3"
-        >
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_marginRight="16dp"
-            android:gravity="right"
-            android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="@+id/archiveDetailA_logoImage"
-            app:layout_constraintRight_toLeftOf="@+id/archiveDetailA_logoImage"
-            app:layout_constraintTop_toTopOf="@+id/archiveDetailA_logoImage"
-            android:layout_marginEnd="16dp">
-
-            <TextView
-                android:id="@+id/archiveDetailA_title1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="right"
-                android:text="TextView"
-                android:textAlignment="textEnd"
-                android:textColor="@android:color/black"
-                android:textSize="18sp" />
-
-            <TextView
-                android:id="@+id/archiveDetailA_title2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:gravity="top|right"
-                android:text="TextView"
-                android:textAlignment="textEnd"
-                android:textColor="@android:color/black"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/archiveDetailA_title3"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-
-                android:gravity="bottom"
-                android:text="TextView"
-                android:textAlignment="textEnd"
-                android:textColor="@color/colorConcoughGray" />
-        </LinearLayout>
-
-        <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/archiveDetailA_logoImage"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="16dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginRight="10dp"
-            android:layout_marginTop="16dp"
-            android:src="@drawable/male_icon_100"
-            app:civ_border_color="@color/colorConcoughGray"
-            app:civ_border_width="1dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0"
-            app:srcCompat="@drawable/app_dropbox_icon" />
-
-    </android.support.constraint.ConstraintLayout>
-
-    <android.support.constraint.ConstraintLayout
-        android:layout_width="0dp"
-        android:layout_height="383dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-    android:background="@color/colorConcoughGrayBackground"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout2">
-
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/archiveDetailA_recycle"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginTop="16dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"></android.support.v7.widget.RecyclerView>
-    </android.support.constraint.ConstraintLayout>
+            android:layout_marginBottom="0dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            android:layout_marginTop="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/concough_bottom_line_gray3">
 
-</android.support.constraint.ConstraintLayout>
+        </androidx.recyclerview.widget.RecyclerView>
+    </com.baoyz.widget.PullRefreshLayout>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@android:color/white"
+        app:itemTextColor="@drawable/concough_navigation_style"
+        app:itemIconTint="@drawable/concough_navigation_style"
+        app:menu="@menu/navigation"
+        />
+
+</LinearLayout>

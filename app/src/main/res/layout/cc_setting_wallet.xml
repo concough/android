@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="4dp"
+    android:layout_marginRight="32dp"
+    android:layoutDirection="ltr"
+    android:background="@drawable/concough_setting_border_top_bottom"
+    android:paddingBottom="12dp"
+    android:layout_marginEnd="32dp">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginEnd="4dp"
+            android:contentDescription="coin"
+            app:srcCompat="@drawable/coins_96"
+            android:src="@drawable/coins_96"/>
+
+        <TextView
+            android:id="@+id/settingWalletL_type"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:layout_marginRight="4dp"
+            android:text=""
+            android:layout_weight="1"
+            android:textColor="@color/colorBlack"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/settingWalletL_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="موجودی: "
+            android:textColor="@color/colorConcoughGray5"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

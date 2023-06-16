@@ -144,3 +144,448 @@ Procedures:
 
 Fixes:
     1 - "SignupMoreInfo1Activity" fix on post selectedGender toString()
+
+------------------------------------------------------------------------------------------------
+Debug ForgotPassword (abolfazl.beh)
+
+1 - Complete ForgotPassword Process and Complete SignupCodeActivity
+
+------------------------------------------------------------------------------------------------
+Debug ForgotPassword (abolfazl.beh)
+
+1 - Complete ForgotPassword Process and Complete SignupCodeActivity
+
+------------------------------------------------------------------------------------------------
+Show Loading (abolfazl.beh)
+
+1 - "KProgressHUD" source downloaded and customized to use in this app
+2 - AlertClass loading functionality completed
+3 - Install 'com.nineoldandroids:library:2.4.0' for dialog effect
+4 - download "niftyalertdialog" and customized to used with app
+5 - "AlertClass" completed and ready to use
+6 - (Future) dialog box not rounded yet --> must be rounded
+
+
+------------------------------------------------------------------------------------------------
+Bottom Navigation Testing (abolfazl.beh)
+
+1 - Create BottomNavigationActivity and setup it to have bottom navigation
+2 - Every activity that needs to include bottom navigation must inherit from it.
+3 - Four icons created from image for bottom navigation
+
+------------------------------------------------------------------------------------------------
+Entrance Detail Activity (abolfazl.beh)
+
+1 - (Bug) "ResetPasswordActivity" getting password fixed.
+2 - "MediaRestAPIClass" --> downloadEsetImage function --> in-memory cached added.
+3 - "ProductRestAPIClass" and "PurchasedRestAPIClass" created to handle product and purchased getting from server
+4 - Fix "FormatterSingleton" utc formatter
+5 - (Bug) "RealmSingleton" needs Realm.init() before any operation --> fixed
+6 - Some BasketRestAPIClass function checked and fixed
+7 - Some structures added: EntrancePurchasedStruct, EntranceSaleStruct, EntranceStatStruct, EntranceVCStateEnum
+8 - Some styles added: green solid and red border
+9 - For now EntranceDetailActivity worked and ready for checkout process --> Must create CheckoutActivity first:
+    - EntranceDetailActivity state machine is created
+    - 4 item sections created to use in ViewHolder in DetailEntrance
+10 - "activity_login" and "activity_reset_password" layout password TextView type changed
+
+------------------------------------------------------------------------------------------------
+Basket Checkout Activity (abolfazl.beh)
+
+1 - Add static newInstance function to "EntranceDetailActivity" and save needed data to bundle
+2 - Create BasketCheckoutActivity to checkout
+3 - Edit BasketSigleton to add new functionality
+
+------------------------------------------------------------------------------------------------
+Entrance Package Downloader (abolfazl.beh)
+
+1 - Create "EntrancePackageDownloader" service in downloader package to handling download images in background.
+2 - Create DownloaderSingleton class to holds downloaders object and returned that when needed
+3 - "EntranceDetailActivity" now completed and tested.
+4 - Models and model handlers have bugs --> fixed and tested.
+5 - MD5Digester class created to handle hashing password
+6 - JNCryptor library installed to handle encryption, decryption mechanism
+7 - Some bugs fixed
+
+------------------------------------------------------------------------------------------------
+Favorite Activity (abolfazl.beh)
+
+1 - Create FavoriteActivity and setup to show not downloaded items.
+2 - Connect HomeActivity and ArchiveActivity to other part of system.
+3 - EntrancePackageDownloader bugs fixed.
+4 - EntranceQuestionStarredModel and its handler modified to include "username" field.
+5 - EntrancePackageHandler -> removePackage function modified.
+6 - FavoriteActivity completed and ready for test.
+7 - EntrancePackageDownloader completed and basic test.
+8 - DownloaderSingleton bugs fixed and add flag to see singleton state.
+9 - PurchasedRestAPIClass --> getPurchasedList added to get purchased list.
+10 - All models and there's handler modified to include "username" field in query search.
+
+------------------------------------------------------------------------------------------------
+Syncing And fix git bugs (abolfazl.beh)
+
+1 - Prepare SettingActivity to extend BottomNavigationActivity
+
+------------------------------------------------------------------------------------------------
+Adding Lock Mechanism (abolfazl.beh)
+
+1 - In "EntranceDetailActivity" --> loaditems of Basket Singleton called onResume --> It is not necessary now --> deleted
+2 - "LoginActivity" modified to include checking lock status from server
+3 - "SettingRestAPIClass" --> Add function to load last app version from server --> used in startup to show alert
+4 - "AlertClass" modified --> add another function to show custom success message with buttons
+5 - "StartupActivity" layout and class changed --> now check for lock, last app version, offline mode and other necessary functionality for better user experiences
+6 - "SettingsActivity" modified to include acquire functionality:
+    - Also some layout changed to better user experiences
+7 - "SettingActivity" check for logout process and delete all device information --> also acquire device
+8 - "SignupActivity" button enable and disabled by isValidUsername
+9 - Add "force" parameter to Lock device API --> used in reset password --> all other devices acquired
+10 - "SignupActivity" and "ForgotPasswordActivity" changed to include error types from server when requesting code
+11 - "SignupCodeActivity" changed to include new error messages when requesting new code and also timer to prevent fraud requesting
+12 - "EntranceShowActivity" changed to show question answer based on key return by server --> Convert it by Utils -> DataConvertors to appropriate answer
+
+------------------------------------------------------------------------------------------------
+Startup Offline Error fixed (abolfazl.beh)
+
+1 - IntroVideoView fixed on pause and resume
+
+------------------------------------------------------------------------------------------------
+Alert Class New Messages Added (abolfazl.beh)
+
+------------------------------------------------------------------------------------------------
+Payment And Some Bugs Fixed (abolfazl.beh)
+
+1 - EntranceShowActivity wake up feature set (permission set in manifest)
+2 - All extraData storing and retrieving fixed.
+3 - FavoriteActivity Sync with server fixed
+4 - BasketSingleton add to basket functionality fixed --> duplicate preventing
+5 - SignupInfo 3 info TextView added to more understanding
+6 - Some urls for about, help, sharing fixed. Also share text changed
+7 - EntranceDetailActivity redundant show loading emitted.
+8 - "BasketSingleton" checkout functionality changed to be sensitive to "Redirect" status and trigger event on it.
+9 - Sync with server now added to "StartupActivity" & "ResetPasswordActivity" and "LoginActivity" --> always after lock check
+10 - "BasketCheckoutActivity" completed for payment
+11 - "EntranceDetailActivity" localEntrance bugs fixed
+
+------------------------------------------------------------------------------------------------
+Some Enhancement for Release v.1.0 (abolfazl.beh)
+
+1 - Picasso packeage removed from gradle.
+2 - Some files missing --> add them
+3 - Some Change on "LoginActivity" -> EditText ltr fixed.
+4 - "SignupMoreInfo3Activity" signup struct default set when grade list will be ready -> make error when you no choose from dialog and just submit.
+
+------------------------------------------------------------------------------------------------
+Upgrade EntrancePackageDownloader (abolfazl.beh) - 2018-01-15
+
+1 - "EntrancePackageDownloader" enhanced to support multi download of questions -> All related class modified
+2 - This features not tested by me
+
+------------------------------------------------------------------------------------------------
+Modify All Rest Classes (abolfazl.beh) - 2018-01-20
+
+1 - All Rest API's functions changed to have connect timeout and read timeout in request.
+    - The values of timeout exist in Constants file
+2 - "SignupMoreInfo3Activity" more control before sending data
+
+------------------------------------------------------------------------------------------------
+EntranceModel Unique Integrity and Startup Check Lock State (abolfazl.beh) - 2018-01-21
+
+1 - EntranceModel unique integrity fixed. Also it's create handler modified
+2 - RealmSingleton now upgraded to schema version 2 and compatibility support added
+3 - Add new rest function "deviceState" to check device state on startup -> because of avoidance of concurrency logged in user
+4 - StartupActivity startup process fixed with new functionality of device state.
+5 - All of this process not tested yet
+
+------------------------------------------------------------------------------------------------
+Buy Button Disable and Downloader Enhance (abolfazl.beh) - 2018-03-06
+
+1 - Download retry on fail capability added to "EntrancePackageDownloader"
+2 - "EntrancePackageDownloader" class constants value refactored to "Constants"
+3 - "EntranceDetailActivity" and "ArchiveDetailActivity" modified >>> disable buy button functionality added.
+4 - "border_radius_lightgray_style" added to drawable
+
+------------------------------------------------------------------------------------------------
+Some Bugs Fixed (abolfazl.beh) - 2018-03-14
+
+1 - "EntranceDetailActivity" bugs fixed.
+
+------------------------------------------------------------------------------------------------
+Some Bugs Fixed (abolfazl.beh) - 2018-03-17
+
+1 - SignupMoreInfo bugs fixed.
+2 - "EntrancePackageDownloader" downloadMultiImage function try/catch changed
+3 - progressHUD in some activity onDestroy Added
+
+------------------------------------------------------------------------------------------------
+Add Retry Counter Ability (abolfazl.beh) - 2018-10-09
+
+1 - "retryCounter" variable added to all activities and some Singleton classes as needed.
+
+------------------------------------------------------------------------------------------------
+Entrance Month (abolfazl.beh) - 2018-10-10
+
+1 - "month" field added to EntranceModel and EntranceStruct.
+2 - Add activities that depend on month modified to capture it and show it to user.
+
+------------------------------------------------------------------------------------------------
+Download Directory Changed (abolfazl.beh) - 2018-10-10
+
+1 - Download directory changed to include "username" in path. Also compatible with older version.
+
+------------------------------------------------------------------------------------------------
+Times Ago Feature (abolfazl.beh) - 2018-10-11
+
+1 - Times ago feature added to HomeActivity and ArchiveDetailActivity replace the actual time
+2 - New Extension function added to Date type.
+
+------------------------------------------------------------------------------------------------
+Scroll to top feature (abolfazl.beh) - 2018-10-11
+
+1 - TopNavigationActivity modified. Title OnClickListener add to react to click event. Also All activities that need this feature modified, implement interface and scroll to top.
+
+------------------------------------------------------------------------------------------------
+Alert Class Modifications (abolfazl.beh) - 2018-10-11
+
+1 - New message types and subtypes added to AlertClass
+2 - "showMakeExamMessage" function added to AlertClass to show spin loading on preparing exam.
+
+------------------------------------------------------------------------------------------------
+Models and Model Handlers (abolfazl.beh) - 2018-10-11
+
+1 - All model handlers that need username fixed and checked
+2 - Also some methods ("getAllLessons" and "getOneLessonByTitleAndOrder") added to EntranceLessonModelHandler
+
+------------------------------------------------------------------------------------------------
+Entrance Last Visit Info (abolfazl.beh) - 2018-10-11
+
+1 - EntranceLastVisitInfoModel and its handler created to store last visit info of entrance
+
+------------------------------------------------------------------------------------------------
+HomeActivity and EntranceMulti (abolfazl.beh) - 2018-10-16
+
+1 - "SUPPORT_ACTIVITY_TYPES" array created to hold support keywords. setting > SupportAbilities
+2 - ProgressHud deleted and title message modified to reflex loading mechanism
+3 - Loading holder added to end of holders for better presentations
+4 - Multi entrances package type added to "HomeActivity" to show other type
+
+------------------------------------------------------------------------------------------------
+Testing New Features (abolfazl.beh) - 2018-10-19
+
+1 - "timeAgoSinceDate" extension of Date type modified
+    - 'net.danlew:android.joda:2.9.9.4' installed
+2 - MainApplication class added to first initialization process
+3 - HomeActivity MultiEntrance checked and some views modified and enhanced
+
+------------------------------------------------------------------------------------------------
+Home Activity Progress Bar (abolfazl.beh) - 2018-10-19
+
+1 - Progress Bar color style for loading fixed.
+2 - HomeActivity loading more feeds activated
+
+------------------------------------------------------------------------------------------------
+Wallet Ready (abolfazl.beh) - 2018-10-22
+
+1 - UrlMakerSingleton modified to include urls need to fetch wallet information.
+2 - UserDefaultSingleton modified to include functions store and fetch wallet information.
+3 - WalletRestAPIClass created to get info from remote server.
+
+------------------------------------------------------------------------------------------------
+Archive and ArchiveDetail (abolfazl.beh) - 2018-10-25
+
+1 - Archive activity modified to remove progressHUD module and add Loading Holder to show loading. Also title changed based on loading or not loading.
+2 - ArchiveDetail activity modified to remove progressHUD module and add Loading Holder to show loading.
+3 - ArchiveDetail activity basket badge removed
+4 - Some modification in code:
+    - ArchiveEntranceStruct structure created to hold fetched entrances from remote in archive detail.
+    - Some functions refactored and ItemHolder modified for future features
+5 - EntranceBuyDialog added to EntranceDetail activity to show buy information.
+6 - EntranceBuyDelegate interface created for communicating between ArchiveDetail activity and EntranceBuy dialog.
+7 - "createWallet" functionality added to EntranceDetail activity to create wallet if does not exist.
+8 - Some bugs fixed
+
+------------------------------------------------------------------------------------------------
+EntranceDetail (abolfazl.beh) - 2018-10-25
+
+1 - EntranceDetail activity basket badge removed
+2 - Merge downloading entrance stat and sale data. Also ProductRestAPIClass modified to have this.
+3 - EntranceLoadingViewHolder added to show loading state.
+4 - Some of ViewHolder layout changed in EntranceDetail activity
+5 - Some drawables style modified.
+6 - EntranceDetail activity integrated with EntranceBuyDialog to show dialog for buy entrance.
+7 - Create wallet functionality added to EntranceDetail activity.
+
+------------------------------------------------------------------------------------------------
+EntranceMultiDetail (abolfazl.beh) - 2018-10-29
+
+1 - EntranceMultiDetail activity created to show this activity type details.
+2 - EntranceMultiSale structure created to hold sale information of EntranceMulti type
+3 - Some API calls added to ProductRestAPIClass
+4 - Some bugs fixed.
+
+------------------------------------------------------------------------------------------------
+Wallet in Setting Activity (abolfazl.beh) - 2018-10-29
+
+1 - Wallet cash holder created. Adapter modified to include this holder.
+2 - Clear cache functionality correct to include "username" in deleting directory data.
+3 - Bug report label changed.
+4 - Synchronization singleton not created yet so modified later.
+
+------------------------------------------------------------------------------------------------
+Some Testing and Bugs Fix (abolfazl.beh) - 2018-11-12
+
+------------------------------------------------------------------------------------------------
+Favorite Activity and Some Bugs Fixed (abolfazl.beh) - 2018-11-15
+
+1 - FavoriteActivity view holders layout changed.
+2 - FavoriteActivity Some modification on download and separate downloaded from not downloaded entrances.
+3 - FavoriteActivity new view holder for header added.
+4 - EntrancePackageDownloader finish sub message for local notification changed.
+5 - All HandlerThreads and Handlers chacked to fix bug:
+    - BasketSingleton
+    - ArchiveDetailActivity
+    - EntranceDetailActivity
+    - FavoriteActivity
+6 - HomeActivity on load error empty holder not showed --> fixed
+7 - EntranceDetailActivity cost information fixed
+8 - ArchiveDetailActivity buyed time fixed.
+9 - EntranceBuyDialog checked and worked correctly.
+10 - SettingActivity delete purchased data modified.
+
+------------------------------------------------------------------------------------------------
+EntranceShow and Some Modifications (abolfazl.beh) - 2018-11-19
+
+1 - FavoriteActivity some layouts enhanced.
+2 - EntranceShow:
+    - holder layout changed to include comments and charts section
+    - EntranceQuestionAnswerState created to hold answer state (none, answer, comments, charts)
+3 - LogTypeEnum modified and some new values added: EntranceLastVisitInfo,
+    EntranceCommentCreate, EntranceCommentDelete, EntranceLessonExamCancel,
+    EntranceLessonExamFinished
+4 - EntranceShowNewCommentDialog created to show new dialog form to add new comment to question.
+5 - EntranceShowCommentDelegate added to handle comments action feedback in EntranceShowA
+6 - EntranceShowAllCommentsDialog created to show all comments concerned to the question.
+7 - EntranceQuestionCommentModel and its handler created to store comments for each question
+8 - EntranceCommentType enum for different comments types (text for now)
+9 - EntranceQuestionAnswerState enum for different question holder state of bottom view (answer, comment, ...)
+
+------------------------------------------------------------------------------------------------
+EntranceShow Last Visit Info (abolfazl.beh) - 2018-11-19
+
+1 - EntranceLastVisitInfoModelHandler get function added.
+2 - TabLayout changed to consider to last visit info state
+3 - "saveLastVisitInfo" and "loadLastVisitInfo" functions added to handle store and restore last visit info data
+4 - "loadLessons", "loadBooklets" and "loadQuestions" modified to scroll to last visit info data if exist.
+
+------------------------------------------------------------------------------------------------
+EntranceShow Last Visit Info (abolfazl.beh) - 2018-11-22
+
+1 - EntranceShowInfoDialog and its layout "dialog_entrance_show_info" created to show info about entrance.
+2 = "info.hoang8f:android-segmented:1.0.6" package added to gradle build.
+3 - EntranceShowInfoDelegate created to trigger EntranceShowActivity about EntranceShowInfoDialog event
+4 - EntranceShowActivity modified to show new EntranceShowInfoDialog and respond to its delegates.
+5 - Some functions refactored and some bugs fixed.
+
+------------------------------------------------------------------------------------------------
+EntranceShow Header Holder (abolfazl.beh) - 2018-11-24
+
+1 - 'com.github.PhilJay:MPAndroidChart:v3.0.2' package installed to handle charts
+2 - EntranceLessonExamModel and its handler created to store entrance lesson exam per user per entrance
+3 - EntranceQuestionExamStatModel created to hold each question stats per user per entrance
+4 - EntranceLessonExamStructure created to hold lesson exam data when exam begins.
+5 - EntranceQuestionExamStatModelHandler created.
+6 - EntranceShowActivity modifications:
+    - EntranceShowChart holder created to show chart history as first child.
+    - "chartaccessory" package created to hold chart associated class. ValueNumberFormatter added to format chart number data
+
+------------------------------------------------------------------------------------------------
+Realm ModelMigration (abolfazl.beh) - 2018-11-24
+
+1 - model migration modified to version 4
+2 - Some bugs fixed
+
+------------------------------------------------------------------------------------------------
+Modification and Bugs Fixed (abolfazl.beh) - 2018-11-25
+
+1 - Add new field "uniqueId" as primary key to "EntranceLastVisitInfoModel" and its migration added -> schema version to 5
+2 - Many layouts modified to be more user friendly
+3 - EntranceLastVisitInfo checked and test
+4 - EntranceShow activity tested for last visit info store and restore. Also, comments add and remove checked.
+5 - EntranceShowInfo activity checked and debugged.
+6 - New alert message added to AlertClass -> to show before comment deletion
+
+------------------------------------------------------------------------------------------------
+Entrance Lesson New Exam (abolfazl.beh) - 2018-11-28
+
+1 - EntranceShowInfo dialog entrance set image change to circular image.
+2 - EntranceNewLessonExam dialog created to show exam pre dialog.
+3 - EntranceLessonExam delegate class created to tigger exam related actions.
+4 - New holder created to show question in exam mode and exam result: EntranceQuestionExamHolder in EntranceShowAdapter
+5 - EntranceLessonExamResult dialog created to show exam result after user finish exam
+6 - EntranceQuestionExamStatModel modified to include primary key "uniqueId". Also ModelMigration changed -> schema version 7
+7 - Some bugs fixed
+8 - New messages added to AlertClass
+9 - diffInHourMinSec extension added to separate different parts of Date object.
+10 - New number formatter added to FormatterSingleton to show decimal numbers with maximum fraction count of 2: DecimalNumberFormatter
+
+------------------------------------------------------------------------------------------------
+Entrance Last Exam Chart Dialog (abolfazl.beh) - 2018-11-29
+
+1 - EntranceLessonLastExamChartFragment dialog created to show exam details (chart, answers , ...)
+2 - FragmentDialog used to create dialogs from now on
+
+------------------------------------------------------------------------------------------------
+Entrance Lesson Exam History (abolfazl.beh) - 2018-12-08
+
+1 - EntranceShowPreviewDialog created to show question preview to user in exam history.
+2 - EntranceLessonExamHistory activity created to show lesson exam history and its charts.
+3 - EntranceShow activity --> QuestionChartPagerAdapter added to show charts for any question
+4 - Some bugs fixed.
+5 - Some UI enhanced.
+
+------------------------------------------------------------------------------------------------
+Synchronization Singleton (abolfazl.beh) - 2018-12-13
+
+1 - EntranceDetailActivity --> create wallet rest call fixed
+2 - "downloader" package renamed to "services"
+3 - EntranceMultiDetail activity buy process fixed.
+4 - All Charts view and some errors fixed.
+5 - Synchronization Singleton created to sync data with remote server. It uses "SynchronizerService" to sync data.
+6 - All "syncWithServer" methods deleted. Also Check lock removed from Startup activity. all logs synced with server and removed
+7 - Notification Singleton created to refactor notification mechanism.
+8 - EntrancePackageDownloader modified to be parallel downloader
+9 - UserLogRestAPIClass created to handle rest calls of log.
+10 - Some bugs fixed and UI Enhancement.
+
+------------------------------------------------------------------------------------------------
+Some Bugs Fixed (abolfazl.beh) - 2018-12-15
+
+1 - SettingsActivity delete data fixed.
+2 - All models handler checked and if any cancelExecution call on Realm exist --> commented
+
+------------------------------------------------------------------------------------------------
+Some Bugs Fixed (abolfazl.beh) - 2018-12-17
+
+------------------------------------------------------------------------------------------------
+Update compileSdkVersion (abolfazl.beh) - 2018-12-20
+
+1 - "compileSdkVersion" and "targetSdkVersion" updated to 26
+2 - "buildToolsVersion" updated to "28.0.3"
+3 - "app.gradle" all compile keyword changed to implementation
+4 - New plugins added to gradle "kotlin-kapt", because "realm" not worked well after update
+5 - EntranceShowAllCommentsDialog on delete comment fixed and bugs removed
+
+------------------------------------------------------------------------------------------------
+Rest Call SSL Corrected (abolfazl.beh) - 2018-12-24
+
+1 - TLS version 1.2 not supported in android api 16 through 20, so tsl socket factory (TLSSocketFactory) created to handle this:
+    - Also RetrofitSSLClientSingleton class created to make ready the okhttpclient builder and return it base on new tsl class
+    - All rest api classes modified to use this new singleton to make client
+2 - Some bugs fixed
+
+------------------------------------------------------------------------------------------------
+Update compileSdkVersion (abolfazl.beh) - 2020-12-20
+
+1 - "compileSdkVersion" and "targetSdkVersion" updated to 29
+2 - "buildToolsVersion" updated to "29.0.2"
+3 - Platform is migrated from "android" to "androidx" --> Many modification is made to well working of App
+4 - Some bugs is fixed.

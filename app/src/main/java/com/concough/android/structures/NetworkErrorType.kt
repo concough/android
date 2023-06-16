@@ -1,7 +1,6 @@
 package com.concough.android.structures
 
 import android.util.Log
-import java.io.IOException
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 
@@ -20,7 +19,7 @@ enum class NetworkErrorType(val code: String) {
         fun toType(error: Throwable?): NetworkErrorType {
             Log.d(TAG, error.toString())
             if (error is ConnectException) {
-                return HostUnreachable
+                return NoInternetAccess
             } else if (error is SocketTimeoutException) {
                 return Timeout
             }

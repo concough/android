@@ -6,9 +6,10 @@
         <item name="actionBarStyle">@style/MyActionBar</item>
         <!--<item name="colorPrimary">@color/colorConcoughGrayBackground</item>-->
         <!--<item name="colorPrimaryDark">@color/dialogplus_black_overlay</item>-->
-        <!--<item name="colorAccent">@color/colorConcoughBlue</item>-->
+        <item name="colorAccent">@color/colorConcoughBlue</item>
         <!--<item name="android:windowBackground">@android:color/white</item>-->
         <!--<item name="android:textColorPrimary">@android:color/black</item>-->
+
 
     </style>
 
@@ -18,12 +19,24 @@
     <item name="android:layout_marginBottom">2dp</item>
     </style>
 
+
     <style name="AppThemeArchiveActionBar" parent="@style/AppTheme" >
         <!--<item name="actionBarStyle">@style/MyActionBar1</item>-->
         <item name="colorPrimary">@color/colorConcoughGrayBackground</item>
         <!--<item name="colorPrimaryDark">@color/colorConcoughRed</item>-->
         <item name="android:windowContentOverlay">@null</item>
     </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="colorPrimary">@color/colorWhite</item>
+        <!--<item name="colorPrimaryDark">@color/colorConcoughRed</item>-->
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+
+
 
 
     <style name="AppThemeArchiveDetailActionBar" parent="@style/AppTheme" >
@@ -50,10 +63,26 @@
         <item name="android:direction">right_to_left</item>
     </style>
 
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 
+    <style name="MyActionBar.MenuTextStyle" parent="Theme.AppCompat">
+        <item name="actionMenuTextColor">@color/colorConcoughBlue</item>
+        <item name="android:actionMenuTextColor">@color/colorConcoughBlue</item>
 
+    </style>
 
+    <style name="AlertDialogCustom" parent="@android:style/Theme.Dialog">
+        <item name="android:textColor">#00FF00</item>
+        <item name="android:typeface">monospace</item>
+        <item name="android:textSize">10sp</item>
+    </style>
 
+    <style name="SwitchStyle" parent="Theme.AppCompat.Light">
+        <item name="colorControlActivated">@color/colorConcoughBlue</item>
+        <item name="colorSwitchThumbNormal">@color/colorConcoughRedLight</item>
+        <item name="android:colorForeground">@color/colorConcoughGreen</item>
+    </style>
 
 </resources>

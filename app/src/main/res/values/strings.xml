@@ -3,18 +3,6 @@
     <string name="app_name">Concough</string>
     <string name="signupMoreInfo1A_app_name">کنکوق</string>
 
-
-    <string name="planet_prompt">Test-Drop</string>
-    <string-array name="planets_array">
-        <item>Mercury</item>
-        <item>Venus</item>
-        <item>Earth</item>
-        <item>Mars</item>
-        <item>Jupiter</item>
-        <item>Saturn</item>
-        <item>Uranus</item>
-        <item>Neptune</item>
-    </string-array>
     <string name="forgotPasswordA_S_forgotTextView">بازیابی گذرواژه</string>
     <string name="forgotPasswordA_S_usernameEdit">شماره همراه</string>
     <string name="forgotPasswordA_S_sendCodeButton">ارسال کد رمز عبور</string>
@@ -38,6 +26,7 @@
     <string name="signupA_loginButton">ورود</string>
     <string name="signupA_loginHintTextView">قبلا ثبت نام کرده ام؟</string>
     <string name="SignupCodeA_S_titleTextView">ارسال کد فعالسازی</string>
+    <string name="SignupCodeA_S_returnTextView">ویرایش نام کاربری</string>
     <string name="SignupCodeA_S_SubmitButton">تایید</string>
     <string name="SignupCodeA_S_codeEditText">کد فعالسازی</string>
     <string name="SignupCodeA_S_infoTextView">اگر کد فعالسازی برای شما ارسال نشده است. گزینه پایین را لمس نمایید</string>
@@ -51,8 +40,104 @@
     <string name="signupInfo3A_S_infoTextViewLine1">اطلاعات تحصیلی</string>
     <string name="signupInfo3A_S_stateTextView">متقاضی آزمون:</string>
     <string name="signupInfo3A_S_selectStateButton">انتخاب کنید</string>
+    <string name="signupInfo3A_S_info">در قسمت تنظیمات قابل تغییر می باشد</string>
     <string name="signupInfo3A_S_nextButton">ذخیره و تمام</string>
     <string name="StartupA_S_info">برای تلاش مجدد لمس نمایید</string>
-    <string name="itemEntranceCreateI_S_concourText">کنکور</string>
+    <string name="StartupA_S_deviceAlert">در یک زمان تنها یک دستگاه اجازه استفاده از برنامه را دارد</string>
+    <string name="StartupA_S_deviceName">دستگاه</string>
+    <string name="StartupA_S_exitFromLockModeButton">خروج از حالت قفل</string>
+    <string name="StartupA_S_resetPasswordButton">بازیابی گذرواژه</string>
+    <string name="StartupA_S_welcomeMessage">به کنکوق خوش آمدید</string>
+    <string name="StartupA_S_loginButton">ورود به کنکوق</string>
+    <string name="StartupA_S_signUpButton">ثبت نام</string>
+    <string name="StartupA_S_offlineMessage">دسترسی به اینترنت وجود ندارد</string>
+    <string name="StartupA_S_offlineButton">ورود بصورت آفلاین</string>
+    <string name="itemEntranceCreateI_S_concourText">آزمون</string>
+    <string name="itemEntranceMultiI_S_concourText">بسته آزمون</string>
+    <string name="title_activity_bottom_navigation">BottomNavigationActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="settingMenu_S_url">https://zhycan.com/concough/help/</string>
 
+    <string name="settingA_S_aboutUs_url">https://zhycan.com/concough/</string>
+    <string name="settingA_S_changePassword">تغییر گذرواژه</string>
+    <string name="settingA_S_inviteFriends">دعوت از دوستان</string>
+    <string name="settingA_S_lockDevice">قفل کردن دستگاه</string>
+    <string name="settingA_S_editInformations">ویرایش اطلاعات</string>
+    <string name="settingA_S_editInformationsEditing">اتمام ویرایش</string>
+    <string name="settingA_S_clearCache">پاک کردن حافظه نهانی</string>
+    <string name="settingA_S_bugReport">پیشنهاد و انتقاد</string>
+    <string name="settingA_S_aboutUs">درباره ما</string>
+    <string name="settingA_S_signout">خروج از سیستم</string>
+
+    <string name="errorReport_S_description">توضیحات</string>
+    <string name="errorReport_S_infoTextView">گزارش خطا</string>
+    <string name="errorReport_S_nextButton">ارسال</string>
+    <string name="settingMenu_S_title1">راهنما</string>
+
+    <string name="navigation_bottom_home">خانه</string>
+    <string name="navigation_bottom_archive">محصولات</string>
+    <string name="navigation_bottom_favorites">کتابخانه من</string>
+    <string name="navigation_bottom_settings">تنظیمات</string>
+    <string name="checkout_button_label">پرداخت و تسویه حساب</string>
+    <string name="total_cost_label">قیمت کل خرید</string>
+    <string name="checkout_delete_item_label">حذف</string>
+    <string name="entrance_detail_downloading_label">در حال دانلود</string>
+    <string name="entrance_detail_download_button">دانلود</string>
+    <string name="entrance_detail_download_sale_label">خریداری شده در:</string>
+    <string name="entrance_detail_download_complete_label">این آزمون دانلود شده است</string>
+    <string name="entrance_detail_download_complete_show_button">مشاهده آزمون</string>
+
+    <string name="favorite_entrance_open_normal">مشاهده دفترچه</string>
+    <string name="favorite_entrance_open_starred">سوالات نشان شده</string>
+    <string name="favorite_entrance_delete_lable">پاک کردن داده ها</string>
+    <string name="favorite_empty_recycle">شما هنوز محصولی را خریداری نکرده اید.\n می توانید از طریق خانه و یا محصولات نسبت به خرید اقدام نمایید</string>
+
+
+    <string name="settingChangePasswordA_S_passwordCurrent">گذرواژه فعلی</string>
+    <string name="settingChangePasswordA_S_passwordEdit">گذرواژه جدید</string>
+    <string name="settingChangePasswordA_S_passwordEditConfirm">تکرار گذرواژه جدید</string>
+
+    <string name="settingCodeIsNotExist">وجود ندارد</string>
+
+    <string name="noCommentDefaultMessage">هنوز یادداشتی ثبت نکرده اید</string>
+    <string name="moreComments">یادداشت های قبلی \u25BC</string>
+    <string name="newComment">+ یادداشت</string>
+    <string name="newCommentHeaderTitle">یادداشت جدید</string>
+    <string name="newCommentMaxLimitDefault">۲۵۵ کاراکتر</string>
+    <string name="allCommentsHeaderTitle">یادداشت های سوال</string>
+
+    <string name="entrance_info_default_show">پیش فرض نمایش</string>
+    <string name="entrance_info_default_show_starred_q">سوالات نشان شده</string>
+    <string name="entrance_info_default_show_all_q">کل سوالات</string>
+    <string name="entrance_info_default_show_segment_stats">آمار</string>
+    <string name="entrance_info_default_show_segment_comments">یادداشت</string>
+    <string name="entrance_info_default_show_segment_answer">جواب</string>
+    <string name="entrance_info_default_show_segment_none">هیچ کدام</string>
+
+    <string name="entrance_exam_percentage_average">میانگین</string>
+    <string name="entrance_exam_label">سنجش</string>
+    <string name="entrance_exam_new">سنجش جدید</string>
+    <string name="entrance_exam_history">تاریخچه سنجش ها</string>
+    <string name="entrance_exam_start_new">شروع سنجش</string>
+    <string name="entrance_exam_start_new_title">سنجش بدون زمانبندی است. در هر زمان می توانید نسبت به پایان سنجش اقدام نمایید.\n\nعوض شدن رنگ تایمر به منظور اطلاع رسانی است.\n\nدر صورتی که از سنجش پشیمان گشتید بدون جواب به هیچ سوالی پایان سنجش را بزنید.</string>
+    <string name="entrance_exam_back_to_default">بازگشت به حالت عادی</string>
+    <string name="entrance_exam_finish_lesson_exam">اتمام سنجش</string>
+
+    <string name="entrance_exam_answer1">۱</string>
+    <string name="entrance_exam_answer2">۲</string>
+    <string name="entrance_exam_answer3">۳</string>
+    <string name="entrance_exam_answer4">۴</string>
+
+    <string name="entrance_exam_result_title">نتیجه سنجش</string>
+    <string name="entrance_exam_result_time_label">زمان سنجش شما:</string>
+    <string name="entrance_exam_result_percentage_label">نتیجه سنجش:</string>
+    <string name="entrance_exam_result_see_answers">مشاهده جواب ها</string>
+    <string name="entrance_exam_last_title">نتیجه آخرین سنجش</string>
+
+    <string name="save">ذخیره</string>
+    <string name="cancel">بی خیال</string>
+    <string name="cancel_nevermind">پشیمان شدم</string>
+    <string name="close">بستن</string>
 </resources>

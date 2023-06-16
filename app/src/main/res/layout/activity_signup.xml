@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_signup"
+    android:id="@+id/container"
+    android:layoutDirection="ltr"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -13,14 +14,12 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        >
-
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
 
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:background="@android:color/white"
             android:fitsSystemWindows="true"
             android:isScrollContainer="true">
@@ -34,7 +33,7 @@
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/app_dropbox_icon"
+                app:srcCompat="@drawable/logo_white"
                 tools:layout_constraintLeft_creator="1"
                 tools:layout_constraintRight_creator="1"
                 tools:layout_constraintTop_creator="1" />
@@ -47,7 +46,7 @@
                 android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="16dp"
                 android:text="@string/signupA_TextView"
                 android:textAlignment="center"
                 android:textColor="@android:color/black"
@@ -61,17 +60,15 @@
                 android:id="@+id/linearLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
                 android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"
-                android:layout_marginStart="16dp"
                 android:layout_marginTop="32dp"
                 android:orientation="vertical"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/signupA_TextView">
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -96,20 +93,17 @@
                         android:layout_marginLeft="8dp"
                         android:layout_marginStart="8dp"
                         android:ems="10"
-                        android:gravity="start"
                         android:hint="@string/signupA_usernameEdit"
                         android:inputType="phone"
-                        android:textAlignment="textStart"
-                        android:textDirection="rtl"
                         android:textSize="18sp"
                         app:layout_constraintHorizontal_bias="0.0"
                         app:layout_constraintLeft_toRightOf="@+id/signupA_coutryCode"
                         app:layout_constraintRight_toRightOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -121,6 +115,7 @@
                         android:layout_marginRight="8dp"
                         android:text="@string/signupA_usernameCheckTextView"
                         android:textAlignment="textStart"
+                        android:gravity="start"
                         android:textColor="@color/colorConcoughGray"
 
                         android:textDirection="rtl"
@@ -138,7 +133,7 @@
                         app:layout_constraintRight_toRightOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <Button
                     android:id="@+id/signupA_sendCode"
@@ -148,6 +143,7 @@
                     android:layout_marginTop="24dp"
                     android:background="@drawable/concough_border_outline_style"
                     android:text="@string/signupA_sendCode"
+                    android:textColor="@android:color/white"
                     android:textSize="16sp"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
@@ -192,19 +188,20 @@
                     android:layout_height="32dp"
                     android:layout_gravity="center"
                     android:layout_marginRight="8dp"
+                    android:layout_marginEnd="8dp"
                     android:layout_weight="1"
                     android:background="@drawable/concough_border_radius_style"
                     android:text="@string/signupA_loginButton"
                     android:textColor="@color/colorConcoughBlue"
                     android:textColorLink="@color/colorConcoughBlue"
-                    app:layout_constraintRight_toLeftOf="@+id/archiveDetailA_title1"
+                    app:layout_constraintRight_toLeftOf="@+id/archiveDetailHolder1L_EntranceName"
                     tools:layout_editor_absoluteY="414dp" />
 
                 <TextView
                     android:id="@+id/signupA_loginHintTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
+                    android:layout_gravity="end"
                     android:layout_weight="2"
                     android:text="@string/signupA_loginHintTextView"
                     android:textAlignment="textEnd"
@@ -213,7 +210,7 @@
 
             </LinearLayout>
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

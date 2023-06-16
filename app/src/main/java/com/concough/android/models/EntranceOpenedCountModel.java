@@ -10,4 +10,5 @@ public class EntranceOpenedCountModel extends RealmObject {
     public String entranceUniqueId = "";
     public int count = 1;
     public String type = "";
+    public String username = "";
 }

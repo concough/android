@@ -13,6 +13,7 @@ class FormatterSingleton {
     private var _UTCDateFormatter: SimpleDateFormat
     private var _UTCShortDateFormatter: SimpleDateFormat
     private var _NumberFormatter: NumberFormat
+    private var _DecimalFormatter: NumberFormat
 
     companion object Factory {
         private var sharedInstance: FormatterSingleton? = null
@@ -28,18 +29,23 @@ class FormatterSingleton {
     }
 
     private constructor() {
-        this._UTCDateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'")
+        //this._UTCDateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'")
+        this._UTCDateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
         this._UTCDateFormatter.timeZone = TimeZone.getTimeZone("UTS")
 
         this._UTCShortDateFormatter = SimpleDateFormat("yyyy-MM-dd")
         this._UTCShortDateFormatter.timeZone = TimeZone.getTimeZone("UTS")
 
         this._NumberFormatter = NumberFormat.getNumberInstance(Locale("fa", "IR"))
-        this._NumberFormatter.isGroupingUsed = false;
+        this._NumberFormatter.isGroupingUsed = false
+
+        this._DecimalFormatter = NumberFormat.getNumberInstance(Locale("fa", "IR"))
+        this._DecimalFormatter.maximumFractionDigits = 2
+        this._DecimalFormatter.isGroupingUsed = false
 
     }
 
-    public val UTCDateFormatter: DateFormat
+    public val UTCDateFormatter: SimpleDateFormat
         get() = this._UTCDateFormatter
 
     public val UTCShortDateFormatter: DateFormat
@@ -48,13 +54,16 @@ class FormatterSingleton {
     public val NumberFormatter: NumberFormat
         get() = this._NumberFormatter
 
+    public val DecimalNumberFormatter: NumberFormat
+        get() = this._DecimalFormatter
+
     public fun getPersianDateString(d: Date): String {
         val year = PersianCalendar.getPersianYear(d)
         val month = PersianCalendar.getPersianMonth(d)
         val day = PersianCalendar.getPersianDayOfMonth(d)
 
-        var dayStr = FormatterSingleton.getInstance().NumberFormatter.format(day);
-        var yearStr = FormatterSingleton.getInstance().NumberFormatter.format(year);
+        var dayStr = FormatterSingleton.getInstance().NumberFormatter.format(day)
+        var yearStr = FormatterSingleton.getInstance().NumberFormatter.format(year)
 
         val d = _months[month - 1]
         return "%s %s %s".format(dayStr, d, yearStr)
