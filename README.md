@@ -1,5 +1,6 @@
 # Concough Android Application
 
+[![Generic badge](https://img.shields.io/badge/Android-4.4+-green.svg)](https://www.android.com/intl/en_ca/)
 [![Generic badge](https://img.shields.io/badge/Java-8-blue.svg)](https://www.java.com/)
 [![Generic badge](https://img.shields.io/badge/Kotlin-1.4-red.svg)](https://kotlinlang.org/)
 
